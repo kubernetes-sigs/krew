@@ -1,0 +1,11 @@
+apiVersion: plugin.krew.app/v1alpha1
+kind: Plugin
+metadata:
+  name: notyaml-plugin
+spec:
+  platforms:
+  - head: https://github.com/barbaz/foo/archive/master.tar.gz
+  version: ""
+  intro: ""
+  description: ""
+  caveats: ""

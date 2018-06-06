@@ -8,6 +8,12 @@
   version = "v1.4.7"
 
 [[projects]]
+  name = "github.com/ghodss/yaml"
+  packages = ["."]
+  revision = "0ca9ea5df5451ffdf184b4428c902747c2c11cd7"
+  version = "v1.0.0"
+
+[[projects]]
   name = "github.com/gogo/protobuf"
   packages = [
     "proto",
@@ -181,6 +187,7 @@
     "pkg/util/validation",
     "pkg/util/validation/field",
     "pkg/util/wait",
+    "pkg/util/yaml",
     "pkg/watch",
     "third_party/forked/golang/reflect"
   ]
@@ -189,6 +196,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "eacb6447329cece5d9e9a299bc6ec24156a07e5eb9f4d44e273ad31d0ea818d7"
+  inputs-digest = "d9e5e3115c2d962ee065b44382f43aa16e4a54c32e161bd4ad565d57deef32c6"
   solver-name = "gps-cdcl"
   solver-version = 1

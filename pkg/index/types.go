@@ -41,8 +41,8 @@ type Platform struct {
 	URI    string `json:"uri,omitempty"`
 	Sha256 string `json:"sha256,omitempty"`
 
-	Selector metav1.LabelSelector `json:"selector,omitempty"`
-	Files    []FileOperation      `json:"files"`
+	Selector *metav1.LabelSelector `json:"selector,omitempty"`
+	Files    []FileOperation       `json:"files"`
 }
 
 type FileOperation struct {
