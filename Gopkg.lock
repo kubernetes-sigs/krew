@@ -193,9 +193,15 @@
   ]
   revision = "94ebb086c69b9fec4ddbfb6a1433d28ecca9292b"
 
+[[projects]]
+  name = "k8s.io/client-go"
+  packages = ["util/homedir"]
+  revision = "23781f4d6632d88e869066eaebb743857aa1ef9b"
+  version = "v7.0.0"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d9e5e3115c2d962ee065b44382f43aa16e4a54c32e161bd4ad565d57deef32c6"
+  inputs-digest = "e2de7c667c576d88785074a8536ae419a0acc9b5a81451705f39dcd49ff9428d"
   solver-name = "gps-cdcl"
   solver-version = 1
