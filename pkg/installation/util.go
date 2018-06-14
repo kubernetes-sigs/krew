@@ -28,11 +28,11 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 )
 
-func getMatchingPlatform(i index.Index) (index.Platform, bool, error) {
+func getMatchingPlatform(i index.Plugin) (index.Platform, bool, error) {
 	return matchPlatformToSystemEnvs(i, runtime.GOOS, runtime.GOARCH)
 }
 
-func matchPlatformToSystemEnvs(i index.Index, os, arch string) (index.Platform, bool, error) {
+func matchPlatformToSystemEnvs(i index.Plugin, os, arch string) (index.Platform, bool, error) {
 	envLabels := labels.Set{
 		"os":   os,
 		"arch": arch,
@@ -75,7 +75,7 @@ func getPluginVersion(p index.Platform, forceHEAD bool) (version, uri string, er
 	return strings.ToLower(p.Sha256), p.URI, nil
 }
 
-func getDownloadTarget(index index.Index, forceHEAD bool) (version, uri string, fos []index.FileOperation, err error) {
+func getDownloadTarget(index index.Plugin, forceHEAD bool) (version, uri string, fos []index.FileOperation, err error) {
 	p, ok, err := getMatchingPlatform(index)
 	if err != nil {
 		return "", "", nil, fmt.Errorf("failed to get matching platforms, err: %v", err)

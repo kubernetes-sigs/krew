@@ -1,4 +1,4 @@
-//  Copyright © 2018 Google Inc.
+// Copyright © 2018 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package index
+package indexscanner
 
 import (
 	"fmt"
@@ -48,7 +48,7 @@ func LoadIndexListFromFS(indexdir string) (*index.IndexList, error) {
 		if err != nil {
 			return nil, err
 		}
-		index, err := readIndexFile(fpath)
+		index, err := ReadIndexFile(fpath)
 		if err != nil {
 			glog.Errorf("skip index file %s err: %v", fpath, err)
 			continue
@@ -61,7 +61,7 @@ func LoadIndexListFromFS(indexdir string) (*index.IndexList, error) {
 }
 
 // LoadIndexFileFromFS loads a plugins index file by its name.
-func LoadIndexFileFromFS(indexdir, pluginName string) (*index.Index, error) {
+func LoadIndexFileFromFS(indexdir, pluginName string) (*index.Plugin, error) {
 	indexdir, err := filepath.EvalSymlinks(indexdir)
 	if err != nil {
 		return nil, err
@@ -77,18 +77,18 @@ func LoadIndexFileFromFS(indexdir, pluginName string) (*index.Index, error) {
 			continue
 		}
 		fpath := filepath.Join(indexdir, f.Name())
-		return readIndexFile(fpath)
+		return ReadIndexFile(fpath)
 	}
 	return nil, fmt.Errorf("could not find the plugin %q", pluginName)
 }
 
-// readIndexFile loads a file from the FS
+// ReadIndexFile loads a file from the FS
 // TODO(lbb): Add object verification
-func readIndexFile(indexFilePath string) (*index.Index, error) {
+func ReadIndexFile(indexFilePath string) (*index.Plugin, error) {
 	f, err := os.Open(indexFilePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open index file, err: %v", err)
 	}
-	index := &index.Index{}
-	return index, yaml.NewYAMLOrJSONDecoder(f, 1024).Decode(index)
+	var plugin index.Plugin
+	return &plugin, yaml.NewYAMLOrJSONDecoder(f, 1024).Decode(&plugin)
 }

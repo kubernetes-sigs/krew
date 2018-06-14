@@ -1,4 +1,4 @@
-//  Copyright © 2018 Google Inc.
+// Copyright © 2018 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package index
+package indexscanner
 
 import (
 	"testing"
@@ -46,7 +46,7 @@ func Test_readIndexFile(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := readIndexFile(tt.args.indexFilePath)
+			got, err := ReadIndexFile(tt.args.indexFilePath)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("readIndexFile() error = %v, wantErr %v", err, tt.wantErr)
 				return

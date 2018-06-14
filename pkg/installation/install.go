@@ -45,7 +45,7 @@ func downloadAndMove(version, uri string, fos []index.FileOperation, downloadPat
 
 // Install will download and install a plugin. The operation tries
 // to not get the plugin dir in a bad satate if it failes during the process.
-func Install(p environment.KrewPaths, index index.Index, forceHEAD bool) error {
+func Install(p environment.KrewPaths, index index.Plugin, forceHEAD bool) error {
 	_, ok, err := findInstalledPluginVersion(p.Install, index.Name)
 	if err != nil {
 		return err
@@ -62,7 +62,7 @@ func Install(p environment.KrewPaths, index index.Index, forceHEAD bool) error {
 
 // Upgrade will reinstall and delete the old plugin. The operation tries
 // to not get the plugin dir in a bad satate if it failes during the process.
-func Upgrade(p environment.KrewPaths, index index.Index) error {
+func Upgrade(p environment.KrewPaths, index index.Plugin) error {
 	version, ok, err := findInstalledPluginVersion(p.Install, index.Name)
 	if err != nil {
 		return fmt.Errorf("could not detect installed plugin version, err: %v", err)
@@ -97,7 +97,7 @@ func Upgrade(p environment.KrewPaths, index index.Index) error {
 
 // Remove will remove a plugin without bringing the plugin dir in a
 // bad state.
-func Remove(p environment.KrewPaths, index index.Index) error {
+func Remove(p environment.KrewPaths, index index.Plugin) error {
 	_, installed, err := findInstalledPluginVersion(p.Install, index.Name)
 	if err != nil {
 		return fmt.Errorf("can't remove plugin, err: %v", err)

@@ -36,7 +36,7 @@ func Test_matchPlatformToSystemEnvs(t *testing.T) {
 	}
 
 	type args struct {
-		i index.Index
+		i index.Plugin
 	}
 	tests := []struct {
 		name         string
@@ -48,8 +48,8 @@ func Test_matchPlatformToSystemEnvs(t *testing.T) {
 		{
 			name: "Test Matching Index",
 			args: args{
-				i: index.Index{
-					Spec: index.IndexSpec{
+				i: index.Plugin{
+					Spec: index.PluginSpec{
 						Platforms: []index.Platform{
 							matchingPlatform, {
 								Head: "B",
@@ -69,8 +69,8 @@ func Test_matchPlatformToSystemEnvs(t *testing.T) {
 		}, {
 			name: "Test Matching Index Not Found",
 			args: args{
-				i: index.Index{
-					Spec: index.IndexSpec{
+				i: index.Plugin{
+					Spec: index.PluginSpec{
 						Platforms: []index.Platform{
 							{
 								Head: "B",
@@ -198,7 +198,7 @@ func Test_getDownloadTarget(t *testing.T) {
 		Files: nil,
 	}
 	type args struct {
-		index     index.Index
+		index     index.Plugin
 		forceHEAD bool
 	}
 	tests := []struct {
@@ -213,8 +213,8 @@ func Test_getDownloadTarget(t *testing.T) {
 			name: "Find Matching Platform",
 			args: args{
 				forceHEAD: true,
-				index: index.Index{
-					Spec: index.IndexSpec{
+				index: index.Plugin{
+					Spec: index.PluginSpec{
 						Platforms: []index.Platform{
 							matchingPlatform,
 							{
@@ -237,8 +237,8 @@ func Test_getDownloadTarget(t *testing.T) {
 			name: "No Matching Platform",
 			args: args{
 				forceHEAD: true,
-				index: index.Index{
-					Spec: index.IndexSpec{
+				index: index.Plugin{
+					Spec: index.PluginSpec{
 						Platforms: []index.Platform{
 							{
 								Head: "https://wrong.com",

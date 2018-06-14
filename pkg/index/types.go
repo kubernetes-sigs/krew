@@ -1,4 +1,4 @@
-//  Copyright © 2018 Google Inc.
+// Copyright © 2018 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,16 +18,16 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// Index is a top-level type.
+// Plugin is a top-level type.
 // TODO(lbb): Add deepcopy code generation.
-type Index struct {
+type Plugin struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec IndexSpec `json:"spec"`
+	Spec PluginSpec `json:"spec"`
 }
 
-type IndexSpec struct {
+type PluginSpec struct {
 	Version     string `json:"version,omitempty"`
 	Intro       string `json:"intro,omitempty"`
 	Description string `json:"description,omitempty"`
@@ -54,5 +54,5 @@ type IndexList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 
-	Items []Index `json:"items"`
+	Items []Plugin `json:"items"`
 }
