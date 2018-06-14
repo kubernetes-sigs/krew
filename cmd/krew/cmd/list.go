@@ -16,35 +16,58 @@ package cmd
 
 import (
 	"fmt"
+	"io"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"text/tabwriter"
 
+	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 )
 
 // listCmd represents the list command
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "List all installed plugin names",
+	Long: `List all installed plugin names.
+Plugins will be shown as "PLUGIN,VERSION"`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("list called")
+		glog.V(4).Infof("Reading installation path %q", paths.Install)
+		plugins, err := ioutil.ReadDir(paths.Install)
+		if err != nil {
+			glog.Fatal(err)
+		}
+		columns := make(map[string]string)
+		for _, p := range plugins {
+			if !p.IsDir() {
+				continue
+			}
+			versions, err := ioutil.ReadDir(filepath.Join(paths.Install, p.Name()))
+			if err != nil {
+				glog.Fatal(err)
+			}
+			for _, v := range versions {
+				if !v.IsDir() {
+					continue
+				}
+				columns[p.Name()] = v.Name()
+			}
+		}
+		printAlignedColums(os.Stdout, columns)
 	},
+	PreRunE: checkIndex,
+}
+
+func printAlignedColums(out io.Writer, columns map[string]string) error {
+	w := tabwriter.NewWriter(out, 0, 0, 1, ' ', 0)
+	fmt.Fprintln(w, "PLUGIN\tVERSION")
+	for name, version := range columns {
+		fmt.Fprintf(w, "%s\t%s\n", name, version)
+	}
+	return w.Flush()
 }
 
 func init() {
 	rootCmd.AddCommand(listCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// listCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// listCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

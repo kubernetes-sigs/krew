@@ -27,11 +27,21 @@ import (
 
 // EnsureCloned will clone into the destination path, otherwise will return no error.
 func EnsureCloned(uri, destinationPath string) error {
-	_, err := os.Stat(filepath.Join(destinationPath, ".git"))
-	if os.IsNotExist(err) {
+	if ok, err := IsGitCloned(destinationPath); err != nil {
+		return err
+	} else if !ok {
 		return exec("", "clone", uri, destinationPath)
 	}
-	return err
+	return nil
+}
+
+// IsGitCloned will test if the path is a git dir.
+func IsGitCloned(gitPath string) (bool, error) {
+	f, err := os.Stat(filepath.Join(gitPath, ".git"))
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return err == nil && f.IsDir(), err
 }
 
 // update will fetch origin and set HEAD to origin/HEAD.

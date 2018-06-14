@@ -17,34 +17,32 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/golang/glog"
+	"github.com/google/krew/pkg/index/indexscanner"
+
 	"github.com/spf13/cobra"
 )
 
 // searchCmd represents the search command
 var searchCmd = &cobra.Command{
 	Use:   "search",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Discover plugins in your local index using fuzzy search",
+	Long: `Discover plugins in your local index using fuzzy search.
+Search accepts a list of words as options. Search will weight fuzzy matches
+in (Name,Intro, Description) in descending order.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("search called")
+		// TODO(lbb): Implement real search, don't just list plugin names.
+		index, err := indexscanner.LoadIndexListFromFS(paths.Index)
+		if err != nil {
+			glog.Fatal(err)
+		}
+		for _, i := range index.Items {
+			fmt.Println(i.Name)
+		}
 	},
+	PreRunE: checkIndex,
 }
 
 func init() {
 	rootCmd.AddCommand(searchCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// searchCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// searchCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

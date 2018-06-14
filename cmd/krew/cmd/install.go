@@ -16,35 +16,82 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
+	"github.com/golang/glog"
+	"github.com/google/krew/pkg/index"
+	"github.com/google/krew/pkg/index/indexscanner"
+	"github.com/google/krew/pkg/installation"
 	"github.com/spf13/cobra"
 )
 
-// installCmd represents the install command
-var installCmd = &cobra.Command{
-	Use:   "install",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("install called")
-	},
-}
-
 func init() {
+	var (
+		forceHEAD *bool
+		file      *string
+	)
+
+	// installCmd represents the install command
+	var installCmd = &cobra.Command{
+		Use:   "install",
+		Short: "Install a new plugin",
+		Long: `Install a new plugin.
+All plugins will be downloaded and made available to: "kubectl plugin <name>"`,
+		Run: func(cmd *cobra.Command, args []string) {
+			var install []index.Plugin
+			// From args
+			for _, arg := range args {
+				plugin, err := indexscanner.LoadPluginFileFromFS(paths.Index, arg)
+				if err != nil {
+					glog.Fatal(err)
+				}
+				install = append(install, plugin)
+			}
+
+			// Check if is stdin convention
+			var f *os.File
+			if *file == "-" {
+				f = os.Stdin
+			} else if *file != "" {
+				fi, err := os.Open(*file)
+				if err != nil {
+					glog.Fatal(fmt.Errorf("failed to open provided file, err %v", err))
+				}
+				defer fi.Close()
+				f = fi
+			}
+			if f != nil {
+				plugin, err := indexscanner.DecodePluginFile(f)
+				if err != nil {
+					glog.Fatal(fmt.Errorf("failed to decode provided file, err %v", err))
+				}
+				install = append(install, plugin)
+			}
+
+			if len(install) > 1 && *forceHEAD {
+				glog.Fatalln(fmt.Errorf("Cannot use HEAD option with multiple plugins"))
+			}
+			// Print plugin names
+			for _, plugin := range install {
+				glog.Infof("Will install plugin: %s", plugin.Name)
+			}
+			// Do install
+			for _, plugin := range install {
+				if err := installation.Install(paths, plugin, *forceHEAD); err != nil {
+					glog.Fatalln(err)
+				}
+			}
+		},
+		Args: func(cmd *cobra.Command, args []string) error {
+			if (len(args) == 0 && *file == "") || (len(args) > 0 && *file != "") {
+				return fmt.Errorf("must specify either names or files")
+			}
+			return nil
+		},
+		PreRun: ensureUpdated,
+	}
+	forceHEAD = installCmd.Flags().Bool("HEAD", false, "Force HEAD if versioned and HEAD installs are possible.")
+	file = installCmd.Flags().StringP("file", "f", "", "File with a list of plugin names to install.")
+
 	rootCmd.AddCommand(installCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// installCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// installCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

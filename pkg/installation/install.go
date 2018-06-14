@@ -97,13 +97,13 @@ func Upgrade(p environment.KrewPaths, index index.Plugin) error {
 
 // Remove will remove a plugin without bringing the plugin dir in a
 // bad state.
-func Remove(p environment.KrewPaths, index index.Plugin) error {
-	_, installed, err := findInstalledPluginVersion(p.Install, index.Name)
+func Remove(p environment.KrewPaths, name string) error {
+	_, installed, err := findInstalledPluginVersion(p.Install, name)
 	if err != nil {
 		return fmt.Errorf("can't remove plugin, err: %v", err)
 	}
 	if !installed {
-		return fmt.Errorf("can't remove plugin %q, it is not installed", index.Name)
+		return fmt.Errorf("can't remove plugin %q, it is not installed", name)
 	}
-	return os.RemoveAll(filepath.Join(p.Install, index.Name))
+	return os.RemoveAll(filepath.Join(p.Install, name))
 }

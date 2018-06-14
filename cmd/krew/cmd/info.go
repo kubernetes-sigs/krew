@@ -16,35 +16,49 @@ package cmd
 
 import (
 	"fmt"
+	"io"
+	"os"
 
+	"github.com/google/krew/pkg/index"
+	"github.com/google/krew/pkg/index/indexscanner"
+
+	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 )
 
 // infoCmd represents the info command
 var infoCmd = &cobra.Command{
 	Use:   "info",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Info shows plugin details",
+	Long: `Info shows plugin details.
+Use this command to find out about plugin requirements and caveats.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("info called")
+		for _, arg := range args {
+			plugin, err := indexscanner.LoadPluginFileFromFS(paths.Index, arg)
+			if err != nil {
+				glog.Fatal(err)
+			}
+			printPluginInfo(os.Stdout, plugin)
+		}
 	},
+	PreRunE: checkIndex,
+	Args:    cobra.MinimumNArgs(1),
+}
+
+// TODO(lbb): Make output fancy (i.e emojis?)
+func printPluginInfo(out io.Writer, i index.Plugin) {
+	fmt.Fprintf(out, "NAME: %s\n", i.Name)
+	if i.Spec.Description != "" {
+		fmt.Fprintf(out, "DESCRIPTION: \n%s\n", i.Spec.Description)
+	}
+	if i.Spec.Version != "" {
+		fmt.Fprintf(out, "VERSION: %s\n", i.Spec.Version)
+	}
+	if i.Spec.Caveats != "" {
+		fmt.Fprintf(out, "CAVEATS: \n%s\n", i.Spec.Caveats)
+	}
 }
 
 func init() {
 	rootCmd.AddCommand(infoCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// infoCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// infoCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

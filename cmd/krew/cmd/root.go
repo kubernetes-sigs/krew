@@ -15,44 +15,78 @@
 package cmd
 
 import (
+	"flag"
 	"fmt"
 	"os"
 
+	"github.com/google/krew/pkg/environment"
+	"github.com/google/krew/pkg/gitutil"
+
+	"github.com/golang/glog"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
 
-var cfgFile string
+var paths environment.KrewPaths
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "krew",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	//	Run: func(cmd *cobra.Command, args []string) { },
+	Short: "krew is the kubectl plugin manager",
+	Long: `krew is the kubectl plugin manager.
+You can invoke krew through kubectl with: "kubectl plugin [krew] option..."`,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		glog.Fatal(err)
 	}
+}
+
+// InjectCommand InjectCommand adds a cobra command to the main tree
+func InjectCommand(c *cobra.Command) {
+	rootCmd.AddCommand(c)
 }
 
 func init() {
 	cobra.OnInitialize(initConfig)
+	// Add glog flags
+	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
+	// Set glog default to stderr
+	flag.Set("logtostderr", "true")
+	// Required by glog
+	flag.Parse()
+
+	paths = environment.MustGetKrewPathsFromEnvs(os.Environ())
+	if err := ensureDirs(paths.Base, paths.Download, paths.Install); err != nil {
+		glog.Fatal(err)
+	}
+}
+
+func checkIndex(cmd *cobra.Command, _ []string) error {
+	if ok, err := gitutil.IsGitCloned(paths.Index); err != nil {
+		return err
+	} else if !ok {
+		return fmt.Errorf("krew local plugin index is not initialized (run \"krew update\")")
+	}
+	return nil
+}
+func ensureDirs(paths ...string) error {
+	for _, p := range paths {
+		glog.V(4).Infof("Ensure creating dir: %q", p)
+		if err := os.MkdirAll(p, 0755); err != nil {
+			return fmt.Errorf("failed to ensure create directory, err: %v", err)
+		}
+	}
+	return nil
 }
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	viper.AutomaticEnv() // read in environment variables that match
+	viper.AutomaticEnv()
+	// Make environment vars kubectl-plugin compatible.
+	bindEnvironmentVariables(viper.GetViper(), rootCmd)
 }

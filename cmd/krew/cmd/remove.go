@@ -12,14 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package cmd
 
 import (
 	"github.com/golang/glog"
-	"github.com/google/krew/cmd/krew/cmd"
+	"github.com/google/krew/pkg/installation"
+	"github.com/spf13/cobra"
 )
 
-func main() {
-	cmd.Execute()
-	defer glog.Flush()
+// removeCmd represents the remove command
+var removeCmd = &cobra.Command{
+	Use:   "remove",
+	Short: "Remove a plugin from the system",
+	Long: `Remove a plugin from the system.
+This will delete all plugin related files.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		for _, arg := range args {
+			if err := installation.Remove(paths, arg); err != nil {
+				glog.Fatalln(err)
+			}
+		}
+	},
+	PreRunE: checkIndex,
+	Args:    cobra.MinimumNArgs(1),
+}
+
+func init() {
+	rootCmd.AddCommand(removeCmd)
 }

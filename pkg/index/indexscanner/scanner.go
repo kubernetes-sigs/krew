@@ -16,6 +16,7 @@ package indexscanner
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -27,18 +28,18 @@ import (
 )
 
 // LoadIndexListFromFS will parse and retrieve all index files.
-func LoadIndexListFromFS(indexdir string) (*index.IndexList, error) {
+func LoadIndexListFromFS(indexdir string) (index.IndexList, error) {
+	var indexList index.IndexList
 	indexdir, err := filepath.EvalSymlinks(indexdir)
 	if err != nil {
-		return nil, err
+		return indexList, err
 	}
 
 	files, err := ioutil.ReadDir(indexdir)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open index dir, err: %v", err)
+		return indexList, fmt.Errorf("failed to open index dir, err: %v", err)
 	}
 
-	indexList := &index.IndexList{}
 	for _, f := range files {
 		if f.IsDir() || !(strings.HasSuffix(f.Name(), ".yaml") || strings.HasSuffix(f.Name(), ".json")) {
 			continue
@@ -46,30 +47,30 @@ func LoadIndexListFromFS(indexdir string) (*index.IndexList, error) {
 
 		fpath, err := filepath.EvalSymlinks(filepath.Join(indexdir, f.Name()))
 		if err != nil {
-			return nil, err
+			return index.IndexList{}, err
 		}
-		index, err := ReadIndexFile(fpath)
+		index, err := ReadPluginFile(fpath)
 		if err != nil {
 			glog.Errorf("skip index file %s err: %v", fpath, err)
 			continue
 		}
 
-		indexList.Items = append(indexList.Items, *index)
+		indexList.Items = append(indexList.Items, index)
 	}
 
 	return indexList, nil
 }
 
-// LoadIndexFileFromFS loads a plugins index file by its name.
-func LoadIndexFileFromFS(indexdir, pluginName string) (*index.Plugin, error) {
+// LoadPluginFileFromFS loads a plugins index file by its name.
+func LoadPluginFileFromFS(indexdir, pluginName string) (index.Plugin, error) {
 	indexdir, err := filepath.EvalSymlinks(indexdir)
 	if err != nil {
-		return nil, err
+		return index.Plugin{}, err
 	}
 
 	files, err := ioutil.ReadDir(indexdir)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open dir %s, err: %v", indexdir, err)
+		return index.Plugin{}, fmt.Errorf("failed to open dir %s, err: %v", indexdir, err)
 	}
 
 	for _, f := range files {
@@ -77,18 +78,23 @@ func LoadIndexFileFromFS(indexdir, pluginName string) (*index.Plugin, error) {
 			continue
 		}
 		fpath := filepath.Join(indexdir, f.Name())
-		return ReadIndexFile(fpath)
+		return ReadPluginFile(fpath)
 	}
-	return nil, fmt.Errorf("could not find the plugin %q", pluginName)
+	return index.Plugin{}, fmt.Errorf("could not find the plugin %q", pluginName)
 }
 
-// ReadIndexFile loads a file from the FS
+// ReadPluginFile loads a file from the FS
 // TODO(lbb): Add object verification
-func ReadIndexFile(indexFilePath string) (*index.Plugin, error) {
+func ReadPluginFile(indexFilePath string) (index.Plugin, error) {
 	f, err := os.Open(indexFilePath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open index file, err: %v", err)
+		return index.Plugin{}, fmt.Errorf("failed to open index file, err: %v", err)
 	}
+	return DecodePluginFile(f)
+}
+
+// DecodePluginFile tries to decodes a plugin manifest from r.
+func DecodePluginFile(r io.Reader) (index.Plugin, error) {
 	var plugin index.Plugin
-	return &plugin, yaml.NewYAMLOrJSONDecoder(f, 1024).Decode(&plugin)
+	return plugin, yaml.NewYAMLOrJSONDecoder(r, 1024).Decode(&plugin)
 }

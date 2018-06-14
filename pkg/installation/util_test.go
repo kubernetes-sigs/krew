@@ -308,6 +308,15 @@ func Test_findInstalledPluginVersion(t *testing.T) {
 			wantName:      "",
 			wantInstalled: false,
 			wantErr:       false,
+		}, {
+			name: "Insecure name",
+			args: args{
+				installPath: filepath.Join(testdataPath(t), "index"),
+				pluginName:  "../foo",
+			},
+			wantName:      "",
+			wantInstalled: false,
+			wantErr:       true,
 		},
 	}
 	for _, tt := range tests {
@@ -333,4 +342,42 @@ func testdataPath(t *testing.T) string {
 		t.Fatal(err)
 	}
 	return filepath.Join(pwd, "testdata")
+}
+
+func Test_isSafePluginName(t *testing.T) {
+	type args struct {
+		name string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "secure name",
+			args: args{
+				name: "foo-bar",
+			},
+			want: true,
+		}, {
+			name: "insecure path name",
+			args: args{
+				name: "/foo-bar",
+			},
+			want: false,
+		}, {
+			name: "relative name",
+			args: args{
+				name: "..foo-bar",
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := isSafePluginName(tt.args.name); got != tt.want {
+				t.Errorf("isSafePluginName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

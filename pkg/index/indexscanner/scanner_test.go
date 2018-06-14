@@ -46,7 +46,7 @@ func Test_readIndexFile(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ReadIndexFile(tt.args.indexFilePath)
+			got, err := ReadPluginFile(tt.args.indexFilePath)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("readIndexFile() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -128,7 +128,7 @@ func TestLoadIndexFileFromFS(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := LoadIndexFileFromFS(tt.args.indexdir, tt.args.pluginName)
+			got, err := LoadPluginFileFromFS(tt.args.indexdir, tt.args.pluginName)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("LoadIndexFileFromFS() got = %##v,error = %v, wantErr %v", got, err, tt.wantErr)
 				return

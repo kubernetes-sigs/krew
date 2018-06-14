@@ -15,36 +15,37 @@
 package cmd
 
 import (
-	"fmt"
-
+	"github.com/golang/glog"
+	"github.com/google/krew/pkg/index/indexscanner"
+	"github.com/google/krew/pkg/installation"
 	"github.com/spf13/cobra"
 )
 
 // upgradeCmd represents the upgrade command
 var upgradeCmd = &cobra.Command{
 	Use:   "upgrade",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Upgrade an installed plugin to a newer version",
+	Long: `Upgrade an installed plugin to a newer version.
+This will reinstall all plugins that have a newer version in the local index.
+Use "kubectl plugin update" to renew the index. All plugins that rely on HEAD
+will always be installed.
+To only upgrade single plugins provide them as arguments:
+kubectl plugin upgrade foo bar"`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("upgrade called")
+		for _, arg := range args {
+			index, err := indexscanner.LoadPluginFileFromFS(paths.Index, arg)
+			if err != nil {
+				glog.Fatal(err)
+			}
+			if err = installation.Upgrade(paths, index); err != nil {
+				glog.Fatalln(err)
+			}
+		}
 	},
+	PreRunE: checkIndex,
+	Args:    cobra.MinimumNArgs(1),
 }
 
 func init() {
 	rootCmd.AddCommand(upgradeCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// upgradeCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// upgradeCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
