@@ -34,12 +34,12 @@ func findMoveTargets(fromDir, toDir string, fo index.FileOperation) ([]move, err
 		return nil, fmt.Errorf("could not get the realtive path for the move src, err: %v", err)
 	}
 
-	newDir, err := filepath.Abs(filepath.Join(toDir, fo.To))
+	newDir, err := filepath.Abs(filepath.Join(filepath.FromSlash(toDir), filepath.FromSlash(fo.To)))
 	if err != nil {
 		return nil, fmt.Errorf("could not get the realtive path for the move dst, err: %v", err)
 	}
 
-	gl, err := filepath.Glob(filepath.Join(fromDir, fo.From))
+	gl, err := filepath.Glob(filepath.Join(filepath.FromSlash(fromDir), filepath.FromSlash(fo.From)))
 	if err != nil {
 		return nil, fmt.Errorf("could not get files using a glob string, err: %v", err)
 	}
@@ -51,7 +51,7 @@ func findMoveTargets(fromDir, toDir string, fo index.FileOperation) ([]move, err
 			return nil, fmt.Errorf("cannot move a file that is not in the from dir (%s -> %s)", fromDir, v)
 		}
 
-		newpath := filepath.Join(newDir, filepath.Base(v))
+		newpath := filepath.Join(newDir, filepath.Base(filepath.FromSlash(v)))
 		moves = append(moves, move{from: v, to: newpath})
 	}
 	return moves, nil

@@ -23,7 +23,6 @@ import (
 )
 
 func Test_moveToInstallAtomic(t *testing.T) {
-	pwd, _ := filepath.Abs(".")
 	type args struct {
 		fromDir string
 		toDir   string
@@ -38,19 +37,19 @@ func Test_moveToInstallAtomic(t *testing.T) {
 		{
 			name: "read testdir",
 			args: args{
-				fromDir: "./testdata/testdir_A",
-				toDir:   "./testdata/testdir_B",
+				fromDir: filepath.Join(testdataPath(t), "testdir_A"),
+				toDir:   filepath.Join(testdataPath(t), "testdir_B"),
 				fo: index.FileOperation{
 					From: "*",
 					To:   ".",
 				},
 			},
 			want: []move{{
-				from: filepath.Join(pwd, "/testdata/testdir_A/.secret"),
-				to:   filepath.Join(pwd, "/testdata/testdir_B/.secret"),
+				from: filepath.Join(testdataPath(t), "testdir_A", ".secret"),
+				to:   filepath.Join(testdataPath(t), "testdir_B", ".secret"),
 			}, {
-				from: filepath.Join(pwd, "/testdata/testdir_A/notsecret"),
-				to:   filepath.Join(pwd, "/testdata/testdir_B/notsecret"),
+				from: filepath.Join(testdataPath(t), "testdir_A", "notsecret"),
+				to:   filepath.Join(testdataPath(t), "testdir_B", "notsecret"),
 			}},
 			wantErr: false,
 		},
