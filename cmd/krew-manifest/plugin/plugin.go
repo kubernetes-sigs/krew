@@ -103,7 +103,7 @@ func convertToPlugin(cmd *cobra.Command) Plugin {
 		Use:       cmd.Use,
 		ShortDesc: cmd.Short,
 		LongDesc:  cmd.Long,
-		Command:   filepath.Join(".", cmd.CommandPath()),
+		Command:   strings.Join([]string{".", cmd.CommandPath()}, string(filepath.Separator)),
 		Example:   cmd.Example,
 	}
 	// The plugin won't validate if empty
