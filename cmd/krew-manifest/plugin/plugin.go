@@ -92,6 +92,7 @@ func convertPluginToPlugins(root Plugin) []Plugin {
 	for i, p := range root.Tree {
 		p.Flags = append(p.Flags, root.Flags...)
 		p.Command = filepath.Join("..", "..", p.Command)
+		p.ShortDesc = "[krew] " + p.ShortDesc
 		plugins[i] = p
 	}
 	return plugins
