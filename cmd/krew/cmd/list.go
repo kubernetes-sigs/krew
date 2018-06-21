@@ -59,9 +59,10 @@ Plugins will be shown as "PLUGIN,VERSION"`,
 	PreRunE: checkIndex,
 }
 
-func printAlignedColums(out io.Writer, columns map[string]string) error {
+func printAlignedColums(out io.Writer, keyHeader, valueHeader string, columns map[string]string) error {
 	w := tabwriter.NewWriter(out, 0, 0, 1, ' ', 0)
-	fmt.Fprintln(w, "PLUGIN\tVERSION")
+	fmt.Fprintf(w, "%s\t%s\n", keyHeader, valueHeader)
+	// TODO(lbb): print sorted map, to allow unix parsing or allow -o json flag
 	for name, version := range columns {
 		fmt.Fprintf(w, "%s\t%s\n", name, version)
 	}

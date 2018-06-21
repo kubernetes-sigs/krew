@@ -20,6 +20,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/google/krew/pkg/pathutil"
 	"k8s.io/client-go/util/homedir"
 )
 
@@ -87,4 +88,25 @@ func getKubectlPluginsPath(envs []string) string {
 
 	// Golang does no '~' expansion
 	return filepath.Join(homedir.HomeDir(), ".kube", "plugins")
+}
+
+// GetExecutedVersion returns the currently executed version. If krew is
+// not executed as an plugin it will return a nil error and an empty string.
+func GetExecutedVersion(paths KrewPaths, cmdArgs []string) (string, error) {
+	currentBinaryPath, err := filepath.Abs(cmdArgs[0])
+	if err != nil {
+		return "", err
+	}
+
+	pluginsPath, err := filepath.Abs(filepath.Join(paths.Install, "krew"))
+	if err != nil {
+		return "", err
+	}
+
+	elems, ok := pathutil.IsSubPath(pluginsPath, currentBinaryPath)
+	if !ok || len(elems) != 2 {
+		return "", nil
+	}
+
+	return elems[0], nil
 }
