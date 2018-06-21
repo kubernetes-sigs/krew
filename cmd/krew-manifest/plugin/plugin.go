@@ -120,7 +120,7 @@ func convertToPlugin(cmd *cobra.Command) Plugin {
 
 	for _, subCmd := range cmd.Commands() {
 		// Skip the injected generator command
-		if subCmd.CommandPath() != "krew generate" {
+		if !subCmd.Hidden && !strings.HasSuffix(subCmd.CommandPath(), "generate") && !strings.HasSuffix(subCmd.CommandPath(), "help") {
 			p.Tree = append(p.Tree, convertToPlugin(subCmd))
 		}
 	}
