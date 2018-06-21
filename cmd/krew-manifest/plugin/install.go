@@ -39,7 +39,7 @@ func NewGenerateCmd() *cobra.Command {
 				return fmt.Errorf("failed to write \"plugin.yaml\", err: %v", err)
 			}
 			for _, command := range topCommands {
-				if err = os.MkdirAll(filepath.Join("commands", command.Name), 0644); err != nil {
+				if err = os.MkdirAll(filepath.Join("commands", command.Name), 0755); err != nil {
 					return fmt.Errorf("failed to create commands dir, err: %v", err)
 				}
 				b, err := yaml.Marshal(command)

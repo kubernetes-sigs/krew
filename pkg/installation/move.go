@@ -81,7 +81,7 @@ func moveAllFiles(fromDir, toDir string, fos []index.FileOperation) error {
 }
 
 func moveToInstallAtomic(download, plugindir, version string, fos []index.FileOperation) error {
-	if err := os.MkdirAll(plugindir, os.ModePerm); err != nil {
+	if err := os.MkdirAll(plugindir, 0755); err != nil {
 		return fmt.Errorf("Error creating path to %q, err: %v", plugindir, err)
 	}
 	tempdir, err := ioutil.TempDir("", "krew-temp-move")

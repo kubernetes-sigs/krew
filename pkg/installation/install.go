@@ -26,7 +26,7 @@ import (
 )
 
 func downloadAndMove(version, uri string, fos []index.FileOperation, downloadPath, installPath string) (err error) {
-	if err = os.MkdirAll(downloadPath, os.ModePerm); err != nil {
+	if err = os.MkdirAll(downloadPath, 0755); err != nil {
 		return fmt.Errorf("could not create download path %q, err: %v", downloadPath, err)
 	}
 	defer os.RemoveAll(downloadPath)
