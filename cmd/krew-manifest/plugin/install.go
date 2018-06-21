@@ -20,6 +20,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 )
@@ -35,6 +36,7 @@ func NewGenerateCmd() *cobra.Command {
 			if err != nil {
 				return fmt.Errorf("failed to marshal root plugin, err: %v", err)
 			}
+			glog.Infof("Creating command \"kubectl plugin krew\" under path \"plugin.yaml\"")
 			if err = ioutil.WriteFile("plugin.yaml", b, 0644); err != nil {
 				return fmt.Errorf("failed to write \"plugin.yaml\", err: %v", err)
 			}
@@ -47,6 +49,7 @@ func NewGenerateCmd() *cobra.Command {
 					return fmt.Errorf("failed to marshal root plugin with name %q, err: %v", command.Name, err)
 				}
 				pluginFilePath := filepath.Join("commands", command.Name, "plugin.yaml")
+				glog.Infof("Creating command \"kubectl plugin %s\" under path %q", command.Name, pluginFilePath)
 				if ioutil.WriteFile(pluginFilePath, b, 0644); err != nil {
 					return fmt.Errorf("failed to write plugin %q, err: %v", pluginFilePath, err)
 				}

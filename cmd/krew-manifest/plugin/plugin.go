@@ -88,12 +88,15 @@ func traversPluginEntryPoints(cmd *cobra.Command) (Plugin, []Plugin) {
 }
 
 func convertPluginToPlugins(root Plugin) []Plugin {
-	plugins := make([]Plugin, len(root.Tree))
-	for i, p := range root.Tree {
+	var plugins []Plugin
+	for _, p := range root.Tree {
+		if p.Name == "help" || p.Name == "version" {
+			continue
+		}
 		p.Flags = append(p.Flags, root.Flags...)
 		p.Command = filepath.Join("..", "..", p.Command)
 		p.ShortDesc = "[krew] " + p.ShortDesc
-		plugins[i] = p
+		plugins = append(plugins, p)
 	}
 	return plugins
 }
@@ -120,7 +123,7 @@ func convertToPlugin(cmd *cobra.Command) Plugin {
 
 	for _, subCmd := range cmd.Commands() {
 		// Skip the injected generator command
-		if !subCmd.Hidden && !strings.HasSuffix(subCmd.CommandPath(), "generate") && !strings.HasSuffix(subCmd.CommandPath(), "help") {
+		if !subCmd.Hidden && subCmd.CommandPath() != "krew generate" {
 			p.Tree = append(p.Tree, convertToPlugin(subCmd))
 		}
 	}
