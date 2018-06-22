@@ -15,6 +15,7 @@
 package indexscanner
 
 import (
+	"path/filepath"
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -34,12 +35,26 @@ func Test_readIndexFile(t *testing.T) {
 		{
 			name: "read index file",
 			args: args{
-				indexFilePath: "./testdata/testindex/foo.yaml",
+				indexFilePath: filepath.Join(testdataPath(t), "testindex", "foo.yaml"),
 			},
 			wantErr: false,
 			matchFirst: labels.Set{
 				"os": "macos",
 			},
+		},
+		{
+			name: "read index file with unknown keys",
+			args: args{
+				indexFilePath: filepath.Join(testdataPath(t), "testindex", "badplugin.yaml"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "read index file with unknown keys",
+			args: args{
+				indexFilePath: filepath.Join(testdataPath(t), "testindex", "badplugin2.yaml"),
+			},
+			wantErr: true,
 		},
 	}
 	neverMatch := labels.Set{}
@@ -49,6 +64,9 @@ func Test_readIndexFile(t *testing.T) {
 			got, err := ReadPluginFile(tt.args.indexFilePath)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("readIndexFile() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if err != nil {
 				return
 			}
 			if got.Name != "foo" && got.Kind != "Plugin" {
@@ -80,7 +98,7 @@ func TestLoadIndexListFromFS(t *testing.T) {
 		{
 			name: "load index folder",
 			args: args{
-				indexdir: "./testdata/testindex",
+				indexdir: filepath.Join(testdataPath(t), "testindex"),
 			},
 		},
 	}
@@ -112,7 +130,7 @@ func TestLoadIndexFileFromFS(t *testing.T) {
 		{
 			name: "load single index file",
 			args: args{
-				indexdir:   "./testdata/testindex",
+				indexdir:   filepath.Join(testdataPath(t), "testindex"),
 				pluginName: "foo",
 			},
 			wantErr: false,
@@ -120,8 +138,16 @@ func TestLoadIndexFileFromFS(t *testing.T) {
 		{
 			name: "plugin file not found",
 			args: args{
-				indexdir:   "./testdata",
+				indexdir:   filepath.FromSlash("./testdata"),
 				pluginName: "not",
+			},
+			wantErr: true,
+		},
+		{
+			name: "plugin file bad name",
+			args: args{
+				indexdir:   filepath.FromSlash("./testdata"),
+				pluginName: "wrongname",
 			},
 			wantErr: true,
 		},
@@ -135,4 +161,52 @@ func TestLoadIndexFileFromFS(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_isSafepluginName(t *testing.T) {
+	type args struct {
+		name string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "secure name",
+			args: args{
+				name: "foo-bar",
+			},
+			want: true,
+		},
+		{
+			name: "insecure path name",
+			args: args{
+				name: "/foo-bar",
+			},
+			want: false,
+		},
+		{
+			name: "relative name",
+			args: args{
+				name: "..foo-bar",
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsSafepluginName(tt.args.name); got != tt.want {
+				t.Errorf("IsSafepluginName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func testdataPath(t *testing.T) string {
+	pwd, err := filepath.Abs(".")
+	if err != nil {
+		t.Fatal(err)
+	}
+	return filepath.Join(pwd, "testdata")
 }

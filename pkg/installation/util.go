@@ -51,7 +51,7 @@ func matchPlatformToSystemEnvs(i index.Plugin, os, arch string) (index.Platform,
 }
 
 func findInstalledPluginVersion(installPath, pluginname string) (name string, installed bool, err error) {
-	if !isSafePluginName(pluginname) {
+	if !indexscanner.IsSafePluginName(pluginname) {
 		return "", false, fmt.Errorf("the plugin name %q is not allowed", pluginname)
 	}
 	fis, err := ioutil.ReadDir(filepath.Join(installPath, pluginname))
@@ -68,8 +68,6 @@ func findInstalledPluginVersion(installPath, pluginname string) (name string, in
 	return "", false, nil
 }
 
-func isSafePluginName(name string) bool {
-	return !strings.ContainsAny(name, string([]rune{filepath.Separator, filepath.ListSeparator, '.'}))
 }
 func getPluginVersion(p index.Platform, forceHEAD bool) (version, uri string, err error) {
 	if (forceHEAD && p.Head != "") || (p.Head != "" && p.Sha256 == "" && p.URI == "") {

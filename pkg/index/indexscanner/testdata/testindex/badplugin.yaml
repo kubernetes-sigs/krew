@@ -1,0 +1,6 @@
+apiVersion: plugin.krew.app/v1alpha1
+kind: Plugin
+metadata:
+  name: badplugin
+BADKEYFIELD: {} # Unknown key should throw error.
+

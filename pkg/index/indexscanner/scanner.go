@@ -15,6 +15,8 @@
 package indexscanner
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -22,8 +24,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/golang/glog"
 	"github.com/google/krew/pkg/index"
+
+	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/yaml"
 )
 
@@ -41,21 +44,21 @@ func LoadIndexListFromFS(indexdir string) (index.IndexList, error) {
 	}
 
 	for _, f := range files {
-		if f.IsDir() || !(strings.HasSuffix(f.Name(), ".yaml") || strings.HasSuffix(f.Name(), ".json")) {
+		if f.IsDir() {
 			continue
 		}
 
-		fpath, err := filepath.EvalSymlinks(filepath.Join(indexdir, f.Name()))
+		pluginName := strings.TrimSuffix(f.Name(), filepath.Ext(f.Name()))
+		// TODO(lbb): Use go routines to speed up slow FS operations.
+		p, err := LoadPluginFileFromFS(indexdir, pluginName)
 		if err != nil {
-			return index.IndexList{}, err
-		}
-		index, err := ReadPluginFile(fpath)
-		if err != nil {
-			glog.Errorf("skip index file %s err: %v", fpath, err)
+			// Index loading shouldn't fail because of one plugin.
+			// Show error instead.
+			glog.Errorf("failed to load file %q, err: %v", pluginName, err)
 			continue
 		}
 
-		indexList.Items = append(indexList.Items, index)
+		indexList.Items = append(indexList.Items, p)
 	}
 
 	return indexList, nil
@@ -63,24 +66,21 @@ func LoadIndexListFromFS(indexdir string) (index.IndexList, error) {
 
 // LoadPluginFileFromFS loads a plugins index file by its name.
 func LoadPluginFileFromFS(indexdir, pluginName string) (index.Plugin, error) {
+	if !IsSafepluginName(pluginName) {
+		return index.Plugin{}, fmt.Errorf("plugin name %q not allowed", pluginName)
+	}
 	indexdir, err := filepath.EvalSymlinks(indexdir)
 	if err != nil {
 		return index.Plugin{}, err
 	}
-
-	files, err := ioutil.ReadDir(indexdir)
+	p, err := ReadPluginFile(filepath.Join(indexdir, pluginName+".yaml"))
 	if err != nil {
-		return index.Plugin{}, fmt.Errorf("failed to open dir %s, err: %v", indexdir, err)
+		return index.Plugin{}, fmt.Errorf("failed to read the plugin file, err: %v", err)
 	}
-
-	for _, f := range files {
-		if f.IsDir() || !(f.Name() == pluginName+".yaml" || f.Name() == pluginName+".json") {
-			continue
-		}
-		fpath := filepath.Join(indexdir, f.Name())
-		return ReadPluginFile(fpath)
+	if p.Name != pluginName {
+		return index.Plugin{}, fmt.Errorf("can't accept plugin with different plugin name, requested name=%q, loaded name=%q", pluginName, p.Name)
 	}
-	return index.Plugin{}, fmt.Errorf("could not find the plugin %q", pluginName)
+	return p, nil
 }
 
 // ReadPluginFile loads a file from the FS
@@ -96,5 +96,20 @@ func ReadPluginFile(indexFilePath string) (index.Plugin, error) {
 // DecodePluginFile tries to decodes a plugin manifest from r.
 func DecodePluginFile(r io.Reader) (index.Plugin, error) {
 	var plugin index.Plugin
-	return plugin, yaml.NewYAMLOrJSONDecoder(r, 1024).Decode(&plugin)
+	raw, err := ioutil.ReadAll(r)
+	if err != nil {
+		return plugin, err
+	}
+	jsonRaw, err := yaml.ToJSON(raw)
+	if err != nil {
+		return plugin, err
+	}
+	decoder := json.NewDecoder(bytes.NewReader(jsonRaw))
+	decoder.DisallowUnknownFields()
+	return plugin, decoder.Decode(&plugin)
+}
+
+// IsSafepluginName checks if the plugin Name is save to use.
+func IsSafepluginName(name string) bool {
+	return !strings.ContainsAny(name, string([]rune{filepath.Separator, filepath.ListSeparator, '.'}))
 }

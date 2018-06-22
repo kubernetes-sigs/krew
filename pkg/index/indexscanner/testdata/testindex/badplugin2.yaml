@@ -1,4 +1,8 @@
 apiVersion: plugin.krew.app/v1alpha1
 kind: Plugin
 metadata:
-  name: notyaml-plugin
+  name: badplugin
+spec:
+  platforms:
+  - BADKEYFIELD: {}
+

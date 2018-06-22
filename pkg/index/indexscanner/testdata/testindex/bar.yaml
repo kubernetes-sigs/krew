@@ -1,38 +1,4 @@
 apiVersion: plugin.krew.app/v1alpha1
 kind: Plugin
 metadata:
-  name: bar # This must also be the top level command of the plugin
-spec:
-  platforms:
-  - head: https://github.com/barbaz/foo/archive/master.tar.gz
-    # This is used during installation. It uses file Globs to copy required files.
-    files:
-    - from: "/posix/*"
-    selector: # A regular Kubernetes label selector
-      matchExpressions:
-      - {key: os, operator: In, values: [macos, linux]}
-  - uri: https://github.com/barbaz/foo/archive/windows-v0.5.0.tar.gz
-    sha256: 29C9C411AF879AB85049344B81B8E8A9FBC1D657D493694E2783A2D0DB240775
-    files: 
-    - from: "/win/*"
-    - from: "/win/utils"
-      to: "/utils"
-    selector:
-      matchLabels:
-        os: "windows"
-  # Version does not follow any conventions and is not functional.
-  version: "v0.5.0"
-  intro: Short description of foo!
-  description: |
-    This is a long description
-    it will be shown to elaborate
-    The plugins purpose. It also helps
-    to search for keywords.
-  caveats: |
-    This plugin needs the following programs:
-    * fzf
-    * jq
-    
-    For a better user experience:
-      export $TERM=vt220
-
+  name: bar

@@ -1,4 +1,4 @@
 apiVersion: plugin.krew.app/v1alpha1
 kind: Plugin
 metadata:
-  name: notyaml-plugin
+  name: mismatchedname
