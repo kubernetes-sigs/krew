@@ -15,7 +15,6 @@
 package plugin
 
 import (
-	"path/filepath"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -82,34 +81,40 @@ type Flag struct {
 // traversPluginEntryPoints traverses a cobra command from it's root to generate
 // plugin.yaml file as entry points for kubectl. It is assumed that the
 // injected command "krew generate" is.
-func traversPluginEntryPoints(cmd *cobra.Command) (Plugin, []Plugin) {
-	plugin := convertToPlugin(cmd)
-	return plugin, convertPluginToPlugins(plugin)
+func traversPluginEntryPoints(cmd *cobra.Command, forWindows bool) (Plugin, []Plugin) {
+	commandSuffix := ""
+	pathSeparator := "/"
+	if forWindows {
+		commandSuffix = ".exe"
+		pathSeparator = "\\"
+	}
+	plugin := convertToPlugin(cmd, pathSeparator, commandSuffix)
+	return plugin, convertPluginToPlugins(plugin, pathSeparator)
 }
 
-func convertPluginToPlugins(root Plugin) []Plugin {
+func convertPluginToPlugins(root Plugin, pathSeparator string) []Plugin {
 	var plugins []Plugin
 	for _, p := range root.Tree {
 		if p.Name == "help" || p.Name == "version" {
 			continue
 		}
 		p.Flags = append(p.Flags, root.Flags...)
-		p.Command = filepath.Join("..", "..", p.Command)
+		p.Command = strings.Join([]string{"..", "..", p.Command[2:]}, pathSeparator)
 		p.ShortDesc = "[krew] " + p.ShortDesc
 		plugins = append(plugins, p)
 	}
 	return plugins
 }
 
-func convertToPlugin(cmd *cobra.Command) Plugin {
+func convertToPlugin(cmd *cobra.Command, pathSeparator, commandSuffix string) Plugin {
 	p := Plugin{
 		Name:      strings.Split(cmd.Use, " ")[0],
 		Use:       cmd.Use,
 		ShortDesc: cmd.Short,
 		LongDesc:  cmd.Long,
-		Command:   strings.Join([]string{".", cmd.CommandPath()}, string(filepath.Separator)),
 		Example:   cmd.Example,
 	}
+	p.Command = strings.Replace(strings.Join([]string{".", cmd.CommandPath()}, pathSeparator), "krew", "krew"+commandSuffix, 1)
 	// The plugin won't validate if empty
 	if p.ShortDesc == "" {
 		p.ShortDesc = " "
@@ -124,7 +129,7 @@ func convertToPlugin(cmd *cobra.Command) Plugin {
 	for _, subCmd := range cmd.Commands() {
 		// Skip the injected generator command
 		if !subCmd.Hidden && subCmd.CommandPath() != "krew generate" {
-			p.Tree = append(p.Tree, convertToPlugin(subCmd))
+			p.Tree = append(p.Tree, convertToPlugin(subCmd, pathSeparator, commandSuffix))
 		}
 	}
 

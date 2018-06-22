@@ -17,8 +17,9 @@ package plugin
 import (
 	"fmt"
 	"io/ioutil"
-	"os"
 	"path/filepath"
+
+	"os"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
@@ -27,28 +28,30 @@ import (
 
 // NewGenerateCmd builds a command that generates plugin.yaml files.
 func NewGenerateCmd() *cobra.Command {
-	return &cobra.Command{
+	var isWindows *bool
+	var out *string
+	genCmd := &cobra.Command{
 		Use:   "generate",
 		Short: "Generate a plugin manifest for krew",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			krewCommand, topCommands := traversPluginEntryPoints(cmd.Root())
+			krewCommand, topCommands := traversPluginEntryPoints(cmd.Root(), *isWindows)
 			b, err := yaml.Marshal(krewCommand)
 			if err != nil {
 				return fmt.Errorf("failed to marshal root plugin, err: %v", err)
 			}
 			glog.Infof("Creating command \"kubectl plugin krew\" under path \"plugin.yaml\"")
-			if err = ioutil.WriteFile("plugin.yaml", b, 0644); err != nil {
+			if err = ioutil.WriteFile(filepath.Join(*out, "plugin.yaml"), b, 0644); err != nil {
 				return fmt.Errorf("failed to write \"plugin.yaml\", err: %v", err)
 			}
 			for _, command := range topCommands {
-				if err = os.MkdirAll(filepath.Join("commands", command.Name), 0755); err != nil {
+				if err = os.MkdirAll(filepath.Join(*out, "commands", command.Name), 0755); err != nil {
 					return fmt.Errorf("failed to create commands dir, err: %v", err)
 				}
 				b, err := yaml.Marshal(command)
 				if err != nil {
 					return fmt.Errorf("failed to marshal root plugin with name %q, err: %v", command.Name, err)
 				}
-				pluginFilePath := filepath.Join("commands", command.Name, "plugin.yaml")
+				pluginFilePath := filepath.Join(*out, "commands", command.Name, "plugin.yaml")
 				glog.Infof("Creating command \"kubectl plugin %s\" under path %q", command.Name, pluginFilePath)
 				if ioutil.WriteFile(pluginFilePath, b, 0644); err != nil {
 					return fmt.Errorf("failed to write plugin %q, err: %v", pluginFilePath, err)
@@ -57,4 +60,7 @@ func NewGenerateCmd() *cobra.Command {
 			return nil
 		},
 	}
+	out = genCmd.Flags().StringP("output", "o", ".", "Specify the output directory")
+	isWindows = genCmd.Flags().Bool("windows", false, "Set for windows target")
+	return genCmd
 }
