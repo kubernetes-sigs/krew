@@ -52,6 +52,21 @@ func Test_moveToInstallAtomic(t *testing.T) {
 				to:   filepath.Join(testdataPath(t), "testdir_B", "notsecret"),
 			}},
 			wantErr: false,
+		}, {
+			name: "rename move",
+			args: args{
+				fromDir: filepath.Join(testdataPath(t), "testdir_A"),
+				toDir:   filepath.Join(testdataPath(t), "testdir_B"),
+				fo: index.FileOperation{
+					From: ".secret",
+					To:   "foo",
+				},
+			},
+			want: []move{{
+				from: filepath.Join(testdataPath(t), "testdir_A", ".secret"),
+				to:   filepath.Join(testdataPath(t), "testdir_B", "foo"),
+			}},
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
@@ -63,6 +78,93 @@ func Test_moveToInstallAtomic(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("moveTargets() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_getDirectMove(t *testing.T) {
+	type args struct {
+		fromDir string
+		toDir   string
+		fo      index.FileOperation
+	}
+	tests := []struct {
+		name      string
+		args      args
+		want      move
+		wantFound bool
+		wantErr   bool
+	}{
+		{
+			name: "do detect single move",
+			args: args{
+				fromDir: filepath.Join(testdataPath(t), "testdir_A"),
+				toDir:   filepath.Join(testdataPath(t), "testdir_B"),
+				fo: index.FileOperation{
+					From: ".secret",
+					To:   "foo",
+				},
+			},
+			want: move{
+				from: filepath.Join(testdataPath(t), "testdir_A", ".secret"),
+				to:   filepath.Join(testdataPath(t), "testdir_B", "foo"),
+			},
+			wantFound: true,
+		}, {
+			name: "don't detect single move",
+			args: args{
+				fromDir: filepath.Join(testdataPath(t), "testdir_A"),
+				toDir:   filepath.Join(testdataPath(t), "testdir_B"),
+				fo: index.FileOperation{
+					From: "*",
+					To:   "foo",
+				},
+			},
+			want:      move{},
+			wantFound: false,
+		}, {
+			name: "do move and default",
+			args: args{
+				fromDir: filepath.Join(testdataPath(t), "testdir_A"),
+				toDir:   filepath.Join(testdataPath(t), "testdir_B"),
+				fo: index.FileOperation{
+					From: ".secret",
+					To:   "",
+				},
+			},
+			want: move{
+				from: filepath.Join(testdataPath(t), "testdir_A", ".secret"),
+				to:   filepath.Join(testdataPath(t), "testdir_B", ".secret"),
+			},
+			wantFound: true,
+		}, {
+			name: "don't move bad path",
+			args: args{
+				fromDir: filepath.Join(testdataPath(t), "testdir_A"),
+				toDir:   filepath.Join(testdataPath(t), "testdir_B"),
+				fo: index.FileOperation{
+					From: "../../",
+					To:   ".",
+				},
+			},
+			want:      move{},
+			wantFound: false,
+			wantErr:   true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1, err := getDirectMove(tt.args.fromDir, tt.args.toDir, tt.args.fo)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("getDirectMove() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getDirectMove() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.wantFound {
+				t.Errorf("getDirectMove() got1 = %v, want %v", got1, tt.wantFound)
 			}
 		})
 	}
