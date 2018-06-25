@@ -80,3 +80,70 @@ func TestIsSubPathExtending(t *testing.T) {
 		})
 	}
 }
+
+func TestReplaceBase(t *testing.T) {
+	type args struct {
+		path        string
+		old         string
+		replacement string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "test replace",
+			args: args{
+				path:        filepath.FromSlash("a/b/c"),
+				old:         filepath.FromSlash("a"),
+				replacement: filepath.FromSlash("d"),
+			},
+			want:    filepath.FromSlash("d/b/c"),
+			wantErr: false,
+		},
+		{
+			name: "test can't replace",
+			args: args{
+				path:        filepath.FromSlash("a/b/c"),
+				old:         filepath.FromSlash("z"),
+				replacement: filepath.FromSlash("d"),
+			},
+			want:    "",
+			wantErr: true,
+		},
+		{
+			name: "oldPath isn't matching with substring check",
+			args: args{
+				path:        filepath.FromSlash("a/bbb"),
+				old:         filepath.FromSlash("a/b"),
+				replacement: filepath.FromSlash("d"),
+			},
+			want:    "",
+			wantErr: true,
+		},
+		{
+			name: "multiple segments replace",
+			args: args{
+				path:        filepath.FromSlash("c/c/n/a"),
+				old:         filepath.FromSlash("c/c"),
+				replacement: filepath.FromSlash("b/a/n/a"),
+			},
+			want:    filepath.FromSlash("b/a/n/a/n/a"),
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ReplaceBase(tt.args.path, tt.args.old, tt.args.replacement)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ReplaceBase() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("ReplaceBase() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

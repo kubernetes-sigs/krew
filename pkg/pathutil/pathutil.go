@@ -15,6 +15,7 @@
 package pathutil
 
 import (
+	"fmt"
 	"path/filepath"
 	"strings"
 )
@@ -38,4 +39,13 @@ func IsSubPath(subPath, path string) ([]string, bool) {
 	}
 
 	return extendingPieces[len(basePieces):], true
+}
+
+// ReplaceBase will return a replacement path with replacement as a base of the path instead of the old base. a/b/c, a, d -> d/b/c
+func ReplaceBase(path, old, replacement string) (string, error) {
+	extendingPath, ok := IsSubPath(old, path)
+	if !ok {
+		return "", fmt.Errorf("can't replace %q in %q, it is not a subpath", old, path)
+	}
+	return filepath.Join(replacement, filepath.Join(extendingPath...)), nil
 }
