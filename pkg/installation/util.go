@@ -97,7 +97,7 @@ func containsPluginDescriptors(path string) (bool, error) {
 
 func getPluginVersion(p index.Platform, forceHEAD bool) (version, uri string, err error) {
 	if (forceHEAD && p.Head != "") || (p.Head != "" && p.Sha256 == "" && p.URI == "") {
-		return "HEAD", p.Head, nil
+		return headVersion, p.Head, nil
 	}
 	if forceHEAD && p.Head == "" {
 		return "", "", fmt.Errorf("can't force HEAD, with no HEAD specified")

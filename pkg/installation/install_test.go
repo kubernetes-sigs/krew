@@ -37,8 +37,8 @@ func Test_moveTargets(t *testing.T) {
 		{
 			name: "read testdir",
 			args: args{
-				fromDir: "./testdata/testdir_A",
-				toDir:   "./testdata/testdir_B",
+				fromDir: filepath.Join(testdataPath(t), "testdir_A"),
+				toDir:   filepath.Join(testdataPath(t), "testdir_B"),
 				fo: index.FileOperation{
 					From: "*",
 					To:   ".",

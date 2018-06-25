@@ -25,15 +25,30 @@ import (
 	"github.com/google/krew/pkg/index"
 )
 
+var (
+	IsAlreadyInstalledErr = fmt.Errorf("can't install, the newest version is already installed")
+	IsNotInstalledErr     = fmt.Errorf("plugin is not installed")
+	IsAlreadyUpgradedErr  = fmt.Errorf("can't upgrade, the newest version is already installed")
+)
+
+const (
+	headVersion    = "HEAD"
+	headOldVersion = "HEAD-OLD"
+	krewPluginName = "krew"
+)
+
 func downloadAndMove(version, uri string, fos []index.FileOperation, downloadPath, installPath string) (err error) {
+	glog.V(3).Infof("Creating download dir %q", downloadPath)
 	if err = os.MkdirAll(downloadPath, 0755); err != nil {
 		return fmt.Errorf("could not create download path %q, err: %v", downloadPath, err)
 	}
 	defer os.RemoveAll(downloadPath)
 
-	if version == "HEAD" {
+	if version == headVersion {
+		glog.V(1).Infof("Getting latest version from HEAD")
 		err = download.GetInsecure(uri, downloadPath, download.HTTPFetcher{})
 	} else {
+		glog.V(1).Infof("Getting sha256 (%s) signed version", version)
 		err = download.GetWithSha256(uri, downloadPath, version, download.HTTPFetcher{})
 	}
 	if err != nil {
@@ -44,66 +59,39 @@ func downloadAndMove(version, uri string, fos []index.FileOperation, downloadPat
 }
 
 // Install will download and install a plugin. The operation tries
-// to not get the plugin dir in a bad satate if it failes during the process.
-func Install(p environment.KrewPaths, index index.Plugin, forceHEAD bool) error {
-	_, ok, err := findInstalledPluginVersion(p.Install, index.Name)
+// to not get the plugin dir in a bad state if it fails during the process.
+func Install(p environment.KrewPaths, plugin index.Plugin, forceHEAD bool) error {
+	glog.V(2).Infof("Looking for installed versions")
+	_, ok, err := findInstalledPluginVersion(p.Install, plugin.Name)
 	if err != nil {
 		return err
 	}
 	if ok {
-		return fmt.Errorf("can't install plugin %q, it is already installed", index.Name)
+		return IsAlreadyInstalledErr
 	}
-	version, uri, fos, err := getDownloadTarget(index, forceHEAD)
+
+	glog.V(1).Infof("Finding download target for plugin %s", plugin.Name)
+	version, uri, fos, err := getDownloadTarget(plugin, forceHEAD)
 	if err != nil {
 		return err
 	}
-	return downloadAndMove(version, uri, fos, filepath.Join(p.Download, index.Name), filepath.Join(p.Install, index.Name))
+	return downloadAndMove(version, uri, fos, filepath.Join(p.Download, plugin.Name), filepath.Join(p.Install, plugin.Name))
 }
 
-// Upgrade will reinstall and delete the old plugin. The operation tries
-// to not get the plugin dir in a bad satate if it failes during the process.
-func Upgrade(p environment.KrewPaths, index index.Plugin) error {
-	version, ok, err := findInstalledPluginVersion(p.Install, index.Name)
-	if err != nil {
-		return fmt.Errorf("could not detect installed plugin version, err: %v", err)
-	}
-	if !ok {
-		return fmt.Errorf("can't upgrade plugin %q, it is not installed", index.Name)
-	}
-	if version == "HEAD" {
-		oldHEADPath, newHEADPath := filepath.Join(p.Install, index.Name, "HEAD"), filepath.Join(p.Install, index.Name, "HEAD-OLD")
-		glog.V(2).Infof("Move old HEAD from: %q -> %q", oldHEADPath, newHEADPath)
-		if err = os.Rename(oldHEADPath, newHEADPath); err != nil {
-			return fmt.Errorf("failed to rename HEAD -> HEAD-OLD, from %q to %q, err: %v", oldHEADPath, newHEADPath, err)
-		}
-		version = "HEAD-OLD"
-	}
-
-	// Re-Install
-	newVersion, uri, fos, err := getDownloadTarget(index, version == "HEAD-OLD")
-	if version == newVersion {
-		return fmt.Errorf("can't upgrade to version %q as it is the current version", newVersion)
-	}
-	if err != nil {
-		return err
-	}
-	if err = downloadAndMove(newVersion, uri, fos, filepath.Join(p.Download, index.Name), filepath.Join(p.Install, index.Name)); err != nil {
-		return err
-	}
-
-	// Cleanup
-	return os.RemoveAll(filepath.Join(p.Install, index.Name, version))
-}
-
-// Remove will remove a plugin without bringing the plugin dir in a
-// bad state.
+// Remove will remove a plugin.
 func Remove(p environment.KrewPaths, name string) error {
-	_, installed, err := findInstalledPluginVersion(p.Install, name)
+	if name == krewPluginName {
+		return fmt.Errorf("removing krew is not allowed through krew, see docs for help")
+	}
+	glog.V(3).Infof("Finding installed version to delete")
+	version, installed, err := findInstalledPluginVersion(p.Install, name)
 	if err != nil {
 		return fmt.Errorf("can't remove plugin, err: %v", err)
 	}
 	if !installed {
-		return fmt.Errorf("can't remove plugin %q, it is not installed", name)
+		return IsNotInstalledErr
 	}
+	glog.V(1).Infof("Deleting plugin version %s", version)
+	glog.V(3).Infof("Deleting path %q", filepath.Join(p.Install, name))
 	return os.RemoveAll(filepath.Join(p.Install, name))
 }
