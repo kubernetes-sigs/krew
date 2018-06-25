@@ -336,6 +336,55 @@ func Test_findInstalledPluginVersion(t *testing.T) {
 	}
 }
 
+func Test_containsPluginDescriptors(t *testing.T) {
+	type args struct {
+		path string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    bool
+		wantErr bool
+	}{
+		{
+			name: "test recursive contains plugin descriptor",
+			args: args{
+				path: filepath.Join(testdataPath(t), "index", "foo"),
+			},
+			want:    true,
+			wantErr: false,
+		},
+		{
+			name: "test directly contains plugin descriptor",
+			args: args{
+				path: filepath.Join(testdataPath(t), "index", "foo", "deadbeef"),
+			},
+			want:    true,
+			wantErr: false,
+		},
+		{
+			name: "test no plugin descriptor",
+			args: args{
+				path: filepath.Join(testdataPath(t), "index", "foo", "AAAnotplugin"),
+			},
+			want:    false,
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := containsPluginDescriptors(tt.args.path)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("containsPluginDescriptors() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("containsPluginDescriptors() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func testdataPath(t *testing.T) string {
 	pwd, err := filepath.Abs(".")
 	if err != nil {
