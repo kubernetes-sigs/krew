@@ -2,3 +2,13 @@ apiVersion: plugin.krew.app/v1alpha1
 kind: Plugin
 metadata:
   name: bar
+spec:
+  platforms:
+  - files:
+    - from: "*"
+    head: https://example.com
+  - files:
+    - from: "*"
+    uri: https://example.com
+    sha256: alsoSet
+  intro: "exists"

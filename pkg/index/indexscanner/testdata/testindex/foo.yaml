@@ -4,11 +4,17 @@ metadata:
   name: foo
 spec:
   platforms:
-  - selector:
+  - files:
+    - from: "*"
+    head: https://example.com
+    selector:
       matchExpressions:
       - {key: os, operator: In, values: [macos, linux]}
-  - selector:
+  - files:
+    - from: "*"
+    head: https://example.com
+    selector:
       matchLabels:
         os: "windows"
-
+  intro: "exists"
 

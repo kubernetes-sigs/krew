@@ -89,28 +89,28 @@ func Test_readIndexFile(t *testing.T) {
 
 func TestLoadIndexListFromFS(t *testing.T) {
 	type args struct {
-		indexdir string
+		indexDir string
 	}
 	tests := []struct {
 		name string
 		args args
 	}{
 		{
-			name: "load index folder",
+			name: "load index dir",
 			args: args{
-				indexdir: filepath.Join(testdataPath(t), "testindex"),
+				indexDir: filepath.Join(testdataPath(t), "testindex"),
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := LoadIndexListFromFS(tt.args.indexdir)
+			got, err := LoadPluginListFromFS(tt.args.indexDir)
 			if err != nil {
-				t.Errorf("LoadIndexListFromFS() error = %v)", err)
+				t.Errorf("LoadPluginListFromFS() error = %v)", err)
 				return
 			}
 			if len(got.Items) != 2 {
-				t.Errorf("LoadIndexListFromFS() didn't read enough index files, got %d)", len(got.Items))
+				t.Errorf("LoadPluginListFromFS() didn't read enough index files, got %d)", len(got.Items))
 				return
 			}
 		})
@@ -119,7 +119,7 @@ func TestLoadIndexListFromFS(t *testing.T) {
 
 func TestLoadIndexFileFromFS(t *testing.T) {
 	type args struct {
-		indexdir   string
+		indexDir   string
 		pluginName string
 	}
 	tests := []struct {
@@ -130,7 +130,7 @@ func TestLoadIndexFileFromFS(t *testing.T) {
 		{
 			name: "load single index file",
 			args: args{
-				indexdir:   filepath.Join(testdataPath(t), "testindex"),
+				indexDir:   filepath.Join(testdataPath(t), "testindex"),
 				pluginName: "foo",
 			},
 			wantErr: false,
@@ -138,7 +138,7 @@ func TestLoadIndexFileFromFS(t *testing.T) {
 		{
 			name: "plugin file not found",
 			args: args{
-				indexdir:   filepath.FromSlash("./testdata"),
+				indexDir:   filepath.FromSlash("./testdata"),
 				pluginName: "not",
 			},
 			wantErr: true,
@@ -146,7 +146,7 @@ func TestLoadIndexFileFromFS(t *testing.T) {
 		{
 			name: "plugin file bad name",
 			args: args{
-				indexdir:   filepath.FromSlash("./testdata"),
+				indexDir:   filepath.FromSlash("./testdata"),
 				pluginName: "wrongname",
 			},
 			wantErr: true,
@@ -154,50 +154,10 @@ func TestLoadIndexFileFromFS(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := LoadPluginFileFromFS(tt.args.indexdir, tt.args.pluginName)
+			got, err := LoadPluginFileFromFS(tt.args.indexDir, tt.args.pluginName)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("LoadIndexFileFromFS() got = %##v,error = %v, wantErr %v", got, err, tt.wantErr)
 				return
-			}
-		})
-	}
-}
-
-func Test_isSafepluginName(t *testing.T) {
-	type args struct {
-		name string
-	}
-	tests := []struct {
-		name string
-		args args
-		want bool
-	}{
-		{
-			name: "secure name",
-			args: args{
-				name: "foo-bar",
-			},
-			want: true,
-		},
-		{
-			name: "insecure path name",
-			args: args{
-				name: "/foo-bar",
-			},
-			want: false,
-		},
-		{
-			name: "relative name",
-			args: args{
-				name: "..foo-bar",
-			},
-			want: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := IsSafepluginName(tt.args.name); got != tt.want {
-				t.Errorf("IsSafepluginName() = %v, want %v", got, tt.want)
 			}
 		})
 	}
