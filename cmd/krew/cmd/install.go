@@ -15,83 +15,129 @@
 package cmd
 
 import (
+	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
+
+	"github.com/google/krew/pkg/index/indexscanner"
+	"github.com/google/krew/pkg/installation"
 
 	"github.com/golang/glog"
 	"github.com/google/krew/pkg/index"
-	"github.com/google/krew/pkg/index/indexscanner"
-	"github.com/google/krew/pkg/installation"
+	"github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	var (
-		forceHEAD *bool
-		file      *string
-	)
+	var forceHEAD *bool
+	var manifest *string
 
 	// installCmd represents the install command
-	var installCmd = &cobra.Command{
+	installCmd := &cobra.Command{
 		Use:   "install",
 		Short: "Install a new plugin",
 		Long: `Install a new plugin.
 All plugins will be downloaded and made available to: "kubectl plugin <name>"`,
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var pluginNames = make([]string, len(args))
+			copy(pluginNames, args)
+
+			if (len(pluginNames) != 0 || *manifest != "") && !(isatty.IsTerminal(os.Stdin.Fd()) || isatty.IsCygwinTerminal(os.Stdin.Fd())) {
+				fmt.Fprintln(os.Stderr, "Detected Stdin, but discarding it because of --source or args")
+			}
+
+			if len(pluginNames) == 0 && *manifest == "" && !(isatty.IsTerminal(os.Stdin.Fd()) || isatty.IsCygwinTerminal(os.Stdin.Fd())) {
+				fmt.Fprintln(os.Stderr, "Read from standard input")
+				scanner := bufio.NewScanner(os.Stdin)
+				scanner.Split(bufio.ScanLines)
+				for scanner.Scan() {
+					if name := scanner.Text(); name != "" {
+						pluginNames = append(pluginNames, name)
+					}
+				}
+			}
+
+			if len(pluginNames) != 0 && *manifest != "" {
+				return fmt.Errorf("must specify either specify stdin or source or args")
+			}
+
 			var install []index.Plugin
-			// From args
-			for _, arg := range args {
-				plugin, err := indexscanner.LoadPluginFileFromFS(paths.Index, arg)
+			for _, name := range pluginNames {
+				plugin, err := indexscanner.LoadPluginFileFromFS(paths.Index, name)
 				if err != nil {
-					glog.Fatal(err)
+					return fmt.Errorf("failed to load plugin %s from index, err: %v", name, err)
 				}
 				install = append(install, plugin)
 			}
 
-			// Check if is stdin convention
-			var f *os.File
-			if *file == "-" {
-				f = os.Stdin
-			} else if *file != "" {
-				fi, err := os.Open(*file)
+			if *manifest != "" {
+				file, err := getFileFromArg(*manifest)
 				if err != nil {
-					glog.Fatal(fmt.Errorf("failed to open provided file, err %v", err))
+					return fmt.Errorf("failed to get the file %q, err: %v", *manifest, err)
 				}
-				defer fi.Close()
-				f = fi
-			}
-			if f != nil {
-				plugin, err := indexscanner.DecodePluginFile(f)
+				plugin, err := indexscanner.ReadPluginFile(file)
 				if err != nil {
-					glog.Fatal(fmt.Errorf("failed to decode provided file, err %v", err))
+					return err
+				}
+				if err := plugin.Validate(plugin.Name); err != nil {
+					return fmt.Errorf("failed to validate the plugin file, err %v", err)
 				}
 				install = append(install, plugin)
 			}
 
 			if len(install) > 1 && *forceHEAD {
-				glog.Fatalln(fmt.Errorf("Cannot use HEAD option with multiple plugins"))
+				return fmt.Errorf("can't use HEAD option with multiple plugins")
 			}
-			// Print plugin names
+
+			if len(install) == 0 {
+				return cmd.Help()
+			}
+
+			// Print plugin namesFromFile
 			for _, plugin := range install {
-				glog.Infof("Will install plugin: %s", plugin.Name)
+				fmt.Printf("Will install plugin: %s\n", plugin.Name)
 			}
+
+			var failed []string
 			// Do install
 			for _, plugin := range install {
-				if err := installation.Install(paths, plugin, *forceHEAD); err != nil {
-					glog.Fatalln(err)
+				fmt.Printf("Installing plugin: %s\n", plugin.Name)
+				err := installation.Install(paths, plugin, *forceHEAD)
+				if err == installation.IsAlreadyInstalledErr {
+					glog.Warningf("Skipping plugin %s, it is already installed", plugin.Name)
+					continue
+				}
+				if err != nil {
+					glog.Warningf("failed to install plugin %q, err: %v", plugin.Name, err)
+					failed = append(failed, plugin.Name)
+					continue
+				}
+				if plugin.Spec.Caveats != "" {
+					fmt.Printf("CAVEATS: %s\n", plugin.Spec.Caveats)
 				}
 			}
-		},
-		Args: func(cmd *cobra.Command, args []string) error {
-			if (len(args) == 0 && *file == "") || (len(args) > 0 && *file != "") {
-				return fmt.Errorf("must specify either names or files")
+			if len(failed) > 0 {
+				return fmt.Errorf("failed to instlal some plugins: %+v", failed)
 			}
 			return nil
 		},
-		PreRun: ensureUpdated,
+		PreRunE: ensureUpdated,
 	}
+
 	forceHEAD = installCmd.Flags().Bool("HEAD", false, "Force HEAD if versioned and HEAD installs are possible.")
-	file = installCmd.Flags().StringP("file", "f", "", "File with a list of plugin names to install.")
+	manifest = installCmd.Flags().String("source", "", "(Development-only) specify plugin manifest directly.")
 
 	rootCmd.AddCommand(installCmd)
+}
+
+func getFileFromArg(file string) (string, error) {
+	if filepath.IsAbs(file) {
+		return file, nil
+	}
+	abs, err := filepath.Abs(filepath.Join(os.Getenv("PWD"), file))
+	if err != nil {
+		return "", fmt.Errorf("failed to find absolute filepath, err %v", err)
+	}
+	return abs, nil
 }
