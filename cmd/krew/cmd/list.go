@@ -17,58 +17,64 @@ package cmd
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
-	"path/filepath"
+	"sort"
+	"strings"
 	"text/tabwriter"
 
-	"github.com/golang/glog"
+	"github.com/google/krew/pkg/installation"
+	"github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
 )
 
-// listCmd represents the list command
-var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List all installed plugin names",
-	Long: `List all installed plugin names.
+func init() {
+	// listCmd represents the list command
+	listCmd := &cobra.Command{
+		Use:   "list",
+		Short: "List all installed plugin names",
+		Long: `List all installed plugin names.
 Plugins will be shown as "PLUGIN,VERSION"`,
-	Run: func(cmd *cobra.Command, args []string) {
-		glog.V(4).Infof("Reading installation path %q", paths.Install)
-		plugins, err := ioutil.ReadDir(paths.Install)
-		if err != nil {
-			glog.Fatal(err)
-		}
-		columns := make(map[string]string)
-		for _, p := range plugins {
-			if !p.IsDir() {
-				continue
-			}
-			versions, err := ioutil.ReadDir(filepath.Join(paths.Install, p.Name()))
+		RunE: func(cmd *cobra.Command, args []string) error {
+			plugins, err := installation.ListInstalledPlugins(paths.Install)
 			if err != nil {
-				glog.Fatal(err)
+				return fmt.Errorf("failed to find all installed versions, err %v", err)
 			}
-			for _, v := range versions {
-				if !v.IsDir() {
-					continue
-				}
-				columns[p.Name()] = v.Name()
+			if !(isatty.IsTerminal(os.Stdout.Fd()) || isatty.IsCygwinTerminal(os.Stdout.Fd())) {
+				fmt.Fprintf(os.Stdout, "%s\n", strings.Join(sortedKeys(plugins), "\n"))
+				return nil
 			}
-		}
-		printAlignedColums(os.Stdout, columns)
-	},
-	PreRunE: checkIndex,
+			printAlignedColumns(os.Stdout, "PLUGIN", "VERSION", plugins)
+			return nil
+		},
+		PreRunE: checkIndex,
+	}
+
+	rootCmd.AddCommand(listCmd)
 }
 
-func printAlignedColums(out io.Writer, keyHeader, valueHeader string, columns map[string]string) error {
+func printAlignedColumns(out io.Writer, keyHeader, valueHeader string, columns map[string]string) error {
 	w := tabwriter.NewWriter(out, 0, 0, 1, ' ', 0)
 	fmt.Fprintf(w, "%s\t%s\n", keyHeader, valueHeader)
 	// TODO(lbb): print sorted map, to allow unix parsing or allow -o json flag
-	for name, version := range columns {
-		fmt.Fprintf(w, "%s\t%s\n", name, version)
+	keys := sortedKeys(columns)
+	for _, name := range keys {
+		fmt.Fprintf(w, "%s\t%s\n", name, columns[name])
 	}
 	return w.Flush()
 }
 
-func init() {
-	rootCmd.AddCommand(listCmd)
+func sortedKeys(m map[string]string) []string {
+	keys := stringKeys(m)
+	sort.Strings(keys)
+	return keys
+}
+
+func stringKeys(m map[string]string) []string {
+	var keys = make([]string, len(m))
+	i := 0
+	for k := range m {
+		keys[i] = k
+		i++
+	}
+	return keys
 }
