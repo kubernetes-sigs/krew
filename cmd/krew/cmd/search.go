@@ -16,10 +16,15 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"strings"
+	"text/tabwriter"
 
-	"github.com/golang/glog"
 	"github.com/google/krew/pkg/index/indexscanner"
 
+	"github.com/google/krew/pkg/index"
+	"github.com/google/krew/pkg/installation"
+	"github.com/sahilm/fuzzy"
 	"github.com/spf13/cobra"
 )
 
@@ -30,17 +35,61 @@ var searchCmd = &cobra.Command{
 	Long: `Discover plugins in your local index using fuzzy search.
 Search accepts a list of words as options. Search will weight fuzzy matches
 in (Name,Intro, Description) in descending order.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		// TODO(lbb): Implement real search, don't just list plugin names.
-		index, err := indexscanner.LoadIndexListFromFS(paths.Index)
+	RunE: func(cmd *cobra.Command, args []string) error {
+		plugins, err := indexscanner.LoadPluginListFromFS(paths.Index)
 		if err != nil {
-			glog.Fatal(err)
+			return fmt.Errorf("failed to load the index, err %v", err)
 		}
-		for _, i := range index.Items {
-			fmt.Println(i.Name)
+		names := make([]string, len(plugins.Items))
+		pluginMap := make(map[string]index.Plugin, len(plugins.Items))
+		for i, p := range plugins.Items {
+			names[i] = p.Name
+			pluginMap[p.Name] = p
 		}
+
+		installed, err := installation.ListInstalledPlugins(paths.Install)
+		if err != nil {
+			return fmt.Errorf("failed to load installed plugins, err: %v", err)
+		}
+
+		var matchNames []string
+		if len(args) > 0 {
+			matches := fuzzy.Find(strings.Join(args, ""), names)
+			for _, m := range matches {
+				matchNames = append(matchNames, m.Str)
+			}
+		} else {
+			matchNames = names
+		}
+
+		rowPattern := "%s\t%s\t%s\n"
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
+		fmt.Fprintf(w, rowPattern, "NAME", "DESCRIPTION", "STATUS")
+		for _, name := range matchNames {
+			plugin := pluginMap[name]
+			var status string
+			if _, ok := installed[name]; ok {
+				status = "installed"
+			} else if _, ok, err := installation.GetMatchingPlatform(plugin); err != nil {
+				return fmt.Errorf("failed to get the matching platform for plugin %s, err: %v", name, err)
+			} else if ok {
+				status = "available"
+			} else {
+				status = "unavailable"
+			}
+			fmt.Fprintf(w, rowPattern, name, limitString(plugin.Spec.Intro, 50), status)
+		}
+		w.Flush()
+		return nil
 	},
 	PreRunE: checkIndex,
+}
+
+func limitString(s string, length int) string {
+	if len(s) > length && length > 3 {
+		s = string(s[:length-3]) + "..."
+	}
+	return s
 }
 
 func init() {
