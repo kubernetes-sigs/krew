@@ -33,8 +33,7 @@ var searchCmd = &cobra.Command{
 	Use:   "search",
 	Short: "Discover plugins in your local index using fuzzy search",
 	Long: `Discover plugins in your local index using fuzzy search.
-Search accepts a list of words as options. Search will weight fuzzy matches
-in (Name,Intro, Description) in descending order.`,
+Search accepts a list of words as options.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		plugins, err := indexscanner.LoadPluginListFromFS(paths.Index)
 		if err != nil {

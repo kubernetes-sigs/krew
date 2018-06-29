@@ -15,35 +15,63 @@
 package cmd
 
 import (
-	"github.com/golang/glog"
+	"fmt"
+	"os"
+
 	"github.com/google/krew/pkg/index/indexscanner"
 	"github.com/google/krew/pkg/installation"
+
+	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 )
 
 // upgradeCmd represents the upgrade command
 var upgradeCmd = &cobra.Command{
 	Use:   "upgrade",
-	Short: "Upgrade an installed plugin to a newer version",
-	Long: `Upgrade an installed plugin to a newer version.
+	Short: "Upgrade installed plugins to a newer version",
+	Long: `Upgrade installed plugins to a newer version.
 This will reinstall all plugins that have a newer version in the local index.
 Use "kubectl plugin update" to renew the index. All plugins that rely on HEAD
 will always be installed.
 To only upgrade single plugins provide them as arguments:
 kubectl plugin upgrade foo bar"`,
-	Run: func(cmd *cobra.Command, args []string) {
-		for _, arg := range args {
-			index, err := indexscanner.LoadPluginFileFromFS(paths.Index, arg)
+	RunE: func(cmd *cobra.Command, args []string) error {
+		var ignoreUpgraded bool
+		var pluginNames []string
+		// Upgrade all plugins.
+		if len(args) == 0 {
+			installed, err := installation.ListInstalledPlugins(paths.Install)
 			if err != nil {
-				glog.Fatal(err)
+				return fmt.Errorf("failed to find all installed versions, err: %v", err)
 			}
-			if err = installation.Upgrade(paths, index); err != nil {
-				glog.Fatalln(err)
+			for name := range installed {
+				pluginNames = append(pluginNames, name)
 			}
+			ignoreUpgraded = true
+		} else {
+			pluginNames = args
 		}
+
+		for _, name := range pluginNames {
+			plugin, err := indexscanner.LoadPluginFileFromFS(paths.Index, name)
+			if err != nil {
+				return fmt.Errorf("failed to load the index file for plugin %s, err: %v", plugin.Name, err)
+			}
+
+			glog.V(2).Infof("Upgrading plugin: %s\n", plugin.Name)
+			err = installation.Upgrade(paths, plugin, krewExecutedVersion)
+			if ignoreUpgraded && err == installation.IsAlreadyUpgradedErr {
+				fmt.Fprintf(os.Stderr, "Skipping plugin %s, it is already on the newest version\n", plugin.Name)
+				continue
+			}
+			if err != nil {
+				return fmt.Errorf("failed to upgrade plugin %q, err: %v", plugin.Name, err)
+			}
+			fmt.Fprintf(os.Stderr, "Upgraded plugin: %s\n", plugin.Name)
+		}
+		return nil
 	},
-	PreRunE: checkIndex,
-	Args:    cobra.MinimumNArgs(1),
+	PreRunE: ensureUpdated,
 }
 
 func init() {
