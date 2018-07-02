@@ -107,3 +107,133 @@ func Test_getKubectlPluginsPath(t *testing.T) {
 		})
 	}
 }
+
+func TestIsPlugin(t *testing.T) {
+	type args struct {
+		environ []string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "is plugin",
+			args: args{
+				environ: []string{"KUBECTL_PLUGINS_DESCRIPTOR_NAME=abc"},
+			},
+			want: true,
+		},
+		{
+			name: "is set empty plugin name",
+			args: args{
+				environ: []string{"KUBECTL_PLUGINS_DESCRIPTOR_NAME="},
+			},
+			want: true,
+		},
+		{
+			name: "isnt plugin",
+			args: args{
+				environ: []string{"XXXXXXXX=abc"},
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsPlugin(tt.args.environ); got != tt.want {
+				t.Errorf("IsPlugin() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetExecutedVersion(t *testing.T) {
+	type args struct {
+		paths   KrewPaths
+		cmdArgs []string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		inPath  bool
+		wantErr bool
+	}{
+		{
+			name: "is in krew path",
+			args: args{
+				paths: KrewPaths{
+					Base:     filepath.FromSlash("/plugins/"),
+					Index:    filepath.FromSlash("/plugins/index"),
+					Install:  filepath.FromSlash("/plugins/store"),
+					Download: filepath.FromSlash("/plugins/download"),
+				},
+				cmdArgs: []string{filepath.FromSlash("/plugins/store/krew/deadbeef/krew.exe")},
+			},
+			want:    "deadbeef",
+			inPath:  true,
+			wantErr: false,
+		},
+		{
+			name: "is not in krew path",
+			args: args{
+				paths: KrewPaths{
+					Base:     filepath.FromSlash("/plugins/"),
+					Index:    filepath.FromSlash("/plugins/index"),
+					Install:  filepath.FromSlash("/plugins/store"),
+					Download: filepath.FromSlash("/plugins/download"),
+				},
+				cmdArgs: []string{filepath.FromSlash("/plugins/store/NOTKREW/deadbeef/krew.exe")},
+			},
+			want:    "",
+			inPath:  false,
+			wantErr: false,
+		},
+		{
+			name: "is in longer kreR path",
+			args: args{
+				paths: KrewPaths{
+					Base:     filepath.FromSlash("/plugins/"),
+					Index:    filepath.FromSlash("/plugins/index"),
+					Install:  filepath.FromSlash("/plugins/store"),
+					Download: filepath.FromSlash("/plugins/download"),
+				},
+				cmdArgs: []string{filepath.FromSlash("/plugins/store/krew/deadbeef/foo/krew.exe")},
+			},
+			want:    "deadbeef",
+			inPath:  true,
+			wantErr: false,
+		},
+		{
+			name: "is in smaller krew path",
+			args: args{
+				paths: KrewPaths{
+					Base:     filepath.FromSlash("/plugins/"),
+					Index:    filepath.FromSlash("/plugins/index"),
+					Install:  filepath.FromSlash("/plugins/store"),
+					Download: filepath.FromSlash("/plugins/download"),
+				},
+				cmdArgs: []string{filepath.FromSlash("/krew.exe")},
+			},
+			want:    "",
+			inPath:  false,
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1, err := GetExecutedVersion(tt.args.paths, tt.args.cmdArgs)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetExecutedVersion() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("GetExecutedVersion() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.inPath {
+				t.Errorf("GetExecutedVersion() got1 = %v, want %v", got1, tt.inPath)
+			}
+		})
+	}
+}

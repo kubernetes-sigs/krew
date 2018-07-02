@@ -29,6 +29,7 @@ import (
 )
 
 var paths environment.KrewPaths
+var krewExecutedVersion string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -36,6 +37,9 @@ var rootCmd = &cobra.Command{
 	Short: "krew is the kubectl plugin manager",
 	Long: `krew is the kubectl plugin manager.
 You can invoke krew through kubectl with: "kubectl plugin [krew] option..."`,
+	PersistentPreRun: func(cmd *cobra.Command, _ []string) {
+		bindEnvironmentVariables(viper.GetViper(), cmd)
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -53,8 +57,6 @@ func InjectCommand(c *cobra.Command) {
 
 func init() {
 	cobra.OnInitialize(initConfig)
-	// Add glog flags
-	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 	// Set glog default to stderr
 	flag.Set("logtostderr", "true")
 	// Required by glog
@@ -64,9 +66,28 @@ func init() {
 	if err := ensureDirs(paths.Base, paths.Download, paths.Install); err != nil {
 		glog.Fatal(err)
 	}
+
+	if environment.IsPlugin(os.Environ()) {
+		if krewVersion, ok, err := environment.GetExecutedVersion(paths, os.Args); err != nil {
+			glog.Fatal(fmt.Errorf("failed to find current krew version, err: %v", err))
+		} else if ok {
+			krewExecutedVersion = krewVersion
+		}
+	}
+
+	SetGlogFlags(krewExecutedVersion != "")
 }
 
-func checkIndex(cmd *cobra.Command, _ []string) error {
+// SetGlogFlags will add glog flags to the CLI. This command can be executed multiple times.
+func SetGlogFlags(hidden bool) {
+	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
+	// Add glog flags if not run as a plugin.
+	flag.CommandLine.VisitAll(func(f *flag.Flag) {
+		pflag.Lookup(f.Name).Hidden = hidden
+	})
+}
+
+func checkIndex(_ *cobra.Command, _ []string) error {
 	if ok, err := gitutil.IsGitCloned(paths.Index); err != nil {
 		return err
 	} else if !ok {
@@ -74,6 +95,7 @@ func checkIndex(cmd *cobra.Command, _ []string) error {
 	}
 	return nil
 }
+
 func ensureDirs(paths ...string) error {
 	for _, p := range paths {
 		glog.V(4).Infof("Ensure creating dir: %q", p)
@@ -87,6 +109,4 @@ func ensureDirs(paths ...string) error {
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
 	viper.AutomaticEnv()
-	// Make environment vars kubectl-plugin compatible.
-	bindEnvironmentVariables(viper.GetViper(), rootCmd)
 }

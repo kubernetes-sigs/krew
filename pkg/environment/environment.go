@@ -34,7 +34,7 @@ type KrewPaths struct {
 	// ${Index}/<plugin-name>.yaml
 	Index string
 
-	// Install is the folder where all plugins will be installed to.
+	// Install is the dir where all plugins will be installed to.
 	// ${Install}/<version>/<plugin-content>
 	Install string
 
@@ -92,21 +92,27 @@ func getKubectlPluginsPath(envs []string) string {
 
 // GetExecutedVersion returns the currently executed version. If krew is
 // not executed as an plugin it will return a nil error and an empty string.
-func GetExecutedVersion(paths KrewPaths, cmdArgs []string) (string, error) {
+func GetExecutedVersion(paths KrewPaths, cmdArgs []string) (string, bool, error) {
 	currentBinaryPath, err := filepath.Abs(cmdArgs[0])
 	if err != nil {
-		return "", err
+		return "", false, err
 	}
 
 	pluginsPath, err := filepath.Abs(filepath.Join(paths.Install, "krew"))
 	if err != nil {
-		return "", err
+		return "", false, err
 	}
 
 	elems, ok := pathutil.IsSubPath(pluginsPath, currentBinaryPath)
-	if !ok || len(elems) != 2 {
-		return "", nil
+	if !ok || len(elems) < 2 {
+		return "", false, nil
 	}
 
-	return elems[0], nil
+	return elems[0], true, nil
+}
+
+// IsPlugin checks if the currently executed binary is a plugin.
+func IsPlugin(environ []string) bool {
+	_, ok := parseEnvs(environ)["KUBECTL_PLUGINS_DESCRIPTOR_NAME"]
+	return ok
 }

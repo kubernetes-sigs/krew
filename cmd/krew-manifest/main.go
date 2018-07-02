@@ -27,4 +27,5 @@ func main() {
 
 func init() {
 	cmd.InjectCommand(plugin.NewGenerateCmd())
+	cmd.SetGlogFlags(true)
 }
