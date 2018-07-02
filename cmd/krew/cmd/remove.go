@@ -15,8 +15,12 @@
 package cmd
 
 import (
-	"github.com/golang/glog"
+	"fmt"
+	"os"
+
 	"github.com/google/krew/pkg/installation"
+
+	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 )
 
@@ -26,12 +30,15 @@ var removeCmd = &cobra.Command{
 	Short: "Remove a plugin from the system",
 	Long: `Remove a plugin from the system.
 This will delete all plugin related files.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		for _, arg := range args {
-			if err := installation.Remove(paths, arg); err != nil {
-				glog.Fatalln(err)
+	RunE: func(cmd *cobra.Command, args []string) error {
+		for _, name := range args {
+			glog.V(4).Infof("Going to remove plugin %s\n", name)
+			if err := installation.Remove(paths, name); err != nil {
+				return fmt.Errorf("failed to remove plugin %s, err: %v", name, err)
 			}
+			fmt.Fprintf(os.Stderr, "Removed plugin %s\n", name)
 		}
+		return nil
 	},
 	PreRunE: checkIndex,
 	Args:    cobra.MinimumNArgs(1),

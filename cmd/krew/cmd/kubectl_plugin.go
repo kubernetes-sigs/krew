@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 package cmd
 
 import (
@@ -20,7 +21,7 @@ import (
 )
 
 // bindEnvironmentVariables will allow the cobra command to accept kubectl
-// stled flags. https://kubernetes.io/docs/tasks/extend-kubectl/kubectl-plugins/
+// styled flags. https://kubernetes.io/docs/tasks/extend-kubectl/kubectl-plugins/
 func bindEnvironmentVariables(v *viper.Viper, cmd *cobra.Command) {
 	// set logging option
 	v.BindEnv("v", "KUBECTL_PLUGINS_GLOBAL_FLAG_V")

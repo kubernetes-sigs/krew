@@ -30,6 +30,7 @@ ExecutedVersion is the version of the currently executed binary. This is detecte
 IsPlugin is true if the binary is executed as a plugin.
 BasePath is the root path for all krew related binaries.
 IndexPath is the path to the index repo see git(1).
+IndexURI is the URI where the index is updated from.
 InstallPath is the base path for all plugin installations.
 DownloadPath is the path used to store download binaries.`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -38,10 +39,11 @@ DownloadPath is the path used to store download binaries.`,
 			"ExecutedVersion": krewExecutedVersion,
 			"BasePath":        paths.Base,
 			"IndexPath":       paths.Index,
+			"IndexURI":        IndexURI,
 			"InstallPath":     paths.Install,
 			"DownloadPath":    paths.Download,
 		}
-		printAlignedColums(os.Stdout, "OPTION", "VALUE", conf)
+		printAlignedColumns(os.Stdout, "OPTION", "VALUE", conf)
 	},
 }
 

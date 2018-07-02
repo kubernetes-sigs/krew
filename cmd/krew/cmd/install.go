@@ -96,13 +96,13 @@ All plugins will be downloaded and made available to: "kubectl plugin <name>"`,
 
 			// Print plugin namesFromFile
 			for _, plugin := range install {
-				fmt.Printf("Will install plugin: %s\n", plugin.Name)
+				fmt.Fprintf(os.Stderr, "Will install plugin: %s\n", plugin.Name)
 			}
 
 			var failed []string
 			// Do install
 			for _, plugin := range install {
-				fmt.Printf("Installing plugin: %s\n", plugin.Name)
+				glog.V(2).Infof("Installing plugin: %s\n", plugin.Name)
 				err := installation.Install(paths, plugin, *forceHEAD)
 				if err == installation.IsAlreadyInstalledErr {
 					glog.Warningf("Skipping plugin %s, it is already installed", plugin.Name)
@@ -113,12 +113,13 @@ All plugins will be downloaded and made available to: "kubectl plugin <name>"`,
 					failed = append(failed, plugin.Name)
 					continue
 				}
+				fmt.Fprintf(os.Stderr, "Installed plugin: %s\n", plugin.Name)
 				if plugin.Spec.Caveats != "" {
-					fmt.Printf("CAVEATS: %s\n", plugin.Spec.Caveats)
+					fmt.Fprintf(os.Stderr, "CAVEATS: %s\n", plugin.Spec.Caveats)
 				}
 			}
 			if len(failed) > 0 {
-				return fmt.Errorf("failed to instlal some plugins: %+v", failed)
+				return fmt.Errorf("failed to install some plugins: %+v", failed)
 			}
 			return nil
 		},

@@ -15,13 +15,17 @@
 package cmd
 
 import (
-	"github.com/golang/glog"
+	"fmt"
+	"os"
+
 	"github.com/google/krew/pkg/gitutil"
+
 	"github.com/spf13/cobra"
 )
 
+// IndexURI points to the upstream index.
 // TODO(lbb): Replace with real index later.
-const IndexURI = "file:///Users/lbb/git/krew-index"
+const IndexURI = "https://github.com/werkrew/test.git"
 
 // updateCmd represents the update command
 var updateCmd = &cobra.Command{
@@ -30,13 +34,15 @@ var updateCmd = &cobra.Command{
 	Long: `Update local plugin index.
 Fetch the newest version of Krew and all formulae from GitHub using git(1) and
 perform any necessary migrations.`,
-	Run: ensureUpdated,
+	RunE: ensureUpdated,
 }
 
-func ensureUpdated(cmd *cobra.Command, args []string) {
+func ensureUpdated(_ *cobra.Command, _ []string) error {
 	if err := gitutil.EnsureUpdated(IndexURI, paths.Index); err != nil {
-		glog.Fatal(err)
+		return fmt.Errorf("failed to ensure that the index path %q is updated, err: %v", paths.Index, err)
 	}
+	fmt.Fprintln(os.Stderr, "Updated index")
+	return nil
 }
 
 func init() {

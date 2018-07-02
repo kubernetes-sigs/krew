@@ -23,6 +23,7 @@ import (
 	"github.com/google/krew/pkg/index/indexscanner"
 
 	"github.com/golang/glog"
+	"github.com/google/krew/pkg/installation"
 	"github.com/spf13/cobra"
 )
 
@@ -45,17 +46,25 @@ Use this command to find out about plugin requirements and caveats.`,
 	Args:    cobra.MinimumNArgs(1),
 }
 
-// TODO(lbb): Make output fancy (i.e emojis?)
-func printPluginInfo(out io.Writer, i index.Plugin) {
-	fmt.Fprintf(out, "NAME: %s\n", i.Name)
-	if i.Spec.Description != "" {
-		fmt.Fprintf(out, "DESCRIPTION: \n%s\n", i.Spec.Description)
+func printPluginInfo(out io.Writer, plugin index.Plugin) {
+	fmt.Fprintf(out, "NAME: %s\n", plugin.Name)
+	if platform, ok, err := installation.GetMatchingPlatform(plugin); err == nil && ok {
+		if platform.Head != "" {
+			fmt.Fprintf(out, "HEAD: %s\n", platform.Head)
+		}
+		if platform.URI != "" {
+			fmt.Fprintf(out, "URI: %s\n", platform.URI)
+			fmt.Fprintf(out, "SHA256: %s\n", platform.Sha256)
+		}
 	}
-	if i.Spec.Version != "" {
-		fmt.Fprintf(out, "VERSION: %s\n", i.Spec.Version)
+	if plugin.Spec.Description != "" {
+		fmt.Fprintf(out, "DESCRIPTION: \n%s\n", plugin.Spec.Description)
 	}
-	if i.Spec.Caveats != "" {
-		fmt.Fprintf(out, "CAVEATS: \n%s\n", i.Spec.Caveats)
+	if plugin.Spec.Version != "" {
+		fmt.Fprintf(out, "VERSION: %s\n", plugin.Spec.Version)
+	}
+	if plugin.Spec.Caveats != "" {
+		fmt.Fprintf(out, "CAVEATS: \n%s\n", plugin.Spec.Caveats)
 	}
 }
 
