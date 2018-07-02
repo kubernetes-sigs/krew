@@ -93,14 +93,14 @@ func Test_matchPlatformToSystemEnvs(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			gotPlatform, gotFound, err := matchPlatformToSystemEnvs(tt.args.i, "foo", "amdBar")
 			if (err != nil) != tt.wantErr {
-				t.Errorf("getMatchingPlatform() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GetMatchingPlatform() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(gotPlatform, tt.wantPlatform) {
-				t.Errorf("getMatchingPlatform() gotPlatform = %v, want %v", gotPlatform, tt.wantPlatform)
+				t.Errorf("GetMatchingPlatform() gotPlatform = %v, want %v", gotPlatform, tt.wantPlatform)
 			}
 			if gotFound != tt.wantFound {
-				t.Errorf("getMatchingPlatform() gotFound = %v, want %v", gotFound, tt.wantFound)
+				t.Errorf("GetMatchingPlatform() gotFound = %v, want %v", gotFound, tt.wantFound)
 			}
 		})
 	}

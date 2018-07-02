@@ -21,6 +21,7 @@ import (
 	"os"
 	osexec "os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/golang/glog"
 )
@@ -30,7 +31,7 @@ func EnsureCloned(uri, destinationPath string) error {
 	if ok, err := IsGitCloned(destinationPath); err != nil {
 		return err
 	} else if !ok {
-		return exec("", "clone", uri, destinationPath)
+		return exec("", "clone", "-v", uri, destinationPath)
 	}
 	return nil
 }
@@ -46,7 +47,7 @@ func IsGitCloned(gitPath string) (bool, error) {
 
 // update will fetch origin and set HEAD to origin/HEAD.
 func update(destinationPath string) error {
-	return exec(destinationPath, "pull", "--ff-only")
+	return exec(destinationPath, "pull", "--ff-only", "-v")
 }
 
 // EnsureUpdated will ensure the destination path exsists and is up to date.
@@ -58,6 +59,7 @@ func EnsureUpdated(uri, destinationPath string) error {
 }
 
 func exec(pwd string, args ...string) error {
+	glog.V(4).Infof("Going to run git %s", strings.Join(args, " "))
 	cmd := osexec.Command("git", args...)
 	cmd.Dir = pwd
 	buf := bytes.Buffer{}

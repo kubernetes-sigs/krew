@@ -56,7 +56,7 @@ func Test_extract(t *testing.T) {
 	}
 	for _, f := range zipContent {
 		if f.IsDir() {
-			t.Fatalf("zip should be inflated, got folder %q at root", f.Name())
+			t.Fatalf("zip should be inflated, got dir %q at root", f.Name())
 		}
 		if f.Name() != "foo" {
 			t.Fatalf("expected to find file foo, found %q", f.Name())

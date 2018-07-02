@@ -24,12 +24,11 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/google/krew/pkg/index"
-	"github.com/google/krew/pkg/index/indexscanner"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 )
 
-func getMatchingPlatform(i index.Plugin) (index.Platform, bool, error) {
+func GetMatchingPlatform(i index.Plugin) (index.Platform, bool, error) {
 	return matchPlatformToSystemEnvs(i, runtime.GOOS, runtime.GOARCH)
 }
 
@@ -53,7 +52,7 @@ func matchPlatformToSystemEnvs(i index.Plugin, os, arch string) (index.Platform,
 }
 
 func findInstalledPluginVersion(installPath, pluginName string) (name string, installed bool, err error) {
-	if !indexscanner.IsSafePluginName(pluginName) {
+	if !index.IsSafePluginName(pluginName) {
 		return "", false, fmt.Errorf("the plugin name %q is not allowed", pluginName)
 	}
 	glog.V(3).Infof("Searching for installed versions of %s in %q", pluginName, installPath)
@@ -106,7 +105,7 @@ func getPluginVersion(p index.Platform, forceHEAD bool) (version, uri string, er
 }
 
 func getDownloadTarget(index index.Plugin, forceHEAD bool) (version, uri string, fos []index.FileOperation, err error) {
-	p, ok, err := getMatchingPlatform(index)
+	p, ok, err := GetMatchingPlatform(index)
 	if err != nil {
 		return "", "", nil, fmt.Errorf("failed to get matching platforms, err: %v", err)
 	}
