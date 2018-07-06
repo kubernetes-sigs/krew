@@ -38,7 +38,7 @@ func LoadPluginListFromFS(indexDir string) (index.IndexList, error) {
 		return indexList, err
 	}
 
-	files, err := ioutil.ReadDir(indexDir)
+	files, err := ioutil.ReadDir(filepath.Join(indexDir, "plugins"))
 	if err != nil {
 		return indexList, fmt.Errorf("failed to open index dir, err: %v", err)
 	}
@@ -71,7 +71,7 @@ func LoadPluginFileFromFS(indexDir, pluginName string) (index.Plugin, error) {
 	}
 
 	glog.V(4).Infof("Reading plugin %q", pluginName)
-	indexDir, err := filepath.EvalSymlinks(indexDir)
+	indexDir, err := filepath.EvalSymlinks(filepath.Join(indexDir, "plugins"))
 	if err != nil {
 		return index.Plugin{}, err
 	}

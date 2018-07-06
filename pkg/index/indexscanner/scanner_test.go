@@ -35,7 +35,7 @@ func Test_readIndexFile(t *testing.T) {
 		{
 			name: "read index file",
 			args: args{
-				indexFilePath: filepath.Join(testdataPath(t), "testindex", "foo.yaml"),
+				indexFilePath: filepath.Join(testdataPath(t), "testindex", "plugins", "foo.yaml"),
 			},
 			wantErr: false,
 			matchFirst: labels.Set{
@@ -45,14 +45,14 @@ func Test_readIndexFile(t *testing.T) {
 		{
 			name: "read index file with unknown keys",
 			args: args{
-				indexFilePath: filepath.Join(testdataPath(t), "testindex", "badplugin.yaml"),
+				indexFilePath: filepath.Join(testdataPath(t), "testindex", "plugins", "badplugin.yaml"),
 			},
 			wantErr: true,
 		},
 		{
 			name: "read index file with unknown keys",
 			args: args{
-				indexFilePath: filepath.Join(testdataPath(t), "testindex", "badplugin2.yaml"),
+				indexFilePath: filepath.Join(testdataPath(t), "testindex", "plugins", "badplugin2.yaml"),
 			},
 			wantErr: true,
 		},
