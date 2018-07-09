@@ -19,11 +19,11 @@ import (
 	"io"
 	"os"
 
-	"github.com/google/krew/pkg/index"
-	"github.com/google/krew/pkg/index/indexscanner"
+	"github.com/GoogleContainerTools/krew/pkg/index"
+	"github.com/GoogleContainerTools/krew/pkg/index/indexscanner"
 
+	"github.com/GoogleContainerTools/krew/pkg/installation"
 	"github.com/golang/glog"
-	"github.com/google/krew/pkg/installation"
 	"github.com/spf13/cobra"
 )
 

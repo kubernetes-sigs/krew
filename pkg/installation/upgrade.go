@@ -21,9 +21,9 @@ import (
 
 	"io/ioutil"
 
+	"github.com/GoogleContainerTools/krew/pkg/environment"
+	"github.com/GoogleContainerTools/krew/pkg/index"
 	"github.com/golang/glog"
-	"github.com/google/krew/pkg/environment"
-	"github.com/google/krew/pkg/index"
 )
 
 // Upgrade will reinstall and delete the old plugin. The operation tries

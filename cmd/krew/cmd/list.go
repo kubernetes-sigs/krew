@@ -22,7 +22,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/google/krew/pkg/installation"
+	"github.com/GoogleContainerTools/krew/pkg/installation"
 	"github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
 )

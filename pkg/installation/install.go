@@ -19,10 +19,10 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/GoogleContainerTools/krew/pkg/download"
+	"github.com/GoogleContainerTools/krew/pkg/environment"
+	"github.com/GoogleContainerTools/krew/pkg/index"
 	"github.com/golang/glog"
-	"github.com/google/krew/pkg/download"
-	"github.com/google/krew/pkg/environment"
-	"github.com/google/krew/pkg/index"
 )
 
 var (

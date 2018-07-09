@@ -20,10 +20,10 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/google/krew/pkg/index/indexscanner"
+	"github.com/GoogleContainerTools/krew/pkg/index/indexscanner"
 
-	"github.com/google/krew/pkg/index"
-	"github.com/google/krew/pkg/installation"
+	"github.com/GoogleContainerTools/krew/pkg/index"
+	"github.com/GoogleContainerTools/krew/pkg/installation"
 	"github.com/sahilm/fuzzy"
 	"github.com/spf13/cobra"
 )

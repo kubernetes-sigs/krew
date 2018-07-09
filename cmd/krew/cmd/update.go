@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/google/krew/pkg/gitutil"
+	"github.com/GoogleContainerTools/krew/pkg/gitutil"
 
 	"github.com/spf13/cobra"
 )

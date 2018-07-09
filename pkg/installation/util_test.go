@@ -20,7 +20,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/google/krew/pkg/index"
+	"github.com/GoogleContainerTools/krew/pkg/index"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 

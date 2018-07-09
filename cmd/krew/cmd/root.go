@@ -19,8 +19,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/google/krew/pkg/environment"
-	"github.com/google/krew/pkg/gitutil"
+	"github.com/GoogleContainerTools/krew/pkg/environment"
+	"github.com/GoogleContainerTools/krew/pkg/gitutil"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"

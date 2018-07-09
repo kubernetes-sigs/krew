@@ -15,9 +15,9 @@
 package main
 
 import (
+	"github.com/GoogleContainerTools/krew/cmd/krew-manifest/plugin"
+	"github.com/GoogleContainerTools/krew/cmd/krew/cmd"
 	"github.com/golang/glog"
-	"github.com/google/krew/cmd/krew-manifest/plugin"
-	"github.com/google/krew/cmd/krew/cmd"
 )
 
 func main() {

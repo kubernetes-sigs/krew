@@ -20,11 +20,11 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/google/krew/pkg/index/indexscanner"
-	"github.com/google/krew/pkg/installation"
+	"github.com/GoogleContainerTools/krew/pkg/index/indexscanner"
+	"github.com/GoogleContainerTools/krew/pkg/installation"
 
+	"github.com/GoogleContainerTools/krew/pkg/index"
 	"github.com/golang/glog"
-	"github.com/google/krew/pkg/index"
 	"github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
 )

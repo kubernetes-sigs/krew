@@ -20,7 +20,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/google/krew/pkg/pathutil"
+	"github.com/GoogleContainerTools/krew/pkg/pathutil"
 	"k8s.io/client-go/util/homedir"
 )
 

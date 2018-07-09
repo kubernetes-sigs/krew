@@ -24,7 +24,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/google/krew/pkg/index"
+	"github.com/GoogleContainerTools/krew/pkg/index"
 
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/yaml"

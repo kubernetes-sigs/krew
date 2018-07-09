@@ -19,7 +19,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/google/krew/pkg/index"
+	"github.com/GoogleContainerTools/krew/pkg/index"
 )
 
 func Test_moveTargets(t *testing.T) {

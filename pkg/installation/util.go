@@ -22,8 +22,8 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/GoogleContainerTools/krew/pkg/index"
 	"github.com/golang/glog"
-	"github.com/google/krew/pkg/index"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 )
