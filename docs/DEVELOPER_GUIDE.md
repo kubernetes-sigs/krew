@@ -3,11 +3,10 @@
 This guide is intended for plugin developers. If you are not developing kubectl
 plugins, read the [User Guide](./USER_GUIDE.md).
 
-
 This guide explains how to package, test, run plugins locally and make them
 available on the krew index.
 
-### Creating a Plugin
+## Creating a Plugin
 
 Please read the
 [Official plugin docs](https://kubernetes.io/docs/tasks/extend-kubectl/kubectl-plugins/)
@@ -49,7 +48,6 @@ A service like
 is recommended.
 It is also possible to get the latest release for a GitHub repository from the
 URL: `https://github.com/<user>/<project>/archive/master.zip`.
-
 
 ### Writing a Plugin Index File
 
