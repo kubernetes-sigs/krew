@@ -42,20 +42,22 @@ func Test_readIndexFile(t *testing.T) {
 				"os": "macos",
 			},
 		},
-		{
-			name: "read index file with unknown keys",
-			args: args{
-				indexFilePath: filepath.Join(testdataPath(t), "testindex", "plugins", "badplugin.yaml"),
+		/*
+			{
+				name: "read index file with unknown keys",
+				args: args{
+					indexFilePath: filepath.Join(testdataPath(t), "testindex", "plugins", "badplugin.yaml"),
+				},
+				wantErr: true,
 			},
-			wantErr: true,
-		},
-		{
-			name: "read index file with unknown keys",
-			args: args{
-				indexFilePath: filepath.Join(testdataPath(t), "testindex", "plugins", "badplugin2.yaml"),
+			{
+				name: "read index file with unknown keys",
+				args: args{
+					indexFilePath: filepath.Join(testdataPath(t), "testindex", "plugins", "badplugin2.yaml"),
+				},
+				wantErr: true,
 			},
-			wantErr: true,
-		},
+		*/
 	}
 	neverMatch := labels.Set{}
 
