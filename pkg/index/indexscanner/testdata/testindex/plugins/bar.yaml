@@ -25,4 +25,4 @@ spec:
     - from: "*"
     uri: https://example.com
     sha256: alsoSet
-  intro: "exists"
+  shortDescription: "exists"

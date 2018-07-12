@@ -46,7 +46,7 @@ func (p Plugin) Validate(name string) error {
 	if p.Name != name {
 		return fmt.Errorf("plugin should be named %q, not %q", name, p.Name)
 	}
-	if p.Spec.Intro == "" {
+	if p.Spec.ShortDescription == "" {
 		return fmt.Errorf("should have a short description")
 	}
 	if len(p.Spec.Platforms) == 0 {

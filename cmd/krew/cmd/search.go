@@ -76,7 +76,7 @@ Search accepts a list of words as options.`,
 			} else {
 				status = "unavailable"
 			}
-			fmt.Fprintf(w, rowPattern, name, limitString(plugin.Spec.Intro, 50), status)
+			fmt.Fprintf(w, rowPattern, name, limitString(plugin.Spec.ShortDescription, 50), status)
 		}
 		w.Flush()
 		return nil
