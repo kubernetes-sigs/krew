@@ -87,10 +87,10 @@ func TestPlugin_Validate(t *testing.T) {
 			fields: fields{
 				ObjectMeta: metav1.ObjectMeta{Name: "foo"},
 				Spec: PluginSpec{
-					Version:     "",
-					Intro:       "short",
-					Description: "",
-					Caveats:     "",
+					Version:          "",
+					ShortDescription: "short",
+					Description:      "",
+					Caveats:          "",
 					Platforms: []Platform{{
 						Head:     "http://example.com",
 						URI:      "",
@@ -110,10 +110,10 @@ func TestPlugin_Validate(t *testing.T) {
 			fields: fields{
 				ObjectMeta: metav1.ObjectMeta{Name: "foo"},
 				Spec: PluginSpec{
-					Version:     "",
-					Intro:       "",
-					Description: "",
-					Caveats:     "",
+					Version:          "",
+					ShortDescription: "",
+					Description:      "",
+					Caveats:          "",
 					Platforms: []Platform{{
 						Head:     "http://example.com",
 						URI:      "",
@@ -133,10 +133,10 @@ func TestPlugin_Validate(t *testing.T) {
 			fields: fields{
 				ObjectMeta: metav1.ObjectMeta{Name: "foo"},
 				Spec: PluginSpec{
-					Version:     "",
-					Intro:       "short",
-					Description: "",
-					Caveats:     "",
+					Version:          "",
+					ShortDescription: "short",
+					Description:      "",
+					Caveats:          "",
 					Platforms: []Platform{{
 						Head:     "http://example.com",
 						URI:      "",
@@ -156,10 +156,10 @@ func TestPlugin_Validate(t *testing.T) {
 			fields: fields{
 				ObjectMeta: metav1.ObjectMeta{Name: "wrong-name"},
 				Spec: PluginSpec{
-					Version:     "",
-					Intro:       "short",
-					Description: "",
-					Caveats:     "",
+					Version:          "",
+					ShortDescription: "short",
+					Description:      "",
+					Caveats:          "",
 					Platforms: []Platform{{
 						Head:     "http://example.com",
 						URI:      "",
@@ -179,10 +179,10 @@ func TestPlugin_Validate(t *testing.T) {
 			fields: fields{
 				ObjectMeta: metav1.ObjectMeta{Name: "../foo"},
 				Spec: PluginSpec{
-					Version:     "",
-					Intro:       "short",
-					Description: "",
-					Caveats:     "",
+					Version:          "",
+					ShortDescription: "short",
+					Description:      "",
+					Caveats:          "",
 					Platforms: []Platform{{
 						Head:     "http://example.com",
 						URI:      "",

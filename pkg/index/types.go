@@ -28,10 +28,10 @@ type Plugin struct {
 }
 
 type PluginSpec struct {
-	Version     string `json:"version,omitempty"`
-	Intro       string `json:"intro,omitempty"`
-	Description string `json:"description,omitempty"`
-	Caveats     string `json:"caveats,omitempty"`
+	Version          string `json:"version,omitempty"`
+	ShortDescription string `json:"shortDescription,omitempty"`
+	Description      string `json:"description,omitempty"`
+	Caveats          string `json:"caveats,omitempty"`
 
 	Platforms []Platform `json:"platforms,omitempty"`
 }

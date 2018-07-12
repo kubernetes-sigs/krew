@@ -30,5 +30,5 @@ spec:
     selector:
       matchLabels:
         os: "windows"
-  intro: "exists"
+  shortDescription: "exists"
 
