@@ -104,6 +104,8 @@ func DecodePluginFile(r io.Reader) (index.Plugin, error) {
 		return plugin, err
 	}
 	decoder := json.NewDecoder(bytes.NewReader(jsonRaw))
-	decoder.DisallowUnknownFields()
+
+	// TODO(lbb): Enable strict visioning.
+	// decoder.DisallowUnknownFields()
 	return plugin, decoder.Decode(&plugin)
 }
