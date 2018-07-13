@@ -78,7 +78,7 @@ Read the complete [User Guide](./docs/USER_GUIDE.md) for more details.
 To publish your plugin on krew, you need to make the releases available for
 download, and contribute a plugin descriptor file to krew-index repository.
 
-Read the [Plugin Developer Guide](./docs/DEVELOPER_GUIDE.md) for details.	
+Read the [Plugin Developer Guide](./docs/DEVELOPER_GUIDE.md) for details.
 
 # Additional Links
 
