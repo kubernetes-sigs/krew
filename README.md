@@ -17,12 +17,14 @@ For macOS and Linux:
 - Paste this command to your terminal:
 
 ```bash
+bash
 (
  set -x; cd "$(mktemp -d)" &&
  curl -fsSLO "https://storage.googleapis.com/krew-test/krew.zip" &&
  unzip krew.zip &&
  "./build/krew-$(uname | tr '[:upper:]' '[:lower:]')" install krew
 )
+exit
 ```
 
 Windows:
