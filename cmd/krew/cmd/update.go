@@ -24,8 +24,7 @@ import (
 )
 
 // IndexURI points to the upstream index.
-// TODO(lbb): Replace with real index later.
-const IndexURI = "https://github.com/werkrew/test.git"
+const IndexURI = "https://github.com/GoogleContainerTools/krew-index.git"
 
 // updateCmd represents the update command
 var updateCmd = &cobra.Command{
