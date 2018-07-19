@@ -37,7 +37,7 @@ deploy:
   - "out/krew-zip-sha256.txt"
   - "out/build/krew-linux"
   - "out/build/krew-darwin"
-  - "out/build/krew-windows"
+  - "out/build/krew-windows.exe"
   skip_cleanup: true
   on:
     tags: true
