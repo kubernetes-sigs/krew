@@ -1,0 +1,25 @@
+sudo: false
+language: go
+os:
+  - linux
+go:
+  - 1.9.x
+  - 1.10.x
+go_import_path: github.com/GoogleContainerTools/krew
+git:
+  depth: 1
+install: true
+notifications:
+  email: false
+
+before_install:
+  - go get github.com/mitchellh/gox
+
+before_script:
+  - hack/gometalinter.sh
+  - hack/dep.sh
+
+script:
+  - hack/gometalinter.sh
+  - hack/dep.sh
+#  - gox -os="linux darwin windows" -arch="amd64" -verbose ./cmd/...
