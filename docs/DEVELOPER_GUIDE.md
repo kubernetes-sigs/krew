@@ -83,7 +83,7 @@ spec:
       to: "."
   # Version does not follow any conventions and is not functional.
   version: "v0.0.1"
-  shortDesciption: Short description of foo
+  shortDescription: Short description of foo
   description: |
       This plugin shows all environment
       variables that get injected when
@@ -118,7 +118,7 @@ To give some more information about a plugin provide a
 
 ```yaml
 ...
-  shortDesciption: Short description of foo
+  shortDescription: Short description of foo
   description: |
       This plugin shows all environment
       variables that get injected when
