@@ -31,7 +31,7 @@ install_dep() {
 }
 
 if [ -z "$VALIDATE_UPSTREAM" ]; then
-	VALIDATE_REPO='git@github.com:GoogleContainerTools/krew.git'
+	VALIDATE_REPO='https://github.com/GoogleContainerTools/krew.git'
 	VALIDATE_BRANCH='master'
 
 	VALIDATE_HEAD="$(git rev-parse --verify HEAD)"
