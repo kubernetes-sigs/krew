@@ -3,7 +3,6 @@ sudo: false
 language: go
 
 go:
-  - 1.9.x
   - 1.10.x
 
 go_import_path: github.com/GoogleContainerTools/krew
@@ -34,7 +33,7 @@ deploy:
     secure: "ViH9L+W/de9Cjf+Of4cHjAFZspnIQQ/CUqIT16A7Y/bGAw4LEO3sd07Hy2qRRnX2nXeAQ283LP0MZy7svTzTZlJSxmVo6yMLyW+M47LVJeBLklnskMJ2S3YsbjkkClc93VbRHHRmObmA3h0cBx4FOTsSTt4yZOFZ5hvCSA+3EloXZEUkfeXAfxXyAb+w1asyNLmL0TYgjVSEQbznJnhQE/6YpfK0IK/i1MT3AUlqKGb13uHnY95oVbptWJwWh5OJEWyzGqqk8MBmeO7teb7YzAMLFMI9hbsHqC913VXhUupZOnoX1GEJ/XqMs13f8FXrWd+aLwAAF+KZ7sI/JPfCRHXWZNTyNLTe46sKZRSMe5/kgMsbsqisLmuVWfXbBbfTTfGYIIFRiHAxKlsnU3kb8uHHL6mVY9tz6nn385Ave0BW1J97pEbGb2GhuwI4X08IUqXWQwwa5kTg2tsvIRRchB4AcZbuAYU7UAz3sznchJTSV1tAHZusJD0F4IokxvSBKFPCFVQTP2xCcEJoC4kzne4+okFOg2eOiNesCjZVwj7ZeQsWVwrnLBrVSI6qG1FHbNCUt5AFEfBxHuLPKPW8c78Py7cJGEIyZHDfk6T2Kn2ICt179JYMvY6HumxwTqxdiIZPswXnUmW2xZqDPrRO5wZEYqsekNFZQ0qSSZ+swRA="
   file:
   - "out/krew.zip"
-  - "out/krew-zip-sha256.txt"
+  - "out/krew-zip.sha256"
   - "out/build/krew-linux"
   - "out/build/krew-darwin"
   - "out/build/krew-windows.exe"

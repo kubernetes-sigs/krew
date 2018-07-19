@@ -38,4 +38,4 @@ zip -X -q -r krew.zip build
 
 KREW_HASH="$(shasum -a 256 ./krew.zip|awk '{print $1;}')"
 echo "${KREW_HASH}"
-echo "${KREW_HASH}" > sha256.txt
+echo "${KREW_HASH}" > krew-zip.sha256
