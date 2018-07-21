@@ -77,7 +77,7 @@ spec:
   - selector:
       matchLabels:
         os: windows
-    head: head: https://github.com/barbaz/foo/archive/master.zip
+    head: https://github.com/barbaz/foo/archive/master.zip
     files: 
     - from: "/windows/*"
       to: "."
