@@ -57,7 +57,7 @@ func extractZIP(targetDir string, read io.ReaderAt, size int64) error {
 
 	var basepath string
 	for _, f := range zipReader.File {
-		if basepath == "" {
+		if basepath == "" && f.FileInfo().IsDir() {
 			basepath = f.Name
 		}
 

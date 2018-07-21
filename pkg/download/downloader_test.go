@@ -30,36 +30,43 @@ func testdataPath() string {
 }
 
 func Test_extract(t *testing.T) {
-	// Zip has just one file named 'foo'
-	zipSrc := filepath.Join(testdataPath(), "test.zip")
-	zipDst, err := ioutil.TempDir("", "")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(zipDst)
-
-	zipReader, err := os.Open(zipSrc)
-	if err != nil {
-		t.Fatal(err)
-	}
-	stat, _ := zipReader.Stat()
-	if err := extractZIP(zipDst, zipReader, stat.Size()); err != nil {
-		t.Fatalf("extract() error = %v", err)
-	}
-	zipContent, err := ioutil.ReadDir(zipDst)
-	if err != nil {
-		t.Fatal(err)
+	tests := []string{
+		"test.zip",
+		"test1.zip", // No directory structure
 	}
 
-	if len(zipContent) != 1 {
-		t.Fatalf("zip should just have one file got %d", len(zipContent))
-	}
-	for _, f := range zipContent {
-		if f.IsDir() {
-			t.Fatalf("zip should be inflated, got dir %q at root", f.Name())
+	for _, filename := range tests {
+		// Zip has just one file named 'foo'
+		zipSrc := filepath.Join(testdataPath(), filename)
+		zipDst, err := ioutil.TempDir("", "")
+		if err != nil {
+			t.Fatal(err)
 		}
-		if f.Name() != "foo" {
-			t.Fatalf("expected to find file foo, found %q", f.Name())
+		defer os.RemoveAll(zipDst)
+
+		zipReader, err := os.Open(zipSrc)
+		if err != nil {
+			t.Fatal(err)
+		}
+		stat, _ := zipReader.Stat()
+		if err := extractZIP(zipDst, zipReader, stat.Size()); err != nil {
+			t.Fatalf("extract(%s) error = %v", filename, err)
+		}
+		zipContent, err := ioutil.ReadDir(zipDst)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if len(zipContent) != 1 {
+			t.Fatalf("zip should just have one file got %d", len(zipContent))
+		}
+		for _, f := range zipContent {
+			if f.IsDir() {
+				t.Fatalf("zip should be inflated, got dir %q at root", f.Name())
+			}
+			if f.Name() != "foo" {
+				t.Fatalf("expected to find file foo, found %q", f.Name())
+			}
 		}
 	}
 }
