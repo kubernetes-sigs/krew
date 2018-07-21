@@ -68,7 +68,7 @@ spec:
   platforms:
   - selector: # A regular Kubernetes label selector
       matchExpressions:
-      - {key: os, operator: In, values: [macos, linux]} 
+      - {key: os, operator: In, values: [darwin, linux]} 
     head: https://github.com/barbaz/foo/archive/master.zip
     # This is used during installation. It uses file Globs to copy required files.
     files:
@@ -150,7 +150,7 @@ target platforms those are stored in the `platforms` array:
   platforms:
   - selector: # A regular Kubernetes label selector
       matchExpressions:
-      - {key: os, operator: In, values: [macos, linux]} 
+      - {key: os, operator: In, values: [darwin, linux]} 
     ...
   - selector:
       matchLabels:
