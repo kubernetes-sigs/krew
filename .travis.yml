@@ -21,6 +21,7 @@ before_install:
   - gometalinter.v2 --install
 
 script:
+  - hack/gofmt.sh
   - hack/gometalinter.sh
   - hack/build-cross-releases.sh
 
