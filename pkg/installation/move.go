@@ -174,8 +174,8 @@ func moveToInstallAtomic(download, pluginDir, version string, fos []index.FileOp
 	installPath := filepath.Join(pluginDir, version)
 	glog.V(2).Infof("Move %q to %q", tempdir, installPath)
 	if err = moveOrCopy(tempdir, installPath); err != nil {
-		return fmt.Errorf("could not rename file from %q to %q, err: %v", tempdir, installPath, err)
 		defer os.Remove(installPath)
+		return fmt.Errorf("could not rename file from %q to %q, err: %v", tempdir, installPath, err)
 	}
 
 	return nil

@@ -1,0 +1,40 @@
+sudo: false
+
+language: go
+
+go:
+  - 1.10.x
+
+go_import_path: github.com/GoogleContainerTools/krew
+
+git:
+  depth: 1
+
+install: true
+
+notifications:
+  email: false
+
+before_install:
+  - go get github.com/mitchellh/gox
+  - go get gopkg.in/alecthomas/gometalinter.v2
+  - gometalinter.v2 --install
+
+script:
+  - hack/gofmt.sh
+  - hack/gometalinter.sh
+  - hack/build-cross-releases.sh
+
+deploy:
+  provider: releases
+  api_key:
+    secure: "ruzIGB8i1yo3KHhZ3Q/R/PRTKhJCarLcBUgRbt7LCxC02GVjtzly4zliXKXj5E8M+zOsZbrv0GXZh7h4hwn68AFMYAS+MpBMmbnBgyxMvwtU94GVkOwdh7sD+o6hwPQofYpVwemHdm99XTFvasdiCu7Wmn2dNaoqVbR9bBxC83fZRkdGVPHtawhah5mAz9x/sUMnORLUHupJaEhFIauyRwDeoNROPbhgVX9o2SppY84Kvjk2vtJ0DbEGjXD2oM8xYQp7/hx48Lo5QvXBTANNKNRyHF9zzFIOOT6whgAhz2hWpn3nMOSEIYSPqWkFVApJh68Sxs4tJ3lMSuRf5fdqkqdJzkTe50cC6KoQ1ifyVtRKcLCHppY0jkRwc2FJV4armdX52w1+ahtWBHqh+7eZGRTXUvtFLERN9BDewoa6Zsm8Hiol1v3coKEGYl7/JWNv03cT44YLTBHKdmZkGub9BJcAVrehYikDgmobZqLlOTzRcwZjF1sgRe0mGotDEC0jiZmx7TCiy8A477hsuHqJrqzokmK/7skMG+sNJfR21kJGLADVrMPiDik5D9PoBxmFJBqVbyn5YPjfJ0KEctzJPk8myWEMQPyJzYZ/vNvJKnVeyxqtPWnVxITDqcwTZ0PrKcviucRh+ryKZJhVQPaASIyJrTuL3e9kMiXVDvyhJ0I="
+  file:
+  - "out/krew.zip"
+  - "out/krew-zip.sha256"
+  - "out/build/krew-linux"
+  - "out/build/krew-darwin"
+  - "out/build/krew-windows.exe"
+  skip_cleanup: true
+  on:
+    tags: true
