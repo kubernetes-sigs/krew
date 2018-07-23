@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Copyright 2018 Google LLC
 #
@@ -25,17 +25,16 @@ rm -rf out/
 gox -os="linux darwin windows" -arch="amd64" -output="out/build/krew-{{.OS}}" ./cmd/krew/...
 go install github.com/GoogleContainerTools/krew/cmd/krew-manifest
 
-cd out/build/
-mkdir unix
-krew-manifest generate -o unix
-mkdir windows
-krew-manifest generate -o windows --windows=true
-cd ..
+(
+  cd out/build/
+  mkdir unix
+  krew-manifest generate -o unix
+  mkdir windows
+  krew-manifest generate -o windows --windows=true
+)
 
-# reproducible
-rm -f krew.zip
-zip -X -q -r krew.zip build
+zip -X -q -r out/krew.zip out/build
 
-KREW_HASH="$(shasum -a 256 ./krew.zip|awk '{print $1;}')"
-echo "${KREW_HASH}"
-echo "${KREW_HASH}" > krew-zip.sha256
+KREW_HASH="$(shasum -a 256 out/krew.zip | awk '{print $1;}')"
+echo "Computed Hash: ${KREW_HASH}"
+echo "${KREW_HASH}" > out/krew-zip.sha256

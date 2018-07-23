@@ -17,14 +17,11 @@ notifications:
 
 before_install:
   - go get github.com/mitchellh/gox
-
-before_script:
-  - hack/gometalinter.sh
-  - hack/dep.sh
+  - go get gopkg.in/alecthomas/gometalinter.v2
+  - gometalinter.v2 --install
 
 script:
   - hack/gometalinter.sh
-  - hack/dep.sh
   - hack/build-cross-releases.sh
 
 deploy:

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Copyright 2018 Google LLC
 #
@@ -20,16 +20,6 @@ set -e -o pipefail
 
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-install_gometalinter() {
-	echo "Installing gometalinter.v2"
-	go get -u gopkg.in/alecthomas/gometalinter.v2
-	gometalinter.v2 --install
-}
-
-if ! [ -x "$(command -v gometalinter.v2)" ]; then
-  install_gometalinter
-fi
-
 gometalinter.v2 \
-	${GOMETALINTER_OPTS:--deadine 5m} \
+	${GOMETALINTER_OPTS:-"--deadline=5m"} \
 	--config $SCRIPTDIR/gometalinter.json ./...
