@@ -55,13 +55,8 @@ func extractZIP(targetDir string, read io.ReaderAt, size int64) error {
 		return err
 	}
 
-	var basepath string
 	for _, f := range zipReader.File {
-		if basepath == "" {
-			basepath = f.Name
-		}
-
-		path := filepath.Join(targetDir, filepath.FromSlash(f.Name[len(basepath):]))
+		path := filepath.Join(targetDir, filepath.FromSlash(f.Name))
 		if f.FileInfo().IsDir() {
 			os.MkdirAll(path, f.Mode())
 			continue

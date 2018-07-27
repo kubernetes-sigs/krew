@@ -30,36 +30,46 @@ func testdataPath() string {
 }
 
 func Test_extract(t *testing.T) {
-	// Zip has just one file named 'foo'
-	zipSrc := filepath.Join(testdataPath(), "test.zip")
-	zipDst, err := ioutil.TempDir("", "")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(zipDst)
-
-	zipReader, err := os.Open(zipSrc)
-	if err != nil {
-		t.Fatal(err)
-	}
-	stat, _ := zipReader.Stat()
-	if err := extractZIP(zipDst, zipReader, stat.Size()); err != nil {
-		t.Fatalf("extract() error = %v", err)
-	}
-	zipContent, err := ioutil.ReadDir(zipDst)
-	if err != nil {
-		t.Fatal(err)
+	tests := []struct {
+		filename, firstElementName string
+		isDir                      bool
+	}{
+		{"test.zip", "test", true},
+		{"test1.zip", "foo", false}, // No directory structure
 	}
 
-	if len(zipContent) != 1 {
-		t.Fatalf("zip should just have one file got %d", len(zipContent))
-	}
-	for _, f := range zipContent {
-		if f.IsDir() {
-			t.Fatalf("zip should be inflated, got dir %q at root", f.Name())
+	for _, tt := range tests {
+		// Zip has just one file named 'foo'
+		zipSrc := filepath.Join(testdataPath(), tt.filename)
+		zipDst, err := ioutil.TempDir("", "")
+		if err != nil {
+			t.Fatal(err)
 		}
-		if f.Name() != "foo" {
-			t.Fatalf("expected to find file foo, found %q", f.Name())
+		defer os.RemoveAll(zipDst)
+
+		zipReader, err := os.Open(zipSrc)
+		if err != nil {
+			t.Fatal(err)
+		}
+		stat, _ := zipReader.Stat()
+		if err := extractZIP(zipDst, zipReader, stat.Size()); err != nil {
+			t.Fatalf("extract(%s) error = %v", tt.filename, err)
+		}
+		zipContent, err := ioutil.ReadDir(zipDst)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if len(zipContent) != 1 {
+			t.Fatalf("zip should just have one file got %d", len(zipContent))
+		}
+		for _, f := range zipContent {
+			if f.IsDir() != tt.isDir {
+				t.Fatalf("entity %q is should be isDir=%v but is %v", f.Name(), tt.isDir, f.IsDir())
+			}
+			if f.Name() != tt.firstElementName {
+				t.Fatalf("expected to find file %s, found %q", tt.firstElementName, f.Name())
+			}
 		}
 	}
 }
