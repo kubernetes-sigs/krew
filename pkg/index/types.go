@@ -27,6 +27,7 @@ type Plugin struct {
 	Spec PluginSpec `json:"spec"`
 }
 
+// PluginSpec TODO(lbb)
 type PluginSpec struct {
 	Version          string `json:"version,omitempty"`
 	ShortDescription string `json:"shortDescription,omitempty"`
@@ -36,6 +37,7 @@ type PluginSpec struct {
 	Platforms []Platform `json:"platforms,omitempty"`
 }
 
+// Platform TODO(lbb)
 type Platform struct {
 	Head   string `json:"head,omitempty"`
 	URI    string `json:"uri,omitempty"`
@@ -45,12 +47,14 @@ type Platform struct {
 	Files    []FileOperation       `json:"files"`
 }
 
+// FileOperation TODO(lbb)
 type FileOperation struct {
 	From string `json:"from,omitempty"`
 	To   string `json:"to,omitempty"`
 }
 
-type IndexList struct {
+// PluginList TODO(lbb)
+type PluginList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 

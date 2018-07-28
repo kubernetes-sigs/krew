@@ -25,10 +25,11 @@ import (
 	"github.com/golang/glog"
 )
 
+// Plugin Lifecycle Errors
 var (
-	IsAlreadyInstalledErr = fmt.Errorf("can't install, the newest version is already installed")
-	IsNotInstalledErr     = fmt.Errorf("plugin is not installed")
-	IsAlreadyUpgradedErr  = fmt.Errorf("can't upgrade, the newest version is already installed")
+	ErrIsAlreadyInstalled = fmt.Errorf("can't install, the newest version is already installed")
+	ErrIsNotInstalled     = fmt.Errorf("plugin is not installed")
+	ErrIsAlreadyUpgraded  = fmt.Errorf("can't upgrade, the newest version is already installed")
 )
 
 const (
@@ -67,7 +68,7 @@ func Install(p environment.KrewPaths, plugin index.Plugin, forceHEAD bool) error
 		return err
 	}
 	if ok {
-		return IsAlreadyInstalledErr
+		return ErrIsAlreadyInstalled
 	}
 
 	glog.V(1).Infof("Finding download target for plugin %s", plugin.Name)
@@ -89,7 +90,7 @@ func Remove(p environment.KrewPaths, name string) error {
 		return fmt.Errorf("can't remove plugin, err: %v", err)
 	}
 	if !installed {
-		return IsNotInstalledErr
+		return ErrIsNotInstalled
 	}
 	glog.V(1).Infof("Deleting plugin version %s", version)
 	glog.V(3).Infof("Deleting path %q", filepath.Join(p.Install, name))

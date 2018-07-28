@@ -28,6 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 )
 
+// GetMatchingPlatform TODO(lbb)
 func GetMatchingPlatform(i index.Plugin) (index.Platform, bool, error) {
 	return matchPlatformToSystemEnvs(i, runtime.GOOS, runtime.GOARCH)
 }

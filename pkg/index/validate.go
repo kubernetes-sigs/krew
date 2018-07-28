@@ -39,6 +39,7 @@ func IsSafePluginName(name string) bool {
 	return true
 }
 
+// Validate TODO(lbb)
 func (p Plugin) Validate(name string) error {
 	if !IsSafePluginName(name) {
 		return fmt.Errorf("the plugin name %q is not allowed, must match %q", name, safePluginRegexp.String())
@@ -60,6 +61,7 @@ func (p Plugin) Validate(name string) error {
 	return nil
 }
 
+// Validate TODO(lbb)
 func (p Platform) Validate() error {
 	if (p.Sha256 != "") != (p.URI != "") {
 		return fmt.Errorf("can't get version URI and sha have both to be set or unset")

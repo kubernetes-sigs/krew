@@ -40,7 +40,7 @@ func Upgrade(p environment.KrewPaths, plugin index.Plugin, currentKrewVersion st
 	// Check allowed installation
 	newVersion, uri, fos, err := getDownloadTarget(plugin, oldVersion == headVersion)
 	if oldVersion == newVersion && oldVersion != headVersion {
-		return IsAlreadyUpgradedErr
+		return ErrIsAlreadyUpgraded
 	}
 	if err != nil {
 		return fmt.Errorf("failed to get the current download target, err: %v", err)
