@@ -33,14 +33,17 @@ var infoCmd = &cobra.Command{
 	Short: "Info shows plugin details",
 	Long: `Info shows plugin details.
 Use this command to find out about plugin requirements and caveats.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		for _, arg := range args {
 			plugin, err := indexscanner.LoadPluginFileFromFS(paths.Index, arg)
 			if err != nil {
-				glog.Fatal(err)
+				glog.V(4).Info(err.Error())
+				return fmt.Errorf("plugin %q not found\n", arg)
 			}
 			printPluginInfo(os.Stdout, plugin)
 		}
+
+		return nil
 	},
 	PreRunE: checkIndex,
 	Args:    cobra.MinimumNArgs(1),
