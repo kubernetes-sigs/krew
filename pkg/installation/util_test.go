@@ -115,7 +115,7 @@ func Test_getPluginVersion(t *testing.T) {
 		name        string
 		args        args
 		wantVersion string
-		wantUri     string
+		wantURI     string
 		wantErr     bool
 	}{
 		{
@@ -129,7 +129,7 @@ func Test_getPluginVersion(t *testing.T) {
 				forceHEAD: false,
 			},
 			wantVersion: "HEAD",
-			wantUri:     "https://head.git",
+			wantURI:     "https://head.git",
 		}, {
 			name: "Get URI default",
 			args: args{
@@ -141,7 +141,7 @@ func Test_getPluginVersion(t *testing.T) {
 				forceHEAD: false,
 			},
 			wantVersion: "deadbeef",
-			wantUri:     "https://uri.git",
+			wantURI:     "https://uri.git",
 		}, {
 			name: "Get HEAD force",
 			args: args{
@@ -153,7 +153,7 @@ func Test_getPluginVersion(t *testing.T) {
 				forceHEAD: true,
 			},
 			wantVersion: "HEAD",
-			wantUri:     "https://head.git",
+			wantURI:     "https://head.git",
 		}, {
 			name: "HEAD force fallback",
 			args: args{
@@ -166,20 +166,20 @@ func Test_getPluginVersion(t *testing.T) {
 			},
 			wantErr:     true,
 			wantVersion: "",
-			wantUri:     "",
+			wantURI:     "",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotVersion, gotUri, err := getPluginVersion(tt.args.p, tt.args.forceHEAD)
+			gotVersion, gotURI, err := getPluginVersion(tt.args.p, tt.args.forceHEAD)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getPluginVersion() gotVersion = %v, want %v, got err = %v want err = %v", gotVersion, tt.wantVersion, err, tt.wantErr)
 			}
 			if gotVersion != tt.wantVersion {
 				t.Errorf("getPluginVersion() gotVersion = %v, want %v", gotVersion, tt.wantVersion)
 			}
-			if gotUri != tt.wantUri {
-				t.Errorf("getPluginVersion() gotUri = %v, want %v", gotUri, tt.wantUri)
+			if gotURI != tt.wantURI {
+				t.Errorf("getPluginVersion() gotURI = %v, want %v", gotURI, tt.wantURI)
 			}
 		})
 	}
@@ -205,7 +205,7 @@ func Test_getDownloadTarget(t *testing.T) {
 		name        string
 		args        args
 		wantVersion string
-		wantUri     string
+		wantURI     string
 		wantFos     []index.FileOperation
 		wantErr     bool
 	}{
@@ -230,7 +230,7 @@ func Test_getDownloadTarget(t *testing.T) {
 				},
 			},
 			wantVersion: "HEAD",
-			wantUri:     "https://head.git",
+			wantURI:     "https://head.git",
 			wantFos:     nil,
 			wantErr:     false,
 		}, {
@@ -253,14 +253,14 @@ func Test_getDownloadTarget(t *testing.T) {
 				},
 			},
 			wantVersion: "",
-			wantUri:     "",
+			wantURI:     "",
 			wantFos:     nil,
 			wantErr:     true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotVersion, gotUri, gotFos, err := getDownloadTarget(tt.args.index, tt.args.forceHEAD)
+			gotVersion, gotURI, gotFos, err := getDownloadTarget(tt.args.index, tt.args.forceHEAD)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getDownloadTarget() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -268,8 +268,8 @@ func Test_getDownloadTarget(t *testing.T) {
 			if gotVersion != tt.wantVersion {
 				t.Errorf("getDownloadTarget() gotVersion = %v, want %v", gotVersion, tt.wantVersion)
 			}
-			if gotUri != tt.wantUri {
-				t.Errorf("getDownloadTarget() gotUri = %v, want %v", gotUri, tt.wantUri)
+			if gotURI != tt.wantURI {
+				t.Errorf("getDownloadTarget() gotURI = %v, want %v", gotURI, tt.wantURI)
 			}
 			if !reflect.DeepEqual(gotFos, tt.wantFos) {
 				t.Errorf("getDownloadTarget() gotFos = %v, want %v", gotFos, tt.wantFos)

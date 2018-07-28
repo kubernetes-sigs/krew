@@ -60,7 +60,7 @@ kubectl plugin upgrade foo bar"`,
 
 			glog.V(2).Infof("Upgrading plugin: %s\n", plugin.Name)
 			err = installation.Upgrade(paths, plugin, krewExecutedVersion)
-			if ignoreUpgraded && err == installation.IsAlreadyUpgradedErr {
+			if ignoreUpgraded && err == installation.ErrIsAlreadyUpgraded {
 				fmt.Fprintf(os.Stderr, "Skipping plugin %s, it is already on the newest version\n", plugin.Name)
 				continue
 			}

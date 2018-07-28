@@ -31,8 +31,8 @@ import (
 )
 
 // LoadPluginListFromFS will parse and retrieve all plugin files.
-func LoadPluginListFromFS(indexDir string) (index.IndexList, error) {
-	var indexList index.IndexList
+func LoadPluginListFromFS(indexDir string) (index.PluginList, error) {
+	var indexList index.PluginList
 	indexDir, err := filepath.EvalSymlinks(indexDir)
 	if err != nil {
 		return indexList, err

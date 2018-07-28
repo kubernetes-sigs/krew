@@ -104,7 +104,7 @@ All plugins will be downloaded and made available to: "kubectl plugin <name>"`,
 			for _, plugin := range install {
 				glog.V(2).Infof("Installing plugin: %s\n", plugin.Name)
 				err := installation.Install(paths, plugin, *forceHEAD)
-				if err == installation.IsAlreadyInstalledErr {
+				if err == installation.ErrIsAlreadyInstalled {
 					glog.Warningf("Skipping plugin %s, it is already installed", plugin.Name)
 					continue
 				}
