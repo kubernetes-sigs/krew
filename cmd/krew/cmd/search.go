@@ -61,6 +61,11 @@ Search accepts a list of words as options.`,
 			matchNames = names
 		}
 
+		// No plugins found
+		if len(matchNames) == 0 {
+			return nil
+		}
+
 		rowPattern := "%s\t%s\t%s\n"
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
 		fmt.Fprintf(w, rowPattern, "NAME", "DESCRIPTION", "STATUS")
