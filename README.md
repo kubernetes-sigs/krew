@@ -18,10 +18,10 @@ For macOS and Linux:
 
 ```bash
 (
-set -x; cd "$(mktemp -d)" &&
-curl -fsSLO "https://github.com/GoogleContainerTools/krew/releases/download/v0.1.0-alpha.1/krew.zip" &&
-unzip krew.zip &&
-"./out/build/krew-$(uname | tr '[:upper:]' '[:lower:]')" install krew
+  set -x; cd "$(mktemp -d)" &&
+  curl -fsSLO "https://github.com/GoogleContainerTools/krew/releases/download/v0.1.0-alpha.1/krew.zip" &&
+  unzip krew.zip &&
+  "./out/build/krew-$(uname | tr '[:upper:]' '[:lower:]')" install krew
 )
 ```
 
