@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/GoogleContainerTools/krew/pkg/version"
 	"github.com/spf13/cobra"
 )
 
@@ -37,6 +38,8 @@ DownloadPath is the path used to store download binaries.`,
 		conf := map[string]string{
 			"IsPlugin":        fmt.Sprintf("%v", krewExecutedVersion != ""),
 			"ExecutedVersion": krewExecutedVersion,
+			"GitTag":          version.GitTag(),
+			"GitCommit":       version.GitCommit(),
 			"BasePath":        paths.Base,
 			"IndexPath":       paths.Index,
 			"IndexURI":        IndexURI,
