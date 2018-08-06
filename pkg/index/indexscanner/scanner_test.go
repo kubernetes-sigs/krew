@@ -15,6 +15,7 @@
 package indexscanner
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -125,9 +126,10 @@ func TestLoadIndexFileFromFS(t *testing.T) {
 		pluginName string
 	}
 	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
+		name              string
+		args              args
+		wantErr           bool
+		wantIsNotExistErr bool
 	}{
 		{
 			name: "load single index file",
@@ -135,7 +137,8 @@ func TestLoadIndexFileFromFS(t *testing.T) {
 				indexDir:   filepath.Join(testdataPath(t), "testindex"),
 				pluginName: "foo",
 			},
-			wantErr: false,
+			wantErr:           false,
+			wantIsNotExistErr: false,
 		},
 		{
 			name: "plugin file not found",
@@ -143,7 +146,8 @@ func TestLoadIndexFileFromFS(t *testing.T) {
 				indexDir:   filepath.FromSlash("./testdata"),
 				pluginName: "not",
 			},
-			wantErr: true,
+			wantErr:           true,
+			wantIsNotExistErr: true,
 		},
 		{
 			name: "plugin file bad name",
@@ -151,7 +155,8 @@ func TestLoadIndexFileFromFS(t *testing.T) {
 				indexDir:   filepath.FromSlash("./testdata"),
 				pluginName: "wrongname",
 			},
-			wantErr: true,
+			wantErr:           true,
+			wantIsNotExistErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -159,6 +164,10 @@ func TestLoadIndexFileFromFS(t *testing.T) {
 			got, err := LoadPluginFileFromFS(tt.args.indexDir, tt.args.pluginName)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("LoadIndexFileFromFS() got = %##v,error = %v, wantErr %v", got, err, tt.wantErr)
+				return
+			}
+			if os.IsNotExist(err) != tt.wantIsNotExistErr {
+				t.Errorf("LoadIndexFileFromFS() got = %##v,error = %v, wantIsNotExistErr %v", got, err, tt.wantErr)
 				return
 			}
 		})

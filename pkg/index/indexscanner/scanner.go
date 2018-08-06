@@ -64,7 +64,8 @@ func LoadPluginListFromFS(indexDir string) (index.PluginList, error) {
 	return indexList, nil
 }
 
-// LoadPluginFileFromFS loads a plugins index file by its name.
+// LoadPluginFileFromFS loads a plugins index file by its name. When plugin
+// file not found, it returns an error that can be checked with os.IsNotExist.
 func LoadPluginFileFromFS(indexDir, pluginName string) (index.Plugin, error) {
 	if !index.IsSafePluginName(pluginName) {
 		return index.Plugin{}, fmt.Errorf("plugin name %q not allowed", pluginName)
@@ -76,17 +77,22 @@ func LoadPluginFileFromFS(indexDir, pluginName string) (index.Plugin, error) {
 		return index.Plugin{}, err
 	}
 	p, err := ReadPluginFile(filepath.Join(indexDir, pluginName+".yaml"))
-	if err != nil {
+	if os.IsNotExist(err) {
+		return index.Plugin{}, err
+	} else if err != nil {
 		return index.Plugin{}, fmt.Errorf("failed to read the plugin file, err: %v", err)
 	}
 	return p, p.Validate(pluginName)
 }
 
-// ReadPluginFile loads a file from the FS
+// ReadPluginFile loads a file from the FS. When plugin file not found, it
+// returns an error that can be checked with os.IsNotExist.
 // TODO(lbb): Add object verification
 func ReadPluginFile(indexFilePath string) (index.Plugin, error) {
 	f, err := os.Open(indexFilePath)
-	if err != nil {
+	if os.IsNotExist(err) {
+		return index.Plugin{}, err
+	} else if err != nil {
 		return index.Plugin{}, fmt.Errorf("failed to open index file, err: %v", err)
 	}
 	return DecodePluginFile(f)
