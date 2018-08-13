@@ -11,7 +11,7 @@ Plugin names must be all lowercase and separate words with hyphens.
 [kebab-case](http://wiki.c2.com/?KebabCase).
 
 - **DON'T:** `kubectl plugin OpenSvc`<br/>
-  **DO:** `kubectl plugin `open-svc`
+  **DO:** `kubectl plugin open-svc`
 
 #### _Be specific_
 
