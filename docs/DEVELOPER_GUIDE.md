@@ -38,6 +38,9 @@ Each plugin needs a plugin descriptor.
 Those files are called plugin descriptors, they describe the entrypoint of the 
 kubectl plugin. 
 
+See [Plugin Naming Style Guide](NAMING_GUIDE.md) for choosing the right name
+for your plugin.
+
 Commit and push the two new files to your public repository. 
 
 ### Making Plugins Publicly Accessible
