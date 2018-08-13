@@ -6,8 +6,8 @@ plugins. These guidelines are used for reviewing the plugins submitted to
 
 #### _Punctuation_
 
-Plugin names must be all lowercase and separate words with hyphens**Don't **use
-camelCase, PascalCase, or snake_case; use
+Plugin names must be all lowercase and separate words with hyphens.
+**Don't** use camelCase, PascalCase, or snake_case; use
 [kebab-case](http://wiki.c2.com/?KebabCase).
 
 - **DON'T:** `kubectl plugin OpenSvc`<br/>
