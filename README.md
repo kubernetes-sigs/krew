@@ -2,6 +2,8 @@
 
 krew is the missing kubectl plugin manager.
 
+![Krew command-line demo (animated)](https://cdn.rawgit.com/ahmetb/krew/add-demo-gif/docs/src/krew_demo.svg)
+
 ## What is krew?
 
 krew is a tool that makes it easy to install
