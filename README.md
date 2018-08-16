@@ -86,18 +86,13 @@ Read the [Plugin Developer Guide](./docs/DEVELOPER_GUIDE.md) for details.
 
 # Roadmap
 
-## Support Multiple Index Repositories
-
-Tracked under [#23](https://github.com/GoogleContainerTools/krew/issues/23)
-
-## Donating krew to the SIG-CLI
-
-We plan to donate krew to the
-[SIG-CLI](https://github.com/kubernetes/community/tree/master/sig-cli).
-We have created a
-[KEP](https://github.com/kubernetes/community/pull/2340) that
-covers our intentions. Accepting the KEP means that krew will be
-pre-installed in ever kubectl version.
+- *Support Multiple Index Repositories:* Tracked under
+  [#23](https://github.com/GoogleContainerTools/krew/issues/23)
+- *Donating krew to the SIG-CLI:* We plan to donate krew to the
+  [SIG-CLI](https://github.com/kubernetes/community/tree/master/sig-cli). We
+  have created a [KEP](https://github.com/kubernetes/community/pull/2340) that
+  covers our intentions. Accepting the KEP means that kubectl will implement
+  krew commands natively, and support the plugin format.
 
 # LICENSE
 
