@@ -63,7 +63,7 @@ func init() {
 	flag.Parse()
 
 	paths = environment.MustGetKrewPathsFromEnvs(os.Environ())
-	if err := ensureDirs(paths.Base, paths.Download, paths.Install); err != nil {
+	if err := ensureDirs(paths.Base, paths.Download, paths.Install, paths.Bin); err != nil {
 		glog.Fatal(err)
 	}
 
