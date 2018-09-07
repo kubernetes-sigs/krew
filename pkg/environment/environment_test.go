@@ -83,20 +83,6 @@ func Test_getKubectlPluginsPath(t *testing.T) {
 			},
 			want: filepath.Join(homedir.HomeDir(), ".kube", "plugins"),
 		},
-		{
-			name: "manual plugin path",
-			args: args{
-				envs: []string{"KUBECTL_PLUGINS_PATH=/foobar", "HOME=~"},
-			},
-			want: "/foobar",
-		},
-		{
-			name: "no further xdg",
-			args: args{
-				envs: []string{"XDG_DATA_DIRS=/", "HOME=~"},
-			},
-			want: filepath.Join(homedir.HomeDir(), ".kube", "plugins"),
-		},
 	}
 
 	for _, tt := range tests {
