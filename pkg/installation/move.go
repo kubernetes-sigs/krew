@@ -163,13 +163,6 @@ func moveToInstallAtomic(download, pluginDir, version string, fos []index.FileOp
 	if err = moveAllFiles(download, tempdir, fos); err != nil {
 		return fmt.Errorf("failed to move files, err: %v", err)
 	}
-	// TODO(lbb): determine if this should be moved into moveAllFiles
-	glog.V(4).Infof("Checking for plugin descriptor in new plugin dir")
-	if ok, err := containsPluginDescriptors(tempdir); err != nil {
-		return fmt.Errorf("failed to find plugin descriptors in path %q, err %v", tempdir, err)
-	} else if !ok {
-		return fmt.Errorf("the resulting plugin dir has to contain a plugin.yaml file")
-	}
 
 	installPath := filepath.Join(pluginDir, version)
 	glog.V(2).Infof("Move %q to %q", tempdir, installPath)

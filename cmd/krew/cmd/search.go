@@ -46,7 +46,7 @@ Search accepts a list of words as options.`,
 			pluginMap[p.Name] = p
 		}
 
-		installed, err := installation.ListInstalledPlugins(paths.Install)
+		installed, err := installation.ListInstalledPlugins(paths.Install, paths.Bin)
 		if err != nil {
 			return fmt.Errorf("failed to load installed plugins, err: %v", err)
 		}

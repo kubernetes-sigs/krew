@@ -63,7 +63,7 @@ func downloadAndMove(version, uri string, fos []index.FileOperation, downloadPat
 // to not get the plugin dir in a bad state if it fails during the process.
 func Install(p environment.KrewPaths, plugin index.Plugin, forceHEAD bool) error {
 	glog.V(2).Infof("Looking for installed versions")
-	_, ok, err := findInstalledPluginVersion(p.Install, plugin.Name)
+	_, ok, err := findInstalledPluginVersion(p.Install, p.Bin, plugin.Name)
 	if err != nil {
 		return err
 	}
@@ -85,7 +85,7 @@ func Remove(p environment.KrewPaths, name string) error {
 		return fmt.Errorf("removing krew is not allowed through krew, see docs for help")
 	}
 	glog.V(3).Infof("Finding installed version to delete")
-	version, installed, err := findInstalledPluginVersion(p.Install, name)
+	version, installed, err := findInstalledPluginVersion(p.Install, p.Bin, name)
 	if err != nil {
 		return fmt.Errorf("can't remove plugin, err: %v", err)
 	}

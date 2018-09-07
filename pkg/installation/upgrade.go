@@ -29,7 +29,7 @@ import (
 // Upgrade will reinstall and delete the old plugin. The operation tries
 // to not get the plugin dir in a bad state if it fails during the process.
 func Upgrade(p environment.KrewPaths, plugin index.Plugin, currentKrewVersion string) error {
-	oldVersion, ok, err := findInstalledPluginVersion(p.Install, plugin.Name)
+	oldVersion, ok, err := findInstalledPluginVersion(p.Install, p.Bin, plugin.Name)
 	if err != nil {
 		return fmt.Errorf("could not detect installed plugin oldVersion, err: %v", err)
 	}

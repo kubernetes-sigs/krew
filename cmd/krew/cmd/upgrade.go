@@ -40,7 +40,7 @@ kubectl plugin upgrade foo bar"`,
 		var pluginNames []string
 		// Upgrade all plugins.
 		if len(args) == 0 {
-			installed, err := installation.ListInstalledPlugins(paths.Install)
+			installed, err := installation.ListInstalledPlugins(paths.Install, paths.Bin)
 			if err != nil {
 				return fmt.Errorf("failed to find all installed versions, err: %v", err)
 			}

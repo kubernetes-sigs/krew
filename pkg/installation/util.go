@@ -16,6 +16,7 @@ package installation
 
 import (
 	"fmt"
+	"github.com/GoogleContainerTools/krew/pkg/pathutil"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -56,43 +57,35 @@ func findInstalledPluginVersion(installPath, binDir, pluginName string) (name st
 	if !index.IsSafePluginName(pluginName) {
 		return "", false, fmt.Errorf("the plugin name %q is not allowed", pluginName)
 	}
-	glog.V(3).Infof("Searching for installed versions of %s in %q", pluginName, installPath)
-	fis, err := ioutil.ReadDir(filepath.Join(installPath, pluginName))
+	pluginName = "kubectl-" + pluginName
+	glog.V(3).Infof("Searching for installed versions of %s in %q", pluginName, binDir)
+	link, err := os.Readlink(filepath.Join(binDir, pluginName))
 	if os.IsNotExist(err) {
 		return "", false, nil
 	} else if err != nil {
-		return "", false, fmt.Errorf("could not read direcory, err: %v", err)
+		return "", false, fmt.Errorf("could not read plugin link, err: %v", err)
 	}
-	for _, fi := range fis {
-		if !fi.IsDir() {
-			continue
-		}
-		if ok, err := containsPluginDescriptors(filepath.Join(installPath, pluginName, fi.Name())); err != nil {
-			return "", false, fmt.Errorf("failed to find plugin descriptors in path %q, err: %v", filepath.Join(installPath, pluginName, fi.Name()), err)
-		} else if ok {
-			return fi.Name(), ok, nil
+
+	if !filepath.IsAbs(link) {
+		if link, err = filepath.Abs(filepath.Join(binDir, link)); err != nil {
+			return "", true, fmt.Errorf("failed to get the absolute path for the link of %q, err: %v", link, err)
 		}
 	}
-	return "", false, nil
+
+	name, err = pluginVersionFromPath(installPath, link)
+	if err != nil {
+		return "", true, fmt.Errorf("cloud not parse plugin version, err: %v", err)
+	}
+	return name, true, nil
 }
 
-// containsPluginDescriptors will recursively check a path if it contains any plugin descriptors that can be found by kubectl.
-func containsPluginDescriptors(path string) (bool, error) {
-	var contains bool
-	glog.V(4).Infof("Checking path %q for plugin descriptors", path)
-	return contains, filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if contains {
-			return filepath.SkipDir
-		}
-		if info.Name() == "plugin.yaml" && !info.IsDir() {
-			contains = true
-			return filepath.SkipDir
-		}
-		return nil
-	})
+func pluginVersionFromPath(installPath, pluginPath string) (string, error) {
+	// plugin path: {install_path}/{plugin_name}/{version}/...
+	elems, ok := pathutil.IsSubPath(installPath, pluginPath)
+	if !ok || len(elems) < 2 {
+		return "", fmt.Errorf("failed to get the version from execution path=%q, with install path=%q", pluginPath, installPath)
+	}
+	return elems[1], nil
 }
 
 func getPluginVersion(p index.Platform, forceHEAD bool) (version, uri string, err error) {
@@ -123,14 +116,15 @@ func getDownloadTarget(index index.Plugin, forceHEAD bool) (version, uri string,
 }
 
 // ListInstalledPlugins returns a list of all name:version for all plugins.
-func ListInstalledPlugins(installDir string) (map[string]string, error) {
+// TODO(lbb): refactor, breaks.
+func ListInstalledPlugins(installDir, binDir string) (map[string]string, error) {
 	installed := make(map[string]string)
 	plugins, err := ioutil.ReadDir(installDir)
 	if err != nil {
 		return installed, fmt.Errorf("failed to read install dir, err: %v", err)
 	}
 	for _, plugin := range plugins {
-		version, ok, err := findInstalledPluginVersion(installDir, plugin.Name())
+		version, ok, err := findInstalledPluginVersion(installDir, binDir, plugin.Name())
 		if err != nil {
 			return installed, fmt.Errorf("failed to get plugin version, err: %v", err)
 		}
