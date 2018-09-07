@@ -24,7 +24,7 @@ import (
 	"k8s.io/client-go/util/homedir"
 )
 
-// KrewPaths contains all important enviroment paths
+// KrewPaths contains all important environment paths
 type KrewPaths struct {
 	// Base is the path of the krew root.
 	// The default path is ~/.kube/plugins/krew
@@ -41,6 +41,10 @@ type KrewPaths struct {
 	// Download is a directory where plugins will be temporarily downloaded to.
 	// This is currently a path in os.TempDir()
 	Download string
+
+	// Bin is the path krew links all plugin binaries to.
+	// This path has to be added to the $PATH.
+	Bin string
 }
 
 func parseEnvs(environ []string) map[string]string {
@@ -65,26 +69,16 @@ func MustGetKrewPathsFromEnvs(envs []string) KrewPaths {
 		Index:    filepath.Join(base, "index"),
 		Install:  filepath.Join(base, "store"),
 		Download: filepath.Join(os.TempDir(), "krew"),
+		Bin:      filepath.Join(base, "bin"),
 	}
 }
 
-func getKubectlPluginsPath(envs []string) string {
-	envvars := parseEnvs(envs)
-
-	// Look for "${KUBECTL_PLUGINS_PATH}"
-	if path, ok := envvars["KUBECTL_PLUGINS_PATH"]; ok && path != "" {
-		return path
-	}
-
-	// TODO(lbb): make os call testable! (dep injection)
-	// Look for "${XDG_DATA_DIRS}/kubectl/plugins"
-	if path := envvars["XDG_DATA_DIRS"]; path != "" {
-		fullPath := filepath.Join(path, "kubectl", "plugins")
-		stat, err := os.Stat(fullPath)
-		if err == nil && stat.IsDir() {
-			return fullPath
-		}
-	}
+func getKubectlPluginsPath(_ []string) string {
+	// envvars := parseEnvs(envs)
+	// // Look for "${KREW_HOMEDIR}"
+	// if path, ok := envvars["KREW_HOMEDIR"]; ok && path != "" {
+	// 	return path
+	// }
 
 	// Golang does no '~' expansion
 	return filepath.Join(homedir.HomeDir(), ".kube", "plugins")
@@ -92,6 +86,7 @@ func getKubectlPluginsPath(envs []string) string {
 
 // GetExecutedVersion returns the currently executed version. If krew is
 // not executed as an plugin it will return a nil error and an empty string.
+// TODO(lbb): Breaks, refactor.
 func GetExecutedVersion(paths KrewPaths, cmdArgs []string) (string, bool, error) {
 	currentBinaryPath, err := filepath.Abs(cmdArgs[0])
 	if err != nil {
