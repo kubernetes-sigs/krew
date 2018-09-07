@@ -96,3 +96,29 @@ func Remove(p environment.KrewPaths, name string) error {
 	glog.V(3).Infof("Deleting path %q", filepath.Join(p.Install, name))
 	return os.RemoveAll(filepath.Join(p.Install, name))
 }
+
+func createOrUpdateLink(bindir string, binary string) error {
+	name := filepath.Base(binary)
+	dst := filepath.Join(bindir, name)
+
+	if err := removeLink(bindir, name); err != nil {
+		return fmt.Errorf("failed to remove old symlink, err: %v", err)
+	}
+	// Create new
+	if err := os.Symlink(dst, binary); err != nil && !os.IsExist(err) {
+		return fmt.Errorf("failed to create a symlink form %q to %q, err: %v", bindir, dst, err)
+	}
+	glog.V(2).Infof("Created symlink in %q\n", dst)
+
+	return nil
+}
+
+func removeLink(bindir string, plugin string) error {
+	dst := filepath.Join(bindir, plugin)
+	if err := os.Remove(dst); err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("failed to remove the symlink in %q, err: %v", dst, err)
+	} else if err == nil {
+		glog.V(3).Infof("Removed symlink from %q\n", dst)
+	}
+	return nil
+}

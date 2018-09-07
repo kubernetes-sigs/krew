@@ -52,7 +52,7 @@ func matchPlatformToSystemEnvs(i index.Plugin, os, arch string) (index.Platform,
 	return index.Platform{}, false, nil
 }
 
-func findInstalledPluginVersion(installPath, pluginName string) (name string, installed bool, err error) {
+func findInstalledPluginVersion(installPath, binDir, pluginName string) (name string, installed bool, err error) {
 	if !index.IsSafePluginName(pluginName) {
 		return "", false, fmt.Errorf("the plugin name %q is not allowed", pluginName)
 	}
