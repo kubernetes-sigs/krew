@@ -147,7 +147,7 @@ func moveAllFiles(fromDir, toDir string, fos []index.FileOperation) error {
 	return nil
 }
 
-func moveToInstallAtomic(download, pluginDir, version string, fos []index.FileOperation) error {
+func moveToInstallDir(download, pluginDir, version string, fos []index.FileOperation) error {
 	glog.V(4).Infof("Creating plugin dir %q", pluginDir)
 	if err := os.MkdirAll(pluginDir, 0755); err != nil {
 		return fmt.Errorf("error creating path to %q, err: %v", pluginDir, err)

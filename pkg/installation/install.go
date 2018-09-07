@@ -56,7 +56,7 @@ func downloadAndMove(version, uri string, fos []index.FileOperation, downloadPat
 		return err
 	}
 
-	return moveToInstallAtomic(downloadPath, installPath, version, fos)
+	return moveToInstallDir(downloadPath, installPath, version, fos)
 }
 
 // Install will download and install a plugin. The operation tries
