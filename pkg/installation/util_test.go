@@ -196,6 +196,7 @@ func Test_getDownloadTarget(t *testing.T) {
 				"os": runtime.GOOS,
 			},
 		},
+		Bin:   "kubectl-foo",
 		Files: nil,
 	}
 	type args struct {
@@ -208,6 +209,7 @@ func Test_getDownloadTarget(t *testing.T) {
 		wantVersion string
 		wantURI     string
 		wantFos     []index.FileOperation
+		wantBin     string
 		wantErr     bool
 	}{
 		{
@@ -233,6 +235,7 @@ func Test_getDownloadTarget(t *testing.T) {
 			wantVersion: "HEAD",
 			wantURI:     "https://head.git",
 			wantFos:     nil,
+			wantBin:     "kubectl-foo",
 			wantErr:     false,
 		}, {
 			name: "No Matching Platform",
@@ -256,18 +259,22 @@ func Test_getDownloadTarget(t *testing.T) {
 			wantVersion: "",
 			wantURI:     "",
 			wantFos:     nil,
+			wantBin:     "",
 			wantErr:     true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotVersion, gotURI, gotFos, err := getDownloadTarget(tt.args.index, tt.args.forceHEAD)
+			gotVersion, gotURI, gotFos, bin, err := getDownloadTarget(tt.args.index, tt.args.forceHEAD)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getDownloadTarget() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if gotVersion != tt.wantVersion {
 				t.Errorf("getDownloadTarget() gotVersion = %v, want %v", gotVersion, tt.wantVersion)
+			}
+			if bin != tt.wantBin {
+				t.Errorf("getDownloadTarget() bin = %v, want %v", bin, tt.wantBin)
 			}
 			if gotURI != tt.wantURI {
 				t.Errorf("getDownloadTarget() gotURI = %v, want %v", gotURI, tt.wantURI)

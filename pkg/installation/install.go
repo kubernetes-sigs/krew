@@ -16,13 +16,14 @@ package installation
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
-
 	"github.com/GoogleContainerTools/krew/pkg/download"
 	"github.com/GoogleContainerTools/krew/pkg/environment"
 	"github.com/GoogleContainerTools/krew/pkg/index"
 	"github.com/golang/glog"
+	"os"
+	"path/filepath"
+	"runtime"
+	"strings"
 )
 
 // Plugin Lifecycle Errors
@@ -38,10 +39,10 @@ const (
 	krewPluginName = "krew"
 )
 
-func downloadAndMove(version, uri string, fos []index.FileOperation, downloadPath, installPath string) (err error) {
+func downloadAndMove(version, uri string, fos []index.FileOperation, downloadPath, installPath string) (dst string, err error) {
 	glog.V(3).Infof("Creating download dir %q", downloadPath)
 	if err = os.MkdirAll(downloadPath, 0755); err != nil {
-		return fmt.Errorf("could not create download path %q, err: %v", downloadPath, err)
+		return "", fmt.Errorf("could not create download path %q, err: %v", downloadPath, err)
 	}
 	defer os.RemoveAll(downloadPath)
 
@@ -53,7 +54,7 @@ func downloadAndMove(version, uri string, fos []index.FileOperation, downloadPat
 		err = download.GetWithSha256(uri, downloadPath, version, download.HTTPFetcher{})
 	}
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	return moveToInstallDir(downloadPath, installPath, version, fos)
@@ -72,11 +73,16 @@ func Install(p environment.KrewPaths, plugin index.Plugin, forceHEAD bool) error
 	}
 
 	glog.V(1).Infof("Finding download target for plugin %s", plugin.Name)
-	version, uri, fos, err := getDownloadTarget(plugin, forceHEAD)
+	version, uri, fos, bin, err := getDownloadTarget(plugin, forceHEAD)
 	if err != nil {
 		return err
 	}
-	return downloadAndMove(version, uri, fos, filepath.Join(p.Download, plugin.Name), filepath.Join(p.Install, plugin.Name))
+	dst, err := downloadAndMove(version, uri, fos, filepath.Join(p.Download, plugin.Name), filepath.Join(p.Install, plugin.Name))
+	if err != nil {
+		return fmt.Errorf("failed to dowload and move during installation, err: %v", err)
+	}
+
+	return createOrUpdateLink(p.Bin, filepath.Join(dst, bin))
 }
 
 // Remove will remove a plugin.
@@ -94,6 +100,7 @@ func Remove(p environment.KrewPaths, name string) error {
 	}
 	glog.V(1).Infof("Deleting plugin version %s", version)
 	glog.V(3).Infof("Deleting path %q", filepath.Join(p.Install, name))
+	removeLink(p.Bin, "")
 	return os.RemoveAll(filepath.Join(p.Install, name))
 }
 
@@ -114,11 +121,24 @@ func createOrUpdateLink(bindir string, binary string) error {
 }
 
 func removeLink(bindir string, plugin string) error {
-	dst := filepath.Join(bindir, plugin)
+	dst := filepath.Join(bindir, pluginNameToBin(plugin))
+
 	if err := os.Remove(dst); err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("failed to remove the symlink in %q, err: %v", dst, err)
 	} else if err == nil {
 		glog.V(3).Infof("Removed symlink from %q\n", dst)
 	}
 	return nil
+}
+
+func pluginNameToBin(name string) string {
+	if runtime.GOOS == "windows" && !strings.HasSuffix(name, ".exe") {
+		name = name + ".exe"
+	}
+
+	if !strings.HasPrefix(name, "kubectl-") {
+		name = "kubectl-" + name
+	}
+
+	return name
 }

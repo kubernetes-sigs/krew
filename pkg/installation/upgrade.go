@@ -38,7 +38,7 @@ func Upgrade(p environment.KrewPaths, plugin index.Plugin, currentKrewVersion st
 	}
 
 	// Check allowed installation
-	newVersion, uri, fos, err := getDownloadTarget(plugin, oldVersion == headVersion)
+	newVersion, uri, fos, binName, err := getDownloadTarget(plugin, oldVersion == headVersion)
 	if oldVersion == newVersion && oldVersion != headVersion {
 		return ErrIsAlreadyUpgraded
 	}
@@ -58,8 +58,13 @@ func Upgrade(p environment.KrewPaths, plugin index.Plugin, currentKrewVersion st
 
 	// Re-Install
 	glog.V(1).Infof("Installing new version %s", newVersion)
-	if err = downloadAndMove(newVersion, uri, fos, filepath.Join(p.Download, plugin.Name), filepath.Join(p.Install, plugin.Name)); err != nil {
+	var dst string
+	if dst, err = downloadAndMove(newVersion, uri, fos, filepath.Join(p.Download, plugin.Name), filepath.Join(p.Install, plugin.Name)); err != nil {
 		return fmt.Errorf("failed to download and move, err: %v", err)
+	}
+
+	if err = createOrUpdateLink(p.Bin, filepath.Join(dst, filepath.FromSlash(binName))); err != nil {
+		return fmt.Errorf("failed to upgrade the link, err: %v", err)
 	}
 
 	// Clean old installations
@@ -98,23 +103,7 @@ func handleKrewRemove(p environment.KrewPaths, plugin index.Plugin, newVersion, 
 			}
 		} else if f.Name() != newVersion {
 			glog.V(1).Infof("Unlink krew installation under %q", pluginVersionPath)
-			if err = removeAllPluginDescriptors(pluginVersionPath); err != nil {
-				return fmt.Errorf("failed to remove plugin descriptors, err: %v", err)
-			}
 		}
 	}
 	return nil
-}
-
-// removeAllPluginDescriptors will remove all plugin.yaml files from a given path.
-func removeAllPluginDescriptors(path string) error {
-	return filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if info.Name() == "plugin.yaml" && !info.IsDir() {
-			return os.Remove(path)
-		}
-		return nil
-	})
 }

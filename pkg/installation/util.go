@@ -57,7 +57,7 @@ func findInstalledPluginVersion(installPath, binDir, pluginName string) (name st
 	if !index.IsSafePluginName(pluginName) {
 		return "", false, fmt.Errorf("the plugin name %q is not allowed", pluginName)
 	}
-	pluginName = "kubectl-" + pluginName
+	pluginName = pluginNameToBin(pluginName)
 	glog.V(3).Infof("Searching for installed versions of %s in %q", pluginName, binDir)
 	link, err := os.Readlink(filepath.Join(binDir, pluginName))
 	if os.IsNotExist(err) {
@@ -98,21 +98,21 @@ func getPluginVersion(p index.Platform, forceHEAD bool) (version, uri string, er
 	return strings.ToLower(p.Sha256), p.URI, nil
 }
 
-func getDownloadTarget(index index.Plugin, forceHEAD bool) (version, uri string, fos []index.FileOperation, err error) {
+func getDownloadTarget(index index.Plugin, forceHEAD bool) (version, uri string, fos []index.FileOperation, bin string, err error) {
 	p, ok, err := GetMatchingPlatform(index)
 	if err != nil {
-		return "", "", nil, fmt.Errorf("failed to get matching platforms, err: %v", err)
+		return "", "", nil, p.Bin, fmt.Errorf("failed to get matching platforms, err: %v", err)
 	}
 	if !ok {
-		return "", "", nil, fmt.Errorf("no matching platform found")
+		return "", "", nil, p.Bin, fmt.Errorf("no matching platform found")
 	}
 	version, uri, err = getPluginVersion(p, forceHEAD)
 	if err != nil {
-		return "", "", nil, fmt.Errorf("failed to get the plugin version, err: %v", err)
+		return "", "", nil, p.Bin, fmt.Errorf("failed to get the plugin version, err: %v", err)
 	}
 	glog.V(4).Infof("Matching plugin version is %s", version)
 
-	return version, uri, p.Files, nil
+	return version, uri, p.Files, p.Bin, nil
 }
 
 // ListInstalledPlugins returns a list of all name:version for all plugins.
