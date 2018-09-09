@@ -41,11 +41,11 @@ func findMoveTargets(fromDir, toDir string, fo index.FileOperation) ([]move, err
 		return nil, fmt.Errorf("could not get the relative path for the move src, err: %v", err)
 	}
 
-	glog.V(4).Infoln("Trying to move single file directly from=%q to=%q with file operation=%+v", fromDir, toDir, fo)
+	glog.V(4).Infof("Trying to move single file directly from=%q to=%q with file operation=%+v", fromDir, toDir, fo)
 	if m, ok, err := getDirectMove(fromDir, toDir, fo); err != nil {
 		return nil, fmt.Errorf("failed to detect single move operation, err: %v", err)
 	} else if ok {
-		glog.V(3).Infof("Detected single move from file operation", fo)
+		glog.V(3).Infof("Detected single move from file operation=%+v", fo)
 		return []move{m}, nil
 	}
 
