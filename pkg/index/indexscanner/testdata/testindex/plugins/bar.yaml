@@ -21,8 +21,10 @@ spec:
   - files:
     - from: "*"
     head: https://example.com
+    bin: kubectl-bar
   - files:
     - from: "*"
     uri: https://example.com
     sha256: alsoSet
+    bin: kubectl-bar
   shortDescription: "exists"

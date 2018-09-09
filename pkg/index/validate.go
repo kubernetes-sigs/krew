@@ -69,6 +69,9 @@ func (p Platform) Validate() error {
 	if p.Head == "" && p.URI == "" {
 		return fmt.Errorf("head or URI have to be set")
 	}
+	if p.Bin == "" {
+		return fmt.Errorf("bin has to be set")
+	}
 	if len(p.Files) == 0 {
 		return fmt.Errorf("can't have a plugin without specifying file operations")
 	}
