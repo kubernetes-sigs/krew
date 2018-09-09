@@ -74,12 +74,6 @@ func MustGetKrewPathsFromEnvs(envs []string) KrewPaths {
 }
 
 func getKubectlPluginsPath(_ []string) string {
-	// envvars := parseEnvs(envs)
-	// // Look for "${KREW_HOMEDIR}"
-	// if path, ok := envvars["KREW_HOMEDIR"]; ok && path != "" {
-	// 	return path
-	// }
-
 	// Golang does no '~' expansion
 	return filepath.Join(homedir.HomeDir(), ".kube", "plugins")
 }

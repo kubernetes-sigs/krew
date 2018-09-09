@@ -303,6 +303,18 @@ func TestPlatform_Validate(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name: "wrong bin prefix",
+			fields: fields{
+				Head:     "http://example.com",
+				URI:      "",
+				Sha256:   "",
+				Selector: nil,
+				Files:    []FileOperation{{"", ""}},
+				Bin:      "foo",
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
