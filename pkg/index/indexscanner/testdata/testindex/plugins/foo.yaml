@@ -21,12 +21,14 @@ spec:
   - files:
     - from: "*"
     head: https://example.com
+    bin: kubectl-foo
     selector:
       matchExpressions:
       - {key: os, operator: In, values: [macos, linux]}
   - files:
     - from: "*"
     head: https://example.com
+    bin: kubectl-foo
     selector:
       matchLabels:
         os: "windows"
