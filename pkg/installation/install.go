@@ -111,8 +111,14 @@ func createOrUpdateLink(bindir string, binary string) error {
 	if err := removeLink(bindir, name); err != nil {
 		return fmt.Errorf("failed to remove old symlink, err: %v", err)
 	}
+	if _, err := os.Stat(binary); os.IsNotExist(err) {
+		return fmt.Errorf("can't create file, destination %q does not exsist", binary)
+	}
+
 	// Create new
-	if err := os.Symlink(dst, binary); err != nil && !os.IsExist(err) {
+	glog.V(2).Infof("Creating symlink from %q to %q\n", binary, dst)
+	var err error
+	if err = os.Symlink(binary, dst); err != nil && !os.IsExist(err) {
 		return fmt.Errorf("failed to create a symlink form %q to %q, err: %v", bindir, dst, err)
 	}
 	glog.V(2).Infof("Created symlink in %q\n", dst)

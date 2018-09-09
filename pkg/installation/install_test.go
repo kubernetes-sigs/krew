@@ -92,7 +92,7 @@ func Test_createOrUpdateLink(t *testing.T) {
 			pluginName: "foo",
 			args: args{
 				binDir: tempDir,
-				binary: filepath.Join(testdataPath(t), "plugin-foo", "foo"),
+				binary: filepath.Join(testdataPath(t), "plugin-foo", "kubectl-foo"),
 			},
 			wantErr: false,
 		},
@@ -101,7 +101,7 @@ func Test_createOrUpdateLink(t *testing.T) {
 			pluginName: "foo",
 			args: args{
 				binDir: tempDir,
-				binary: filepath.Join(testdataPath(t), "plugin-foo", "foo"),
+				binary: filepath.Join(testdataPath(t), "plugin-foo", "kubectl-foo"),
 			},
 			wantErr: false,
 		},
