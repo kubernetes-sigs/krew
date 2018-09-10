@@ -116,7 +116,6 @@ func getDownloadTarget(index index.Plugin, forceHEAD bool) (version, uri string,
 }
 
 // ListInstalledPlugins returns a list of all name:version for all plugins.
-// TODO(lbb): refactor, breaks.
 func ListInstalledPlugins(installDir, binDir string) (map[string]string, error) {
 	installed := make(map[string]string)
 	plugins, err := ioutil.ReadDir(installDir)

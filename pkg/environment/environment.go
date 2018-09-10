@@ -86,9 +86,20 @@ func getKubectlPluginsPath(_ []string) string {
 
 // GetExecutedVersion returns the currently executed version. If krew is
 // not executed as an plugin it will return a nil error and an empty string.
-// TODO(lbb): Breaks, refactor.
 func GetExecutedVersion(paths KrewPaths, cmdArgs []string) (string, bool, error) {
-	currentBinaryPath, err := filepath.Abs(cmdArgs[0])
+	path := cmdArgs[0]
+	s, err := os.Stat(path)
+	if err != nil {
+		return "", false, fmt.Errorf("failed to stat the currently executed path")
+	}
+
+	if s.Mode()&os.ModeSymlink != 0 {
+		if path, err = os.Readlink(path); err != nil {
+			return "", false, fmt.Errorf("failed to resolve the symnlink of the currently executed version")
+		}
+	}
+
+	currentBinaryPath, err := filepath.Abs(path)
 	if err != nil {
 		return "", false, err
 	}
