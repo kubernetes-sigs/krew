@@ -37,9 +37,6 @@ var rootCmd = &cobra.Command{
 	Short: "krew is the kubectl plugin manager",
 	Long: `krew is the kubectl plugin manager.
 You can invoke krew through kubectl with: "kubectl plugin [krew] option..."`,
-	PersistentPreRun: func(cmd *cobra.Command, _ []string) {
-		bindEnvironmentVariables(viper.GetViper(), cmd)
-	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -48,11 +45,6 @@ func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		glog.Fatal(err)
 	}
-}
-
-// InjectCommand InjectCommand adds a cobra command to the main tree
-func InjectCommand(c *cobra.Command) {
-	rootCmd.AddCommand(c)
 }
 
 func init() {
