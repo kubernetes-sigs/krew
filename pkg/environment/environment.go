@@ -88,7 +88,7 @@ func getKubectlPluginsPath(_ []string) string {
 // not executed as an plugin it will return a nil error and an empty string.
 func GetExecutedVersion(paths KrewPaths, cmdArgs []string) (string, bool, error) {
 	path := cmdArgs[0]
-	s, err := os.Stat(path)
+	s, err := os.Lstat(path)
 	if err != nil {
 		return "", false, fmt.Errorf("failed to stat the currently executed path")
 	}
@@ -115,10 +115,4 @@ func GetExecutedVersion(paths KrewPaths, cmdArgs []string) (string, bool, error)
 	}
 
 	return elems[0], true, nil
-}
-
-// IsPlugin checks if the currently executed binary is a plugin.
-func IsPlugin(environ []string) bool {
-	_, ok := parseEnvs(environ)["KUBECTL_PLUGINS_DESCRIPTOR_NAME"]
-	return ok
 }

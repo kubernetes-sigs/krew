@@ -59,12 +59,10 @@ func init() {
 		glog.Fatal(err)
 	}
 
-	if environment.IsPlugin(os.Environ()) {
-		if krewVersion, ok, err := environment.GetExecutedVersion(paths, os.Args); err != nil {
-			glog.Fatal(fmt.Errorf("failed to find current krew version, err: %v", err))
-		} else if ok {
-			krewExecutedVersion = krewVersion
-		}
+	if krewVersion, ok, err := environment.GetExecutedVersion(paths, os.Args); err != nil {
+		glog.Fatal(fmt.Errorf("failed to find current krew version, err: %v", err))
+	} else if ok {
+		krewExecutedVersion = krewVersion
 	}
 
 	SetGlogFlags(krewExecutedVersion != "")
