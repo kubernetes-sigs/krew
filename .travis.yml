@@ -23,6 +23,7 @@ before_install:
 script:
   - hack/gofmt.sh
   - hack/gometalinter.sh
+  - go test -v -cover ./...
   - hack/build-cross-releases.sh
 
 deploy:
