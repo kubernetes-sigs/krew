@@ -20,8 +20,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/GoogleContainerTools/krew/pkg/pathutil"
 	"k8s.io/client-go/util/homedir"
+
+	"github.com/GoogleContainerTools/krew/pkg/pathutil"
 )
 
 // KrewPaths contains all important environment paths
@@ -56,9 +57,9 @@ func parseEnvs(environ []string) map[string]string {
 	return flags
 }
 
-// MustGetKrewPathsFromEnvs returns ensured index paths for krew.
-func MustGetKrewPathsFromEnvs(envs []string) KrewPaths {
-	base := filepath.Join(getKubectlPluginsPath(envs), "krew")
+// MustGetKrewPaths returns ensured index paths for krew.
+func MustGetKrewPaths() KrewPaths {
+	base := filepath.Join(homedir.HomeDir(), ".kube", "plugins", "krew")
 	base, err := filepath.Abs(base)
 	if err != nil {
 		panic(fmt.Errorf("cannot get current pwd err: %v", err))
@@ -71,11 +72,6 @@ func MustGetKrewPathsFromEnvs(envs []string) KrewPaths {
 		Download: filepath.Join(os.TempDir(), "krew"),
 		Bin:      filepath.Join(base, "bin"),
 	}
-}
-
-func getKubectlPluginsPath(_ []string) string {
-	// Golang does no '~' expansion
-	return filepath.Join(homedir.HomeDir(), ".kube", "plugins")
 }
 
 // GetExecutedVersion returns the currently executed version. If krew is

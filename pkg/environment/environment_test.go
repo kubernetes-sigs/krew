@@ -18,8 +18,6 @@ import (
 	"path/filepath"
 	"reflect"
 	"testing"
-
-	"k8s.io/client-go/util/homedir"
 )
 
 func Test_parseEnvs(t *testing.T) {
@@ -62,33 +60,6 @@ func Test_parseEnvs(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := parseEnvs(tt.args.environ); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("parseEnvs() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_getKubectlPluginsPath(t *testing.T) {
-	type args struct {
-		envs []string
-	}
-	tests := []struct {
-		name string
-		args args
-		want string
-	}{
-		{
-			name: "default path",
-			args: args{
-				envs: []string{"HOME=~"},
-			},
-			want: filepath.Join(homedir.HomeDir(), ".kube", "plugins"),
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := getKubectlPluginsPath(tt.args.envs); got != tt.want {
-				t.Errorf("getKubectlPluginsPath() = %v, want %v", got, tt.want)
 			}
 		})
 	}
