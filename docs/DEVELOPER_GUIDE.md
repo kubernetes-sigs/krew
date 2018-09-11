@@ -18,30 +18,25 @@ The plugin shows the environment variables on unix and windows systems.
 First, create a public GitHub repository for the plugin.
 In this repository there should be two plugin files:
 
-`unix/plugin.yaml`
+`unix/kubectl-foo`
 
 ```yaml
-name: foo
-shortDesc: Example plugin
-command: env
+#!/bin/bash
+env
 ```
 
-`windows/plugin.yaml`:
+`windows/kubectl-foo.exe`:
 
 ```yaml
-name: foo
-shortDesc: Example plugin
-command: SET
+SET
 ```
 
-Each plugin needs a plugin descriptor.
-Those files are called plugin descriptors, they describe the entrypoint of the 
-kubectl plugin. 
+Each plugin needs an  entrypoint as the kubectl plugin.
 
 See [Plugin Naming Style Guide](NAMING_GUIDE.md) for choosing the right name
 for your plugin.
 
-Commit and push the two new files to your public repository. 
+Commit and push the new files to your public repository.
 
 ### Making Plugins Publicly Accessible
 
@@ -55,15 +50,14 @@ URL: `https://github.com/<user>/<project>/archive/master.zip`.
 ### Writing a Plugin Index File
 
 Each krew plugin has a "plugin index manifest" file that lives in the index
-repository. This file describes which files to install from the provided archive.
-This file is different than the `plugin.yaml` file.
-The index plugin index manifest allows krew to manage your plugin
-installation this file. 
+repository. This file describes which files to install from the provided
+archive. The index plugin index manifest file allows krew to manage your plugin
+installation.
 
 ### Example Plugin Index File
 
 ```yaml
-apiVersion: krew.googlecontainertools.github.com/v1alpha1
+apiVersion: krew.googlecontainertools.github.com/v1alpha2
 kind: Plugin
 metadata:
   name: foo
@@ -73,6 +67,7 @@ spec:
       matchExpressions:
       - {key: os, operator: In, values: [darwin, linux]} 
     head: https://github.com/barbaz/foo/archive/master.zip
+    bin: "./kubectl-foo"
     # This is used during installation. It uses file Globs to copy required files.
     files:
     - from: "/unix/*"
@@ -81,7 +76,8 @@ spec:
       matchLabels:
         os: windows
     head: https://github.com/barbaz/foo/archive/master.zip
-    files: 
+    bin: "./kubectl-foo.exe"
+    files:
     - from: "/windows/*"
       to: "."
   # Version does not follow any conventions and is not functional.
@@ -107,7 +103,7 @@ The following YAML file, named `foo.yaml`,
 shows the manifest for a plugin named `foo`:
 
 ```yaml
-apiVersion: krew.googlecontainertools.github.com/v1alpha1
+apiVersion: krew.googlecontainertools.github.com/v1alpha2
 kind: Plugin
 metadata:
   name: foo
@@ -196,9 +192,9 @@ Given the file operation above, assume the plugin archive looks like this:
 ```text
 .
 ├── unix
-│   └── plugin.yaml
+│   └── kubectl-foo
 └── windows
-    └── plugin.yaml
+    └── kubectl-foo.exe
 ```
 
 The resulting installation directory will look like:
@@ -206,6 +202,17 @@ The resulting installation directory will look like:
 ```text
 .
 └── plugin.yaml
+```
+
+---
+
+Krew needs to link a plugin executeable to the `PATH`. The `bin` field has to
+point to the executable in the installation folder.
+
+```yaml
+...
+    bin: "./kubectl-foo"
+...
 ```
 
 ---
@@ -279,5 +286,3 @@ The new plugin file should be submitted to the `plugins/` directory in the index
 Create a pull request with the updated `uri` and `sha256`,
 it is also useful to change the `version` field so that users can distinguish
 the different versions.
-
-

@@ -88,7 +88,7 @@ like Unix systems and Windows.
 An example Plugin Manifest file of a plugin "foo", named `foo.yaml`, can look like this:
 
 ```yaml
-apiVersion: krew.googlecontainertools.github.com/v1alpha1
+apiVersion: krew.googlecontainertools.github.com/v1alpha2
 kind: Plugin
 metadata:
   name: foo
