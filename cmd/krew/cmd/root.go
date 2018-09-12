@@ -39,6 +39,14 @@ var rootCmd = &cobra.Command{
 You can invoke krew through kubectl with: "kubectl plugin [krew] option..."`,
 	PersistentPreRun: func(cmd *cobra.Command, _ []string) {
 		bindEnvironmentVariables(viper.GetViper(), cmd)
+
+		glog.Warning("Upcoming breaking change notice:\n" +
+			"+++++++++++++++++++++++++++++++++++++++++++++++++\n" +
+			"WARNING: krew will soon introduce breaking changes to move to\n" +
+			"the new plugin system introduced in kubectl v1.12 and it will stop\n" +
+			"working until you uninstall and reinstall krew v0.2.0.\n" +
+			"This version of krew is compatible only with kubectl v1.11 or lower.\n" +
+			"+++++++++++++++++++++++++++++++++++++++++++++++++")
 	},
 }
 
