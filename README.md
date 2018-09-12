@@ -19,7 +19,7 @@ For macOS and Linux:
 ```bash
 (
   set -x; cd "$(mktemp -d)" &&
-  curl -fsSLO "https://github.com/GoogleContainerTools/krew/releases/download/v0.1.0-alpha.1/krew.zip" &&
+  curl -fsSLO "https://github.com/GoogleContainerTools/krew/releases/download/v0.1.1/krew.zip" &&
   unzip krew.zip &&
   "./out/build/krew-$(uname | tr '[:upper:]' '[:lower:]')" install krew
 )
@@ -28,7 +28,7 @@ For macOS and Linux:
 Windows:
 
 1. Make sure that git is installed
-2. Download https://github.com/GoogleContainerTools/krew/releases/download/v0.1.0-alpha.1/krew.zip
+2. Download https://github.com/GoogleContainerTools/krew/releases/download/v0.1.1/krew.zip
 3. Unzip the file
 4. Launch a command-line window in the extracted directory
 5. Run: ./out/build/krew-windows.exe install krew
