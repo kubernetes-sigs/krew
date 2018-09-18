@@ -82,7 +82,7 @@ func Install(p environment.KrewPaths, plugin index.Plugin, forceHEAD bool) error
 		return fmt.Errorf("failed to dowload and move during installation, err: %v", err)
 	}
 
-	return createOrUpdateLink(p.Bin, filepath.Join(dst, bin))
+	return createOrUpdateLink(p.Bin, filepath.Join(dst, bin), plugin.Name)
 }
 
 // Remove will remove a plugin.
@@ -100,15 +100,14 @@ func Remove(p environment.KrewPaths, name string) error {
 	}
 	glog.V(1).Infof("Deleting plugin version %s", version)
 	glog.V(3).Infof("Deleting path %q", filepath.Join(p.Install, name))
-	removeLink(p.Bin, "")
+	removeLink(p.Bin, name)
 	return os.RemoveAll(filepath.Join(p.Install, name))
 }
 
-func createOrUpdateLink(bindir string, binary string) error {
-	name := filepath.Base(binary)
-	dst := filepath.Join(bindir, name)
+func createOrUpdateLink(bindir string, binary string, plugin string) error {
+	dst := filepath.Join(bindir, pluginNameToBin(plugin))
 
-	if err := removeLink(bindir, name); err != nil {
+	if err := removeLink(bindir, plugin); err != nil {
 		return fmt.Errorf("failed to remove old symlink, err: %v", err)
 	}
 	if _, err := os.Stat(binary); os.IsNotExist(err) {
@@ -142,9 +141,5 @@ func pluginNameToBin(name string) string {
 		name = name + ".exe"
 	}
 
-	if !strings.HasPrefix(name, "kubectl-") {
-		name = "kubectl-" + name
-	}
-
-	return name
+	return "kubectl-" + name
 }

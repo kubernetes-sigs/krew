@@ -63,7 +63,7 @@ func Upgrade(p environment.KrewPaths, plugin index.Plugin, currentKrewVersion st
 		return fmt.Errorf("failed to download and move, err: %v", err)
 	}
 
-	if err = createOrUpdateLink(p.Bin, filepath.Join(dst, filepath.FromSlash(binName))); err != nil {
+	if err = createOrUpdateLink(p.Bin, filepath.Join(dst, filepath.FromSlash(binName)), plugin.Name); err != nil {
 		return fmt.Errorf("failed to upgrade the link, err: %v", err)
 	}
 

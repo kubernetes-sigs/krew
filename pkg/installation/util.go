@@ -57,9 +57,8 @@ func findInstalledPluginVersion(installPath, binDir, pluginName string) (name st
 	if !index.IsSafePluginName(pluginName) {
 		return "", false, fmt.Errorf("the plugin name %q is not allowed", pluginName)
 	}
-	pluginName = pluginNameToBin(pluginName)
 	glog.V(3).Infof("Searching for installed versions of %s in %q", pluginName, binDir)
-	link, err := os.Readlink(filepath.Join(binDir, pluginName))
+	link, err := os.Readlink(filepath.Join(binDir, pluginNameToBin(pluginName)))
 	if os.IsNotExist(err) {
 		return "", false, nil
 	} else if err != nil {

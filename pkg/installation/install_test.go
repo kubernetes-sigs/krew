@@ -117,7 +117,7 @@ func Test_createOrUpdateLink(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := createOrUpdateLink(tt.args.binDir, tt.args.binary); (err != nil) != tt.wantErr {
+			if err := createOrUpdateLink(tt.args.binDir, tt.args.binary, tt.pluginName); (err != nil) != tt.wantErr {
 				t.Errorf("createOrUpdateLink() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
