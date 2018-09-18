@@ -54,7 +54,7 @@ func init() {
 	// Required by glog
 	flag.Parse()
 
-	paths = environment.MustGetKrewPathsFromEnvs(os.Environ())
+	paths = environment.MustGetKrewPaths()
 	if err := ensureDirs(paths.Base, paths.Download, paths.Install, paths.Bin); err != nil {
 		glog.Fatal(err)
 	}

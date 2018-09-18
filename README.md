@@ -11,6 +11,12 @@ similar to tools like apt, dnf or [brew](http://brew.sh).
 
 ### Installation
 
+> :warning: **Warning** :warning: **Kubectl v1.12 completely changes the plugin
+> model in a breaking way and it's not compatible with krew yet**
+> ([#33](https://github.com/GoogleContainerTools/krew/issues/33)). Therefore,
+> krew will make breaking changes in v0.2. If you're installing krew v0.1.0 to
+> try out, make sure you have kubectl v1.11.
+
 For macOS and Linux:
 
 - Make sure that git is installed.

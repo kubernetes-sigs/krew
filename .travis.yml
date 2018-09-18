@@ -1,40 +1,38 @@
 sudo: false
-
 language: go
-
 go:
-  - 1.10.x
-
+- 1.10.x
 go_import_path: github.com/GoogleContainerTools/krew
-
 git:
   depth: 1
-
 install: true
-
 notifications:
   email: false
-
 before_install:
-  - go get github.com/mitchellh/gox
-  - go get gopkg.in/alecthomas/gometalinter.v2
-  - gometalinter.v2 --install
-
+- go get github.com/mitchellh/gox
+- go get gopkg.in/alecthomas/gometalinter.v2
+- gometalinter.v2 --install
 script:
-  - hack/gofmt.sh
-  - hack/gometalinter.sh
-  - hack/build-cross-releases.sh
-
+- hack/gofmt.sh
+- hack/gometalinter.sh
+- go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+- hack/build-cross-releases.sh
+after_success:
+- bash <(curl -s https://codecov.io/bash)
 deploy:
   provider: releases
   api_key:
-    secure: "f1xHUbLggyRUFikISqZM0VVsmSJFbZnLPMyiqsjZojwhmmAzRvAqZBuhAXGmFINNxf/UjTY+akVnpC/tlyW9h+KmSjpo+xx5shWX3vFPIAW909B57I0ZCpdhn+VOR17C7mAKW6apFAAVs5PrWdeoYSmRDHyMfIUhljwn+/Uw08b/OhaSYjOoxaeM+1FIYvILKx/3+b31pqH6HvQp9q8loLO7fYEMp7kTW/pQ+gSP7F6oEeZmYqwmGQ6+o4UlVldky4Aix6MQFfE1lFnTfyi6GtlMWLVALEfN7Z3CxdrwE5KFo/yguG1PmlfWx8TzqU6kr9u+EsaDez2FHi+5KabFZWd9sp/dyoN+MrqY5LTb+Rr12Uoyo9gvRu9lj75K7O73AwYKVf697YpMy8XXcM3C1QLcwjhePt3jKM7rv7grJab73EedEmUvCJxtQDXiVG2YoMRmr71z2LNKeP1G+yu0a4qHOpbo7l9x/HrQsVMsJ7p0l2/7bSrtZzS2i/atn8i2D8iKHIEu0ygHyZEQDO6wR9tzj+3qsCKS8O21vOf/pSD4VWXeeOdvenqkCaftRZoyFCbvpQn0z/IY1p2lJCJhSKAmnfOlIgDdylSTy1jOArShxa0HC/JC67f8TgUYvg6WYdejuK5UJtEWv6tADrk702JOMHIC1ILUIeEjy16pb/g="
+    secure: f1xHUbLggyRUFikISqZM0VVsmSJFbZnLPMyiqsjZojwhmmAzRvAqZBuhAXGmFINNxf/UjTY+akVnpC/tlyW9h+KmSjpo+xx5shWX3vFPIAW909B57I0ZCpdhn+VOR17C7mAKW6apFAAVs5PrWdeoYSmRDHyMfIUhljwn+/Uw08b/OhaSYjOoxaeM+1FIYvILKx/3+b31pqH6HvQp9q8loLO7fYEMp7kTW/pQ+gSP7F6oEeZmYqwmGQ6+o4UlVldky4Aix6MQFfE1lFnTfyi6GtlMWLVALEfN7Z3CxdrwE5KFo/yguG1PmlfWx8TzqU6kr9u+EsaDez2FHi+5KabFZWd9sp/dyoN+MrqY5LTb+Rr12Uoyo9gvRu9lj75K7O73AwYKVf697YpMy8XXcM3C1QLcwjhePt3jKM7rv7grJab73EedEmUvCJxtQDXiVG2YoMRmr71z2LNKeP1G+yu0a4qHOpbo7l9x/HrQsVMsJ7p0l2/7bSrtZzS2i/atn8i2D8iKHIEu0ygHyZEQDO6wR9tzj+3qsCKS8O21vOf/pSD4VWXeeOdvenqkCaftRZoyFCbvpQn0z/IY1p2lJCJhSKAmnfOlIgDdylSTy1jOArShxa0HC/JC67f8TgUYvg6WYdejuK5UJtEWv6tADrk702JOMHIC1ILUIeEjy16pb/g=
   file:
-  - "out/krew.zip"
-  - "out/krew-zip.sha256"
-  - "out/build/krew-linux"
-  - "out/build/krew-darwin"
-  - "out/build/krew-windows.exe"
+  - out/krew.zip
+  - out/krew-zip.sha256
+  - out/build/krew-linux
+  - out/build/krew-darwin
+  - out/build/krew-windows.exe
   skip_cleanup: true
   on:
     tags: true
+env:
+  global:
+  - secure: Ly5oLE9sC7NDvwyZEzOi8gPeHdu3NTP2OuDa8BOUngAanXhaEInzBJ+Pod+TIKFzpope4/z8idMN3rZfPV5LcXzhufk82LSpYlGhZgFDYajvv3eNN20arZQf4kjohd5U2aY1XrYgrgBbodv7dCLnitxotO65tTzQN5xh6evwW6Ji2Em7t42kvz9VHj2nptWKsciQEr6KNb2xDJ7PSvFKdPKq0q3Vuy7PFToZvNbsk+FBLSjYpAHG1KrlyX/WiM1mLu7jCJ4yuPx4n9+CM5Zzycbc/6mrs8ZiR+myyaCMzh6pEltdR0vzSlFIl2TJvUwzTUyTXcZsQ/ENa1ZdOkQwI4jpV3IDTQ6AlMRtBSbL5/uSOvHYs1HBYTbJJeZLiMjru9SM6D9AUW9HRr0JQGeQFsPE/4mzl39Xgl+3GE4+6sfNiaurpvgNArQNBAs2nZ0V3myiDoSG/sAL/2YzXHiG0HVhVk65P33d9SevJjBJRTobhRf4Lt0lT2IO6XF/4kQIvMnaCPQRS1X5tMIHFeTzn1dwrFiZqd1Sbwq5cd8H25nt1XnXsCTgRegJPNUxqRHnDpR5M3HRiW+TmjJIte7Y6exCihonM3afj3rsu3Q/ePwj7ckzgq8CP2yJ//Sxu4FH65LGQ/2bHJUneKL33Uq1W68c+qtKWMGLB4LNRGJVZkc=
+  - secure: o6ZTdC1H4elXUrqt8XFfV7zuN9mWjQcV5iMicyG7TU/Fn8HIOluzRYPNgmdtuUpLYaQ7KD1t79+QNwuWtQOOHO/eQJ2/LCwO6cSVfxa6sM560r6qOtXraJugq0sCjOY8mNcwo7toY8vtf8yHa1an4L8CSm0SkH0h2EaBE0SE+Vfmb0T0RD/5f2i0Ni8Vn9QLe2P32CRT8VWhFNs+rqj1VwpspDjwa/X+R44RBgLmf61bZQpW5bKauLTR/JrXejppkSXRRqYFDokYTbAVOZbTacwqj7b4D+H6tUb8PaG6wMu5GLe1/rLwREn49cWA3LLX/U7wcUqbIW9jYYFRjt4Cs4YFZXIsaqhAcBcitajFXiZsOdYgHnIHNR4C86oH/dM5UjVSXcpuAw8xcJ4AAEaF3EE3C+bfWZZBHbmfdF1mDbezuTKGynzsQs6i9tlOlrgL9KVsj4YThPqk8Mfa3UOHSG6dOKVqxECPb5voSzKQvRyrzPVjONgmuHf4r/7E8ur1hsXuZGnaVphWTG+fPX4Sdiuo2kn1pOCLt1C8aXqsDpKcnzBjm1yeV8m7jIOBDhPm0mrGHjiCix7NqgxUPuAwLC1zIAXIKyAIpJzig+WlQC6gFu/7zlm0qrowxLImX4seb4rWp90OFcutek0NEVy1BO2LNn4TspaeTWkqD9vR4yQ=
