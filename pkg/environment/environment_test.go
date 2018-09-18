@@ -65,46 +65,6 @@ func Test_parseEnvs(t *testing.T) {
 	}
 }
 
-func TestIsPlugin(t *testing.T) {
-	type args struct {
-		environ []string
-	}
-	tests := []struct {
-		name string
-		args args
-		want bool
-	}{
-		{
-			name: "is plugin",
-			args: args{
-				environ: []string{"KUBECTL_PLUGINS_DESCRIPTOR_NAME=abc"},
-			},
-			want: true,
-		},
-		{
-			name: "is set empty plugin name",
-			args: args{
-				environ: []string{"KUBECTL_PLUGINS_DESCRIPTOR_NAME="},
-			},
-			want: true,
-		},
-		{
-			name: "isnt plugin",
-			args: args{
-				environ: []string{"XXXXXXXX=abc"},
-			},
-			want: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := IsPlugin(tt.args.environ); got != tt.want {
-				t.Errorf("IsPlugin() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestGetExecutedVersion(t *testing.T) {
 	type args struct {
 		paths   KrewPaths
