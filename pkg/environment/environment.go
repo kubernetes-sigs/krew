@@ -16,11 +16,9 @@ package environment
 
 import (
 	"fmt"
+	"k8s.io/client-go/util/homedir"
 	"os"
 	"path/filepath"
-	"strings"
-
-	"k8s.io/client-go/util/homedir"
 
 	"github.com/GoogleContainerTools/krew/pkg/pathutil"
 )
@@ -48,15 +46,6 @@ type KrewPaths struct {
 	Bin string
 }
 
-func parseEnvs(environ []string) map[string]string {
-	flags := make(map[string]string, len(environ))
-	for _, pair := range environ {
-		kv := strings.SplitN(pair, "=", 2)
-		flags[string(kv[0])] = kv[1]
-	}
-	return flags
-}
-
 // MustGetKrewPaths returns ensured index paths for krew.
 func MustGetKrewPaths() KrewPaths {
 	base := filepath.Join(homedir.HomeDir(), ".kube", "plugins", "krew")
@@ -76,18 +65,10 @@ func MustGetKrewPaths() KrewPaths {
 
 // GetExecutedVersion returns the currently executed version. If krew is
 // not executed as an plugin it will return a nil error and an empty string.
-// TODO(lbb): Breaks, refactor.
-func GetExecutedVersion(paths KrewPaths, cmdArgs []string) (string, bool, error) {
-	path := cmdArgs[0]
-	s, err := os.Lstat(path)
+func GetExecutedVersion(paths KrewPaths, cmdArgs []string, resolver func(string) (string, error)) (string, bool, error) {
+	path, err := resolver(cmdArgs[0])
 	if err != nil {
-		return "", false, fmt.Errorf("failed to stat the currently executed path")
-	}
-
-	if s.Mode()&os.ModeSymlink != 0 {
-		if path, err = os.Readlink(path); err != nil {
-			return "", false, fmt.Errorf("failed to resolve the symnlink of the currently executed version")
-		}
+		return "", false, fmt.Errorf("failed to resolve path, err: %v", err)
 	}
 
 	currentBinaryPath, err := filepath.Abs(path)
@@ -106,4 +87,19 @@ func GetExecutedVersion(paths KrewPaths, cmdArgs []string) (string, bool, error)
 	}
 
 	return elems[0], true, nil
+}
+
+// DefaultSymlinkResolver resolves symlinks paths
+func DefaultSymlinkResolver(path string) (string, error) {
+	s, err := os.Lstat(path)
+	if err != nil {
+		return "", fmt.Errorf("failed to stat the currently executed path")
+	}
+
+	if s.Mode()&os.ModeSymlink != 0 {
+		if path, err = os.Readlink(path); err != nil {
+			return "", fmt.Errorf("failed to resolve the symnlink of the currently executed version")
+		}
+	}
+	return path, nil
 }

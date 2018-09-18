@@ -16,54 +16,8 @@ package environment
 
 import (
 	"path/filepath"
-	"reflect"
 	"testing"
 )
-
-func Test_parseEnvs(t *testing.T) {
-	type args struct {
-		environ []string
-	}
-	tests := []struct {
-		name string
-		args args
-		want map[string]string
-	}{
-		{
-			name: "normalParseEnvs",
-			args: args{
-				environ: []string{"TERM=A", "CC=en"},
-			},
-			want: map[string]string{
-				"TERM": "A",
-				"CC":   "en",
-			},
-		}, {
-			name: "normalParseEnvs",
-			args: args{
-				environ: []string{"TERM="},
-			},
-			want: map[string]string{
-				"TERM": "",
-			},
-		}, {
-			name: "normalParseEnvs",
-			args: args{
-				environ: []string{"FOO=A=B"},
-			},
-			want: map[string]string{
-				"FOO": "A=B",
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := parseEnvs(tt.args.environ); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("parseEnvs() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
 
 func TestGetExecutedVersion(t *testing.T) {
 	type args struct {
@@ -140,7 +94,9 @@ func TestGetExecutedVersion(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1, err := GetExecutedVersion(tt.args.paths, tt.args.cmdArgs)
+			got, got1, err := GetExecutedVersion(tt.args.paths, tt.args.cmdArgs, func(s string) (string, error) {
+				return s, nil
+			})
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetExecutedVersion() error = %v, wantErr %v", err, tt.wantErr)
 				return
