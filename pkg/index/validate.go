@@ -69,6 +69,12 @@ func (p Platform) Validate() error {
 	if p.Head == "" && p.URI == "" {
 		return fmt.Errorf("head or URI have to be set")
 	}
+	if p.Bin == "" {
+		return fmt.Errorf("bin has to be set")
+	}
+	if !strings.HasPrefix(p.Bin, "kubectl-") {
+		return fmt.Errorf("the plugin executeable needs to have the 'kubectl-' prefix")
+	}
 	if len(p.Files) == 0 {
 		return fmt.Errorf("can't have a plugin without specifying file operations")
 	}

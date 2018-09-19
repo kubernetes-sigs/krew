@@ -11,6 +11,12 @@ similar to tools like apt, dnf or [brew](http://brew.sh).
 
 ### Installation
 
+> :warning: **Warning** :warning: **Kubectl v1.12 completely changes the plugin
+> model in a breaking way and it's not compatible with krew yet**
+> ([#33](https://github.com/GoogleContainerTools/krew/issues/33)). Therefore,
+> krew will make breaking changes in v0.2. If you're installing krew v0.1.0 to
+> try out, make sure you have kubectl v1.11.
+
 For macOS and Linux:
 
 - Make sure that git is installed.
@@ -82,7 +88,17 @@ Read the [Plugin Developer Guide](./docs/DEVELOPER_GUIDE.md) for details.
 
 - [Architecture](./docs/KREW_ARCHITECTURE.md)
 - [Docs](./docs/)
-- [Contributing](./CONTRIBUTING.md)  
+- [Contributing](./CONTRIBUTING.md)
+
+# Roadmap
+
+- **Support Multiple Index Repositories:** Tracked under
+  [#23](https://github.com/GoogleContainerTools/krew/issues/23)
+- **Donating krew to the SIG-CLI:** We plan to donate krew to the
+  [SIG-CLI](https://github.com/kubernetes/community/tree/master/sig-cli). We
+  have created a [KEP](https://github.com/kubernetes/community/pull/2340) that
+  covers our intentions. Accepting the KEP means that kubectl will implement
+  krew commands natively, and support the plugin format.
 
 # LICENSE
 

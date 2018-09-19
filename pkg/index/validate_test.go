@@ -97,6 +97,7 @@ func TestPlugin_Validate(t *testing.T) {
 						Sha256:   "",
 						Selector: nil,
 						Files:    []FileOperation{{"", ""}},
+						Bin:      "kubectl-foo",
 					}},
 				},
 			},
@@ -120,6 +121,7 @@ func TestPlugin_Validate(t *testing.T) {
 						Sha256:   "",
 						Selector: nil,
 						Files:    []FileOperation{{"", ""}},
+						Bin:      "kubectl-foo",
 					}},
 				},
 			},
@@ -143,6 +145,7 @@ func TestPlugin_Validate(t *testing.T) {
 						Sha256:   "",
 						Selector: nil,
 						Files:    []FileOperation{},
+						Bin:      "kubectl-foo",
 					}},
 				},
 			},
@@ -166,6 +169,7 @@ func TestPlugin_Validate(t *testing.T) {
 						Sha256:   "",
 						Selector: nil,
 						Files:    []FileOperation{{"", ""}},
+						Bin:      "kubectl-foo",
 					}},
 				},
 			},
@@ -189,6 +193,7 @@ func TestPlugin_Validate(t *testing.T) {
 						Sha256:   "",
 						Selector: nil,
 						Files:    []FileOperation{{"", ""}},
+						Bin:      "kubectl-foo",
 					}},
 				},
 			},
@@ -219,6 +224,7 @@ func TestPlatform_Validate(t *testing.T) {
 		Sha256   string
 		Selector *metav1.LabelSelector
 		Files    []FileOperation
+		Bin      string
 	}
 	tests := []struct {
 		name    string
@@ -233,6 +239,7 @@ func TestPlatform_Validate(t *testing.T) {
 				Sha256:   "",
 				Selector: nil,
 				Files:    []FileOperation{{"", ""}},
+				Bin:      "kubectl-foo",
 			},
 			wantErr: false,
 		},
@@ -244,6 +251,7 @@ func TestPlatform_Validate(t *testing.T) {
 				Sha256:   "",
 				Selector: nil,
 				Files:    []FileOperation{{"", ""}},
+				Bin:      "kubectl-foo",
 			},
 			wantErr: true,
 		},
@@ -255,6 +263,7 @@ func TestPlatform_Validate(t *testing.T) {
 				Sha256:   "deadbeef",
 				Selector: nil,
 				Files:    []FileOperation{{"", ""}},
+				Bin:      "kubectl-foo",
 			},
 			wantErr: true,
 		},
@@ -266,6 +275,7 @@ func TestPlatform_Validate(t *testing.T) {
 				Sha256:   "",
 				Selector: nil,
 				Files:    []FileOperation{{"", ""}},
+				Bin:      "kubectl-foo",
 			},
 			wantErr: true,
 		},
@@ -277,6 +287,31 @@ func TestPlatform_Validate(t *testing.T) {
 				Sha256:   "",
 				Selector: nil,
 				Files:    []FileOperation{},
+				Bin:      "kubectl-foo",
+			},
+			wantErr: true,
+		},
+		{
+			name: "no bin",
+			fields: fields{
+				Head:     "http://example.com",
+				URI:      "",
+				Sha256:   "",
+				Selector: nil,
+				Files:    []FileOperation{{"", ""}},
+				Bin:      "",
+			},
+			wantErr: true,
+		},
+		{
+			name: "wrong bin prefix",
+			fields: fields{
+				Head:     "http://example.com",
+				URI:      "",
+				Sha256:   "",
+				Selector: nil,
+				Files:    []FileOperation{{"", ""}},
+				Bin:      "foo",
 			},
 			wantErr: true,
 		},
@@ -289,6 +324,7 @@ func TestPlatform_Validate(t *testing.T) {
 				Sha256:   tt.fields.Sha256,
 				Selector: tt.fields.Selector,
 				Files:    tt.fields.Files,
+				Bin:      tt.fields.Bin,
 			}
 			if err := p.Validate(); (err != nil) != tt.wantErr {
 				t.Errorf("Platform.Validate() error = %v, wantErr %v", err, tt.wantErr)
