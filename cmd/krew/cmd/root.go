@@ -40,6 +40,8 @@ You can invoke krew through kubectl with: "kubectl plugin [krew] option..."`,
 	PersistentPreRun: func(cmd *cobra.Command, _ []string) {
 		bindEnvironmentVariables(viper.GetViper(), cmd)
 	},
+	SilenceUsage:  true,
+	SilenceErrors: true,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
