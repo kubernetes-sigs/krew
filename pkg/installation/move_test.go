@@ -22,7 +22,7 @@ import (
 	"github.com/GoogleContainerTools/krew/pkg/index"
 )
 
-func Test_moveToInstallAtomic(t *testing.T) {
+func Test_findMoveTargets(t *testing.T) {
 	type args struct {
 		fromDir string
 		toDir   string
@@ -67,6 +67,18 @@ func Test_moveToInstallAtomic(t *testing.T) {
 				to:   filepath.Join(testdataPath(t), "testdir_B", "foo"),
 			}},
 			wantErr: false,
+		},
+		{
+			name: "glob not matching any files",
+			args: args{
+				fromDir: filepath.Join(testdataPath(t), "testdir_A"),
+				toDir:   filepath.Join(testdataPath(t), "testdir_B"),
+				fo: index.FileOperation{
+					From: "./nonexisting-*",
+					To:   "unused",
+				},
+			},
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {

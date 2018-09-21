@@ -41,11 +41,11 @@ func findMoveTargets(fromDir, toDir string, fo index.FileOperation) ([]move, err
 		return nil, fmt.Errorf("could not get the relative path for the move src, err: %v", err)
 	}
 
-	glog.V(4).Infof("Trying to move single file directly from=%q to=%q with file operation=%+v", fromDir, toDir, fo)
+	glog.V(4).Infof("Trying to move single file directly from=%q to=%q with file operation=%#v", fromDir, toDir, fo)
 	if m, ok, err := getDirectMove(fromDir, toDir, fo); err != nil {
 		return nil, fmt.Errorf("failed to detect single move operation, err: %v", err)
 	} else if ok {
-		glog.V(3).Infof("Detected single move from file operation=%+v", fo)
+		glog.V(3).Infof("Detected single move from file operation=%#v", fo)
 		return []move{m}, nil
 	}
 
@@ -59,6 +59,9 @@ func findMoveTargets(fromDir, toDir string, fo index.FileOperation) ([]move, err
 	if err != nil {
 		return nil, fmt.Errorf("could not get files using a glob string, err: %v", err)
 	}
+	if len(gl) == 0 {
+		return nil, fmt.Errorf("no files in the plugin archive matched the glob pattern=%s", fo.From)
+	}
 
 	var moves []move
 	for _, v := range gl {
@@ -70,6 +73,7 @@ func findMoveTargets(fromDir, toDir string, fo index.FileOperation) ([]move, err
 		}
 		moves = append(moves, m)
 	}
+	glog.V(4).Infoln("Move operations are complete")
 	return moves, nil
 }
 
@@ -119,7 +123,7 @@ func isMoveAllowed(fromBase, toBase string, m move) bool {
 }
 
 func moveFiles(fromDir, toDir string, fo index.FileOperation) error {
-	glog.V(4).Infof("Finding move targets from %q to %q with file operation=%v", fromDir, toDir, fo)
+	glog.V(4).Infof("Finding move targets from %q to %q with file operation=%#v", fromDir, toDir, fo)
 	moves, err := findMoveTargets(fromDir, toDir, fo)
 	if err != nil {
 		return fmt.Errorf("could not find move targets, err: %v", err)
