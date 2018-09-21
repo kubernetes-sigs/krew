@@ -19,6 +19,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/GoogleContainerTools/krew/pkg/kubectl"
+
 	"github.com/GoogleContainerTools/krew/pkg/environment"
 	"github.com/GoogleContainerTools/krew/pkg/gitutil"
 
@@ -39,6 +41,20 @@ var rootCmd = &cobra.Command{
 You can invoke krew through kubectl with: "kubectl plugin [krew] option..."`,
 	PersistentPreRun: func(cmd *cobra.Command, _ []string) {
 		bindEnvironmentVariables(viper.GetViper(), cmd)
+
+		// detect kubectl version to prevent running krew standalone with older
+		// versions of kubectl.
+		// TODO(ahmetb): this may not be necessary after most users are on 1.12
+		glog.V(4).Infof("checking kubectl version")
+		ok, err := kubectl.IsSupportedVersion()
+		if err != nil {
+			glog.Fatalf("error checking kubectl version: %+v", err)
+		}
+		if !ok && os.Getenv("KREW_DISABLE_KUBECTL_VERSION_CHECK") == "" {
+			glog.Fatal("You are running on an unsupported version of \"kubectl\"." +
+				" This version of krew requires minimum kubectl 1.12.0.")
+		}
+		glog.V(4).Infof("checked kubectl version")
 	},
 	SilenceUsage:  true,
 	SilenceErrors: true,

@@ -16,7 +16,7 @@ script:
 - hack/gofmt.sh
 - hack/gometalinter.sh
 - go test -v -coverprofile=coverage.txt -covermode=atomic ./...
-- hack/build-cross-releases.sh
+- KREW_DISABLE_KUBECTL_VERSION_CHECK=1 hack/build-cross-releases.sh
 after_success:
 - bash <(curl -s https://codecov.io/bash)
 deploy:

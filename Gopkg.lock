@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  name = "github.com/coreos/go-semver"
+  packages = ["semver"]
+  revision = "8ab6407b697782a06568d4b7f1db25550ec2e4c6"
+  version = "v0.2.0"
+
+[[projects]]
   name = "github.com/fsnotify/fsnotify"
   packages = ["."]
   revision = "c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9"
@@ -214,6 +220,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "c3ca012d72b2d2328374c7f1711577522c894ad81ad72d7023980b35a4d1bfc0"
+  inputs-digest = "e3c6755d158b3c3c45a5906cccff6ee9502c26e79e48b111931efa52356bb9e7"
   solver-name = "gps-cdcl"
   solver-version = 1
