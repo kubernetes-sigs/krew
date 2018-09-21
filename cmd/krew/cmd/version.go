@@ -45,7 +45,7 @@ DownloadPath is the path used to store download binaries.`,
 			"IndexURI":        IndexURI,
 			"InstallPath":     paths.Install,
 			"DownloadPath":    paths.Download,
-			"Bin":             paths.Bin,
+			"BinPath":         paths.Bin,
 		}
 		printAlignedColumns(os.Stdout, "OPTION", "VALUE", conf)
 	},

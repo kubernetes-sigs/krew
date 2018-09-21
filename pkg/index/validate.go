@@ -73,7 +73,7 @@ func (p Platform) Validate() error {
 		return fmt.Errorf("bin has to be set")
 	}
 	if !strings.HasPrefix(p.Bin, "kubectl-") {
-		return fmt.Errorf("the plugin executeable needs to have the 'kubectl-' prefix")
+		return fmt.Errorf("the plugin executable needs to have the 'kubectl-' prefix")
 	}
 	if len(p.Files) == 0 {
 		return fmt.Errorf("can't have a plugin without specifying file operations")

@@ -65,7 +65,7 @@ func MustGetKrewPaths() KrewPaths {
 
 // GetExecutedVersion returns the currently executed version. If krew is
 // not executed as an plugin it will return a nil error and an empty string.
-func GetExecutedVersion(paths KrewPaths, cmdArgs []string, resolver func(string) (string, error)) (string, bool, error) {
+func GetExecutedVersion(installPath string, cmdArgs []string, resolver func(string) (string, error)) (string, bool, error) {
 	path, err := resolver(cmdArgs[0])
 	if err != nil {
 		return "", false, fmt.Errorf("failed to resolve path, err: %v", err)
@@ -76,7 +76,7 @@ func GetExecutedVersion(paths KrewPaths, cmdArgs []string, resolver func(string)
 		return "", false, err
 	}
 
-	pluginsPath, err := filepath.Abs(filepath.Join(paths.Install, "krew"))
+	pluginsPath, err := filepath.Abs(filepath.Join(installPath, "krew"))
 	if err != nil {
 		return "", false, err
 	}
@@ -89,16 +89,16 @@ func GetExecutedVersion(paths KrewPaths, cmdArgs []string, resolver func(string)
 	return elems[0], true, nil
 }
 
-// DefaultSymlinkResolver resolves symlinks paths
-func DefaultSymlinkResolver(path string) (string, error) {
+// ResolveSymlink resolves symlinks paths
+func ResolveSymlink(path string) (string, error) {
 	s, err := os.Lstat(path)
 	if err != nil {
-		return "", fmt.Errorf("failed to stat the currently executed path")
+		return "", fmt.Errorf("failed to stat the currently executed path, err: %v", err)
 	}
 
 	if s.Mode()&os.ModeSymlink != 0 {
 		if path, err = os.Readlink(path); err != nil {
-			return "", fmt.Errorf("failed to resolve the symnlink of the currently executed version")
+			return "", fmt.Errorf("failed to resolve the symlink of the currently executed version, err: %v", err)
 		}
 	}
 	return path, nil

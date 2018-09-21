@@ -25,13 +25,7 @@ In this repository there should be two plugin files:
 env
 ```
 
-`windows/kubectl-foo.exe`:
-
-```yaml
-SET
-```
-
-Each plugin needs an  entrypoint as the kubectl plugin.
+For Windows build an `.exe` file and save it to `windows/kubectl-foo`.
 
 See [Plugin Naming Style Guide](NAMING_GUIDE.md) for choosing the right name
 for your plugin.
@@ -206,8 +200,9 @@ The resulting installation directory will look like:
 
 ---
 
-Krew needs to link a plugin executeable to the `PATH`. The `bin` field has to
-point to the executable in the installation folder.
+Krew creates a symbolic link to the plugin executable specified in the
+`bin` field in `$HOME/.krew/bin/` (which needs to be added to your
+`$PATH`).
 
 ```yaml
 ...

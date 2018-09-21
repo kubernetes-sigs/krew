@@ -61,7 +61,7 @@ func init() {
 		glog.Fatal(err)
 	}
 
-	if krewVersion, ok, err := environment.GetExecutedVersion(paths, os.Args, environment.DefaultSymlinkResolver); err != nil {
+	if krewVersion, ok, err := environment.GetExecutedVersion(paths.Install, os.Args, environment.ResolveSymlink); err != nil {
 		glog.Fatal(fmt.Errorf("failed to find current krew version, err: %v", err))
 	} else if ok {
 		krewExecutedVersion = krewVersion

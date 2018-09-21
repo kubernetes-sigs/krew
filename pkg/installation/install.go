@@ -16,14 +16,17 @@ package installation
 
 import (
 	"fmt"
-	"github.com/GoogleContainerTools/krew/pkg/download"
-	"github.com/GoogleContainerTools/krew/pkg/environment"
-	"github.com/GoogleContainerTools/krew/pkg/index"
-	"github.com/golang/glog"
+	"github.com/GoogleContainerTools/krew/pkg/pathutil"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/GoogleContainerTools/krew/pkg/download"
+	"github.com/GoogleContainerTools/krew/pkg/environment"
+	"github.com/GoogleContainerTools/krew/pkg/index"
+
+	"github.com/golang/glog"
 )
 
 // Plugin Lifecycle Errors
@@ -82,7 +85,10 @@ func Install(p environment.KrewPaths, plugin index.Plugin, forceHEAD bool) error
 		return fmt.Errorf("failed to dowload and move during installation, err: %v", err)
 	}
 
-	return createOrUpdateLink(p.Bin, filepath.Join(dst, bin), plugin.Name)
+	if err := checkSubPath(dst, filepath.Join(dst, filepath.FromSlash(bin))); err != nil {
+		return fmt.Errorf("can't create new link, err: %v", err)
+	}
+	return createOrUpdateLink(p.Bin, filepath.Join(dst, filepath.FromSlash(bin)), plugin.Name)
 }
 
 // Remove will remove a plugin.
@@ -104,10 +110,10 @@ func Remove(p environment.KrewPaths, name string) error {
 	return os.RemoveAll(filepath.Join(p.Install, name))
 }
 
-func createOrUpdateLink(bindir string, binary string, plugin string) error {
-	dst := filepath.Join(bindir, pluginNameToBin(plugin))
+func createOrUpdateLink(binDir string, binary string, plugin string) error {
+	dst := filepath.Join(binDir, pluginNameToBin(plugin))
 
-	if err := removeLink(bindir, plugin); err != nil {
+	if err := removeLink(binDir, plugin); err != nil {
 		return fmt.Errorf("failed to remove old symlink, err: %v", err)
 	}
 	if _, err := os.Stat(binary); os.IsNotExist(err) {
@@ -116,18 +122,34 @@ func createOrUpdateLink(bindir string, binary string, plugin string) error {
 
 	// Create new
 	glog.V(2).Infof("Creating symlink from %q to %q\n", binary, dst)
-	var err error
-	if err = os.Symlink(binary, dst); err != nil && !os.IsExist(err) {
-		return fmt.Errorf("failed to create a symlink form %q to %q, err: %v", bindir, dst, err)
+	if err := os.Symlink(binary, dst); err != nil {
+		return fmt.Errorf("failed to create a symlink form %q to %q, err: %v", binDir, dst, err)
 	}
 	glog.V(2).Infof("Created symlink in %q\n", dst)
 
 	return nil
 }
 
-func removeLink(bindir string, plugin string) error {
-	dst := filepath.Join(bindir, pluginNameToBin(plugin))
+func checkSubPath(subPath, path string) error {
+	subPathAbs, err := filepath.Abs(subPath)
+	if err != nil {
+		return fmt.Errorf("failed to get the absolute path of %q, err: %v", subPath, err)
+	}
+	pathAbs, err := filepath.Abs(path)
+	if err != nil {
+		return fmt.Errorf("failed to get the absolute path of %q, err: %v", path, err)
+	}
+	if _, ok := pathutil.IsSubPath(subPathAbs, pathAbs); !ok {
+		return fmt.Errorf("the path %q does not extend the sub-path %q", path, subPath)
+	}
+	return nil
+}
 
+func removeLink(binDir string, plugin string) error {
+	dst := filepath.Join(binDir, pluginNameToBin(plugin))
+	if err := checkSubPath(binDir, dst); err != nil {
+		return fmt.Errorf("failed to remove link, err: %v", err)
+	}
 	if err := os.Remove(dst); err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("failed to remove the symlink in %q, err: %v", dst, err)
 	} else if err == nil {

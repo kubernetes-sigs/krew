@@ -94,7 +94,7 @@ func TestGetExecutedVersion(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1, err := GetExecutedVersion(tt.args.paths, tt.args.cmdArgs, func(s string) (string, error) {
+			got, isVersion, err := GetExecutedVersion(tt.args.paths.Install, tt.args.cmdArgs, func(s string) (string, error) {
 				return s, nil
 			})
 			if (err != nil) != tt.wantErr {
@@ -104,8 +104,8 @@ func TestGetExecutedVersion(t *testing.T) {
 			if got != tt.want {
 				t.Errorf("GetExecutedVersion() got = %v, want %v", got, tt.want)
 			}
-			if got1 != tt.inPath {
-				t.Errorf("GetExecutedVersion() got1 = %v, want %v", got1, tt.inPath)
+			if isVersion != tt.inPath {
+				t.Errorf("GetExecutedVersion() isVersion = %v, want %v", isVersion, tt.inPath)
 			}
 		})
 	}
