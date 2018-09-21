@@ -24,21 +24,21 @@ import (
 	"io/ioutil"
 )
 
-// Verifier can check a reader againtst it's correctness.
-type Verifier interface {
+// Verifier can check a reader against it's correctness.
+type verifier interface {
 	io.Writer
 	Verify() error
 }
 
-var _ Verifier = sha256Verifier{}
+var _ verifier = sha256Verifier{}
 
 type sha256Verifier struct {
 	hash.Hash
 	wantedHash []byte
 }
 
-// NewSha256Verifier creates a Verifier that tests against the given hash.
-func NewSha256Verifier(hash string) Verifier {
+// newSha256Verifier creates a Verifier that tests against the given hash.
+func newSha256Verifier(hash string) verifier {
 	raw, _ := hex.DecodeString(hash)
 	return sha256Verifier{
 		Hash:       sha256.New(),
@@ -53,10 +53,10 @@ func (v sha256Verifier) Verify() error {
 	return fmt.Errorf("hash does not match, want: %x, got %x", v.wantedHash, v.Sum(nil))
 }
 
-var _ Verifier = trueVerifier{}
+var _ verifier = trueVerifier{}
 
 type trueVerifier struct{ io.Writer }
 
-// NewTrueVerifier returns a Verifier that always verifies to true.
-func NewTrueVerifier() Verifier    { return trueVerifier{ioutil.Discard} }
+// newTrueVerifier returns a Verifier that always verifies to true.
+func newTrueVerifier() verifier    { return trueVerifier{ioutil.Discard} }
 func (trueVerifier) Verify() error { return nil }
