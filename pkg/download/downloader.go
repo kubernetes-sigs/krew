@@ -28,7 +28,7 @@ import (
 
 // download gets a file from the internet in memory and writes it content
 // to a verifier.
-func download(url string, verifier Verifier, fetcher Fetcher) (io.ReaderAt, int64, error) {
+func download(url string, verifier verifier, fetcher Fetcher) (io.ReaderAt, int64, error) {
 	glog.V(2).Infof("Fetching %q", url)
 	body, err := fetcher.Get(url)
 	if err != nil {
@@ -87,7 +87,7 @@ func extractZIP(targetDir string, read io.ReaderAt, size int64) error {
 
 // GetWithSha256 downloads a zip, verifies it and extracts it to the dir.
 func GetWithSha256(uri, dir, sha string, fetcher Fetcher) error {
-	body, size, err := download(uri, NewSha256Verifier(sha), fetcher)
+	body, size, err := download(uri, newSha256Verifier(sha), fetcher)
 	if err != nil {
 		return err
 	}
@@ -96,7 +96,7 @@ func GetWithSha256(uri, dir, sha string, fetcher Fetcher) error {
 
 // GetInsecure downloads a zip and extracts it to the dir.
 func GetInsecure(uri, dir string, fetcher Fetcher) error {
-	body, size, err := download(uri, NewTrueVerifier(), fetcher)
+	body, size, err := download(uri, newTrueVerifier(), fetcher)
 	if err != nil {
 		return err
 	}
