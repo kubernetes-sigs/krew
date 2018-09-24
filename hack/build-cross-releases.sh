@@ -22,10 +22,16 @@ cd "${SCRIPTDIR}/.."
 
 # Builds
 rm -rf out/
-gox -os="linux darwin windows" -arch="amd64" \
+gox -os="darwin windows" -arch="amd64" \
   -ldflags="-X github.com/GoogleContainerTools/krew/pkg/version.gitCommit=$(git rev-parse --short HEAD) \
     -X github.com/GoogleContainerTools/krew/pkg/version.gitTag=$(git describe --tags --dirty --always)" \
-  -output="out/build/krew-{{.OS}}" \
+  -output="out/build/krew-{{.OS}}_{{.Arch}}" \
+  ./cmd/krew/...
+
+gox -os="linux" -arch="arm amd64" \
+  -ldflags="-X github.com/GoogleContainerTools/krew/pkg/version.gitCommit=$(git rev-parse --short HEAD) \
+    -X github.com/GoogleContainerTools/krew/pkg/version.gitTag=$(git describe --tags --dirty --always)" \
+  -output="out/build/krew-{{.OS}}_{{.Arch}}" \
   ./cmd/krew/...
 
 go install github.com/GoogleContainerTools/krew/cmd/krew-manifest
