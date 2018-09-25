@@ -73,7 +73,6 @@ func findMoveTargets(fromDir, toDir string, fo index.FileOperation) ([]move, err
 		}
 		moves = append(moves, m)
 	}
-	glog.V(4).Infoln("Move operations are complete")
 	return moves, nil
 }
 
@@ -139,6 +138,7 @@ func moveFiles(fromDir, toDir string, fo index.FileOperation) error {
 			return fmt.Errorf("could not rename file from %q to %q, err: %v", m.from, m.to, err)
 		}
 	}
+	glog.V(4).Infoln("Move operations are complete")
 	return nil
 }
 
