@@ -65,8 +65,8 @@ func MustGetKrewPaths() KrewPaths {
 
 // GetExecutedVersion returns the currently executed version. If krew is
 // not executed as an plugin it will return a nil error and an empty string.
-func GetExecutedVersion(installPath string, cmdArgs []string, resolver func(string) (string, error)) (string, bool, error) {
-	path, err := resolver(cmdArgs[0])
+func GetExecutedVersion(installPath string, executionPath string, resolver func(string) (string, error)) (string, bool, error) {
+	path, err := resolver(executionPath)
 	if err != nil {
 		return "", false, fmt.Errorf("failed to resolve path, err: %v", err)
 	}
@@ -93,7 +93,7 @@ func GetExecutedVersion(installPath string, cmdArgs []string, resolver func(stri
 func ResolveSymlink(path string) (string, error) {
 	s, err := os.Lstat(path)
 	if err != nil {
-		return "", fmt.Errorf("failed to stat the currently executed path, err: %v", err)
+		return "", fmt.Errorf("failed to stat the currently executed path (%q), err: %v", path, err)
 	}
 
 	if s.Mode()&os.ModeSymlink != 0 {

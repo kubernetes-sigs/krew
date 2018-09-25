@@ -16,7 +16,6 @@ package installation
 
 import (
 	"fmt"
-	"github.com/GoogleContainerTools/krew/pkg/pathutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -25,6 +24,7 @@ import (
 	"github.com/GoogleContainerTools/krew/pkg/download"
 	"github.com/GoogleContainerTools/krew/pkg/environment"
 	"github.com/GoogleContainerTools/krew/pkg/index"
+	"github.com/GoogleContainerTools/krew/pkg/pathutil"
 
 	"github.com/golang/glog"
 )
@@ -80,15 +80,28 @@ func Install(p environment.KrewPaths, plugin index.Plugin, forceHEAD bool) error
 	if err != nil {
 		return err
 	}
-	dst, err := downloadAndMove(version, uri, fos, filepath.Join(p.Download, plugin.Name), filepath.Join(p.Install, plugin.Name))
+	return install(plugin.Name, version, uri, bin, p, fos)
+}
+
+func install(plugin, version, uri, bin string, p environment.KrewPaths, fos []index.FileOperation) error {
+	dst, err := downloadAndMove(version, uri, fos, filepath.Join(p.Download, plugin), filepath.Join(p.Install, plugin))
 	if err != nil {
 		return fmt.Errorf("failed to dowload and move during installation, err: %v", err)
 	}
 
-	if err := checkSubPath(dst, filepath.Join(dst, filepath.FromSlash(bin))); err != nil {
-		return fmt.Errorf("can't create new link, err: %v", err)
+	subPathAbs, err := filepath.Abs(dst)
+	if err != nil {
+		return fmt.Errorf("failed to get the absolute fullPath of %q, err: %v", dst, err)
 	}
-	return createOrUpdateLink(p.Bin, filepath.Join(dst, filepath.FromSlash(bin)), plugin.Name)
+	fullPath := filepath.Join(dst, filepath.FromSlash(bin))
+	pathAbs, err := filepath.Abs(fullPath)
+	if err != nil {
+		return fmt.Errorf("failed to get the absolute fullPath of %q, err: %v", fullPath, err)
+	}
+	if _, ok := pathutil.IsSubPath(subPathAbs, pathAbs); !ok {
+		return fmt.Errorf("the fullPath %q does not extend the sub-fullPath %q", fullPath, dst)
+	}
+	return createOrUpdateLink(p.Bin, filepath.Join(dst, filepath.FromSlash(bin)), plugin)
 }
 
 // Remove will remove a plugin.
@@ -121,39 +134,21 @@ func createOrUpdateLink(binDir string, binary string, plugin string) error {
 	}
 
 	// Create new
-	glog.V(2).Infof("Creating symlink from %q to %q\n", binary, dst)
+	glog.V(2).Infof("Creating symlink from %q to %q", binary, dst)
 	if err := os.Symlink(binary, dst); err != nil {
 		return fmt.Errorf("failed to create a symlink form %q to %q, err: %v", binDir, dst, err)
 	}
-	glog.V(2).Infof("Created symlink in %q\n", dst)
+	glog.V(2).Infof("Created symlink in %q", dst)
 
-	return nil
-}
-
-func checkSubPath(subPath, path string) error {
-	subPathAbs, err := filepath.Abs(subPath)
-	if err != nil {
-		return fmt.Errorf("failed to get the absolute path of %q, err: %v", subPath, err)
-	}
-	pathAbs, err := filepath.Abs(path)
-	if err != nil {
-		return fmt.Errorf("failed to get the absolute path of %q, err: %v", path, err)
-	}
-	if _, ok := pathutil.IsSubPath(subPathAbs, pathAbs); !ok {
-		return fmt.Errorf("the path %q does not extend the sub-path %q", path, subPath)
-	}
 	return nil
 }
 
 func removeLink(binDir string, plugin string) error {
 	dst := filepath.Join(binDir, pluginNameToBin(plugin))
-	if err := checkSubPath(binDir, dst); err != nil {
-		return fmt.Errorf("failed to remove link, err: %v", err)
-	}
 	if err := os.Remove(dst); err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("failed to remove the symlink in %q, err: %v", dst, err)
 	} else if err == nil {
-		glog.V(3).Infof("Removed symlink from %q\n", dst)
+		glog.V(3).Infof("Removed symlink from %q", dst)
 	}
 	return nil
 }

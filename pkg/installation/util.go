@@ -16,17 +16,18 @@ package installation
 
 import (
 	"fmt"
-	"github.com/GoogleContainerTools/krew/pkg/pathutil"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
 
-	"github.com/GoogleContainerTools/krew/pkg/index"
 	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+
+	"github.com/GoogleContainerTools/krew/pkg/index"
+	"github.com/GoogleContainerTools/krew/pkg/pathutil"
 )
 
 // GetMatchingPlatform TODO(lbb)

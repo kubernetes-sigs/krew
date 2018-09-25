@@ -21,8 +21,8 @@ import (
 
 func TestGetExecutedVersion(t *testing.T) {
 	type args struct {
-		paths   KrewPaths
-		cmdArgs []string
+		paths         KrewPaths
+		executionPath string
 	}
 	tests := []struct {
 		name    string
@@ -40,7 +40,7 @@ func TestGetExecutedVersion(t *testing.T) {
 					Install:  filepath.FromSlash("/plugins/store"),
 					Download: filepath.FromSlash("/plugins/download"),
 				},
-				cmdArgs: []string{filepath.FromSlash("/plugins/store/krew/deadbeef/krew.exe")},
+				executionPath: filepath.FromSlash("/plugins/store/krew/deadbeef/krew.exe"),
 			},
 			want:    "deadbeef",
 			inPath:  true,
@@ -55,7 +55,7 @@ func TestGetExecutedVersion(t *testing.T) {
 					Install:  filepath.FromSlash("/plugins/store"),
 					Download: filepath.FromSlash("/plugins/download"),
 				},
-				cmdArgs: []string{filepath.FromSlash("/plugins/store/NOTKREW/deadbeef/krew.exe")},
+				executionPath: filepath.FromSlash("/plugins/store/NOTKREW/deadbeef/krew.exe"),
 			},
 			want:    "",
 			inPath:  false,
@@ -70,7 +70,7 @@ func TestGetExecutedVersion(t *testing.T) {
 					Install:  filepath.FromSlash("/plugins/store"),
 					Download: filepath.FromSlash("/plugins/download"),
 				},
-				cmdArgs: []string{filepath.FromSlash("/plugins/store/krew/deadbeef/foo/krew.exe")},
+				executionPath: filepath.FromSlash("/plugins/store/krew/deadbeef/foo/krew.exe"),
 			},
 			want:    "deadbeef",
 			inPath:  true,
@@ -85,7 +85,7 @@ func TestGetExecutedVersion(t *testing.T) {
 					Install:  filepath.FromSlash("/plugins/store"),
 					Download: filepath.FromSlash("/plugins/download"),
 				},
-				cmdArgs: []string{filepath.FromSlash("/krew.exe")},
+				executionPath: filepath.FromSlash("/krew.exe"),
 			},
 			want:    "",
 			inPath:  false,
@@ -94,7 +94,7 @@ func TestGetExecutedVersion(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, isVersion, err := GetExecutedVersion(tt.args.paths.Install, tt.args.cmdArgs, func(s string) (string, error) {
+			got, isVersion, err := GetExecutedVersion(tt.args.paths.Install, tt.args.executionPath, func(s string) (string, error) {
 				return s, nil
 			})
 			if (err != nil) != tt.wantErr {

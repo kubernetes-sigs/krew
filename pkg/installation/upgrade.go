@@ -58,16 +58,8 @@ func Upgrade(p environment.KrewPaths, plugin index.Plugin, currentKrewVersion st
 
 	// Re-Install
 	glog.V(1).Infof("Installing new version %s", newVersion)
-	var dst string
-	if dst, err = downloadAndMove(newVersion, uri, fos, filepath.Join(p.Download, plugin.Name), filepath.Join(p.Install, plugin.Name)); err != nil {
-		return fmt.Errorf("failed to download and move, err: %v", err)
-	}
-
-	if err := checkSubPath(dst, filepath.Join(dst, filepath.FromSlash(binName))); err != nil {
-		return fmt.Errorf("can't update link, err: %v", err)
-	}
-	if err = createOrUpdateLink(p.Bin, filepath.Join(dst, filepath.FromSlash(binName)), plugin.Name); err != nil {
-		return fmt.Errorf("failed to upgrade the link, err: %v", err)
+	if err := install(plugin.Name, newVersion, uri, binName, p, fos); err != nil {
+		return fmt.Errorf("failed to install new version, err: %v", err)
 	}
 
 	// Clean old installations
