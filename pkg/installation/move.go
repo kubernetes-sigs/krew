@@ -151,38 +151,31 @@ func moveAllFiles(fromDir, toDir string, fos []index.FileOperation) error {
 	return nil
 }
 
-func moveToInstallAtomic(download, pluginDir, version string, fos []index.FileOperation) error {
+func moveToInstallDir(download, pluginDir, version string, fos []index.FileOperation) (string, error) {
 	glog.V(4).Infof("Creating plugin dir %q", pluginDir)
 	if err := os.MkdirAll(pluginDir, 0755); err != nil {
-		return fmt.Errorf("error creating path to %q, err: %v", pluginDir, err)
+		return "", fmt.Errorf("error creating path to %q, err: %v", pluginDir, err)
 	}
 
 	tempdir, err := ioutil.TempDir("", "krew-temp-move")
 	glog.V(4).Infof("Creating temp plugin move operations dir %q", tempdir)
 	if err != nil {
-		return fmt.Errorf("failed to find a temporary director, err: %v", err)
+		return "", fmt.Errorf("failed to find a temporary director, err: %v", err)
 	}
 	defer os.RemoveAll(tempdir)
 
 	if err = moveAllFiles(download, tempdir, fos); err != nil {
-		return fmt.Errorf("failed to move files, err: %v", err)
-	}
-	// TODO(lbb): determine if this should be moved into moveAllFiles
-	glog.V(4).Infof("Checking for plugin descriptor in new plugin dir")
-	if ok, err := containsPluginDescriptors(tempdir); err != nil {
-		return fmt.Errorf("failed to find plugin descriptors in path %q, err %v", tempdir, err)
-	} else if !ok {
-		return fmt.Errorf("the resulting plugin dir has to contain a plugin.yaml file")
+		return "", fmt.Errorf("failed to move files, err: %v", err)
 	}
 
 	installPath := filepath.Join(pluginDir, version)
 	glog.V(2).Infof("Move %q to %q", tempdir, installPath)
 	if err = moveOrCopy(tempdir, installPath); err != nil {
 		defer os.Remove(installPath)
-		return fmt.Errorf("could not rename file from %q to %q, err: %v", tempdir, installPath, err)
+		return "", fmt.Errorf("could not rename file from %q to %q, err: %v", tempdir, installPath, err)
 	}
 
-	return nil
+	return installPath, nil
 }
 
 // moveOrCopy will try to rename a dir or file. If rename is not supported a manual copy will be performed.

@@ -37,9 +37,6 @@ var rootCmd = &cobra.Command{
 	Short: "krew is the kubectl plugin manager",
 	Long: `krew is the kubectl plugin manager.
 You can invoke krew through kubectl with: "kubectl plugin [krew] option..."`,
-	PersistentPreRun: func(cmd *cobra.Command, _ []string) {
-		bindEnvironmentVariables(viper.GetViper(), cmd)
-	},
 	SilenceUsage:  true,
 	SilenceErrors: true,
 }
@@ -50,11 +47,6 @@ func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		glog.Fatal(err)
 	}
-}
-
-// InjectCommand InjectCommand adds a cobra command to the main tree
-func InjectCommand(c *cobra.Command) {
-	rootCmd.AddCommand(c)
 }
 
 func init() {
@@ -69,12 +61,14 @@ func init() {
 		glog.Fatal(err)
 	}
 
-	if environment.IsPlugin(os.Environ()) {
-		if krewVersion, ok, err := environment.GetExecutedVersion(paths, os.Args); err != nil {
-			glog.Fatal(fmt.Errorf("failed to find current krew version, err: %v", err))
-		} else if ok {
-			krewExecutedVersion = krewVersion
-		}
+	selfPath, err := os.Executable()
+	if err != nil {
+		glog.Errorf("failed to get the own executable path")
+	}
+	if krewVersion, ok, err := environment.GetExecutedVersion(paths.Install, selfPath, environment.ResolveSymlink); err != nil {
+		glog.Fatal(fmt.Errorf("failed to find current krew version, err: %v", err))
+	} else if ok {
+		krewExecutedVersion = krewVersion
 	}
 
 	SetGlogFlags(krewExecutedVersion != "")

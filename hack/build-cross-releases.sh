@@ -28,16 +28,6 @@ gox -os="linux darwin windows" -arch="amd64" \
   -output="out/build/krew-{{.OS}}" \
   ./cmd/krew/...
 
-go install github.com/GoogleContainerTools/krew/cmd/krew-manifest
-
-(
-  cd out/build/
-  mkdir unix
-  krew-manifest generate -o unix
-  mkdir windows
-  krew-manifest generate -o windows --windows=true
-)
-
 zip -X -q -r out/krew.zip out/build
 
 KREW_HASH="$(shasum -a 256 out/krew.zip | awk '{print $1;}')"

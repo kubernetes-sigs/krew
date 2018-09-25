@@ -16,99 +16,13 @@ package environment
 
 import (
 	"path/filepath"
-	"reflect"
 	"testing"
 )
 
-func Test_parseEnvs(t *testing.T) {
-	type args struct {
-		environ []string
-	}
-	tests := []struct {
-		name string
-		args args
-		want map[string]string
-	}{
-		{
-			name: "normalParseEnvs",
-			args: args{
-				environ: []string{"TERM=A", "CC=en"},
-			},
-			want: map[string]string{
-				"TERM": "A",
-				"CC":   "en",
-			},
-		}, {
-			name: "normalParseEnvs",
-			args: args{
-				environ: []string{"TERM="},
-			},
-			want: map[string]string{
-				"TERM": "",
-			},
-		}, {
-			name: "normalParseEnvs",
-			args: args{
-				environ: []string{"FOO=A=B"},
-			},
-			want: map[string]string{
-				"FOO": "A=B",
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := parseEnvs(tt.args.environ); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("parseEnvs() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestIsPlugin(t *testing.T) {
-	type args struct {
-		environ []string
-	}
-	tests := []struct {
-		name string
-		args args
-		want bool
-	}{
-		{
-			name: "is plugin",
-			args: args{
-				environ: []string{"KUBECTL_PLUGINS_DESCRIPTOR_NAME=abc"},
-			},
-			want: true,
-		},
-		{
-			name: "is set empty plugin name",
-			args: args{
-				environ: []string{"KUBECTL_PLUGINS_DESCRIPTOR_NAME="},
-			},
-			want: true,
-		},
-		{
-			name: "isnt plugin",
-			args: args{
-				environ: []string{"XXXXXXXX=abc"},
-			},
-			want: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := IsPlugin(tt.args.environ); got != tt.want {
-				t.Errorf("IsPlugin() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestGetExecutedVersion(t *testing.T) {
 	type args struct {
-		paths   KrewPaths
-		cmdArgs []string
+		paths         KrewPaths
+		executionPath string
 	}
 	tests := []struct {
 		name    string
@@ -126,7 +40,7 @@ func TestGetExecutedVersion(t *testing.T) {
 					Install:  filepath.FromSlash("/plugins/store"),
 					Download: filepath.FromSlash("/plugins/download"),
 				},
-				cmdArgs: []string{filepath.FromSlash("/plugins/store/krew/deadbeef/krew.exe")},
+				executionPath: filepath.FromSlash("/plugins/store/krew/deadbeef/krew.exe"),
 			},
 			want:    "deadbeef",
 			inPath:  true,
@@ -141,7 +55,7 @@ func TestGetExecutedVersion(t *testing.T) {
 					Install:  filepath.FromSlash("/plugins/store"),
 					Download: filepath.FromSlash("/plugins/download"),
 				},
-				cmdArgs: []string{filepath.FromSlash("/plugins/store/NOTKREW/deadbeef/krew.exe")},
+				executionPath: filepath.FromSlash("/plugins/store/NOTKREW/deadbeef/krew.exe"),
 			},
 			want:    "",
 			inPath:  false,
@@ -156,7 +70,7 @@ func TestGetExecutedVersion(t *testing.T) {
 					Install:  filepath.FromSlash("/plugins/store"),
 					Download: filepath.FromSlash("/plugins/download"),
 				},
-				cmdArgs: []string{filepath.FromSlash("/plugins/store/krew/deadbeef/foo/krew.exe")},
+				executionPath: filepath.FromSlash("/plugins/store/krew/deadbeef/foo/krew.exe"),
 			},
 			want:    "deadbeef",
 			inPath:  true,
@@ -171,7 +85,7 @@ func TestGetExecutedVersion(t *testing.T) {
 					Install:  filepath.FromSlash("/plugins/store"),
 					Download: filepath.FromSlash("/plugins/download"),
 				},
-				cmdArgs: []string{filepath.FromSlash("/krew.exe")},
+				executionPath: filepath.FromSlash("/krew.exe"),
 			},
 			want:    "",
 			inPath:  false,
@@ -180,7 +94,9 @@ func TestGetExecutedVersion(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1, err := GetExecutedVersion(tt.args.paths, tt.args.cmdArgs)
+			got, isVersion, err := GetExecutedVersion(tt.args.paths.Install, tt.args.executionPath, func(s string) (string, error) {
+				return s, nil
+			})
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetExecutedVersion() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -188,8 +104,8 @@ func TestGetExecutedVersion(t *testing.T) {
 			if got != tt.want {
 				t.Errorf("GetExecutedVersion() got = %v, want %v", got, tt.want)
 			}
-			if got1 != tt.inPath {
-				t.Errorf("GetExecutedVersion() got1 = %v, want %v", got1, tt.inPath)
+			if isVersion != tt.inPath {
+				t.Errorf("GetExecutedVersion() isVersion = %v, want %v", isVersion, tt.inPath)
 			}
 		})
 	}

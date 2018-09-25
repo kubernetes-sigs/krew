@@ -18,10 +18,14 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
+	"strings"
 
 	"github.com/GoogleContainerTools/krew/pkg/download"
 	"github.com/GoogleContainerTools/krew/pkg/environment"
 	"github.com/GoogleContainerTools/krew/pkg/index"
+	"github.com/GoogleContainerTools/krew/pkg/pathutil"
+
 	"github.com/golang/glog"
 )
 
@@ -38,10 +42,10 @@ const (
 	krewPluginName = "krew"
 )
 
-func downloadAndMove(version, uri string, fos []index.FileOperation, downloadPath, installPath string) (err error) {
+func downloadAndMove(version, uri string, fos []index.FileOperation, downloadPath, installPath string) (dst string, err error) {
 	glog.V(3).Infof("Creating download dir %q", downloadPath)
 	if err = os.MkdirAll(downloadPath, 0755); err != nil {
-		return fmt.Errorf("could not create download path %q, err: %v", downloadPath, err)
+		return "", fmt.Errorf("could not create download path %q, err: %v", downloadPath, err)
 	}
 	defer os.RemoveAll(downloadPath)
 
@@ -53,17 +57,17 @@ func downloadAndMove(version, uri string, fos []index.FileOperation, downloadPat
 		err = download.GetWithSha256(uri, downloadPath, version, download.HTTPFetcher{})
 	}
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return moveToInstallAtomic(downloadPath, installPath, version, fos)
+	return moveToInstallDir(downloadPath, installPath, version, fos)
 }
 
 // Install will download and install a plugin. The operation tries
 // to not get the plugin dir in a bad state if it fails during the process.
 func Install(p environment.KrewPaths, plugin index.Plugin, forceHEAD bool) error {
 	glog.V(2).Infof("Looking for installed versions")
-	_, ok, err := findInstalledPluginVersion(p.Install, plugin.Name)
+	_, ok, err := findInstalledPluginVersion(p.Install, p.Bin, plugin.Name)
 	if err != nil {
 		return err
 	}
@@ -72,11 +76,32 @@ func Install(p environment.KrewPaths, plugin index.Plugin, forceHEAD bool) error
 	}
 
 	glog.V(1).Infof("Finding download target for plugin %s", plugin.Name)
-	version, uri, fos, err := getDownloadTarget(plugin, forceHEAD)
+	version, uri, fos, bin, err := getDownloadTarget(plugin, forceHEAD)
 	if err != nil {
 		return err
 	}
-	return downloadAndMove(version, uri, fos, filepath.Join(p.Download, plugin.Name), filepath.Join(p.Install, plugin.Name))
+	return install(plugin.Name, version, uri, bin, p, fos)
+}
+
+func install(plugin, version, uri, bin string, p environment.KrewPaths, fos []index.FileOperation) error {
+	dst, err := downloadAndMove(version, uri, fos, filepath.Join(p.Download, plugin), filepath.Join(p.Install, plugin))
+	if err != nil {
+		return fmt.Errorf("failed to dowload and move during installation, err: %v", err)
+	}
+
+	subPathAbs, err := filepath.Abs(dst)
+	if err != nil {
+		return fmt.Errorf("failed to get the absolute fullPath of %q, err: %v", dst, err)
+	}
+	fullPath := filepath.Join(dst, filepath.FromSlash(bin))
+	pathAbs, err := filepath.Abs(fullPath)
+	if err != nil {
+		return fmt.Errorf("failed to get the absolute fullPath of %q, err: %v", fullPath, err)
+	}
+	if _, ok := pathutil.IsSubPath(subPathAbs, pathAbs); !ok {
+		return fmt.Errorf("the fullPath %q does not extend the sub-fullPath %q", fullPath, dst)
+	}
+	return createOrUpdateLink(p.Bin, filepath.Join(dst, filepath.FromSlash(bin)), plugin)
 }
 
 // Remove will remove a plugin.
@@ -85,7 +110,7 @@ func Remove(p environment.KrewPaths, name string) error {
 		return fmt.Errorf("removing krew is not allowed through krew, see docs for help")
 	}
 	glog.V(3).Infof("Finding installed version to delete")
-	version, installed, err := findInstalledPluginVersion(p.Install, name)
+	version, installed, err := findInstalledPluginVersion(p.Install, p.Bin, name)
 	if err != nil {
 		return fmt.Errorf("can't remove plugin, err: %v", err)
 	}
@@ -94,5 +119,44 @@ func Remove(p environment.KrewPaths, name string) error {
 	}
 	glog.V(1).Infof("Deleting plugin version %s", version)
 	glog.V(3).Infof("Deleting path %q", filepath.Join(p.Install, name))
+	removeLink(p.Bin, name)
 	return os.RemoveAll(filepath.Join(p.Install, name))
+}
+
+func createOrUpdateLink(binDir string, binary string, plugin string) error {
+	dst := filepath.Join(binDir, pluginNameToBin(plugin))
+
+	if err := removeLink(binDir, plugin); err != nil {
+		return fmt.Errorf("failed to remove old symlink, err: %v", err)
+	}
+	if _, err := os.Stat(binary); os.IsNotExist(err) {
+		return fmt.Errorf("can't create file, destination %q does not exsist", binary)
+	}
+
+	// Create new
+	glog.V(2).Infof("Creating symlink from %q to %q", binary, dst)
+	if err := os.Symlink(binary, dst); err != nil {
+		return fmt.Errorf("failed to create a symlink form %q to %q, err: %v", binDir, dst, err)
+	}
+	glog.V(2).Infof("Created symlink in %q", dst)
+
+	return nil
+}
+
+func removeLink(binDir string, plugin string) error {
+	dst := filepath.Join(binDir, pluginNameToBin(plugin))
+	if err := os.Remove(dst); err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("failed to remove the symlink in %q, err: %v", dst, err)
+	} else if err == nil {
+		glog.V(3).Infof("Removed symlink from %q", dst)
+	}
+	return nil
+}
+
+func pluginNameToBin(name string) string {
+	if runtime.GOOS == "windows" && !strings.HasSuffix(name, ".exe") {
+		name = name + ".exe"
+	}
+
+	return "kubectl-" + name
 }
