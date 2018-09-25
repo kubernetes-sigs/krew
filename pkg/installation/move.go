@@ -186,12 +186,12 @@ func moveOrCopyDir(from, to string) error {
 	if err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("error checking move target dir %q: %+v", to, err)
 	}
-	if fi.IsDir() {
-		glog.V(4).Infof("there's already a directory at move target %q. deleting.", to)
+	if fi != nil && fi.IsDir() {
+		glog.V(4).Infof("There's already a directory at move target %q. deleting.", to)
 		if err := os.RemoveAll(to); err != nil {
 			return fmt.Errorf("error cleaning up dir %q: %+v", to, err)
 		}
-		glog.V(4).Infof("move target directory %q cleaned up", to)
+		glog.V(4).Infof("Move target directory %q cleaned up", to)
 	}
 
 	err = os.Rename(from, to)
