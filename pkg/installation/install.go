@@ -130,7 +130,7 @@ func createOrUpdateLink(binDir string, binary string, plugin string) error {
 		return fmt.Errorf("failed to remove old symlink, err: %v", err)
 	}
 	if _, err := os.Stat(binary); os.IsNotExist(err) {
-		return fmt.Errorf("can't create file, destination %q does not exsist", binary)
+		return fmt.Errorf("can't create file, destination %q does not exist", binary)
 	}
 
 	// Create new
