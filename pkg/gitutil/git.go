@@ -50,7 +50,7 @@ func update(destinationPath string) error {
 	return exec(destinationPath, "pull", "--ff-only", "-v")
 }
 
-// EnsureUpdated will ensure the destination path exsists and is up to date.
+// EnsureUpdated will ensure the destination path exists and is up to date.
 func EnsureUpdated(uri, destinationPath string) error {
 	if err := EnsureCloned(uri, destinationPath); err != nil {
 		return err
