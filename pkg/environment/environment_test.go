@@ -62,7 +62,7 @@ func TestGetExecutedVersion(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "is in longer kreR path",
+			name: "is in longer krew path",
 			args: args{
 				paths: KrewPaths{
 					Base:     filepath.FromSlash("/plugins/"),

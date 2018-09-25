@@ -26,7 +26,7 @@ import (
 // KrewPaths contains all important environment paths
 type KrewPaths struct {
 	// Base is the path of the krew root.
-	// The default path is ~/.kube/plugins/krew
+	// The default path is ~/.krew
 	Base string
 
 	// Index is a git(1) repository containing all local plugin manifests files.
@@ -48,7 +48,7 @@ type KrewPaths struct {
 
 // MustGetKrewPaths returns ensured index paths for krew.
 func MustGetKrewPaths() KrewPaths {
-	base := filepath.Join(homedir.HomeDir(), ".kube", "plugins", "krew")
+	base := filepath.Join(homedir.HomeDir(), ".krew")
 	base, err := filepath.Abs(base)
 	if err != nil {
 		panic(fmt.Errorf("cannot get current pwd err: %v", err))

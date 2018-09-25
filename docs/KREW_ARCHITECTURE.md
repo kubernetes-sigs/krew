@@ -1,19 +1,19 @@
 # Architecture
 
-* [Architecture](#architecture)
-  * [Krew Plugins location](#krew-plugins-location)
-    * [Directory structure](#directory-structure)
-    * [Krew Index](#krew-index)
-      * [Index Structure](#index-structure)
-    * [Plugin Manifest File Format](#plugin-manifest-file-format)
-    * [Update Index Locally](#update-index-locally)
-    * [Plugin Package Format](#plugin-package-format)
-  * [Installation Methods](#installation-methods)
-    * [Why krew should not rely on OS\-Package managers](#why-krew-should-not-rely-on-os-package-managers)
-  * [Krew Itself as a Plugin](#krew-itself-as-a-plugin)
-    * [Kubectl Plugin Descriptor (plugin\.yaml) File Generation](#kubectl-plugin-descriptor-pluginyaml-file-generation)
-    * [Single Binary](#single-binary)
-  * [Note on Potential Changes to Kubectl Plugin System](#note-on-potential-changes-to-kubectl-plugin-system)
+- [Architecture](#architecture)
+  - [Krew Plugins location](#krew-plugins-location)
+    - [Directory structure](#directory-structure)
+    - [Krew Index](#krew-index)
+      - [Index Structure](#index-structure)
+    - [Plugin Manifest File Format](#plugin-manifest-file-format)
+    - [Update Index Locally](#update-index-locally)
+    - [Plugin Package Format](#plugin-package-format)
+  - [Installation Methods](#installation-methods)
+    - [Why krew should not rely on OS-Package managers](#why-krew-should-not-rely-on-os-package-managers)
+  - [Krew Itself as a Plugin](#krew-itself-as-a-plugin)
+    - [Kubectl Plugin Descriptor (plugin.yaml) File Generation](#kubectl-plugin-descriptor-pluginyaml-file-generation)
+    - [Single Binary](#single-binary)
+  - [Note on Potential Changes to Kubectl Plugin System](#note-on-potential-changes-to-kubectl-plugin-system)
 
 ![Krew Overview](src/krew_general.svg)
 
@@ -31,15 +31,17 @@ specific. Krew installs itself in the default plugin directory for the user.
 
 ### Directory structure
 
-Krew installs plugins in its root path under `~/.kube/plugins/krew/store`. Each
+Krew installs plugins in its root path under `~/.krew/store`. Each
 plugin has a directory with its uncompressed content from the URI or head path.
 Kubectl will recursively search the plugin path for plugin.yaml files. The
 download directory is a temporary directory which only exists during the
 execution of the install or upgrade command. Directory structure:
 
 ```text
-~/.kube/plugins
-└── krew/
+. ($HOME)
+└── .krew/
+    ├── bin/
+    |   ├── kubectl-foo
     ├── index/
     |   ├── foo.yaml
     |   └── krew.yaml
@@ -55,7 +57,7 @@ execution of the install or upgrade command. Directory structure:
             |       └── plugin.yaml
             ├── krew-install
             └── krew-upgrade
-${TMP}/krew/
+${TMPDIR}/krew/
     └── download/ (This directory is only available during installation and upgrade)
         └── foo/<sha256-or-HEAD>/
             ├── plugin.yaml
