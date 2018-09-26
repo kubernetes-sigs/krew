@@ -28,8 +28,8 @@ import (
 
 // Upgrade will reinstall and delete the old plugin. The operation tries
 // to not get the plugin dir in a bad state if it fails during the process.
-func Upgrade(p environment.KrewPaths, plugin index.Plugin, currentKrewVersion string) error {
-	oldVersion, ok, err := findInstalledPluginVersion(p.Install, p.Bin, plugin.Name)
+func Upgrade(p environment.Paths, plugin index.Plugin, currentKrewVersion string) error {
+	oldVersion, ok, err := findInstalledPluginVersion(p.InstallPath(), p.BinPath(), plugin.Name)
 	if err != nil {
 		return fmt.Errorf("could not detect installed plugin oldVersion, err: %v", err)
 	}
@@ -48,7 +48,7 @@ func Upgrade(p environment.KrewPaths, plugin index.Plugin, currentKrewVersion st
 
 	// Move head to save location
 	if oldVersion == headVersion {
-		oldHEADPath, newHEADPath := filepath.Join(p.Install, plugin.Name, headVersion), filepath.Join(p.Install, plugin.Name, headOldVersion)
+		oldHEADPath, newHEADPath := filepath.Join(p.InstallPath(), plugin.Name, headVersion), filepath.Join(p.InstallPath(), plugin.Name, headOldVersion)
 		glog.V(2).Infof("Move old HEAD from: %q to %q", oldHEADPath, newHEADPath)
 		if err = os.Rename(oldHEADPath, newHEADPath); err != nil {
 			return fmt.Errorf("failed to rename HEAD to HEAD-OLD, from %q to %q, err: %v", oldHEADPath, newHEADPath, err)
@@ -70,23 +70,23 @@ func Upgrade(p environment.KrewPaths, plugin index.Plugin, currentKrewVersion st
 // removePluginVersionFromFS will remove a plugin directly if it not krew. Krew on Windows needs special care
 // because active directories can't be deleted. This method will unlink old krew versions and during next run clean
 // the directory.
-func removePluginVersionFromFS(p environment.KrewPaths, plugin index.Plugin, newVersion, oldVersion, currentKrewVersion string) error {
+func removePluginVersionFromFS(p environment.Paths, plugin index.Plugin, newVersion, oldVersion, currentKrewVersion string) error {
 	// Cleanup if we haven't updated krew during this execution.
 	if plugin.Name == krewPluginName {
 		return handleKrewRemove(p, plugin, newVersion, oldVersion, currentKrewVersion)
 	}
-	glog.V(1).Infof("Remove old plugin installation under %q", filepath.Join(p.Install, plugin.Name, oldVersion))
-	return os.RemoveAll(filepath.Join(p.Install, plugin.Name, oldVersion))
+	glog.V(1).Infof("Remove old plugin installation under %q", filepath.Join(p.InstallPath(), plugin.Name, oldVersion))
+	return os.RemoveAll(filepath.Join(p.InstallPath(), plugin.Name, oldVersion))
 }
 
 // handleKrewRemove will remove and unlink old krew versions.
-func handleKrewRemove(p environment.KrewPaths, plugin index.Plugin, newVersion, oldVersion, currentKrewVersion string) error {
-	dir, err := ioutil.ReadDir(filepath.Join(p.Install, plugin.Name))
+func handleKrewRemove(p environment.Paths, plugin index.Plugin, newVersion, oldVersion, currentKrewVersion string) error {
+	dir, err := ioutil.ReadDir(p.PluginInstallPath(plugin.Name))
 	if err != nil {
 		return fmt.Errorf("can't read plugin dir, err: %v", err)
 	}
 	for _, f := range dir {
-		pluginVersionPath := filepath.Join(p.Install, plugin.Name, f.Name())
+		pluginVersionPath := filepath.Join(p.InstallPath(), plugin.Name, f.Name())
 		if !f.IsDir() {
 			continue
 		}

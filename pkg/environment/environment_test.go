@@ -18,12 +18,52 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
+func TestMustGetKrewPaths_resolvesToHomeDir(t *testing.T) {
+	home := os.Getenv("USERPROFILE")
+	if home == "" {
+		home = os.Getenv("HOME")
+	}
+	if home == "" {
+		t.Fatal("cannot determine HOME or USERPROFILE")
+	}
+	expectedBase := filepath.Join(home, ".krew")
+
+	p := MustGetKrewPaths()
+	if got := p.BasePath(); got != expectedBase {
+		t.Fatalf("MustGetKrewPaths()=%s; expected=%s", got, expectedBase)
+	}
+}
+
+func TestPaths(t *testing.T) {
+	base := filepath.FromSlash("/foo")
+	p := newPaths(base)
+	if got := p.BasePath(); got != base {
+		t.Fatalf("BasePath()=%s; expected=%s", got, base)
+	}
+	if got, expected := p.BinPath(), filepath.FromSlash("/foo/bin"); got != expected {
+		t.Fatalf("BinPath()=%s; expected=%s", got, expected)
+	}
+	if got, expected := p.IndexPath(), filepath.FromSlash("/foo/index"); got != expected {
+		t.Fatalf("IndexPath()=%s; expected=%s", got, expected)
+	}
+	if got, expected := p.InstallPath(), filepath.FromSlash("/foo/store"); got != expected {
+		t.Fatalf("InstallPath()=%s; expected=%s", got, expected)
+	}
+	if got, expected := p.PluginInstallPath("my-plugin"), filepath.FromSlash("/foo/store/my-plugin"); got != expected {
+		t.Fatalf("PluginInstallPath()=%s; expected=%s", got, expected)
+	}
+	if got := p.DownloadPath(); !strings.HasSuffix(got, "krew-downloads") {
+		t.Fatalf("DownloadPath()=%s; expected suffix 'krew-downloads'", got)
+	}
+}
+
 func TestGetExecutedVersion(t *testing.T) {
 	type args struct {
-		paths         KrewPaths
+		paths         Paths
 		executionPath string
 	}
 	tests := []struct {
@@ -36,12 +76,7 @@ func TestGetExecutedVersion(t *testing.T) {
 		{
 			name: "is in krew path",
 			args: args{
-				paths: KrewPaths{
-					Base:     filepath.FromSlash("/plugins/"),
-					Index:    filepath.FromSlash("/plugins/index"),
-					Install:  filepath.FromSlash("/plugins/store"),
-					Download: filepath.FromSlash("/plugins/download"),
-				},
+				paths:         newPaths(filepath.FromSlash("/plugins")),
 				executionPath: filepath.FromSlash("/plugins/store/krew/deadbeef/krew.exe"),
 			},
 			want:    "deadbeef",
@@ -51,12 +86,7 @@ func TestGetExecutedVersion(t *testing.T) {
 		{
 			name: "is not in krew path",
 			args: args{
-				paths: KrewPaths{
-					Base:     filepath.FromSlash("/plugins/"),
-					Index:    filepath.FromSlash("/plugins/index"),
-					Install:  filepath.FromSlash("/plugins/store"),
-					Download: filepath.FromSlash("/plugins/download"),
-				},
+				paths:         newPaths(filepath.FromSlash("/plugins")),
 				executionPath: filepath.FromSlash("/plugins/store/NOTKREW/deadbeef/krew.exe"),
 			},
 			want:    "",
@@ -66,12 +96,7 @@ func TestGetExecutedVersion(t *testing.T) {
 		{
 			name: "is in longer krew path",
 			args: args{
-				paths: KrewPaths{
-					Base:     filepath.FromSlash("/plugins/"),
-					Index:    filepath.FromSlash("/plugins/index"),
-					Install:  filepath.FromSlash("/plugins/store"),
-					Download: filepath.FromSlash("/plugins/download"),
-				},
+				paths:         newPaths(filepath.FromSlash("/plugins")),
 				executionPath: filepath.FromSlash("/plugins/store/krew/deadbeef/foo/krew.exe"),
 			},
 			want:    "deadbeef",
@@ -81,12 +106,7 @@ func TestGetExecutedVersion(t *testing.T) {
 		{
 			name: "is in smaller krew path",
 			args: args{
-				paths: KrewPaths{
-					Base:     filepath.FromSlash("/plugins/"),
-					Index:    filepath.FromSlash("/plugins/index"),
-					Install:  filepath.FromSlash("/plugins/store"),
-					Download: filepath.FromSlash("/plugins/download"),
-				},
+				paths:         newPaths(filepath.FromSlash("/plugins")),
 				executionPath: filepath.FromSlash("/krew.exe"),
 			},
 			want:    "",
@@ -96,7 +116,8 @@ func TestGetExecutedVersion(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, isVersion, err := GetExecutedVersion(tt.args.paths.Install, tt.args.executionPath, func(s string) (string, error) {
+			t.Logf("installpath=%s", tt.args.paths.InstallPath())
+			got, isVersion, err := GetExecutedVersion(tt.args.paths.InstallPath(), tt.args.executionPath, func(s string) (string, error) {
 				return s, nil
 			})
 			if (err != nil) != tt.wantErr {

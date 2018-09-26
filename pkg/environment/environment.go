@@ -24,44 +24,55 @@ import (
 	"github.com/GoogleContainerTools/krew/pkg/pathutil"
 )
 
-// KrewPaths contains all important environment paths
-type KrewPaths struct {
-	// Base is the path of the krew root.
-	// The default path is ~/.krew
-	Base string
-
-	// Index is a git(1) repository containing all local plugin manifests files.
-	// ${Index}/<plugin-name>.yaml
-	Index string
-
-	// Install is the dir where all plugins will be installed to.
-	// ${Install}/<version>/<plugin-content>
-	Install string
-
-	// Download is a directory where plugins will be temporarily downloaded to.
-	// This is currently a path in os.TempDir()
-	Download string
-
-	// Bin is the path krew links all plugin binaries to.
-	// This path has to be added to the $PATH.
-	Bin string
+// Paths contains all important environment paths
+type Paths struct {
+	base string
+	tmp  string
 }
 
-// MustGetKrewPaths returns ensured index paths for krew.
-func MustGetKrewPaths() KrewPaths {
+// MustGetKrewPaths returns the inferred paths for krew. By default, it is
+// $HOME/.krew.
+func MustGetKrewPaths() Paths {
 	base := filepath.Join(homedir.HomeDir(), ".krew")
 	base, err := filepath.Abs(base)
 	if err != nil {
 		panic(fmt.Errorf("cannot get current pwd err: %v", err))
 	}
+	return newPaths(base)
+}
 
-	return KrewPaths{
-		Base:     base,
-		Index:    filepath.Join(base, "index"),
-		Install:  filepath.Join(base, "store"),
-		Download: filepath.Join(os.TempDir(), "krew"),
-		Bin:      filepath.Join(base, "bin"),
-	}
+func newPaths(base string) Paths {
+	return Paths{base: base, tmp: os.TempDir()}
+}
+
+// BasePath returns krew base directory.
+func (p Paths) BasePath() string { return p.base }
+
+// IndexPath returns the base directory where plugin index repository is cloned.
+//
+// e.g. {IndexPath}/plugins/{plugin}.yaml
+func (p Paths) IndexPath() string { return filepath.Join(p.base, "index") }
+
+// BinPath returns the path where plugin executable symbolic links are found.
+// This path should be added to $PATH in client machine.
+//
+// e.g. {BinPath}/kubectl-foo
+func (p Paths) BinPath() string { return filepath.Join(p.base, "bin") }
+
+// DownloadPath returns a temporary directory for downloading plugins. It does
+// not create a new directory on each call.
+func (p Paths) DownloadPath() string { return filepath.Join(p.tmp, "krew-downloads") }
+
+// InstallPath returns the base directory for plugin installations.
+//
+// e.g. {InstallPath}/{plugin-name}
+func (p Paths) InstallPath() string { return filepath.Join(p.base, "store") }
+
+// PluginInstallPath returns the path to install the plugin.
+//
+// e.g. {PluginInstallPath}/{version}/{..files..}
+func (p Paths) PluginInstallPath(plugin string) string {
+	return filepath.Join(p.InstallPath(), plugin)
 }
 
 // GetExecutedVersion returns the currently executed version. If krew is

@@ -35,7 +35,7 @@ var infoCmd = &cobra.Command{
 Use this command to find out about plugin requirements and caveats.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		for _, arg := range args {
-			plugin, err := indexscanner.LoadPluginFileFromFS(paths.Index, arg)
+			plugin, err := indexscanner.LoadPluginFileFromFS(paths.IndexPath(), arg)
 			if os.IsNotExist(err) {
 				glog.Fatalf("plugin %q not found", arg)
 			} else if err != nil {
