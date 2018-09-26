@@ -65,7 +65,7 @@ func init() {
 	if err != nil {
 		glog.Errorf("failed to get the own executable path")
 	}
-	if krewVersion, ok, err := environment.GetExecutedVersion(paths.Install, selfPath, environment.ResolveSymlink); err != nil {
+	if krewVersion, ok, err := environment.GetExecutedVersion(paths.Install, selfPath, environment.Realpath); err != nil {
 		glog.Fatal(fmt.Errorf("failed to find current krew version, err: %v", err))
 	} else if ok {
 		krewExecutedVersion = krewVersion

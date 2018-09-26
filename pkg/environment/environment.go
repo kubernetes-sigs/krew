@@ -16,9 +16,10 @@ package environment
 
 import (
 	"fmt"
-	"k8s.io/client-go/util/homedir"
 	"os"
 	"path/filepath"
+
+	"k8s.io/client-go/util/homedir"
 
 	"github.com/GoogleContainerTools/krew/pkg/pathutil"
 )
@@ -65,8 +66,8 @@ func MustGetKrewPaths() KrewPaths {
 
 // GetExecutedVersion returns the currently executed version. If krew is
 // not executed as an plugin it will return a nil error and an empty string.
-func GetExecutedVersion(installPath string, executionPath string, resolver func(string) (string, error)) (string, bool, error) {
-	path, err := resolver(executionPath)
+func GetExecutedVersion(installPath string, executionPath string, pathResolver func(string) (string, error)) (string, bool, error) {
+	path, err := pathResolver(executionPath)
 	if err != nil {
 		return "", false, fmt.Errorf("failed to resolve path, err: %v", err)
 	}
@@ -89,8 +90,9 @@ func GetExecutedVersion(installPath string, executionPath string, resolver func(
 	return elems[0], true, nil
 }
 
-// ResolveSymlink resolves symlinks paths
-func ResolveSymlink(path string) (string, error) {
+// Realpath evaluates symbolic links. If the path is not a symbolic link, it
+// returns the cleaned path. Symbolic links with relative paths return error.
+func Realpath(path string) (string, error) {
 	s, err := os.Lstat(path)
 	if err != nil {
 		return "", fmt.Errorf("failed to stat the currently executed path (%q), err: %v", path, err)
@@ -100,6 +102,9 @@ func ResolveSymlink(path string) (string, error) {
 		if path, err = os.Readlink(path); err != nil {
 			return "", fmt.Errorf("failed to resolve the symlink of the currently executed version, err: %v", err)
 		}
+		if !filepath.IsAbs(path) {
+			return "", fmt.Errorf("symbolic link is relative (%s)", path)
+		}
 	}
-	return path, nil
+	return filepath.Clean(path), nil
 }
