@@ -15,6 +15,9 @@
 package installation
 
 import (
+	"fmt"
+	"io/ioutil"
+	"os"
 	"path/filepath"
 	"reflect"
 	"testing"
@@ -180,4 +183,77 @@ func Test_getDirectMove(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_moveOrCopyDir_canMoveToNonExistingDir(t *testing.T) {
+	src, err := ioutil.TempDir(os.TempDir(), "krew-move-test-src")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(src)
+	if err := ioutil.WriteFile(filepath.Join(src, "some-file"), nil, 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	dst, err := ioutil.TempDir(os.TempDir(), "krew-move-test-dst")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(dst)
+
+	dst = filepath.Join(dst, "non-existing-dir")
+
+	if err := moveOrCopyDir(src, dst); err != nil {
+		t.Fatalf("move failed: %+v", err)
+	}
+
+	items, err := ioutil.ReadDir(dst)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(items) != 1 {
+		for _, fi := range items {
+			t.Logf("found: %s", fi.Name())
+		}
+		t.Fatalf("expected to find 1 file in target directory, found: %d", len(items))
+	}
+}
+
+func Test_moveOrCopyDir_removesExistingTarget(t *testing.T) {
+	src, err := ioutil.TempDir(os.TempDir(), "krew-move-test-src")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(src)
+	if err := ioutil.WriteFile(filepath.Join(src, "some-file"), nil, 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	dst, err := ioutil.TempDir(os.TempDir(), "krew-move-test-dst")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(dst)
+
+	for i := 0; i < 3; i++ { // write some files
+		if err := ioutil.WriteFile(filepath.Join(dst, fmt.Sprintf("file-%d", i)), nil, 0644); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := moveOrCopyDir(src, dst); err != nil {
+		t.Fatalf("move failed: %+v", err)
+	}
+
+	items, err := ioutil.ReadDir(dst)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(items) != 1 {
+		for _, fi := range items {
+			t.Logf("found: %s", fi.Name())
+		}
+		t.Fatalf("expected to find 1 file in target directory, found: %d", len(items))
+	}
+
 }

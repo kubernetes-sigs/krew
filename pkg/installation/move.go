@@ -169,8 +169,8 @@ func moveToInstallDir(download, pluginDir, version string, fos []index.FileOpera
 	}
 
 	installPath := filepath.Join(pluginDir, version)
-	glog.V(2).Infof("Move %q to %q", tempdir, installPath)
-	if err = moveOrCopy(tempdir, installPath); err != nil {
+	glog.V(2).Infof("Move directory %q to %q", tempdir, installPath)
+	if err = moveOrCopyDir(tempdir, installPath); err != nil {
 		defer os.Remove(installPath)
 		return "", fmt.Errorf("could not rename file from %q to %q, err: %v", tempdir, installPath, err)
 	}
@@ -178,10 +178,23 @@ func moveToInstallDir(download, pluginDir, version string, fos []index.FileOpera
 	return installPath, nil
 }
 
-// moveOrCopy will try to rename a dir or file. If rename is not supported a manual copy will be performed.
-func moveOrCopy(from, to string) error {
+// moveOrCopyDir will try to rename a dir or file. If rename is not supported a
+// manual copy will be performed. Existing files at "to" will be deleted
+func moveOrCopyDir(from, to string) error {
 	// Try atomic rename (does not work cross partition).
-	err := os.Rename(from, to)
+	fi, err := os.Stat(to)
+	if err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("error checking move target dir %q: %+v", to, err)
+	}
+	if fi != nil && fi.IsDir() {
+		glog.V(4).Infof("There's already a directory at move target %q. deleting.", to)
+		if err := os.RemoveAll(to); err != nil {
+			return fmt.Errorf("error cleaning up dir %q: %+v", to, err)
+		}
+		glog.V(4).Infof("Move target directory %q cleaned up", to)
+	}
+
+	err = os.Rename(from, to)
 	// Fallback for invalid cross-device link (errno:18).
 	if le, ok := err.(*os.LinkError); err != nil && ok {
 		if errno, ok := le.Err.(syscall.Errno); ok && errno == 18 {
