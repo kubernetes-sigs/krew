@@ -125,7 +125,6 @@ func Test_createOrUpdateLink(t *testing.T) {
 }
 
 func Test_pluginNameToBin(t *testing.T) {
-
 	tests := []struct {
 		name      string
 		isWindows bool
@@ -142,5 +141,59 @@ func Test_pluginNameToBin(t *testing.T) {
 				t.Errorf("pluginNameToBin(%v, %v) = %v; want %v", tt.name, tt.isWindows, got, tt.want)
 			}
 		})
+	}
+}
+
+func Test_removeLink_notExists(t *testing.T) {
+	if err := removeLink("/non/existing/path"); err != nil {
+		t.Fatalf("removeLink failed with non-existing path: %+v", err)
+	}
+}
+
+func Test_removeLink_linkExists(t *testing.T) {
+	dir, err := ioutil.TempDir("", "removelink-test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(dir)
+	link := filepath.Join(dir, "some-symlink")
+	if err := os.Symlink(os.TempDir(), link); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := removeLink(link); err != nil {
+		t.Fatalf("removeLink(%s) failed: %+v", link, err)
+	}
+}
+
+func Test_removeLink_fails(t *testing.T) {
+	// create an unreadable directory and trigger "permission denied" error
+	dir, err := ioutil.TempDir("", "removelink-test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(dir)
+	unreadableDir := filepath.Join(dir, "unreadable")
+	if err := os.MkdirAll(unreadableDir, 0); err != nil {
+		t.Fatal(err)
+	}
+	unreadableFile := filepath.Join(unreadableDir, "mysterious-file")
+
+	if err := removeLink(unreadableFile); err == nil {
+		t.Fatalf("removeLink(%s) with unreadable file returned err==nil", unreadableFile)
+	}
+}
+
+func Test_removeLink_regularFileExists(t *testing.T) {
+	f, err := ioutil.TempFile("", "some-regular-file")
+	if err != nil {
+		t.Fatal(err)
+	}
+	path := f.Name()
+	f.Close()
+	defer os.Remove(path)
+
+	if err := removeLink(path); err == nil {
+		t.Fatalf("removeLink(%s) with regular file was expected to fail; got: err=nil", path)
 	}
 }

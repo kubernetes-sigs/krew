@@ -119,14 +119,18 @@ func Remove(p environment.KrewPaths, name string) error {
 	}
 	glog.V(1).Infof("Deleting plugin version %s", version)
 	glog.V(3).Infof("Deleting path %q", filepath.Join(p.Install, name))
-	removeLink(p.Bin, name)
+
+	symlinkPath := filepath.Join(p.Bin, pluginNameToBin(name, isWindows()))
+	if err := removeLink(symlinkPath); err != nil {
+		return fmt.Errorf("could not uninstall symlink of plugin: %+v", err)
+	}
 	return os.RemoveAll(filepath.Join(p.Install, name))
 }
 
 func createOrUpdateLink(binDir string, binary string, plugin string) error {
 	dst := filepath.Join(binDir, pluginNameToBin(plugin, isWindows()))
 
-	if err := removeLink(binDir, plugin); err != nil {
+	if err := removeLink(dst); err != nil {
 		return fmt.Errorf("failed to remove old symlink, err: %v", err)
 	}
 	if _, err := os.Stat(binary); os.IsNotExist(err) {
@@ -143,13 +147,23 @@ func createOrUpdateLink(binDir string, binary string, plugin string) error {
 	return nil
 }
 
-func removeLink(binDir string, plugin string) error {
-	dst := filepath.Join(binDir, pluginNameToBin(plugin, isWindows()))
-	if err := os.Remove(dst); err != nil && !os.IsNotExist(err) {
-		return fmt.Errorf("failed to remove the symlink in %q, err: %v", dst, err)
-	} else if err == nil {
-		glog.V(3).Infof("Removed symlink from %q", dst)
+// removeLink removes a symlink reference if exists.
+func removeLink(path string) error {
+	fi, err := os.Lstat(path)
+	if os.IsNotExist(err) {
+		glog.V(3).Infof("No file found at %q", path)
+		return nil
+	} else if err != nil {
+		return fmt.Errorf("failed to read the symlink in %q, err: %v", path, err)
 	}
+
+	if fi.Mode()&os.ModeSymlink == 0 {
+		return fmt.Errorf("file %q is not a symlink (mode=%s)", path, fi.Mode())
+	}
+	if err := os.Remove(path); err != nil {
+		return fmt.Errorf("failed to remove the symlink in %q, err: %v", path, err)
+	}
+	glog.V(3).Infof("Removed symlink from %q", path)
 	return nil
 }
 
