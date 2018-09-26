@@ -124,7 +124,7 @@ func Remove(p environment.KrewPaths, name string) error {
 }
 
 func createOrUpdateLink(binDir string, binary string, plugin string) error {
-	dst := filepath.Join(binDir, pluginNameToBin(plugin))
+	dst := filepath.Join(binDir, pluginNameToBin(plugin, isWindows()))
 
 	if err := removeLink(binDir, plugin); err != nil {
 		return fmt.Errorf("failed to remove old symlink, err: %v", err)
@@ -138,13 +138,13 @@ func createOrUpdateLink(binDir string, binary string, plugin string) error {
 	if err := os.Symlink(binary, dst); err != nil {
 		return fmt.Errorf("failed to create a symlink form %q to %q, err: %v", binDir, dst, err)
 	}
-	glog.V(2).Infof("Created symlink in %q", dst)
+	glog.V(2).Infof("Created symlink at %q", dst)
 
 	return nil
 }
 
 func removeLink(binDir string, plugin string) error {
-	dst := filepath.Join(binDir, pluginNameToBin(plugin))
+	dst := filepath.Join(binDir, pluginNameToBin(plugin, isWindows()))
 	if err := os.Remove(dst); err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("failed to remove the symlink in %q, err: %v", dst, err)
 	} else if err == nil {
@@ -153,10 +153,15 @@ func removeLink(binDir string, plugin string) error {
 	return nil
 }
 
-func pluginNameToBin(name string) string {
-	if runtime.GOOS == "windows" && !strings.HasSuffix(name, ".exe") {
+func isWindows() bool { return runtime.GOOS == "windows" }
+
+// pluginNameToBin creates the name of the symlink file for the plugin name.
+// It converts dashes to underscores.
+func pluginNameToBin(name string, isWindows bool) string {
+	name = strings.Replace(name, "-", "_", -1)
+	name = "kubectl-" + name
+	if isWindows {
 		name = name + ".exe"
 	}
-
-	return "kubectl-" + name
+	return name
 }
