@@ -75,6 +75,14 @@ func (p Paths) PluginInstallPath(plugin string) string {
 	return filepath.Join(p.InstallPath(), plugin)
 }
 
+// PluginVersionInstallPath returns the path to the specified version of specified
+// plugin.
+//
+// e.g. {PluginVersionInstallPath} = {PluginInstallPath}/{version}
+func (p Paths) PluginVersionInstallPath(plugin, version string) string {
+	return filepath.Join(p.InstallPath(), plugin, version)
+}
+
 // GetExecutedVersion returns the currently executed version. If krew is
 // not executed as an plugin it will return a nil error and an empty string.
 func GetExecutedVersion(installPath string, executionPath string, pathResolver func(string) (string, error)) (string, bool, error) {

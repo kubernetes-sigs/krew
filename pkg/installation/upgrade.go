@@ -17,7 +17,6 @@ package installation
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"io/ioutil"
 
@@ -48,7 +47,7 @@ func Upgrade(p environment.Paths, plugin index.Plugin, currentKrewVersion string
 
 	// Move head to save location
 	if oldVersion == headVersion {
-		oldHEADPath, newHEADPath := filepath.Join(p.InstallPath(), plugin.Name, headVersion), filepath.Join(p.InstallPath(), plugin.Name, headOldVersion)
+		oldHEADPath, newHEADPath := p.PluginVersionInstallPath(plugin.Name, headVersion), p.PluginVersionInstallPath(plugin.Name, headOldVersion)
 		glog.V(2).Infof("Move old HEAD from: %q to %q", oldHEADPath, newHEADPath)
 		if err = os.Rename(oldHEADPath, newHEADPath); err != nil {
 			return fmt.Errorf("failed to rename HEAD to HEAD-OLD, from %q to %q, err: %v", oldHEADPath, newHEADPath, err)
@@ -75,8 +74,8 @@ func removePluginVersionFromFS(p environment.Paths, plugin index.Plugin, newVers
 	if plugin.Name == krewPluginName {
 		return handleKrewRemove(p, plugin, newVersion, oldVersion, currentKrewVersion)
 	}
-	glog.V(1).Infof("Remove old plugin installation under %q", filepath.Join(p.InstallPath(), plugin.Name, oldVersion))
-	return os.RemoveAll(filepath.Join(p.InstallPath(), plugin.Name, oldVersion))
+	glog.V(1).Infof("Remove old plugin installation under %q", p.PluginVersionInstallPath(plugin.Name, oldVersion))
+	return os.RemoveAll(p.PluginVersionInstallPath(plugin.Name, oldVersion))
 }
 
 // handleKrewRemove will remove and unlink old krew versions.
@@ -86,7 +85,7 @@ func handleKrewRemove(p environment.Paths, plugin index.Plugin, newVersion, oldV
 		return fmt.Errorf("can't read plugin dir, err: %v", err)
 	}
 	for _, f := range dir {
-		pluginVersionPath := filepath.Join(p.InstallPath(), plugin.Name, f.Name())
+		pluginVersionPath := p.PluginVersionInstallPath(plugin.Name, f.Name())
 		if !f.IsDir() {
 			continue
 		}
@@ -98,6 +97,7 @@ func handleKrewRemove(p environment.Paths, plugin index.Plugin, newVersion, oldV
 			}
 		} else if f.Name() != newVersion {
 			glog.V(1).Infof("Unlink krew installation under %q", pluginVersionPath)
+			// TODO(ahmetb,lbb) is this part implemented???
 		}
 	}
 	return nil
