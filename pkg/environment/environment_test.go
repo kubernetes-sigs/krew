@@ -15,6 +15,8 @@
 package environment
 
 import (
+	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 )
@@ -106,6 +108,57 @@ func TestGetExecutedVersion(t *testing.T) {
 			}
 			if isVersion != tt.inPath {
 				t.Errorf("GetExecutedVersion() isVersion = %v, want %v", isVersion, tt.inPath)
+			}
+		})
+	}
+}
+
+func TestRealpath(t *testing.T) {
+	tmp, err := ioutil.TempDir("", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(tmp)
+
+	// create regular file
+	if err := ioutil.WriteFile(filepath.Join(tmp, "regular-file"), nil, 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	// create absolute symlink
+	orig := filepath.Clean(os.TempDir())
+	if err := os.Symlink(orig, filepath.Join(tmp, "symbolic-link-abs")); err != nil {
+		t.Fatal(err)
+	}
+
+	// create relative symlink
+	if err := os.Symlink("./another-file", filepath.Join(tmp, "symbolic-link-rel")); err != nil {
+		t.Fatal(err)
+	}
+
+	tests := []struct {
+		name    string
+		in      string
+		want    string
+		wantErr bool
+	}{
+		{"file not exists", filepath.FromSlash("/not/exists"), "", true},
+		{"directory", tmp, tmp, false},
+		{"regular file", filepath.Join(tmp, "regular-file"), filepath.Join(tmp, "regular-file"), false},
+		{"directory unclean", filepath.Join(tmp, "foo", ".."), tmp, false},
+		{"regular file unclean", filepath.Join(tmp, "regular-file", "foo", ".."), filepath.Join(tmp, "regular-file"), false},
+		{"relative symbolic link", filepath.Join(tmp, "symbolic-link-rel"), "", true},
+		{"absolute symbolic link", filepath.Join(tmp, "symbolic-link-abs"), orig, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := Realpath(tt.in)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Realpath(%s) error = %v, wantErr %v", tt.in, err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("Realpath(%s) = %v, want %v", tt.in, got, tt.want)
 			}
 		})
 	}
