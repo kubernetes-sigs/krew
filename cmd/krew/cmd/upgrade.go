@@ -40,7 +40,7 @@ kubectl plugin upgrade foo bar"`,
 		var pluginNames []string
 		// Upgrade all plugins.
 		if len(args) == 0 {
-			installed, err := installation.ListInstalledPlugins(paths.Install, paths.Bin)
+			installed, err := installation.ListInstalledPlugins(paths.InstallPath(), paths.BinPath())
 			if err != nil {
 				return fmt.Errorf("failed to find all installed versions, err: %v", err)
 			}
@@ -53,7 +53,7 @@ kubectl plugin upgrade foo bar"`,
 		}
 
 		for _, name := range pluginNames {
-			plugin, err := indexscanner.LoadPluginFileFromFS(paths.Index, name)
+			plugin, err := indexscanner.LoadPluginFileFromFS(paths.IndexPath(), name)
 			if err != nil {
 				return fmt.Errorf("failed to load the index file for plugin %s, err: %v", plugin.Name, err)
 			}

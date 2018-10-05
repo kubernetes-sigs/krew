@@ -35,7 +35,7 @@ var searchCmd = &cobra.Command{
 	Long: `Discover plugins in your local index using fuzzy search.
 Search accepts a list of words as options.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		plugins, err := indexscanner.LoadPluginListFromFS(paths.Index)
+		plugins, err := indexscanner.LoadPluginListFromFS(paths.IndexPath())
 		if err != nil {
 			return fmt.Errorf("failed to load the index, err %v", err)
 		}
@@ -46,7 +46,7 @@ Search accepts a list of words as options.`,
 			pluginMap[p.Name] = p
 		}
 
-		installed, err := installation.ListInstalledPlugins(paths.Install, paths.Bin)
+		installed, err := installation.ListInstalledPlugins(paths.InstallPath(), paths.BinPath())
 		if err != nil {
 			return fmt.Errorf("failed to load installed plugins, err: %v", err)
 		}

@@ -28,8 +28,10 @@ import (
 	"github.com/spf13/viper"
 )
 
-var paths environment.KrewPaths
-var krewExecutedVersion string
+var (
+	paths               environment.Paths // krew paths used by the process
+	krewExecutedVersion string            // resolved version of krew
+)
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -57,7 +59,10 @@ func init() {
 	flag.Parse()
 
 	paths = environment.MustGetKrewPaths()
-	if err := ensureDirs(paths.Base, paths.Download, paths.Install, paths.Bin); err != nil {
+	if err := ensureDirs(paths.BasePath(),
+		paths.DownloadPath(),
+		paths.InstallPath(),
+		paths.BinPath()); err != nil {
 		glog.Fatal(err)
 	}
 
@@ -65,7 +70,7 @@ func init() {
 	if err != nil {
 		glog.Errorf("failed to get the own executable path")
 	}
-	if krewVersion, ok, err := environment.GetExecutedVersion(paths.Install, selfPath, environment.Realpath); err != nil {
+	if krewVersion, ok, err := environment.GetExecutedVersion(paths.InstallPath(), selfPath, environment.Realpath); err != nil {
 		glog.Fatal(fmt.Errorf("failed to find current krew version, err: %v", err))
 	} else if ok {
 		krewExecutedVersion = krewVersion
@@ -84,7 +89,7 @@ func SetGlogFlags(hidden bool) {
 }
 
 func checkIndex(_ *cobra.Command, _ []string) error {
-	if ok, err := gitutil.IsGitCloned(paths.Index); err != nil {
+	if ok, err := gitutil.IsGitCloned(paths.IndexPath()); err != nil {
 		return err
 	} else if !ok {
 		return fmt.Errorf("krew local plugin index is not initialized (run \"krew update\")")

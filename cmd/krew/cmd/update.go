@@ -37,8 +37,8 @@ perform any necessary migrations.`,
 }
 
 func ensureUpdated(_ *cobra.Command, _ []string) error {
-	if err := gitutil.EnsureUpdated(IndexURI, paths.Index); err != nil {
-		return fmt.Errorf("failed to ensure that the index path %q is updated, err: %v", paths.Index, err)
+	if err := gitutil.EnsureUpdated(IndexURI, paths.IndexPath()); err != nil {
+		return fmt.Errorf("failed to ensure that the index path %q is updated, err: %v", paths.IndexPath(), err)
 	}
 	fmt.Fprintln(os.Stderr, "Updated index")
 	return nil

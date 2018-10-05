@@ -35,7 +35,7 @@ func init() {
 		Long: `List all installed plugin names.
 Plugins will be shown as "PLUGIN,VERSION"`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			plugins, err := installation.ListInstalledPlugins(paths.Install, paths.Bin)
+			plugins, err := installation.ListInstalledPlugins(paths.InstallPath(), paths.BinPath())
 			if err != nil {
 				return fmt.Errorf("failed to find all installed versions, err %v", err)
 			}

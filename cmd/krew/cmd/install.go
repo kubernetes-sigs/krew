@@ -64,7 +64,7 @@ All plugins will be downloaded and made available to: "kubectl plugin <name>"`,
 
 			var install []index.Plugin
 			for _, name := range pluginNames {
-				plugin, err := indexscanner.LoadPluginFileFromFS(paths.Index, name)
+				plugin, err := indexscanner.LoadPluginFileFromFS(paths.IndexPath(), name)
 				if err != nil {
 					return fmt.Errorf("failed to load plugin %s from index, err: %v", name, err)
 				}

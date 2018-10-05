@@ -65,9 +65,9 @@ func downloadAndMove(version, uri string, fos []index.FileOperation, downloadPat
 
 // Install will download and install a plugin. The operation tries
 // to not get the plugin dir in a bad state if it fails during the process.
-func Install(p environment.KrewPaths, plugin index.Plugin, forceHEAD bool) error {
+func Install(p environment.Paths, plugin index.Plugin, forceHEAD bool) error {
 	glog.V(2).Infof("Looking for installed versions")
-	_, ok, err := findInstalledPluginVersion(p.Install, p.Bin, plugin.Name)
+	_, ok, err := findInstalledPluginVersion(p.InstallPath(), p.BinPath(), plugin.Name)
 	if err != nil {
 		return err
 	}
@@ -83,8 +83,8 @@ func Install(p environment.KrewPaths, plugin index.Plugin, forceHEAD bool) error
 	return install(plugin.Name, version, uri, bin, p, fos)
 }
 
-func install(plugin, version, uri, bin string, p environment.KrewPaths, fos []index.FileOperation) error {
-	dst, err := downloadAndMove(version, uri, fos, filepath.Join(p.Download, plugin), filepath.Join(p.Install, plugin))
+func install(plugin, version, uri, bin string, p environment.Paths, fos []index.FileOperation) error {
+	dst, err := downloadAndMove(version, uri, fos, filepath.Join(p.DownloadPath(), plugin), p.PluginInstallPath(plugin))
 	if err != nil {
 		return fmt.Errorf("failed to dowload and move during installation, err: %v", err)
 	}
@@ -101,16 +101,16 @@ func install(plugin, version, uri, bin string, p environment.KrewPaths, fos []in
 	if _, ok := pathutil.IsSubPath(subPathAbs, pathAbs); !ok {
 		return fmt.Errorf("the fullPath %q does not extend the sub-fullPath %q", fullPath, dst)
 	}
-	return createOrUpdateLink(p.Bin, filepath.Join(dst, filepath.FromSlash(bin)), plugin)
+	return createOrUpdateLink(p.BinPath(), filepath.Join(dst, filepath.FromSlash(bin)), plugin)
 }
 
 // Remove will remove a plugin.
-func Remove(p environment.KrewPaths, name string) error {
+func Remove(p environment.Paths, name string) error {
 	if name == krewPluginName {
 		return fmt.Errorf("removing krew is not allowed through krew, see docs for help")
 	}
 	glog.V(3).Infof("Finding installed version to delete")
-	version, installed, err := findInstalledPluginVersion(p.Install, p.Bin, name)
+	version, installed, err := findInstalledPluginVersion(p.InstallPath(), p.BinPath(), name)
 	if err != nil {
 		return fmt.Errorf("can't remove plugin, err: %v", err)
 	}
@@ -118,13 +118,13 @@ func Remove(p environment.KrewPaths, name string) error {
 		return ErrIsNotInstalled
 	}
 	glog.V(1).Infof("Deleting plugin version %s", version)
-	glog.V(3).Infof("Deleting path %q", filepath.Join(p.Install, name))
+	glog.V(3).Infof("Deleting path %q", p.PluginInstallPath(name))
 
-	symlinkPath := filepath.Join(p.Bin, pluginNameToBin(name, isWindows()))
+	symlinkPath := filepath.Join(p.BinPath(), pluginNameToBin(name, isWindows()))
 	if err := removeLink(symlinkPath); err != nil {
 		return fmt.Errorf("could not uninstall symlink of plugin: %+v", err)
 	}
-	return os.RemoveAll(filepath.Join(p.Install, name))
+	return os.RemoveAll(p.PluginInstallPath(name))
 }
 
 func createOrUpdateLink(binDir string, binary string, plugin string) error {
