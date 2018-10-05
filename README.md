@@ -5,7 +5,7 @@ krew is the missing kubectl plugin manager.
 ## What is krew?
 
 krew is a tool that makes it easy to install
-[kubectl plugins](https://kubernetes.io/docs/tasks/extend-kubectl/kubectl-plugins/). 
+[kubectl plugins](https://kubernetes.io/docs/tasks/extend-kubectl/kubectl-plugins/).
 krew helps you discover plugins, install and manage them on your machine. It is
 similar to tools like apt, dnf or [brew](http://brew.sh).
 
@@ -19,17 +19,25 @@ similar to tools like apt, dnf or [brew](http://brew.sh).
 
 For macOS and Linux:
 
-- Make sure that git is installed.
-- Paste this command to your terminal:
+1. Make sure that `git` is installed.
+2. Run this command in your terminal to download and install `krew`:
 
-```bash
-(
-  set -x; cd "$(mktemp -d)" &&
-  curl -fsSLO "https://github.com/GoogleContainerTools/krew/releases/download/v0.1.0-alpha.1/krew.zip" &&
-  unzip krew.zip &&
-  "./out/build/krew-$(uname | tr '[:upper:]' '[:lower:]')" install krew
-)
-```
+    ```bash
+    (
+      set -x; cd "$(mktemp -d)" &&
+      curl -fsSLO "https://github.com/GoogleContainerTools/krew/releases/download/v0.1.0-alpha.1/krew.zip" &&
+      unzip krew.zip &&
+      "./out/build/krew-$(uname | tr '[:upper:]' '[:lower:]')" install krew
+    )
+    ```
+3. Add `$HOME/.krew/bin` directory to your PATH environment variable. To do
+   this, update your `.bashrc` or `.zshrc` file and append the following line:
+
+     ```sh
+     export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
+     ```
+
+   and restart your shell.
 
 Windows:
 
@@ -38,10 +46,13 @@ Windows:
 3. Unzip the file
 4. Launch a command-line window in the extracted directory
 5. Run: ./out/build/krew-windows.exe install krew
+6. Add `%USERPROFILE%\.krew\bin` to your PATH environment variable
+   ([how?](https://java.com/en/download/help/path.xml))
 
-To verify the installation run `kubectl plugin`.
-You should see new subcommands.
-Run `kubectl plugin list` to see all installed plugins.
+### Verifying installation
+
+Run `kubectl plugin list` command to see installed plugins. This command should
+list `kubectl-krew`.
 
 ### Finding plugins
 
