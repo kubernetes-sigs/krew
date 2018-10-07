@@ -19,6 +19,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/golang/glog"
 	"k8s.io/client-go/util/homedir"
 
 	"github.com/GoogleContainerTools/krew/pkg/pathutil"
@@ -30,13 +31,18 @@ type Paths struct {
 	tmp  string
 }
 
-// MustGetKrewPaths returns the inferred paths for krew. By default, it is
-// $HOME/.krew.
+// MustGetKrewPaths returns the inferred paths for krew. By default, it assumes
+// $HOME/.krew as the base path, but can be overriden via KREW_ROOT environment
+// variable.
 func MustGetKrewPaths() Paths {
 	base := filepath.Join(homedir.HomeDir(), ".krew")
+	if fromEnv := os.Getenv("KREW_ROOT"); fromEnv != "" {
+		base = fromEnv
+		glog.V(4).Infof("using environment override KREW_ROOT=%s", fromEnv)
+	}
 	base, err := filepath.Abs(base)
 	if err != nil {
-		panic(fmt.Errorf("cannot get current pwd err: %v", err))
+		panic(fmt.Errorf("cannot get absolute path, err: %v", err))
 	}
 	return newPaths(base)
 }
