@@ -122,13 +122,19 @@ func ListInstalledPlugins(installDir, binDir string) (map[string]string, error) 
 	if err != nil {
 		return installed, fmt.Errorf("failed to read install dir, err: %v", err)
 	}
+	glog.V(4).Infof("Read installation directory: %s (%d items)", installDir, len(plugins))
 	for _, plugin := range plugins {
+		if !plugin.IsDir() {
+			glog.V(4).Infof("Skip non-directory item: %s", plugin.Name())
+			continue
+		}
 		version, ok, err := findInstalledPluginVersion(installDir, binDir, plugin.Name())
 		if err != nil {
 			return installed, fmt.Errorf("failed to get plugin version, err: %v", err)
 		}
 		if ok {
 			installed[plugin.Name()] = version
+			glog.V(4).Infof("Found %q, with version %s", plugin.Name(), version)
 		}
 	}
 	return installed, nil
