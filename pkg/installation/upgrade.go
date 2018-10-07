@@ -57,7 +57,7 @@ func Upgrade(p environment.Paths, plugin index.Plugin, currentKrewVersion string
 
 	// Re-Install
 	glog.V(1).Infof("Installing new version %s", newVersion)
-	if err := install(plugin.Name, newVersion, uri, binName, p, fos); err != nil {
+	if err := install(plugin.Name, newVersion, uri, binName, p, fos, ""); err != nil {
 		return errors.Wrap(err, "failed to install new version")
 	}
 
