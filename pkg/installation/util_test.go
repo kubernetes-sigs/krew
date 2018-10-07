@@ -15,6 +15,7 @@
 package installation
 
 import (
+	"os"
 	"path/filepath"
 	"reflect"
 	"runtime"
@@ -24,6 +25,32 @@ import (
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
 )
+
+func Test_osArch_default(t *testing.T) {
+	inOS, inArch := runtime.GOOS, runtime.GOARCH
+	outOS, outArch := osArch()
+	if inOS != outOS {
+		t.Fatalf("returned OS=%q; expected=%q", outOS, inOS)
+	}
+	if inArch != outArch {
+		t.Fatalf("returned Arch=%q; expected=%q", outArch, inArch)
+	}
+}
+func Test_osArch_override(t *testing.T) {
+	customOS, customArch := "dragons", "v1"
+	os.Setenv("KREW_OS", customOS)
+	defer os.Unsetenv("KREW_OS")
+	os.Setenv("KREW_ARCH", customArch)
+	defer os.Unsetenv("KREW_ARCH")
+
+	outOS, outArch := osArch()
+	if customOS != outOS {
+		t.Fatalf("returned OS=%q; expected=%q", outOS, customOS)
+	}
+	if customArch != outArch {
+		t.Fatalf("returned Arch=%q; expected=%q", outArch, customArch)
+	}
+}
 
 func Test_matchPlatformToSystemEnvs(t *testing.T) {
 	matchingPlatform := index.Platform{

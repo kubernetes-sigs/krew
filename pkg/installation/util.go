@@ -32,7 +32,23 @@ import (
 
 // GetMatchingPlatform TODO(lbb)
 func GetMatchingPlatform(i index.Plugin) (index.Platform, bool, error) {
-	return matchPlatformToSystemEnvs(i, runtime.GOOS, runtime.GOARCH)
+	os, arch := osArch()
+	glog.V(4).Infof("Using os=%s arch=%s", os, arch)
+	return matchPlatformToSystemEnvs(i, os, arch)
+}
+
+// osArch returns the OS/arch combination to be used on the current system. It
+// can be overridden by setting KREW_OS and/or KREW_ARCH environment variables.
+func osArch() (string, string) {
+	goos, goarch := runtime.GOOS, runtime.GOARCH
+	envOS, envArch := os.Getenv("KREW_OS"), os.Getenv("KREW_ARCH")
+	if envOS != "" {
+		goos = envOS
+	}
+	if envArch != "" {
+		goarch = envArch
+	}
+	return goos, goarch
 }
 
 func matchPlatformToSystemEnvs(i index.Plugin, os, arch string) (index.Platform, bool, error) {
