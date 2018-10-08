@@ -22,10 +22,10 @@ cd "${SCRIPTDIR}/.."
 
 # Builds
 rm -rf out/
-gox -os="linux darwin windows" -arch="amd64" \
+gox -osarch="darwin/amd64 windows/amd64 linux/amd64 linux/arm" \
   -ldflags="-X github.com/GoogleContainerTools/krew/pkg/version.gitCommit=$(git rev-parse --short HEAD) \
     -X github.com/GoogleContainerTools/krew/pkg/version.gitTag=$(git describe --tags --dirty --always)" \
-  -output="out/build/krew-{{.OS}}" \
+  -output="out/build/krew-{{.OS}}_{{.Arch}}" \
   ./cmd/krew/...
 
 zip -X -q -r out/krew.zip out/build

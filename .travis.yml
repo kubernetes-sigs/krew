@@ -26,9 +26,10 @@ deploy:
   file:
   - out/krew.zip
   - out/krew-zip.sha256
-  - out/build/krew-linux
-  - out/build/krew-darwin
-  - out/build/krew-windows.exe
+  - out/build/krew-linux_amd64
+  - out/build/krew-linux_arm
+  - out/build/krew-darwin_amd64
+  - out/build/krew-windows_amd64.exe
   skip_cleanup: true
   on:
     tags: true
