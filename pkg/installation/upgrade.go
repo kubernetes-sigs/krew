@@ -15,14 +15,14 @@
 package installation
 
 import (
-	"fmt"
-	"os"
-
 	"io/ioutil"
+	"os"
 
 	"github.com/GoogleContainerTools/krew/pkg/environment"
 	"github.com/GoogleContainerTools/krew/pkg/index"
+
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 )
 
 // Upgrade will reinstall and delete the old plugin. The operation tries
@@ -30,10 +30,10 @@ import (
 func Upgrade(p environment.Paths, plugin index.Plugin, currentKrewVersion string) error {
 	oldVersion, ok, err := findInstalledPluginVersion(p.InstallPath(), p.BinPath(), plugin.Name)
 	if err != nil {
-		return fmt.Errorf("could not detect installed plugin oldVersion, err: %v", err)
+		return errors.Wrap(err, "could not detect installed plugin oldVersion")
 	}
 	if !ok {
-		return fmt.Errorf("can't upgrade plugin %q, it is not installed", plugin.Name)
+		return errors.Errorf("can't upgrade plugin %q, it is not installed", plugin.Name)
 	}
 
 	// Check allowed installation
@@ -42,7 +42,7 @@ func Upgrade(p environment.Paths, plugin index.Plugin, currentKrewVersion string
 		return ErrIsAlreadyUpgraded
 	}
 	if err != nil {
-		return fmt.Errorf("failed to get the current download target, err: %v", err)
+		return errors.Wrap(err, "failed to get the current download target")
 	}
 
 	// Move head to save location
@@ -50,7 +50,7 @@ func Upgrade(p environment.Paths, plugin index.Plugin, currentKrewVersion string
 		oldHEADPath, newHEADPath := p.PluginVersionInstallPath(plugin.Name, headVersion), p.PluginVersionInstallPath(plugin.Name, headOldVersion)
 		glog.V(2).Infof("Move old HEAD from: %q to %q", oldHEADPath, newHEADPath)
 		if err = os.Rename(oldHEADPath, newHEADPath); err != nil {
-			return fmt.Errorf("failed to rename HEAD to HEAD-OLD, from %q to %q, err: %v", oldHEADPath, newHEADPath, err)
+			return errors.Wrapf(err, "failed to rename HEAD to HEAD-OLD, from %q to %q", oldHEADPath, newHEADPath)
 		}
 		oldVersion = headOldVersion
 	}
@@ -58,7 +58,7 @@ func Upgrade(p environment.Paths, plugin index.Plugin, currentKrewVersion string
 	// Re-Install
 	glog.V(1).Infof("Installing new version %s", newVersion)
 	if err := install(plugin.Name, newVersion, uri, binName, p, fos); err != nil {
-		return fmt.Errorf("failed to install new version, err: %v", err)
+		return errors.Wrap(err, "failed to install new version")
 	}
 
 	// Clean old installations
@@ -82,7 +82,7 @@ func removePluginVersionFromFS(p environment.Paths, plugin index.Plugin, newVers
 func handleKrewRemove(p environment.Paths, plugin index.Plugin, newVersion, oldVersion, currentKrewVersion string) error {
 	dir, err := ioutil.ReadDir(p.PluginInstallPath(plugin.Name))
 	if err != nil {
-		return fmt.Errorf("can't read plugin dir, err: %v", err)
+		return errors.Wrap(err, "can't read plugin dir")
 	}
 	for _, f := range dir {
 		pluginVersionPath := p.PluginVersionInstallPath(plugin.Name, f.Name())
@@ -93,7 +93,7 @@ func handleKrewRemove(p environment.Paths, plugin index.Plugin, newVersion, oldV
 		if f.Name() != newVersion && f.Name() != currentKrewVersion {
 			glog.V(1).Infof("Remove old krew installation under %q", pluginVersionPath)
 			if err = os.RemoveAll(pluginVersionPath); err != nil {
-				return fmt.Errorf("can't remove plugin oldVersion=%q, path=%q, err: %v", f.Name(), pluginVersionPath, err)
+				return errors.Wrapf(err, "can't remove plugin oldVersion=%q, path=%q", f.Name(), pluginVersionPath)
 			}
 		} else if f.Name() != newVersion {
 			glog.V(1).Infof("Unlink krew installation under %q", pluginVersionPath)

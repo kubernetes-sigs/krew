@@ -16,7 +16,6 @@ package gitutil
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"os"
 	osexec "os/exec"
@@ -24,6 +23,7 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 )
 
 // EnsureCloned will clone into the destination path, otherwise will return no error.
@@ -69,7 +69,7 @@ func exec(pwd string, args ...string) error {
 	}
 	cmd.Stdout, cmd.Stderr = w, w
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("command err=%q output=%q", err, buf.String())
+		return errors.Wrapf(err, "command execution failure, output=%q", buf.String())
 	}
 	return nil
 }

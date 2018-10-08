@@ -19,7 +19,6 @@ import (
 	"archive/zip"
 	"bytes"
 	"compress/gzip"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -28,6 +27,7 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 )
 
 // download gets a file from the internet in memory and writes it content
@@ -36,14 +36,14 @@ func download(url string, verifier verifier, fetcher Fetcher) (io.ReaderAt, int6
 	glog.V(2).Infof("Fetching %q", url)
 	body, err := fetcher.Get(url)
 	if err != nil {
-		return nil, 0, fmt.Errorf("could not download %q, err %v: ", url, err)
+		return nil, 0, errors.Wrapf(err, "could not download %q", url)
 	}
 	defer body.Close()
 
 	glog.V(3).Infof("Reading download data into memory")
 	data, err := ioutil.ReadAll(io.TeeReader(body, verifier))
 	if err != nil {
-		return nil, 0, fmt.Errorf("could not read download content, err %v: ", err)
+		return nil, 0, errors.Wrap(err, "could not read download content")
 	}
 	glog.V(2).Infof("Read %d bytes of download data into memory", len(data))
 
@@ -67,16 +67,16 @@ func extractZIP(targetDir string, read io.ReaderAt, size int64) error {
 
 		src, err := f.Open()
 		if err != nil {
-			return fmt.Errorf("could not open inflating zip file, err: %v", err)
+			return errors.Wrap(err, "could not open inflating zip file")
 		}
 
 		dst, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, f.Mode())
 		if err != nil {
-			return fmt.Errorf("can't create file in zip destination dir, err: %v", err)
+			return errors.Wrap(err, "can't create file in zip destination dir")
 		}
 
 		if _, err := io.Copy(dst, src); err != nil {
-			return fmt.Errorf("can't copy content to zip destination file, err: %v", err)
+			return errors.Wrap(err, "can't copy content to zip destination file")
 		}
 
 		// Cleanup the open fd. Don't use defer in case of many files.
@@ -94,7 +94,7 @@ func extractTARGZ(targetDir string, in io.Reader) error {
 
 	gzr, err := gzip.NewReader(in)
 	if err != nil {
-		return fmt.Errorf("failed to create gzip reader: %+v", err)
+		return errors.Wrap(err, "failed to create gzip reader")
 	}
 	defer gzr.Close()
 
@@ -105,7 +105,7 @@ func extractTARGZ(targetDir string, in io.Reader) error {
 			break
 		}
 		if err != nil {
-			return fmt.Errorf("tar extraction error: %+v", err)
+			return errors.Wrap(err, "tar extraction error")
 		}
 		glog.V(4).Infof("tar: processing %q (type=%d, mode=%s)", hdr.Name, hdr.Typeflag, os.FileMode(hdr.Mode))
 		// see https://golang.org/cl/78355 for handling pax_global_header
@@ -118,18 +118,18 @@ func extractTARGZ(targetDir string, in io.Reader) error {
 		switch hdr.Typeflag {
 		case tar.TypeDir:
 			if err := os.MkdirAll(path, os.FileMode(hdr.Mode)); err != nil {
-				return fmt.Errorf("failed to create directory from tar: %+v", err)
+				return errors.Wrap(err, "failed to create directory from tar")
 			}
 		case tar.TypeReg:
 			f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY, os.FileMode(hdr.Mode))
 			if err != nil {
-				return fmt.Errorf("failed to create file %q: %+v", path, err)
+				return errors.Wrapf(err, "failed to create file %q", path)
 			}
 			if _, err := io.Copy(f, tr); err != nil {
-				return fmt.Errorf("failed to copy %q from tar into file: %+v", hdr.Name, err)
+				return errors.Wrapf(err, "failed to copy %q from tar into file", hdr.Name)
 			}
 		default:
-			return fmt.Errorf("unable to handle file type %d for %q in tar", hdr.Typeflag, hdr.Name)
+			return errors.Errorf("unable to handle file type %d for %q in tar", hdr.Typeflag, hdr.Name)
 		}
 		glog.V(4).Infof("tar: processed %q", hdr.Name)
 	}
@@ -172,5 +172,5 @@ func extractArchive(filename, dst string, r io.ReaderAt, size int64) error {
 		glog.V(4).Infof("detected .tar.gz file")
 		return extractTARGZ(dst, io.NewSectionReader(r, 0, size))
 	}
-	return fmt.Errorf("cannot infer a supported archive type from filename in the url (%q)", filename)
+	return errors.Errorf("cannot infer a supported archive type from filename in the url (%q)", filename)
 }

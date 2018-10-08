@@ -22,6 +22,7 @@ import (
 	"github.com/GoogleContainerTools/krew/pkg/installation"
 
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -42,7 +43,7 @@ kubectl plugin upgrade foo bar"`,
 		if len(args) == 0 {
 			installed, err := installation.ListInstalledPlugins(paths.InstallPath(), paths.BinPath())
 			if err != nil {
-				return fmt.Errorf("failed to find all installed versions, err: %v", err)
+				return errors.Wrap(err, "failed to find all installed versions")
 			}
 			for name := range installed {
 				pluginNames = append(pluginNames, name)
@@ -55,7 +56,7 @@ kubectl plugin upgrade foo bar"`,
 		for _, name := range pluginNames {
 			plugin, err := indexscanner.LoadPluginFileFromFS(paths.IndexPath(), name)
 			if err != nil {
-				return fmt.Errorf("failed to load the index file for plugin %s, err: %v", plugin.Name, err)
+				return errors.Wrapf(err, "failed to load the index file for plugin %s", plugin.Name)
 			}
 
 			glog.V(2).Infof("Upgrading plugin: %s\n", plugin.Name)
@@ -65,7 +66,7 @@ kubectl plugin upgrade foo bar"`,
 				continue
 			}
 			if err != nil {
-				return fmt.Errorf("failed to upgrade plugin %q, err: %v", plugin.Name, err)
+				return errors.Wrapf(err, "failed to upgrade plugin %q", plugin.Name)
 			}
 			fmt.Fprintf(os.Stderr, "Upgraded plugin: %s\n", plugin.Name)
 		}

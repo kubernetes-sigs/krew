@@ -16,11 +16,11 @@ package cmd
 
 import (
 	"flag"
-	"fmt"
 	"os"
 
 	"github.com/GoogleContainerTools/krew/pkg/environment"
 	"github.com/GoogleContainerTools/krew/pkg/gitutil"
+	"github.com/pkg/errors"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
@@ -68,10 +68,10 @@ func init() {
 
 	selfPath, err := os.Executable()
 	if err != nil {
-		glog.Errorf("failed to get the own executable path")
+		glog.Fatalf("failed to get the own executable path")
 	}
 	if krewVersion, ok, err := environment.GetExecutedVersion(paths.InstallPath(), selfPath, environment.Realpath); err != nil {
-		glog.Fatal(fmt.Errorf("failed to find current krew version, err: %v", err))
+		glog.Fatalf("failed to find current krew version, err: %v", err)
 	} else if ok {
 		krewExecutedVersion = krewVersion
 	}
@@ -92,7 +92,7 @@ func checkIndex(_ *cobra.Command, _ []string) error {
 	if ok, err := gitutil.IsGitCloned(paths.IndexPath()); err != nil {
 		return err
 	} else if !ok {
-		return fmt.Errorf("krew local plugin index is not initialized (run \"krew update\")")
+		return errors.New(`krew local plugin index is not initialized (run "krew update")`)
 	}
 	return nil
 }
@@ -101,7 +101,7 @@ func ensureDirs(paths ...string) error {
 	for _, p := range paths {
 		glog.V(4).Infof("Ensure creating dir: %q", p)
 		if err := os.MkdirAll(p, 0755); err != nil {
-			return fmt.Errorf("failed to ensure create directory, err: %v", err)
+			return errors.Wrapf(err, "failed to ensure create directory %q", p)
 		}
 	}
 	return nil

@@ -19,6 +19,7 @@ import (
 	"os"
 
 	"github.com/GoogleContainerTools/krew/pkg/installation"
+	"github.com/pkg/errors"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
@@ -34,7 +35,7 @@ This will delete all plugin related files.`,
 		for _, name := range args {
 			glog.V(4).Infof("Going to remove plugin %s\n", name)
 			if err := installation.Remove(paths, name); err != nil {
-				return fmt.Errorf("failed to remove plugin %s, err: %v", name, err)
+				return errors.Wrapf(err, "failed to remove plugin %s", name)
 			}
 			fmt.Fprintf(os.Stderr, "Removed plugin %s\n", name)
 		}

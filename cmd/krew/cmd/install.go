@@ -26,6 +26,7 @@ import (
 	"github.com/GoogleContainerTools/krew/pkg/index"
 	"github.com/golang/glog"
 	"github.com/mattn/go-isatty"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -59,14 +60,14 @@ All plugins will be downloaded and made available to: "kubectl plugin <name>"`,
 			}
 
 			if len(pluginNames) != 0 && *manifest != "" {
-				return fmt.Errorf("must specify either specify stdin or source or args")
+				return errors.New("must specify either specify stdin or source or args")
 			}
 
 			var install []index.Plugin
 			for _, name := range pluginNames {
 				plugin, err := indexscanner.LoadPluginFileFromFS(paths.IndexPath(), name)
 				if err != nil {
-					return fmt.Errorf("failed to load plugin %s from index, err: %v", name, err)
+					return errors.Wrapf(err, "failed to load plugin %q from index", name)
 				}
 				install = append(install, plugin)
 			}
@@ -74,20 +75,20 @@ All plugins will be downloaded and made available to: "kubectl plugin <name>"`,
 			if *manifest != "" {
 				file, err := getFileFromArg(*manifest)
 				if err != nil {
-					return fmt.Errorf("failed to get the file %q, err: %v", *manifest, err)
+					return errors.Wrapf(err, "failed to get the file %q", *manifest)
 				}
 				plugin, err := indexscanner.ReadPluginFile(file)
 				if err != nil {
 					return err
 				}
 				if err := plugin.Validate(plugin.Name); err != nil {
-					return fmt.Errorf("failed to validate the plugin file, err %v", err)
+					return errors.Wrap(err, "failed to validate the plugin file")
 				}
 				install = append(install, plugin)
 			}
 
 			if len(install) > 1 && *forceHEAD {
-				return fmt.Errorf("can't use HEAD option with multiple plugins")
+				return errors.New("can't use HEAD option with multiple plugins")
 			}
 
 			if len(install) == 0 {
@@ -109,7 +110,7 @@ All plugins will be downloaded and made available to: "kubectl plugin <name>"`,
 					continue
 				}
 				if err != nil {
-					glog.Warningf("failed to install plugin %q, err: %v", plugin.Name, err)
+					glog.Warningf("failed to install plugin %q", plugin.Name)
 					failed = append(failed, plugin.Name)
 					continue
 				}
@@ -119,7 +120,7 @@ All plugins will be downloaded and made available to: "kubectl plugin <name>"`,
 				}
 			}
 			if len(failed) > 0 {
-				return fmt.Errorf("failed to install some plugins: %+v", failed)
+				return errors.Errorf("failed to install some plugins: %+v", failed)
 			}
 			return nil
 		},
@@ -138,7 +139,7 @@ func getFileFromArg(file string) (string, error) {
 	}
 	abs, err := filepath.Abs(filepath.Join(os.Getenv("PWD"), file))
 	if err != nil {
-		return "", fmt.Errorf("failed to find absolute filepath, err %v", err)
+		return "", errors.Wrapf(err, "failed to find absolute file path")
 	}
 	return abs, nil
 }

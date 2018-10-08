@@ -15,7 +15,6 @@
 package installation
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -23,6 +22,7 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
@@ -44,7 +44,7 @@ func matchPlatformToSystemEnvs(i index.Plugin, os, arch string) (index.Platform,
 	for i, platform := range i.Spec.Platforms {
 		sel, err := metav1.LabelSelectorAsSelector(platform.Selector)
 		if err != nil {
-			return index.Platform{}, false, fmt.Errorf("failed to compile label selector, err: %v", err)
+			return index.Platform{}, false, errors.Wrap(err, "failed to compile label selector")
 		}
 		if sel.Matches(envLabels) {
 			glog.V(2).Infof("Found matching platform with index (%d)", i)
@@ -56,25 +56,25 @@ func matchPlatformToSystemEnvs(i index.Plugin, os, arch string) (index.Platform,
 
 func findInstalledPluginVersion(installPath, binDir, pluginName string) (name string, installed bool, err error) {
 	if !index.IsSafePluginName(pluginName) {
-		return "", false, fmt.Errorf("the plugin name %q is not allowed", pluginName)
+		return "", false, errors.Errorf("the plugin name %q is not allowed", pluginName)
 	}
 	glog.V(3).Infof("Searching for installed versions of %s in %q", pluginName, binDir)
 	link, err := os.Readlink(filepath.Join(binDir, pluginNameToBin(pluginName, isWindows())))
 	if os.IsNotExist(err) {
 		return "", false, nil
 	} else if err != nil {
-		return "", false, fmt.Errorf("could not read plugin link, err: %v", err)
+		return "", false, errors.Wrap(err, "could not read plugin link")
 	}
 
 	if !filepath.IsAbs(link) {
 		if link, err = filepath.Abs(filepath.Join(binDir, link)); err != nil {
-			return "", true, fmt.Errorf("failed to get the absolute path for the link of %q, err: %v", link, err)
+			return "", true, errors.Wrapf(err, "failed to get the absolute path for the link of %q", link)
 		}
 	}
 
 	name, err = pluginVersionFromPath(installPath, link)
 	if err != nil {
-		return "", true, fmt.Errorf("cloud not parse plugin version, err: %v", err)
+		return "", true, errors.Wrap(err, "cloud not parse plugin version")
 	}
 	return name, true, nil
 }
@@ -83,7 +83,7 @@ func pluginVersionFromPath(installPath, pluginPath string) (string, error) {
 	// plugin path: {install_path}/{plugin_name}/{version}/...
 	elems, ok := pathutil.IsSubPath(installPath, pluginPath)
 	if !ok || len(elems) < 2 {
-		return "", fmt.Errorf("failed to get the version from execution path=%q, with install path=%q", pluginPath, installPath)
+		return "", errors.Errorf("failed to get the version from execution path=%q, with install path=%q", pluginPath, installPath)
 	}
 	return elems[1], nil
 }
@@ -93,7 +93,7 @@ func getPluginVersion(p index.Platform, forceHEAD bool) (version, uri string, er
 		return headVersion, p.Head, nil
 	}
 	if forceHEAD && p.Head == "" {
-		return "", "", fmt.Errorf("can't force HEAD, with no HEAD specified")
+		return "", "", errors.New("can't force HEAD, with no HEAD specified")
 	}
 	return strings.ToLower(p.Sha256), p.URI, nil
 }
@@ -101,14 +101,14 @@ func getPluginVersion(p index.Platform, forceHEAD bool) (version, uri string, er
 func getDownloadTarget(index index.Plugin, forceHEAD bool) (version, uri string, fos []index.FileOperation, bin string, err error) {
 	p, ok, err := GetMatchingPlatform(index)
 	if err != nil {
-		return "", "", nil, p.Bin, fmt.Errorf("failed to get matching platforms, err: %v", err)
+		return "", "", nil, p.Bin, errors.Wrap(err, "failed to get matching platforms")
 	}
 	if !ok {
-		return "", "", nil, p.Bin, fmt.Errorf("no matching platform found")
+		return "", "", nil, p.Bin, errors.New("no matching platform found")
 	}
 	version, uri, err = getPluginVersion(p, forceHEAD)
 	if err != nil {
-		return "", "", nil, p.Bin, fmt.Errorf("failed to get the plugin version, err: %v", err)
+		return "", "", nil, p.Bin, errors.Wrap(err, "failed to get the plugin version")
 	}
 	glog.V(4).Infof("Matching plugin version is %s", version)
 
@@ -120,12 +120,12 @@ func ListInstalledPlugins(installDir, binDir string) (map[string]string, error) 
 	installed := make(map[string]string)
 	plugins, err := ioutil.ReadDir(installDir)
 	if err != nil {
-		return installed, fmt.Errorf("failed to read install dir, err: %v", err)
+		return installed, errors.Wrap(err, "failed to read install dir")
 	}
 	for _, plugin := range plugins {
 		version, ok, err := findInstalledPluginVersion(installDir, binDir, plugin.Name())
 		if err != nil {
-			return installed, fmt.Errorf("failed to get plugin version, err: %v", err)
+			return installed, errors.Wrap(err, "failed to get plugin version")
 		}
 		if ok {
 			installed[plugin.Name()] = version

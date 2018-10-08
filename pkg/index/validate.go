@@ -15,9 +15,10 @@
 package index
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 var (
@@ -42,20 +43,20 @@ func IsSafePluginName(name string) bool {
 // Validate TODO(lbb)
 func (p Plugin) Validate(name string) error {
 	if !IsSafePluginName(name) {
-		return fmt.Errorf("the plugin name %q is not allowed, must match %q", name, safePluginRegexp.String())
+		return errors.Errorf("the plugin name %q is not allowed, must match %q", name, safePluginRegexp.String())
 	}
 	if p.Name != name {
-		return fmt.Errorf("plugin should be named %q, not %q", name, p.Name)
+		return errors.Errorf("plugin should be named %q, not %q", name, p.Name)
 	}
 	if p.Spec.ShortDescription == "" {
-		return fmt.Errorf("should have a short description")
+		return errors.New("should have a short description")
 	}
 	if len(p.Spec.Platforms) == 0 {
-		return fmt.Errorf("should have a platform specified")
+		return errors.New("should have a platform specified")
 	}
 	for _, pl := range p.Spec.Platforms {
 		if err := pl.Validate(); err != nil {
-			return fmt.Errorf("platform (%+v) is badly constructed, err: %v", pl, err)
+			return errors.Wrapf(err, "platform (%+v) is badly constructed", pl)
 		}
 	}
 	return nil
@@ -64,16 +65,16 @@ func (p Plugin) Validate(name string) error {
 // Validate TODO(lbb)
 func (p Platform) Validate() error {
 	if (p.Sha256 != "") != (p.URI != "") {
-		return fmt.Errorf("can't get version URI and sha have both to be set or unset")
+		return errors.New("can't get version URI and sha have both to be set or unset")
 	}
 	if p.Head == "" && p.URI == "" {
-		return fmt.Errorf("head or URI have to be set")
+		return errors.New("head or URI have to be set")
 	}
 	if p.Bin == "" {
-		return fmt.Errorf("bin has to be set")
+		return errors.New("bin has to be set")
 	}
 	if len(p.Files) == 0 {
-		return fmt.Errorf("can't have a plugin without specifying file operations")
+		return errors.New("can't have a plugin without specifying file operations")
 	}
 	return nil
 }

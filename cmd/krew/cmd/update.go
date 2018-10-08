@@ -20,6 +20,7 @@ import (
 
 	"github.com/GoogleContainerTools/krew/pkg/gitutil"
 
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -38,7 +39,7 @@ perform any necessary migrations.`,
 
 func ensureUpdated(_ *cobra.Command, _ []string) error {
 	if err := gitutil.EnsureUpdated(IndexURI, paths.IndexPath()); err != nil {
-		return fmt.Errorf("failed to ensure that the index path %q is updated, err: %v", paths.IndexPath(), err)
+		return errors.Wrapf(err, "failed to ensure that the index path %q is updated", paths.IndexPath())
 	}
 	fmt.Fprintln(os.Stderr, "Updated index")
 	return nil

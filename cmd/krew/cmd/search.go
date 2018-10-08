@@ -21,6 +21,7 @@ import (
 	"text/tabwriter"
 
 	"github.com/GoogleContainerTools/krew/pkg/index/indexscanner"
+	"github.com/pkg/errors"
 
 	"github.com/GoogleContainerTools/krew/pkg/index"
 	"github.com/GoogleContainerTools/krew/pkg/installation"
@@ -37,7 +38,7 @@ Search accepts a list of words as options.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		plugins, err := indexscanner.LoadPluginListFromFS(paths.IndexPath())
 		if err != nil {
-			return fmt.Errorf("failed to load the index, err %v", err)
+			return errors.Wrap(err, "failed to load the index")
 		}
 		names := make([]string, len(plugins.Items))
 		pluginMap := make(map[string]index.Plugin, len(plugins.Items))
@@ -48,7 +49,7 @@ Search accepts a list of words as options.`,
 
 		installed, err := installation.ListInstalledPlugins(paths.InstallPath(), paths.BinPath())
 		if err != nil {
-			return fmt.Errorf("failed to load installed plugins, err: %v", err)
+			return errors.Wrap(err, "failed to load installed plugins")
 		}
 
 		var matchNames []string
@@ -75,7 +76,7 @@ Search accepts a list of words as options.`,
 			if _, ok := installed[name]; ok {
 				status = "installed"
 			} else if _, ok, err := installation.GetMatchingPlatform(plugin); err != nil {
-				return fmt.Errorf("failed to get the matching platform for plugin %s, err: %v", name, err)
+				return errors.Wrapf(err, "failed to get the matching platform for plugin %s", name)
 			} else if ok {
 				status = "available"
 			} else {
