@@ -23,13 +23,11 @@ deploy:
   provider: releases
   api_key:
     secure: f1xHUbLggyRUFikISqZM0VVsmSJFbZnLPMyiqsjZojwhmmAzRvAqZBuhAXGmFINNxf/UjTY+akVnpC/tlyW9h+KmSjpo+xx5shWX3vFPIAW909B57I0ZCpdhn+VOR17C7mAKW6apFAAVs5PrWdeoYSmRDHyMfIUhljwn+/Uw08b/OhaSYjOoxaeM+1FIYvILKx/3+b31pqH6HvQp9q8loLO7fYEMp7kTW/pQ+gSP7F6oEeZmYqwmGQ6+o4UlVldky4Aix6MQFfE1lFnTfyi6GtlMWLVALEfN7Z3CxdrwE5KFo/yguG1PmlfWx8TzqU6kr9u+EsaDez2FHi+5KabFZWd9sp/dyoN+MrqY5LTb+Rr12Uoyo9gvRu9lj75K7O73AwYKVf697YpMy8XXcM3C1QLcwjhePt3jKM7rv7grJab73EedEmUvCJxtQDXiVG2YoMRmr71z2LNKeP1G+yu0a4qHOpbo7l9x/HrQsVMsJ7p0l2/7bSrtZzS2i/atn8i2D8iKHIEu0ygHyZEQDO6wR9tzj+3qsCKS8O21vOf/pSD4VWXeeOdvenqkCaftRZoyFCbvpQn0z/IY1p2lJCJhSKAmnfOlIgDdylSTy1jOArShxa0HC/JC67f8TgUYvg6WYdejuK5UJtEWv6tADrk702JOMHIC1ILUIeEjy16pb/g=
+  file_glob: true
   file:
   - out/krew.zip
-  - out/krew-zip.sha256
-  - out/build/krew-linux_amd64
-  - out/build/krew-linux_arm
-  - out/build/krew-darwin_amd64
-  - out/build/krew-windows_amd64.exe
+  - out/krew.zip.sha256
+  - out/bin/krew-*
   skip_cleanup: true
   on:
     tags: true
