@@ -15,7 +15,6 @@
 package installation
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -25,15 +24,16 @@ import (
 	"github.com/GoogleContainerTools/krew/pkg/environment"
 	"github.com/GoogleContainerTools/krew/pkg/index"
 	"github.com/GoogleContainerTools/krew/pkg/pathutil"
+	"github.com/pkg/errors"
 
 	"github.com/golang/glog"
 )
 
 // Plugin Lifecycle Errors
 var (
-	ErrIsAlreadyInstalled = fmt.Errorf("can't install, the newest version is already installed")
-	ErrIsNotInstalled     = fmt.Errorf("plugin is not installed")
-	ErrIsAlreadyUpgraded  = fmt.Errorf("can't upgrade, the newest version is already installed")
+	ErrIsAlreadyInstalled = errors.New("can't install, the newest version is already installed")
+	ErrIsNotInstalled     = errors.New("plugin is not installed")
+	ErrIsAlreadyUpgraded  = errors.New("can't upgrade, the newest version is already installed")
 )
 
 const (
@@ -45,7 +45,7 @@ const (
 func downloadAndMove(version, uri string, fos []index.FileOperation, downloadPath, installPath string) (dst string, err error) {
 	glog.V(3).Infof("Creating download dir %q", downloadPath)
 	if err = os.MkdirAll(downloadPath, 0755); err != nil {
-		return "", fmt.Errorf("could not create download path %q, err: %v", downloadPath, err)
+		return "", errors.Wrapf(err, "could not create download path %q", downloadPath)
 	}
 	defer os.RemoveAll(downloadPath)
 
@@ -86,20 +86,20 @@ func Install(p environment.Paths, plugin index.Plugin, forceHEAD bool) error {
 func install(plugin, version, uri, bin string, p environment.Paths, fos []index.FileOperation) error {
 	dst, err := downloadAndMove(version, uri, fos, filepath.Join(p.DownloadPath(), plugin), p.PluginInstallPath(plugin))
 	if err != nil {
-		return fmt.Errorf("failed to dowload and move during installation, err: %v", err)
+		return errors.Wrap(err, "failed to dowload and move during installation")
 	}
 
 	subPathAbs, err := filepath.Abs(dst)
 	if err != nil {
-		return fmt.Errorf("failed to get the absolute fullPath of %q, err: %v", dst, err)
+		return errors.Wrapf(err, "failed to get the absolute fullPath of %q", dst)
 	}
 	fullPath := filepath.Join(dst, filepath.FromSlash(bin))
 	pathAbs, err := filepath.Abs(fullPath)
 	if err != nil {
-		return fmt.Errorf("failed to get the absolute fullPath of %q, err: %v", fullPath, err)
+		return errors.Wrapf(err, "failed to get the absolute fullPath of %q", fullPath)
 	}
 	if _, ok := pathutil.IsSubPath(subPathAbs, pathAbs); !ok {
-		return fmt.Errorf("the fullPath %q does not extend the sub-fullPath %q", fullPath, dst)
+		return errors.Wrapf(err, "the fullPath %q does not extend the sub-fullPath %q", fullPath, dst)
 	}
 	return createOrUpdateLink(p.BinPath(), filepath.Join(dst, filepath.FromSlash(bin)), plugin)
 }
@@ -107,12 +107,12 @@ func install(plugin, version, uri, bin string, p environment.Paths, fos []index.
 // Remove will remove a plugin.
 func Remove(p environment.Paths, name string) error {
 	if name == krewPluginName {
-		return fmt.Errorf("removing krew is not allowed through krew, see docs for help")
+		return errors.New("removing krew is not allowed through krew, see docs for help")
 	}
 	glog.V(3).Infof("Finding installed version to delete")
 	version, installed, err := findInstalledPluginVersion(p.InstallPath(), p.BinPath(), name)
 	if err != nil {
-		return fmt.Errorf("can't remove plugin, err: %v", err)
+		return errors.Wrap(err, "can't remove plugin")
 	}
 	if !installed {
 		return ErrIsNotInstalled
@@ -122,7 +122,7 @@ func Remove(p environment.Paths, name string) error {
 
 	symlinkPath := filepath.Join(p.BinPath(), pluginNameToBin(name, isWindows()))
 	if err := removeLink(symlinkPath); err != nil {
-		return fmt.Errorf("could not uninstall symlink of plugin: %+v", err)
+		return errors.Wrap(err, "could not uninstall symlink of plugin")
 	}
 	return os.RemoveAll(p.PluginInstallPath(name))
 }
@@ -131,16 +131,16 @@ func createOrUpdateLink(binDir string, binary string, plugin string) error {
 	dst := filepath.Join(binDir, pluginNameToBin(plugin, isWindows()))
 
 	if err := removeLink(dst); err != nil {
-		return fmt.Errorf("failed to remove old symlink, err: %v", err)
+		return errors.Wrap(err, "failed to remove old symlink")
 	}
 	if _, err := os.Stat(binary); os.IsNotExist(err) {
-		return fmt.Errorf("can't create symbolic link, source binary (%q) cannot be found in extracted archive", binary)
+		return errors.Wrapf(err, "can't create symbolic link, source binary (%q) cannot be found in extracted archive", binary)
 	}
 
 	// Create new
 	glog.V(2).Infof("Creating symlink from %q to %q", binary, dst)
 	if err := os.Symlink(binary, dst); err != nil {
-		return fmt.Errorf("failed to create a symlink form %q to %q, err: %v", binDir, dst, err)
+		return errors.Wrapf(err, "failed to create a symlink form %q to %q", binDir, dst)
 	}
 	glog.V(2).Infof("Created symlink at %q", dst)
 
@@ -154,14 +154,14 @@ func removeLink(path string) error {
 		glog.V(3).Infof("No file found at %q", path)
 		return nil
 	} else if err != nil {
-		return fmt.Errorf("failed to read the symlink in %q, err: %v", path, err)
+		return errors.Wrapf(err, "failed to read the symlink in %q", path)
 	}
 
 	if fi.Mode()&os.ModeSymlink == 0 {
-		return fmt.Errorf("file %q is not a symlink (mode=%s)", path, fi.Mode())
+		return errors.Errorf("file %q is not a symlink (mode=%s)", path, fi.Mode())
 	}
 	if err := os.Remove(path); err != nil {
-		return fmt.Errorf("failed to remove the symlink in %q, err: %v", path, err)
+		return errors.Wrapf(err, "failed to remove the symlink in %q", path)
 	}
 	glog.V(3).Infof("Removed symlink from %q", path)
 	return nil

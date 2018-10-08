@@ -15,7 +15,6 @@
 package installation
 
 import (
-	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -26,6 +25,7 @@ import (
 	"github.com/GoogleContainerTools/krew/pkg/pathutil"
 
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 )
 
 type move struct {
@@ -34,16 +34,16 @@ type move struct {
 
 func findMoveTargets(fromDir, toDir string, fo index.FileOperation) ([]move, error) {
 	if fo.To != filepath.Clean(fo.To) {
-		return nil, fmt.Errorf("the provided path is not clean, %q should be %q", fo.To, filepath.Clean(fo.To))
+		return nil, errors.Errorf("the provided path is not clean, %q should be %q", fo.To, filepath.Clean(fo.To))
 	}
 	fromDir, err := filepath.Abs(fromDir)
 	if err != nil {
-		return nil, fmt.Errorf("could not get the relative path for the move src, err: %v", err)
+		return nil, errors.Wrap(err, "could not get the relative path for the move src")
 	}
 
 	glog.V(4).Infof("Trying to move single file directly from=%q to=%q with file operation=%#v", fromDir, toDir, fo)
 	if m, ok, err := getDirectMove(fromDir, toDir, fo); err != nil {
-		return nil, fmt.Errorf("failed to detect single move operation, err: %v", err)
+		return nil, errors.Wrap(err, "failed to detect single move operation")
 	} else if ok {
 		glog.V(3).Infof("Detected single move from file operation=%#v", fo)
 		return []move{m}, nil
@@ -52,15 +52,15 @@ func findMoveTargets(fromDir, toDir string, fo index.FileOperation) ([]move, err
 	glog.V(4).Infoln("Wasn't a single file, proceeding with Glob move")
 	newDir, err := filepath.Abs(filepath.Join(filepath.FromSlash(toDir), filepath.FromSlash(fo.To)))
 	if err != nil {
-		return nil, fmt.Errorf("could not get the relative path for the move dst, err: %v", err)
+		return nil, errors.Wrap(err, "could not get the relative path for the move dst")
 	}
 
 	gl, err := filepath.Glob(filepath.Join(filepath.FromSlash(fromDir), filepath.FromSlash(fo.From)))
 	if err != nil {
-		return nil, fmt.Errorf("could not get files using a glob string, err: %v", err)
+		return nil, errors.Wrap(err, "could not get files using a glob string")
 	}
 	if len(gl) == 0 {
-		return nil, fmt.Errorf("no files in the plugin archive matched the glob pattern=%s", fo.From)
+		return nil, errors.Errorf("no files in the plugin archive matched the glob pattern=%s", fo.From)
 	}
 
 	var moves []move
@@ -69,7 +69,7 @@ func findMoveTargets(fromDir, toDir string, fo index.FileOperation) ([]move, err
 		// Check secure path
 		m := move{from: v, to: newPath}
 		if !isMoveAllowed(fromDir, toDir, m) {
-			return nil, fmt.Errorf("can't move, move target %v is not a subpath from=%q, to=%q", m, fromDir, toDir)
+			return nil, errors.Errorf("can't move, move target %v is not a subpath from=%q, to=%q", m, fromDir, toDir)
 		}
 		moves = append(moves, m)
 	}
@@ -80,12 +80,12 @@ func getDirectMove(fromDir, toDir string, fo index.FileOperation) (move, bool, e
 	var m move
 	fromDir, err := filepath.Abs(fromDir)
 	if err != nil {
-		return m, false, fmt.Errorf("could not get the relative path for the move src, err: %v", err)
+		return m, false, errors.Wrap(err, "could not get the relative path for the move src")
 	}
 
 	toDir, err = filepath.Abs(toDir)
 	if err != nil {
-		return m, false, fmt.Errorf("could not get the relative path for the move src, err: %v", err)
+		return m, false, errors.Wrap(err, "could not get the relative path for the move src")
 	}
 
 	// Check is direct file (not a Glob)
@@ -103,13 +103,13 @@ func getDirectMove(fromDir, toDir string, fo index.FileOperation) (move, bool, e
 	// Build new file name
 	toFilePath, err := filepath.Abs(filepath.Join(filepath.FromSlash(toDir), filepath.FromSlash(fo.To)))
 	if err != nil {
-		return m, false, fmt.Errorf("could not get the relative path for the move dst, err: %v", err)
+		return m, false, errors.Wrap(err, "could not get the relative path for the move dst")
 	}
 
 	// Check sane path
 	m = move{from: fromFilePath, to: toFilePath}
 	if !isMoveAllowed(fromDir, toDir, m) {
-		return move{}, false, fmt.Errorf("can't move, move target %v is out of bounds from=%q, to=%q", m, fromDir, toDir)
+		return move{}, false, errors.Errorf("can't move, move target %v is out of bounds from=%q, to=%q", m, fromDir, toDir)
 	}
 
 	return m, true, nil
@@ -125,17 +125,17 @@ func moveFiles(fromDir, toDir string, fo index.FileOperation) error {
 	glog.V(4).Infof("Finding move targets from %q to %q with file operation=%#v", fromDir, toDir, fo)
 	moves, err := findMoveTargets(fromDir, toDir, fo)
 	if err != nil {
-		return fmt.Errorf("could not find move targets, err: %v", err)
+		return errors.Wrap(err, "could not find move targets")
 	}
 
 	for _, m := range moves {
 		glog.V(2).Infof("Move file from %q to %q", m.from, m.to)
 		if err := os.MkdirAll(filepath.Dir(m.to), 0755); err != nil {
-			return fmt.Errorf("failed to create move path %q, err: %v", filepath.Dir(m.to), err)
+			return errors.Wrapf(err, "failed to create move path %q", filepath.Dir(m.to))
 		}
 
 		if err = os.Rename(m.from, m.to); err != nil {
-			return fmt.Errorf("could not rename file from %q to %q, err: %v", m.from, m.to, err)
+			return errors.Wrapf(err, "could not rename file from %q to %q", m.from, m.to)
 		}
 	}
 	glog.V(4).Infoln("Move operations are complete")
@@ -145,7 +145,7 @@ func moveFiles(fromDir, toDir string, fo index.FileOperation) error {
 func moveAllFiles(fromDir, toDir string, fos []index.FileOperation) error {
 	for _, fo := range fos {
 		if err := moveFiles(fromDir, toDir, fo); err != nil {
-			return fmt.Errorf("failed moving files, err: %v", err)
+			return errors.Wrap(err, "failed moving files")
 		}
 	}
 	return nil
@@ -154,25 +154,25 @@ func moveAllFiles(fromDir, toDir string, fos []index.FileOperation) error {
 func moveToInstallDir(download, pluginDir, version string, fos []index.FileOperation) (string, error) {
 	glog.V(4).Infof("Creating plugin dir %q", pluginDir)
 	if err := os.MkdirAll(pluginDir, 0755); err != nil {
-		return "", fmt.Errorf("error creating path to %q, err: %v", pluginDir, err)
+		return "", errors.Wrapf(err, "error creating path to %q", pluginDir)
 	}
 
 	tempdir, err := ioutil.TempDir("", "krew-temp-move")
 	glog.V(4).Infof("Creating temp plugin move operations dir %q", tempdir)
 	if err != nil {
-		return "", fmt.Errorf("failed to find a temporary director, err: %v", err)
+		return "", errors.Wrap(err, "failed to find a temporary director")
 	}
 	defer os.RemoveAll(tempdir)
 
 	if err = moveAllFiles(download, tempdir, fos); err != nil {
-		return "", fmt.Errorf("failed to move files, err: %v", err)
+		return "", errors.Wrap(err, "failed to move files")
 	}
 
 	installPath := filepath.Join(pluginDir, version)
 	glog.V(2).Infof("Move directory %q to %q", tempdir, installPath)
 	if err = moveOrCopyDir(tempdir, installPath); err != nil {
 		defer os.Remove(installPath)
-		return "", fmt.Errorf("could not rename file from %q to %q, err: %v", tempdir, installPath, err)
+		return "", errors.Wrapf(err, "could not rename file from %q to %q", tempdir, installPath)
 	}
 
 	return installPath, nil
@@ -184,12 +184,12 @@ func moveOrCopyDir(from, to string) error {
 	// Try atomic rename (does not work cross partition).
 	fi, err := os.Stat(to)
 	if err != nil && !os.IsNotExist(err) {
-		return fmt.Errorf("error checking move target dir %q: %+v", to, err)
+		return errors.Wrapf(err, "error checking move target dir %q", to)
 	}
 	if fi != nil && fi.IsDir() {
 		glog.V(4).Infof("There's already a directory at move target %q. deleting.", to)
 		if err := os.RemoveAll(to); err != nil {
-			return fmt.Errorf("error cleaning up dir %q: %+v", to, err)
+			return errors.Wrapf(err, "error cleaning up dir %q", to)
 		}
 		glog.V(4).Infof("Move target directory %q cleaned up", to)
 	}

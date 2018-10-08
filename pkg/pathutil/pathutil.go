@@ -15,9 +15,10 @@
 package pathutil
 
 import (
-	"fmt"
 	"path/filepath"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 // IsSubPath checks if the extending path is an extension of the basePath, it will return the extending path
@@ -45,7 +46,7 @@ func IsSubPath(subPath, path string) ([]string, bool) {
 func ReplaceBase(path, old, replacement string) (string, error) {
 	extendingPath, ok := IsSubPath(old, path)
 	if !ok {
-		return "", fmt.Errorf("can't replace %q in %q, it is not a subpath", old, path)
+		return "", errors.Errorf("can't replace %q in %q, it is not a subpath", old, path)
 	}
 	return filepath.Join(replacement, filepath.Join(extendingPath...)), nil
 }

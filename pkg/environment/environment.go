@@ -15,11 +15,11 @@
 package environment
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 	"k8s.io/client-go/util/homedir"
 
 	"github.com/GoogleContainerTools/krew/pkg/pathutil"
@@ -42,7 +42,7 @@ func MustGetKrewPaths() Paths {
 	}
 	base, err := filepath.Abs(base)
 	if err != nil {
-		panic(fmt.Errorf("cannot get absolute path, err: %v", err))
+		panic(errors.Wrap(err, "cannot get absolute path"))
 	}
 	return newPaths(base)
 }
@@ -94,7 +94,7 @@ func (p Paths) PluginVersionInstallPath(plugin, version string) string {
 func GetExecutedVersion(installPath string, executionPath string, pathResolver func(string) (string, error)) (string, bool, error) {
 	path, err := pathResolver(executionPath)
 	if err != nil {
-		return "", false, fmt.Errorf("failed to resolve path, err: %v", err)
+		return "", false, errors.Wrap(err, "failed to resolve path")
 	}
 
 	currentBinaryPath, err := filepath.Abs(path)
@@ -120,15 +120,15 @@ func GetExecutedVersion(installPath string, executionPath string, pathResolver f
 func Realpath(path string) (string, error) {
 	s, err := os.Lstat(path)
 	if err != nil {
-		return "", fmt.Errorf("failed to stat the currently executed path (%q), err: %v", path, err)
+		return "", errors.Wrapf(err, "failed to stat the currently executed path (%q)", path)
 	}
 
 	if s.Mode()&os.ModeSymlink != 0 {
 		if path, err = os.Readlink(path); err != nil {
-			return "", fmt.Errorf("failed to resolve the symlink of the currently executed version, err: %v", err)
+			return "", errors.Wrap(err, "failed to resolve the symlink of the currently executed version")
 		}
 		if !filepath.IsAbs(path) {
-			return "", fmt.Errorf("symbolic link is relative (%s)", path)
+			return "", errors.Errorf("symbolic link is relative (%s)", path)
 		}
 	}
 	return filepath.Clean(path), nil

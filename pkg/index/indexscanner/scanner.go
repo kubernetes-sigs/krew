@@ -17,7 +17,6 @@ package indexscanner
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -25,6 +24,7 @@ import (
 	"strings"
 
 	"github.com/GoogleContainerTools/krew/pkg/index"
+	"github.com/pkg/errors"
 
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/yaml"
@@ -40,7 +40,7 @@ func LoadPluginListFromFS(indexDir string) (index.PluginList, error) {
 
 	files, err := ioutil.ReadDir(filepath.Join(indexDir, "plugins"))
 	if err != nil {
-		return indexList, fmt.Errorf("failed to open index dir, err: %v", err)
+		return indexList, errors.Wrap(err, "failed to open index dir")
 	}
 
 	for _, f := range files {
@@ -68,7 +68,7 @@ func LoadPluginListFromFS(indexDir string) (index.PluginList, error) {
 // file not found, it returns an error that can be checked with os.IsNotExist.
 func LoadPluginFileFromFS(indexDir, pluginName string) (index.Plugin, error) {
 	if !index.IsSafePluginName(pluginName) {
-		return index.Plugin{}, fmt.Errorf("plugin name %q not allowed", pluginName)
+		return index.Plugin{}, errors.Errorf("plugin name %q not allowed", pluginName)
 	}
 
 	glog.V(4).Infof("Reading plugin %q", pluginName)
@@ -80,7 +80,7 @@ func LoadPluginFileFromFS(indexDir, pluginName string) (index.Plugin, error) {
 	if os.IsNotExist(err) {
 		return index.Plugin{}, err
 	} else if err != nil {
-		return index.Plugin{}, fmt.Errorf("failed to read the plugin file, err: %v", err)
+		return index.Plugin{}, errors.Wrap(err, "failed to read the plugin manifest")
 	}
 	return p, p.Validate(pluginName)
 }
@@ -93,7 +93,7 @@ func ReadPluginFile(indexFilePath string) (index.Plugin, error) {
 	if os.IsNotExist(err) {
 		return index.Plugin{}, err
 	} else if err != nil {
-		return index.Plugin{}, fmt.Errorf("failed to open index file, err: %v", err)
+		return index.Plugin{}, errors.Wrap(err, "failed to open index file")
 	}
 	return DecodePluginFile(f)
 }

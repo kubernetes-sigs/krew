@@ -24,6 +24,7 @@ import (
 
 	"github.com/GoogleContainerTools/krew/pkg/installation"
 	"github.com/mattn/go-isatty"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -37,7 +38,7 @@ Plugins will be shown as "PLUGIN,VERSION"`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			plugins, err := installation.ListInstalledPlugins(paths.InstallPath(), paths.BinPath())
 			if err != nil {
-				return fmt.Errorf("failed to find all installed versions, err %v", err)
+				return errors.Wrap(err, "failed to find all installed versions")
 			}
 			if !(isatty.IsTerminal(os.Stdout.Fd()) || isatty.IsCygwinTerminal(os.Stdout.Fd())) {
 				fmt.Fprintf(os.Stdout, "%s\n", strings.Join(sortedKeys(plugins), "\n"))
