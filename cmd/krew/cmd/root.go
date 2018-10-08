@@ -76,11 +76,11 @@ func init() {
 		krewExecutedVersion = krewVersion
 	}
 
-	SetGlogFlags(krewExecutedVersion != "")
+	setGlogFlags(krewExecutedVersion != "")
 }
 
-// SetGlogFlags will add glog flags to the CLI. This command can be executed multiple times.
-func SetGlogFlags(hidden bool) {
+// setGlogFlags will add glog flags to the CLI. This command can be executed multiple times.
+func setGlogFlags(hidden bool) {
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 	// Add glog flags if not run as a plugin.
 	flag.CommandLine.VisitAll(func(f *flag.Flag) {
