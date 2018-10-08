@@ -1,4 +1,4 @@
-apiVersion: plugin.krew.app/v1alpha1
+apiVersion: krew.googlecontainertools.github.com/v1alpha2
 kind: Plugin
 metadata:
   name: notyaml-plugin

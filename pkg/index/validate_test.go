@@ -67,24 +67,45 @@ func Test_IsSafePluginName(t *testing.T) {
 	}
 }
 
+func Test_isSupportedAPIVersion(t *testing.T) {
+	tests := []struct {
+		name string
+		in   string
+		want bool
+	}{
+		{"wrong group", "networking.k8s.io/v1", false},
+		{"just api group", "krew.googlecontainertools.github.com", false},
+		{"old version", "krew.googlecontainertools.github.com/v1alpha1", false},
+		{"equal version", "krew.googlecontainertools.github.com/v1alpha2", true},
+		{"newer 1", "krew.googlecontainertools.github.com/v1alpha3", false},
+		{"newer 2", "krew.googlecontainertools.github.com/v1", false},
+		{"newer 2", "krew.googlecontainertools.github.com/v2alpha1", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := isSupportedAPIVersion(tt.in); got != tt.want {
+				t.Errorf("isSupportedAPIVersion(%v) = %v, want %v", tt.in, got, tt.want)
+			}
+		})
+	}
+}
+
 func TestPlugin_Validate(t *testing.T) {
 	type fields struct {
 		TypeMeta   metav1.TypeMeta
 		ObjectMeta metav1.ObjectMeta
 		Spec       PluginSpec
 	}
-	type args struct {
-		name string
-	}
 	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr bool
+		name       string
+		fields     fields
+		pluginName string
+		wantErr    bool
 	}{
 		{
 			name: "validate success",
 			fields: fields{
+				TypeMeta:   metav1.TypeMeta{APIVersion: currentAPIVersion},
 				ObjectMeta: metav1.ObjectMeta{Name: "foo"},
 				Spec: PluginSpec{
 					Version:          "",
@@ -101,14 +122,36 @@ func TestPlugin_Validate(t *testing.T) {
 					}},
 				},
 			},
-			args: args{
-				name: "foo",
+			pluginName: "foo",
+			wantErr:    false,
+		},
+		{
+			name: "bad api version",
+			fields: fields{
+				TypeMeta:   metav1.TypeMeta{APIVersion: "core/v1"},
+				ObjectMeta: metav1.ObjectMeta{Name: "foo"},
+				Spec: PluginSpec{
+					Version:          "",
+					ShortDescription: "short",
+					Description:      "",
+					Caveats:          "",
+					Platforms: []Platform{{
+						Head:     "http://example.com",
+						URI:      "",
+						Sha256:   "",
+						Selector: nil,
+						Files:    []FileOperation{{"", ""}},
+						Bin:      "foo",
+					}},
+				},
 			},
-			wantErr: false,
+			pluginName: "foo",
+			wantErr:    true,
 		},
 		{
 			name: "no short description",
 			fields: fields{
+				TypeMeta:   metav1.TypeMeta{APIVersion: currentAPIVersion},
 				ObjectMeta: metav1.ObjectMeta{Name: "foo"},
 				Spec: PluginSpec{
 					Version:          "",
@@ -125,14 +168,13 @@ func TestPlugin_Validate(t *testing.T) {
 					}},
 				},
 			},
-			args: args{
-				name: "foo",
-			},
-			wantErr: true,
+			pluginName: "foo",
+			wantErr:    true,
 		},
 		{
 			name: "no file operations",
 			fields: fields{
+				TypeMeta:   metav1.TypeMeta{APIVersion: currentAPIVersion},
 				ObjectMeta: metav1.ObjectMeta{Name: "foo"},
 				Spec: PluginSpec{
 					Version:          "",
@@ -149,14 +191,13 @@ func TestPlugin_Validate(t *testing.T) {
 					}},
 				},
 			},
-			args: args{
-				name: "foo",
-			},
-			wantErr: true,
+			pluginName: "foo",
+			wantErr:    true,
 		},
 		{
 			name: "wrong plugin name",
 			fields: fields{
+				TypeMeta:   metav1.TypeMeta{APIVersion: currentAPIVersion},
 				ObjectMeta: metav1.ObjectMeta{Name: "wrong-name"},
 				Spec: PluginSpec{
 					Version:          "",
@@ -173,14 +214,13 @@ func TestPlugin_Validate(t *testing.T) {
 					}},
 				},
 			},
-			args: args{
-				name: "foo",
-			},
-			wantErr: true,
+			pluginName: "foo",
+			wantErr:    true,
 		},
 		{
 			name: "unsafe plugin name",
 			fields: fields{
+				TypeMeta:   metav1.TypeMeta{APIVersion: currentAPIVersion},
 				ObjectMeta: metav1.ObjectMeta{Name: "../foo"},
 				Spec: PluginSpec{
 					Version:          "",
@@ -197,10 +237,8 @@ func TestPlugin_Validate(t *testing.T) {
 					}},
 				},
 			},
-			args: args{
-				name: "../foo",
-			},
-			wantErr: true,
+			pluginName: "../foo",
+			wantErr:    true,
 		},
 	}
 	for _, tt := range tests {
@@ -210,8 +248,8 @@ func TestPlugin_Validate(t *testing.T) {
 				ObjectMeta: tt.fields.ObjectMeta,
 				Spec:       tt.fields.Spec,
 			}
-			if err := p.Validate(tt.args.name); (err != nil) != tt.wantErr {
-				t.Errorf("Plugin.Validate() error = %v, wantErr %v", err, tt.wantErr)
+			if err := p.Validate(tt.pluginName); (err != nil) != tt.wantErr {
+				t.Errorf("Plugin.Validate(%s) error = %v, wantErr %v", tt.pluginName, err, tt.wantErr)
 			}
 		})
 	}
