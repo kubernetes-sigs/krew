@@ -20,16 +20,23 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 cd "${SCRIPTDIR}/.."
 
+DEFAULT_OSARCH="darwin/amd64 windows/amd64 linux/amd64 linux/arm"
+KREW_ARCHIVE="krew.zip"
+
 # Builds
 rm -rf out/
-gox -osarch="darwin/amd64 windows/amd64 linux/amd64 linux/arm" \
+echo "Building releases: ${OSARCH:-$DEFAULT_OSARCH}"
+gox -osarch="${OSARCH:-$DEFAULT_OSARCH}" \
   -ldflags="-X github.com/GoogleContainerTools/krew/pkg/version.gitCommit=$(git rev-parse --short HEAD) \
     -X github.com/GoogleContainerTools/krew/pkg/version.gitTag=$(git describe --tags --dirty --always)" \
-  -output="out/build/krew-{{.OS}}_{{.Arch}}" \
+  -output="out/bin/krew-{{.OS}}_{{.Arch}}" \
   ./cmd/krew/...
 
-zip -X -q -r out/krew.zip out/build
+(
+  set -x;
+  zip -X -q -r --verbose out/krew.zip out/bin
+)
 
-KREW_HASH="$(shasum -a 256 out/krew.zip | awk '{print $1;}')"
-echo "Computed Hash: ${KREW_HASH}"
-echo "${KREW_HASH}" > out/krew-zip.sha256
+zip_checksum="$(shasum -a 256 "out/${KREW_ARCHIVE}" | awk '{print $1;}')"
+echo "${KREW_ARCHIVE} checksum: ${zip_checksum}"
+echo "${zip_checksum}" > "out/${KREW_ARCHIVE}".sha256
