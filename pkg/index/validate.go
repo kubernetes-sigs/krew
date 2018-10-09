@@ -21,10 +21,17 @@ import (
 	"github.com/pkg/errors"
 )
 
+const (
+	currentAPIVersion = "krew.googlecontainertools.github.com/v1alpha2"
+)
+
 var (
 	safePluginRegexp = regexp.MustCompile(`^[\w-]+$`)
+
 	// windowsForbidden is taken from  https://docs.microsoft.com/en-us/windows/desktop/FileIO/naming-a-file
-	windowsForbidden = []string{"CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"}
+	windowsForbidden = []string{"CON", "PRN", "AUX", "NUL", "COM1", "COM2",
+		"COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2",
+		"LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"}
 )
 
 // IsSafePluginName checks if the plugin Name is save to use.
@@ -40,8 +47,16 @@ func IsSafePluginName(name string) bool {
 	return true
 }
 
+func isSupportedAPIVersion(apiVersion string) bool {
+	return apiVersion == currentAPIVersion
+}
+
 // Validate TODO(lbb)
 func (p Plugin) Validate(name string) error {
+	if !isSupportedAPIVersion(p.APIVersion) {
+		return errors.Errorf("plugin manifest has apiVersion=%q, not supported in this version of krew (try updating plugin index or install a newer version of krew)", p.APIVersion)
+	}
+
 	if !IsSafePluginName(name) {
 		return errors.Errorf("the plugin name %q is not allowed, must match %q", name, safePluginRegexp.String())
 	}
