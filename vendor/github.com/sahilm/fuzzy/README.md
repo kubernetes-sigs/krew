@@ -76,6 +76,52 @@ func contains(needle int, haystack []int) bool {
 	return false
 }
 ``` 
+If the data you want to match isn't a slice of strings, you can use `FindFromSource` by implementing
+the provided `Source` interface. Here's an example:
+
+```go
+package main
+
+import (
+	"fmt"
+
+	"github.com/sahilm/fuzzy"
+)
+
+type employee struct {
+	name string
+	age  int
+}
+
+type employees []employee
+
+func (e employees) String(i int) string {
+	return e[i].name
+}
+
+func (e employees) Len() int {
+	return len(e)
+}
+
+func main() {
+	emps := employees{
+		{
+			name: "Alice",
+			age:  45,
+		},
+		{
+			name: "Bob",
+			age:  35,
+		},
+		{
+			name: "Allie",
+			age:  35,
+		},
+	}
+	results := fuzzy.FindFrom("al", emps)
+	fmt.Println(results)
+}
+```
 
 Check out the [godoc](https://godoc.org/github.com/sahilm/fuzzy) for detailed documentation.
 
@@ -88,11 +134,11 @@ Check out the [godoc](https://godoc.org/github.com/sahilm/fuzzy) for detailed do
 Here are a few benchmark results on a normal laptop.
 
 ```
-BenchmarkFind/with_unreal_4_(~16K_files)-4         	     200	   6055305 ns/op
-BenchmarkFind/with_linux_kernel_(~60K_files)-4     	     100	  15180672 ns/op
+BenchmarkFind/with_unreal_4_(~16K_files)-4         	     100	  12915315 ns/op
+BenchmarkFind/with_linux_kernel_(~60K_files)-4     	      50	  30885038 ns/op
 ```
 
-Matching a pattern against ~60K files from the Linux kernel takes about 15ms.
+Matching a pattern against ~60K files from the Linux kernel takes about 30ms.
 
 ## Contributing
 
