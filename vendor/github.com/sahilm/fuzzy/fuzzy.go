@@ -20,7 +20,7 @@ type Match struct {
 	// The indexes of matched characters. Useful for highlighting matches.
 	MatchedIndexes []int
 	// Score used to rank matches
-	score int
+	Score int
 }
 
 const (
@@ -39,7 +39,25 @@ type Matches []Match
 
 func (a Matches) Len() int           { return len(a) }
 func (a Matches) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a Matches) Less(i, j int) bool { return a[i].score >= a[j].score }
+func (a Matches) Less(i, j int) bool { return a[i].Score >= a[j].Score }
+
+// Source represents an abstract source of a list of strings. Source must be iterable type such as a slice.
+// The source will be iterated over till Len() with String(i) being called for each element where i is the
+// index of the element. You can find a working example in the README.
+type Source interface {
+	// The string to be matched at position i.
+	String(i int) string
+	// The length of the source. Typically is the length of the slice of things that you want to match.
+	Len() int
+}
+
+type stringSource []string
+
+func (ss stringSource) String(i int) string {
+	return ss[i]
+}
+
+func (ss stringSource) Len() int { return len(ss) }
 
 /*
 Find looks up pattern in data and returns matches
@@ -60,15 +78,23 @@ Penalties are applied for every character in the search string that wasn't match
 characters upto the first match.
 */
 func Find(pattern string, data []string) Matches {
+	return FindFrom(pattern, stringSource(data))
+}
+
+/*
+FindFrom is an alternative implementation of Find using a Source
+instead of a list of strings.
+*/
+func FindFrom(pattern string, data Source) Matches {
 	if len(pattern) == 0 {
 		return nil
 	}
 	runes := []rune(pattern)
 	var matches Matches
 	var matchedIndexes []int
-	for i := 0; i < len(data); i++ {
+	for i := 0; i < data.Len(); i++ {
 		var match Match
-		match.Str = data[i]
+		match.Str = data.String(i)
 		match.Index = i
 		if matchedIndexes != nil {
 			match.MatchedIndexes = matchedIndexes
@@ -82,10 +108,10 @@ func Find(pattern string, data []string) Matches {
 		currAdjacentMatchBonus := 0
 		var last rune
 		var lastIndex int
-		nextc, nextSize := utf8.DecodeRuneInString(data[i])
+		nextc, nextSize := utf8.DecodeRuneInString(data.String(i))
 		var candidate rune
 		var candidateSize int
-		for j := 0; j < len(data[i]); j += candidateSize {
+		for j := 0; j < len(data.String(i)); j += candidateSize {
 			candidate, candidateSize = nextc, nextSize
 			if equalFold(candidate, runes[patternIndex]) {
 				score = 0
@@ -115,11 +141,11 @@ func Find(pattern string, data []string) Matches {
 			if patternIndex < len(runes)-1 {
 				nextp = runes[patternIndex+1]
 			}
-			if j+candidateSize < len(data[i]) {
-				if data[i][j+candidateSize] < utf8.RuneSelf { // Fast path for ASCII
-					nextc, nextSize = rune(data[i][j+candidateSize]), 1
+			if j+candidateSize < len(data.String(i)) {
+				if data.String(i)[j+candidateSize] < utf8.RuneSelf { // Fast path for ASCII
+					nextc, nextSize = rune(data.String(i)[j+candidateSize]), 1
 				} else {
-					nextc, nextSize = utf8.DecodeRuneInString(data[i][j+candidateSize:])
+					nextc, nextSize = utf8.DecodeRuneInString(data.String(i)[j+candidateSize:])
 				}
 			} else {
 				nextc, nextSize = 0, 0
@@ -135,7 +161,7 @@ func Find(pattern string, data []string) Matches {
 						penalty := matchedIndex * unmatchedLeadingCharPenalty
 						bestScore += max(penalty, maxUnmatchedLeadingCharPenalty)
 					}
-					match.score += bestScore
+					match.Score += bestScore
 					match.MatchedIndexes = append(match.MatchedIndexes, matchedIndex)
 					score = 0
 					bestScore = -1
@@ -146,8 +172,8 @@ func Find(pattern string, data []string) Matches {
 			last = candidate
 		}
 		// apply penalty for each unmatched character
-		penalty := len(match.MatchedIndexes) - len(data[i])
-		match.score += penalty
+		penalty := len(match.MatchedIndexes) - len(data.String(i))
+		match.Score += penalty
 		if len(match.MatchedIndexes) == len(runes) {
 			matches = append(matches, match)
 			matchedIndexes = nil

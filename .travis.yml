@@ -1,13 +1,13 @@
 sudo: false
 language: go
 go:
-- 1.10.x
+- 1.11.x
 go_import_path: github.com/GoogleContainerTools/krew
 git:
   depth: 1
-install: true
 notifications:
   email: false
+install: true # prevent travis default: go get ./...
 before_install:
 - go get github.com/mitchellh/gox
 - go get gopkg.in/alecthomas/gometalinter.v2
@@ -15,10 +15,11 @@ before_install:
 script:
 - hack/gofmt.sh
 - hack/gometalinter.sh
-- go test -v -coverprofile=coverage.txt -covermode=atomic ./...
-- hack/build-cross-releases.sh
+- env GO111MODULE=on GOFLAGS=-mod=vendor go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+- env GO111MODULE=on GOFLAGS=-mod=vendor hack/build-cross-releases.sh
 after_success:
 - bash <(curl -s https://codecov.io/bash)
+- git status -s
 deploy:
   provider: releases
   api_key:
