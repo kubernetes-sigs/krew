@@ -47,7 +47,11 @@ You can invoke krew through kubectl with: "kubectl plugin [krew] option..."`,
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		glog.Fatal(err)
+		if glog.V(1) {
+			glog.Fatalf("%+v", err) // with stack trace
+		} else {
+			glog.Fatal(err) // just error message
+		}
 	}
 }
 
@@ -57,7 +61,6 @@ func init() {
 	flag.Set("logtostderr", "true")
 	// Required by glog
 	flag.Parse()
-
 	paths = environment.MustGetKrewPaths()
 	if err := ensureDirs(paths.BasePath(),
 		paths.DownloadPath(),
@@ -90,7 +93,7 @@ func setGlogFlags(hidden bool) {
 
 func checkIndex(_ *cobra.Command, _ []string) error {
 	if ok, err := gitutil.IsGitCloned(paths.IndexPath()); err != nil {
-		return err
+		return errors.Wrap(err, "failed to check local index git repository")
 	} else if !ok {
 		return errors.New(`krew local plugin index is not initialized (run "krew update")`)
 	}
