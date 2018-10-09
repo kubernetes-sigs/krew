@@ -21,9 +21,9 @@ import (
 
 	"github.com/GoogleContainerTools/krew/pkg/index"
 	"github.com/GoogleContainerTools/krew/pkg/index/indexscanner"
-
 	"github.com/GoogleContainerTools/krew/pkg/installation"
-	"github.com/golang/glog"
+
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -33,16 +33,17 @@ var infoCmd = &cobra.Command{
 	Short: "Info shows plugin details",
 	Long: `Info shows plugin details.
 Use this command to find out about plugin requirements and caveats.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		for _, arg := range args {
 			plugin, err := indexscanner.LoadPluginFileFromFS(paths.IndexPath(), arg)
 			if os.IsNotExist(err) {
-				glog.Fatalf("plugin %q not found", arg)
+				return errors.Errorf("plugin %q not found", arg)
 			} else if err != nil {
-				glog.Fatal(err)
+				return errors.Wrap(err, "failed to load plugin manifest")
 			}
 			printPluginInfo(os.Stdout, plugin)
 		}
+		return nil
 	},
 	PreRunE: checkIndex,
 	Args:    cobra.MinimumNArgs(1),
