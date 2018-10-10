@@ -76,9 +76,6 @@ All plugins will be downloaded and made available to: "kubectl plugin <name>"`,
 			}
 
 			if *manifest != "" {
-				// TODO(ahmetb) do not clone index (ensureIndex) in PreRunE when
-				// custom manifest is specified (krew initial installation
-				// scenario).
 				plugin, err := indexscanner.ReadPluginFile(*manifest)
 				if err != nil {
 					return errors.Wrap(err, "failed to load custom manifest file")
@@ -129,7 +126,13 @@ All plugins will be downloaded and made available to: "kubectl plugin <name>"`,
 			}
 			return nil
 		},
-		PreRunE: ensureUpdated,
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			if *manifest == "" {
+				return ensureUpdated(cmd, args)
+			}
+			glog.V(4).Infof("--manifest specified, not ensuring plugin index")
+			return nil
+		},
 	}
 
 	forceHEAD = installCmd.Flags().Bool("HEAD", false, "Force HEAD if versioned and HEAD installs are possible.")
