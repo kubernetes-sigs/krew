@@ -34,20 +34,20 @@ IndexPath is the path to the index repo see git(1).
 IndexURI is the URI where the index is updated from.
 InstallPath is the base path for all plugin installations.
 DownloadPath is the path used to store download binaries.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		conf := map[string]string{
-			"IsPlugin":        fmt.Sprintf("%v", krewExecutedVersion != ""),
-			"ExecutedVersion": krewExecutedVersion,
-			"GitTag":          version.GitTag(),
-			"GitCommit":       version.GitCommit(),
-			"BasePath":        paths.BasePath(),
-			"IndexPath":       paths.IndexPath(),
-			"IndexURI":        IndexURI,
-			"InstallPath":     paths.InstallPath(),
-			"DownloadPath":    paths.DownloadPath(),
-			"BinPath":         paths.BinPath(),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		conf := [][]string{
+			{"IsPlugin", fmt.Sprintf("%v", krewExecutedVersion != "")},
+			{"ExecutedVersion", krewExecutedVersion},
+			{"GitTag", version.GitTag()},
+			{"GitCommit", version.GitCommit()},
+			{"IndexURI", IndexURI},
+			{"BasePath", paths.BasePath()},
+			{"IndexPath", paths.IndexPath()},
+			{"InstallPath", paths.InstallPath()},
+			{"DownloadPath", paths.DownloadPath()},
+			{"BinPath", paths.BinPath()},
 		}
-		printAlignedColumns(os.Stdout, "OPTION", "VALUE", conf)
+		return printTable(os.Stdout, []string{"OPTION", "VALUE"}, conf)
 	},
 }
 
