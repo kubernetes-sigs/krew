@@ -19,6 +19,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"testing"
 
 	"github.com/GoogleContainerTools/krew/pkg/index"
@@ -195,5 +196,27 @@ func Test_removeLink_regularFileExists(t *testing.T) {
 
 	if err := removeLink(path); err == nil {
 		t.Fatalf("removeLink(%s) with regular file was expected to fail; got: err=nil", path)
+	}
+}
+
+func Test_isWindows(t *testing.T) {
+	expected := runtime.GOOS == "windows"
+	got := isWindows()
+	if expected != got {
+		t.Fatalf("isWindows()=%v; expected=%v (on %s)", got, expected, runtime.GOOS)
+	}
+}
+
+func Test_isWindows_envOverride(t *testing.T) {
+	defer os.Unsetenv("KREW_OS")
+
+	os.Setenv("KREW_OS", "windows")
+	if !isWindows() {
+		t.Fatalf("isWindows()=false when KREW_OS=windows")
+	}
+
+	os.Setenv("KREW_OS", "not-windows")
+	if isWindows() {
+		t.Fatalf("isWindows()=true when KREW_OS != windows")
 	}
 }

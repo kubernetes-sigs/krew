@@ -167,7 +167,13 @@ func removeLink(path string) error {
 	return nil
 }
 
-func isWindows() bool { return runtime.GOOS == "windows" }
+func isWindows() bool {
+	goos := runtime.GOOS
+	if env := os.Getenv("KREW_OS"); env != "" {
+		goos = env
+	}
+	return goos == "windows"
+}
 
 // pluginNameToBin creates the name of the symlink file for the plugin name.
 // It converts dashes to underscores.
