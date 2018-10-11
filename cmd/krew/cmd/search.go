@@ -15,10 +15,8 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"strings"
-	"text/tabwriter"
 
 	"github.com/GoogleContainerTools/krew/pkg/index/indexscanner"
 	"github.com/pkg/errors"
@@ -67,9 +65,8 @@ Search accepts a list of words as options.`,
 			return nil
 		}
 
-		rowPattern := "%s\t%s\t%s\n"
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
-		fmt.Fprintf(w, rowPattern, "NAME", "DESCRIPTION", "STATUS")
+		var rows [][]string
+		cols := []string{"NAME", "DESCRIPTION", "STATUS"}
 		for _, name := range matchNames {
 			plugin := pluginMap[name]
 			var status string
@@ -82,10 +79,10 @@ Search accepts a list of words as options.`,
 			} else {
 				status = "unavailable"
 			}
-			fmt.Fprintf(w, rowPattern, name, limitString(plugin.Spec.ShortDescription, 50), status)
+			rows = append(rows, []string{name, limitString(plugin.Spec.ShortDescription, 50), status})
 		}
-		w.Flush()
-		return nil
+		rows = sortByFirstColumn(rows)
+		return printTable(os.Stdout, cols, rows)
 	},
 	PreRunE: checkIndex,
 }

@@ -40,12 +40,25 @@ Plugins will be shown as "PLUGIN,VERSION"`,
 			if err != nil {
 				return errors.Wrap(err, "failed to find all installed versions")
 			}
+
+			// return sorted list of plugin names when piped to other commands or file
 			if !(isatty.IsTerminal(os.Stdout.Fd()) || isatty.IsCygwinTerminal(os.Stdout.Fd())) {
-				fmt.Fprintf(os.Stdout, "%s\n", strings.Join(sortedKeys(plugins), "\n"))
+				var names []string
+				for name := range plugins {
+					names = append(names, name)
+				}
+				sort.Strings(names)
+				fmt.Fprintln(os.Stdout, strings.Join(names, "\n"))
 				return nil
 			}
-			printAlignedColumns(os.Stdout, "PLUGIN", "VERSION", plugins)
-			return nil
+
+			// print table
+			var rows [][]string
+			for p, version := range plugins {
+				rows = append(rows, []string{p, version})
+			}
+			rows = sortByFirstColumn(rows)
+			return printTable(os.Stdout, []string{"PLUGIN", "VERSION"}, rows)
 		},
 		PreRunE: checkIndex,
 	}
@@ -53,29 +66,20 @@ Plugins will be shown as "PLUGIN,VERSION"`,
 	rootCmd.AddCommand(listCmd)
 }
 
-func printAlignedColumns(out io.Writer, keyHeader, valueHeader string, columns map[string]string) error {
+func printTable(out io.Writer, columns []string, rows [][]string) error {
 	w := tabwriter.NewWriter(out, 0, 0, 1, ' ', 0)
-	fmt.Fprintf(w, "%s\t%s\n", keyHeader, valueHeader)
-	// TODO(lbb): print sorted map, to allow unix parsing or allow -o json flag
-	keys := sortedKeys(columns)
-	for _, name := range keys {
-		fmt.Fprintf(w, "%s\t%s\n", name, columns[name])
+	fmt.Fprintf(w, strings.Join(columns, "\t"))
+	fmt.Fprintln(w)
+	for _, values := range rows {
+		fmt.Fprintf(w, strings.Join(values, "\t"))
+		fmt.Fprintln(w)
 	}
 	return w.Flush()
 }
 
-func sortedKeys(m map[string]string) []string {
-	keys := stringKeys(m)
-	sort.Strings(keys)
-	return keys
-}
-
-func stringKeys(m map[string]string) []string {
-	var keys = make([]string, len(m))
-	i := 0
-	for k := range m {
-		keys[i] = k
-		i++
-	}
-	return keys
+func sortByFirstColumn(rows [][]string) [][]string {
+	sort.Slice(rows, func(a, b int) bool {
+		return rows[a][0] < rows[b][0]
+	})
+	return rows
 }
