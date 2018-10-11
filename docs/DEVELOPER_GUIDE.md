@@ -236,19 +236,30 @@ The checksum of the archive file specified on `head` won't be verified.
 ...
 ```
 
-### Running the Plugin
+### Running the Plugin Locally
 
-To test the plugin locally, you can install the plugin with:
+To test the plugin locally before uploading it to the [Main Index], you can
+install it locally by providing the manifest file:
 
 ```bash
-kubectl plugin install -v=4 --source=./foo.yaml
+kubectl krew install -v=4 --manifest=./foo.yaml
+```
+
+If you did not make the plugin archive available on the `uri` yet, you can use
+a local file in the `--archive` flag while specifying a custom manifest. This
+will ignore the URL specified in the `uri:` and use the local file (but will
+still use `sha256` field to do integrity check):
+
+```bash
+kubectl krew install --manifest=./foo.yaml --archive=./foo.zip
 ```
 
 This will install the `foo` plugin.
-To see the plugin directory, get the `InstallPath`:
+
+To see the plugin directory, find the `InstallPath`:
 
 ```bash
-kubectl plugin krew version
+kubectl krew version
 ```
 
 The installation target directory for the `foo` plugin is
@@ -258,17 +269,17 @@ There should always be only one version directory.
 You can now run your plugin!
 
 ```bash
-kubectl plugin foo
+kubectl foo
 ```
 
 ### Cleaning up
 
-After you have tested the plugin, remove it with `kubectl plugin remove foo`.
+After you have tested the plugin, remove it with `kubectl krew remove foo`.
 
 ### Publishing the Plugin
 
 After you have tested that the plugin can be installed and works you should
-create a pull request for the [Main Index](https://github.com/GoogleContainerTools/krew-index).
+create a pull request for the [Main Index][index].
 After the pull request gets accepted into the main index, the plugin will be available for
 all users.
 
@@ -281,3 +292,5 @@ The new plugin file should be submitted to the `plugins/` directory in the index
 Create a pull request with the updated `uri` and `sha256`,
 it is also useful to change the `version` field so that users can distinguish
 the different versions.
+
+[index]: https://github.com/GoogleContainerTools/krew-index

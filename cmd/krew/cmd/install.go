@@ -18,12 +18,11 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"path/filepath"
 
+	"github.com/GoogleContainerTools/krew/pkg/index"
 	"github.com/GoogleContainerTools/krew/pkg/index/indexscanner"
 	"github.com/GoogleContainerTools/krew/pkg/installation"
 
-	"github.com/GoogleContainerTools/krew/pkg/index"
 	"github.com/golang/glog"
 	"github.com/mattn/go-isatty"
 	"github.com/pkg/errors"
@@ -32,7 +31,7 @@ import (
 
 func init() {
 	var forceHEAD *bool
-	var manifest *string
+	var manifest, forceDownloadFile *string
 
 	// installCmd represents the install command
 	installCmd := &cobra.Command{
@@ -45,7 +44,7 @@ All plugins will be downloaded and made available to: "kubectl plugin <name>"`,
 			copy(pluginNames, args)
 
 			if (len(pluginNames) != 0 || *manifest != "") && !(isatty.IsTerminal(os.Stdin.Fd()) || isatty.IsCygwinTerminal(os.Stdin.Fd())) {
-				fmt.Fprintln(os.Stderr, "Detected Stdin, but discarding it because of --source or args")
+				fmt.Fprintln(os.Stderr, "Detected Stdin, but discarding it because of --manifest or args")
 			}
 
 			if len(pluginNames) == 0 && *manifest == "" && !(isatty.IsTerminal(os.Stdin.Fd()) || isatty.IsCygwinTerminal(os.Stdin.Fd())) {
@@ -60,7 +59,11 @@ All plugins will be downloaded and made available to: "kubectl plugin <name>"`,
 			}
 
 			if len(pluginNames) != 0 && *manifest != "" {
-				return errors.New("must specify either specify stdin or source or args")
+				return errors.New("must specify either specify stdin or --manifest or args")
+			}
+
+			if *forceDownloadFile != "" && *manifest == "" {
+				return errors.New("--archive can be specified only with --manifest")
 			}
 
 			var install []index.Plugin
@@ -73,22 +76,24 @@ All plugins will be downloaded and made available to: "kubectl plugin <name>"`,
 			}
 
 			if *manifest != "" {
-				file, err := getFileFromArg(*manifest)
+				// TODO(ahmetb) do not clone index (ensureIndex) in PreRunE when
+				// custom manifest is specified (krew initial installation
+				// scenario).
+				plugin, err := indexscanner.ReadPluginFile(*manifest)
 				if err != nil {
-					return errors.Wrapf(err, "failed to get the file %q", *manifest)
-				}
-				plugin, err := indexscanner.ReadPluginFile(file)
-				if err != nil {
-					return err
+					return errors.Wrap(err, "failed to load custom manifest file")
 				}
 				if err := plugin.Validate(plugin.Name); err != nil {
-					return errors.Wrap(err, "failed to validate the plugin file")
+					return errors.Wrap(err, "plugin manifest validation error")
 				}
 				install = append(install, plugin)
 			}
 
 			if len(install) > 1 && *forceHEAD {
-				return errors.New("can't use HEAD option with multiple plugins")
+				return errors.New("can't use --HEAD option with multiple plugins")
+			}
+			if len(install) > 1 && *manifest != "" {
+				return errors.New("can't use --manifest option with multiple plugins")
 			}
 
 			if len(install) == 0 {
@@ -104,7 +109,7 @@ All plugins will be downloaded and made available to: "kubectl plugin <name>"`,
 			// Do install
 			for _, plugin := range install {
 				glog.V(2).Infof("Installing plugin: %s\n", plugin.Name)
-				err := installation.Install(paths, plugin, *forceHEAD)
+				err := installation.Install(paths, plugin, *forceHEAD, *forceDownloadFile)
 				if err == installation.ErrIsAlreadyInstalled {
 					glog.Warningf("Skipping plugin %s, it is already installed", plugin.Name)
 					continue
@@ -128,18 +133,8 @@ All plugins will be downloaded and made available to: "kubectl plugin <name>"`,
 	}
 
 	forceHEAD = installCmd.Flags().Bool("HEAD", false, "Force HEAD if versioned and HEAD installs are possible.")
-	manifest = installCmd.Flags().String("source", "", "(Development-only) specify plugin manifest directly.")
+	manifest = installCmd.Flags().String("manifest", "", "(Development-only) specify plugin manifest directly.")
+	forceDownloadFile = installCmd.Flags().String("archive", "", "(Development-only) force all downloads to use the specified file")
 
 	rootCmd.AddCommand(installCmd)
-}
-
-func getFileFromArg(file string) (string, error) {
-	if filepath.IsAbs(file) {
-		return file, nil
-	}
-	abs, err := filepath.Abs(filepath.Join(os.Getenv("PWD"), file))
-	if err != nil {
-		return "", errors.Wrapf(err, "failed to find absolute file path")
-	}
-	return abs, nil
 }

@@ -42,22 +42,27 @@ const (
 	krewPluginName = "krew"
 )
 
-func downloadAndMove(version, uri string, fos []index.FileOperation, downloadPath, installPath string) (dst string, err error) {
+func downloadAndMove(version, uri string, fos []index.FileOperation, downloadPath, installPath, forceDownloadFile string) (dst string, err error) {
 	glog.V(3).Infof("Creating download dir %q", downloadPath)
 	if err = os.MkdirAll(downloadPath, 0755); err != nil {
 		return "", errors.Wrapf(err, "could not create download path %q", downloadPath)
 	}
 	defer os.RemoveAll(downloadPath)
 
+	var fetcher download.Fetcher = download.HTTPFetcher{}
+	if forceDownloadFile != "" {
+		fetcher = download.NewFileFetcher(forceDownloadFile)
+	}
+
 	if version == headVersion {
-		glog.V(1).Infof("Getting latest version from HEAD")
-		err = download.GetInsecure(uri, downloadPath, download.HTTPFetcher{})
+		glog.V(1).Infof("Getting latest version from HEAD without sha256 verification")
+		err = download.GetInsecure(uri, downloadPath, fetcher)
 	} else {
 		glog.V(1).Infof("Getting sha256 (%s) signed version", version)
-		err = download.GetWithSha256(uri, downloadPath, version, download.HTTPFetcher{})
+		err = download.GetWithSha256(uri, downloadPath, version, fetcher)
 	}
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err, "failed to download and verify file")
 	}
 
 	return moveToInstallDir(downloadPath, installPath, version, fos)
@@ -65,7 +70,7 @@ func downloadAndMove(version, uri string, fos []index.FileOperation, downloadPat
 
 // Install will download and install a plugin. The operation tries
 // to not get the plugin dir in a bad state if it fails during the process.
-func Install(p environment.Paths, plugin index.Plugin, forceHEAD bool) error {
+func Install(p environment.Paths, plugin index.Plugin, forceHEAD bool, forceDownloadFile string) error {
 	glog.V(2).Infof("Looking for installed versions")
 	_, ok, err := findInstalledPluginVersion(p.InstallPath(), p.BinPath(), plugin.Name)
 	if err != nil {
@@ -80,11 +85,11 @@ func Install(p environment.Paths, plugin index.Plugin, forceHEAD bool) error {
 	if err != nil {
 		return err
 	}
-	return install(plugin.Name, version, uri, bin, p, fos)
+	return install(plugin.Name, version, uri, bin, p, fos, forceDownloadFile)
 }
 
-func install(plugin, version, uri, bin string, p environment.Paths, fos []index.FileOperation) error {
-	dst, err := downloadAndMove(version, uri, fos, filepath.Join(p.DownloadPath(), plugin), p.PluginInstallPath(plugin))
+func install(plugin, version, uri, bin string, p environment.Paths, fos []index.FileOperation, forceDownloadFile string) error {
+	dst, err := downloadAndMove(version, uri, fos, filepath.Join(p.DownloadPath(), plugin), p.PluginInstallPath(plugin), forceDownloadFile)
 	if err != nil {
 		return errors.Wrap(err, "failed to dowload and move during installation")
 	}

@@ -17,6 +17,7 @@ package download
 import (
 	"io"
 	"net/http"
+	"os"
 )
 
 // Fetcher is used to get files from a URI.
@@ -36,3 +37,12 @@ func (HTTPFetcher) Get(uri string) (io.ReadCloser, error) {
 	}
 	return resp.Body, nil
 }
+
+type fileFetcher struct{ f string }
+
+func (f fileFetcher) Get(_ string) (io.ReadCloser, error) {
+	return os.Open(f.f)
+}
+
+// NewFileFetcher returns a local file reader.
+func NewFileFetcher(path string) Fetcher { return fileFetcher{f: path} }
