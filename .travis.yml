@@ -3,8 +3,6 @@ language: go
 go:
 - 1.10.x
 go_import_path: github.com/GoogleContainerTools/krew
-git:
-  depth: 1
 install: true
 notifications:
   email: false
@@ -27,6 +25,7 @@ deploy:
   file:
   - out/krew.zip
   - out/krew.zip.sha256
+  - out/krew.yaml
   - out/bin/krew-*
   skip_cleanup: true
   on:

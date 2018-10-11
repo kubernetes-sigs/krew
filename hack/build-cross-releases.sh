@@ -49,3 +49,10 @@ fi
 zip_checksum="$(eval "${checksum_cmd[@]}" "out/${KREW_ARCHIVE}" | awk '{print $1;}')"
 echo "${KREW_ARCHIVE} checksum: ${zip_checksum}"
 echo "${zip_checksum}" > "out/${KREW_ARCHIVE}".sha256
+
+# Copy and process krew manifest
+cp ./hack/krew.yaml ./out/krew.yaml
+tag="$(git describe --tags HEAD)"
+sed -i "s/KREW_ZIP_CHECKSUM/${zip_checksum}/g" ./out/krew.yaml
+sed -i "s/KREW_TAG/${tag}/g" ./out/krew.yaml
+echo "Manifest processed."
