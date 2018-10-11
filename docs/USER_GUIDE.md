@@ -1,14 +1,14 @@
 # User Guide
 
-This guide will help you with your first steps using krew.
+This guide shows how to use `krew` as a user after installing it.
 
-## Discover Plugins
+## Discovering Plugins
 
-To find plugins run the `kubectl plugin search` command.
-This command lists all available plugins:
+To find plugins, run the `kubectl krew search` command. This command lists all
+available plugins:
 
 ```text
-$ kubectl plugin search
+$ kubectl krew search
 NAME               SHORT                                              STATUS
 ca-cert            Print PEM CA certificate of current cluster        available
 extract-context    Extract current-context on kubectl as a kubecon... available
@@ -18,20 +18,19 @@ view-secret        Decode secrets                    �
 ...
 ```
 
-Specifying keywords searches in the plugin list:
+You can specify search keywords as arguments:
 
 ```text
-$ kubectl plugin search crt
+$ kubectl krew search crt
 NAME               SHORT                                       STATUS
 ca-cert            Print PEM CA certificate of current cluster available
 view-secret        Decode secrets                              available
 ```
 
-To get more information on the "ca-cert" plugin,
-run `kubectl plugin info ca-cert`.
+To get more information on a plugin, run `kubectl krew info <PLUGIN>`:
 
 ```text
-$ kubectl plugin info ca-cert
+$ kubectl krew info ca-cert
 NAME: ca-cert
 HEAD: https://github.com/ahmetb/kubectl-extras/archive/master.zip
 URI: https://github.com/ahmetb/kubectl-extras/archive/c403c57.zip
@@ -45,17 +44,13 @@ CAVEATS:
  * base64
 ```
 
-## Install Plugins
+## Installing Plugins
 
-Now, install the plugin by running `kubectl plugin install` command.
-The installation downloads the plugin from the versioned URL and verify its
-contents with sha256. As it is shown the ca-cert plugin also specifies a HEAD,
-which should always point to the latest location. Uri is always favoured if
-HEAD also exists. If just wither exist it is be the default.
-You want to install the HEAD, to do so force it with `--HEAD=true`.
+Plugins can be installed with `kubectl krew install` command:
 
 ```text
-$ kubectl plugin install ca-cert --HEAD=true
+$ kubectl krew install ca-cert
+
 Will install plugin: ca-cert
 Installed plugin: ca-cert
 CAVEATS:
@@ -63,66 +58,74 @@ CAVEATS:
  * base64
 ```
 
-The "CAVEATS" section in the output describes noteworthy details about running
-the plugin, such as dependencies that you need to install.
-Our plugin just needs the base64 tool.
+This command downloads the plugin and verifies the integrity of the downloaded
+file.
 
-To show all installed plugins you can run,
+After installing a plugin, you can use it like `kubectl <PLUGIN>`:
 
-```text
-$ kubectl plugin list
-PLUGIN  VERSION
-ca-cert HEAD
-krew    6e8a790d8a34885cd40436761f564d94b74d46b314eed5bd02054654946034ef
+```
+$ kubectl ca-cert
 ```
 
-As you can see there are two plugins installed, `krew` itself and `ca-cert`.
+### Installing plugins with --HEAD
 
-Now the plugin can be tried out with,
+Some plugins are offer a way to install directly from the last revision of the
+source code from their Git repositories. Such plugins expose a `HEAD:` field in
+`kubectl info` output.
 
-```text
-$ kubectl plugin ca-cert
------BEGIN CERTIFICATE-----
-...
-```
+To install such a plugin from its latest release, run:
 
-You should also see it as a subcommand of `kubectl plugin`.
+    kubectl krew install --HEAD <PLUGIN>
+
+**Note:** Installing with `--HEAD` does not check the integrity of the
+downloaded git archive. Also, untagged plugins are very likely to be unstable.
+
+## Listing Installed Plugins
+
+All plugins available to `kubectl` (including those not installed via krew) can
+listed using:
+
+    kubectl krew list
+
+To list all plugins install via `krew`, run:
+
+    kubectl krew list
 
 ## Plugin Lifecycle
 
-Plugins you are using might have newer versions available.
-You can run `kubectl plugin upgrade ca-cert` to only upgrade the `ca-cert` plugin.
+Plugins you are using might have newer versions available. To upgrade a single
+plugin, run:
 
-This time you want to upgrade everything, including krew so just run
-`kubectl plugin upgrade`.
+    kubectl krew upgrade <PLUGIN>
 
-```text
-$ kubectl plugin upgrade
-Upgraded plugin: ca-cert
-Skipping plugin krew, it is already on the newest version
-```
+If you want to upgrade all plugins to their latest versions, run the same command
+without any arguments:
 
-As you can see krew upgraded krew and `ca-cert`, plugins that are already on the
-latest version are skipped. HEAD installations are always be upgraded and
-stay HEAD. This process allows you to always have the newest plugins and
-keep krew up to date.
+    kubectl krew upgrade
 
-Krew itself is a plugin which is also managed through `krew`.
-This allows krew to not rely on other package managers.
-Krew controls it's own lifecycle.
+Since `krew` itself is a plugin also managed through `krew`, running the upgrade
+command may also upgrade your `krew` version.
 
-## Remove Plugins
+**Note:** Plugins installed via `--HEAD` are always upgraded. This process
+allows you to upgrade to the latest commit available in the source repository.
 
-When you don't need a plugin anymore you can uninstall it with 
-`kubectl plugin remove`.
 
-```text
-$ kubectl plugin remove ca-cert
-Removed plugin ca-cert
-```
+## Uninstalling Plugins
+
+When you don't need a plugin anymore you can uninstall it with:
+
+    kubectl krew remove <PLUGIN>
+
 
 ## Uninstalling Krew
 
-Run command `kubectl plugin krew version`
-and remove the `BasePath` directory listed in the output to uninstall `krew`
-and all plugins that were installed with it.
+Installing `krew` is as easy as deleting its installation directory.
+
+To find `krew`'s installation directory, run:
+
+    kubectl krew version
+
+And delete the directory listed in `BasePath:` field. On macOS/Linux systems,
+deleting the installation location can be done by executing:
+
+    rm -rf ~/.krew
