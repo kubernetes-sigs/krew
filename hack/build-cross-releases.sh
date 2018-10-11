@@ -22,13 +22,16 @@ cd "${SCRIPTDIR}/.."
 
 DEFAULT_OSARCH="darwin/amd64 windows/amd64 linux/amd64 linux/arm"
 KREW_ARCHIVE="krew.zip"
+version_pkg="github.com/GoogleContainerTools/krew/pkg/version"
+
+rm -rf out/
 
 # Builds
-rm -rf out/
 echo "Building releases: ${OSARCH:-$DEFAULT_OSARCH}"
-gox -osarch="${OSARCH:-$DEFAULT_OSARCH}" \
-  -ldflags="-X github.com/GoogleContainerTools/krew/pkg/version.gitCommit=$(git rev-parse --short HEAD) \
-    -X github.com/GoogleContainerTools/krew/pkg/version.gitTag=$(git describe --tags --dirty --always)" \
+env CGO_ENABLED=0 gox -osarch="${OSARCH:-$DEFAULT_OSARCH}" \
+  -tags netgo \
+  -ldflags="-w -X ${version_pkg}.gitCommit=$(git rev-parse --short HEAD) \
+    -X ${version_pkg}.gitTag=$(git describe --tags --dirty --always)" \
   -output="out/bin/krew-{{.OS}}_{{.Arch}}" \
   ./cmd/krew/...
 
@@ -37,6 +40,12 @@ gox -osarch="${OSARCH:-$DEFAULT_OSARCH}" \
   zip -X -q -r --verbose out/krew.zip out/bin
 )
 
-zip_checksum="$(shasum -a 256 "out/${KREW_ARCHIVE}" | awk '{print $1;}')"
+# Compute checksum
+if hash sha256sum 2>/dev/null; then
+  checksum_cmd=sha256sum
+else
+  checksum_cmd="shasum -a 256"
+fi
+zip_checksum="$(eval "${checksum_cmd[@]}" "out/${KREW_ARCHIVE}" | awk '{print $1;}')"
 echo "${KREW_ARCHIVE} checksum: ${zip_checksum}"
 echo "${zip_checksum}" > "out/${KREW_ARCHIVE}".sha256
