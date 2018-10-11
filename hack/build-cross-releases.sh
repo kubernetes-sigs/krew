@@ -28,10 +28,14 @@ rm -rf out/
 
 # Builds
 echo "Building releases: ${OSARCH:-$DEFAULT_OSARCH}"
+git_rev="${SHORT_SHA:-$(git rev-parse --short HEAD)}"
+git_tag="${TAG_NAME:-$(git describe --tags --dirty --always)}"
+echo "Stamping with git tag=${git_tag} rev=${git_rev}"
+
 env CGO_ENABLED=0 gox -osarch="${OSARCH:-$DEFAULT_OSARCH}" \
   -tags netgo \
-  -ldflags="-w -X ${version_pkg}.gitCommit=$(git rev-parse --short HEAD) \
-    -X ${version_pkg}.gitTag=$(git describe --tags --dirty --always)" \
+  -ldflags="-w -X ${version_pkg}.gitCommit=${git_rev} \
+    -X ${version_pkg}.gitTag=${git_tag}" \
   -output="out/bin/krew-{{.OS}}_{{.Arch}}" \
   ./cmd/krew/...
 
