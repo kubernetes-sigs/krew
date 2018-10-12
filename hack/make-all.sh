@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Copyright 2018 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,13 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Used by cloudbuild*.yaml to build in Google Cloud Build.
-FROM golang:1-alpine
-RUN apk add -q --no-cache bash git zip
-RUN go get github.com/mitchellh/gox
+set -e -o pipefail
 
-ENV PROJECT_ROOT /go/src/github.com/GoogleContainerTools/krew
-RUN mkdir -p $(dirname $PROJECT_ROOT) && \
-        ln -s /workspace $PROJECT_ROOT
-WORKDIR $PROJECT_ROOT
-ENTRYPOINT $PROJECT_ROOT/hack/make-all.sh
+SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+"${SCRIPTDIR}/make-binaries.sh"
+"${SCRIPTDIR}/make-release-artifacts.sh"
