@@ -41,7 +41,7 @@ echo >&2 "Written ${sumfile}."
 
 # Copy and process krew manifest
 cp ./hack/krew.yaml ./out/krew.yaml
-tag="$(git describe --tags HEAD)"
+tag="$(git describe --tags --always HEAD)"
 sed -i "s/KREW_ZIP_CHECKSUM/${zip_checksum}/g" ./out/krew.yaml
 sed -i "s/KREW_TAG/${tag}/g" ./out/krew.yaml
 echo >&2 "Written krew.yaml."

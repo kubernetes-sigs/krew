@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/GoogleContainerTools/krew/pkg/environment"
 	"github.com/GoogleContainerTools/krew/pkg/index/indexscanner"
 	"github.com/GoogleContainerTools/krew/pkg/installation"
 
@@ -53,6 +54,14 @@ kubectl plugin upgrade foo bar"`,
 			pluginNames = args
 		}
 
+		execPath, err := os.Executable()
+		if err != nil {
+			return errors.Wrap(err, "could not get krew's own executable path")
+		}
+		executedKrewVersion, _, err := environment.GetExecutedVersion(paths.InstallPath(), execPath, environment.Realpath)
+		if err != nil {
+			return errors.Wrap(err, "failed to find current krew version")
+		}
 		for _, name := range pluginNames {
 			plugin, err := indexscanner.LoadPluginFileFromFS(paths.IndexPath(), name)
 			if err != nil {
@@ -60,7 +69,7 @@ kubectl plugin upgrade foo bar"`,
 			}
 
 			glog.V(2).Infof("Upgrading plugin: %s\n", plugin.Name)
-			err = installation.Upgrade(paths, plugin, krewExecutedVersion)
+			err = installation.Upgrade(paths, plugin, executedKrewVersion)
 			if ignoreUpgraded && err == installation.ErrIsAlreadyUpgraded {
 				fmt.Fprintf(os.Stderr, "Skipping plugin %s, it is already on the newest version\n", plugin.Name)
 				continue
