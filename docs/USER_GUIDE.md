@@ -52,6 +52,7 @@ Plugins can be installed with `kubectl krew install` command:
 $ kubectl krew install ca-cert
 
 Will install plugin: ca-cert
+Installing plugin: ca-cert
 Installed plugin: ca-cert
 CAVEATS:
  This plugin needs the following programs:
