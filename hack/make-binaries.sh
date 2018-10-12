@@ -21,16 +21,15 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "${SCRIPTDIR}/.."
 
 DEFAULT_OSARCH="darwin/amd64 windows/amd64 linux/amd64 linux/arm"
-KREW_ARCHIVE="krew.zip"
 version_pkg="github.com/GoogleContainerTools/krew/pkg/version"
 
 rm -rf out/
 
 # Builds
-echo "Building releases: ${OSARCH:-$DEFAULT_OSARCH}"
+echo >&2 "Building binaries for: ${OSARCH:-$DEFAULT_OSARCH}"
 git_rev="${SHORT_SHA:-$(git rev-parse --short HEAD)}"
 git_tag="${TAG_NAME:-$(git describe --tags --dirty --always)}"
-echo "Stamping with git tag=${git_tag} rev=${git_rev}"
+echo >&2 "(Stamping with git tag=${git_tag} rev=${git_rev})"
 
 env CGO_ENABLED=0 gox -osarch="${OSARCH:-$DEFAULT_OSARCH}" \
   -tags netgo \
@@ -38,25 +37,3 @@ env CGO_ENABLED=0 gox -osarch="${OSARCH:-$DEFAULT_OSARCH}" \
     -X ${version_pkg}.gitTag=${git_tag}" \
   -output="out/bin/krew-{{.OS}}_{{.Arch}}" \
   ./cmd/krew/...
-
-(
-  set -x;
-  zip -X -q -r --verbose out/krew.zip out/bin
-)
-
-# Compute checksum
-if hash sha256sum 2>/dev/null; then
-  checksum_cmd=sha256sum
-else
-  checksum_cmd="shasum -a 256"
-fi
-zip_checksum="$(eval "${checksum_cmd[@]}" "out/${KREW_ARCHIVE}" | awk '{print $1;}')"
-echo "${KREW_ARCHIVE} checksum: ${zip_checksum}"
-echo "${zip_checksum}" > "out/${KREW_ARCHIVE}".sha256
-
-# Copy and process krew manifest
-cp ./hack/krew.yaml ./out/krew.yaml
-tag="$(git describe --tags HEAD)"
-sed -i "s/KREW_ZIP_CHECKSUM/${zip_checksum}/g" ./out/krew.yaml
-sed -i "s/KREW_TAG/${tag}/g" ./out/krew.yaml
-echo "Manifest processed."
