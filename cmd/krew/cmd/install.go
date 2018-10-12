@@ -24,7 +24,6 @@ import (
 	"github.com/GoogleContainerTools/krew/pkg/installation"
 
 	"github.com/golang/glog"
-	"github.com/mattn/go-isatty"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -43,12 +42,12 @@ All plugins will be downloaded and made available to: "kubectl plugin <name>"`,
 			var pluginNames = make([]string, len(args))
 			copy(pluginNames, args)
 
-			if (len(pluginNames) != 0 || *manifest != "") && !(isatty.IsTerminal(os.Stdin.Fd()) || isatty.IsCygwinTerminal(os.Stdin.Fd())) {
-				fmt.Fprintln(os.Stderr, "Detected Stdin, but discarding it because of --manifest or args")
+			if !isTerminal(os.Stdin) && (len(pluginNames) != 0 || *manifest != "") {
+				fmt.Fprintln(os.Stderr, "WARNING: Detected stdin, but discarding it because of --manifest or args")
 			}
 
-			if len(pluginNames) == 0 && *manifest == "" && !(isatty.IsTerminal(os.Stdin.Fd()) || isatty.IsCygwinTerminal(os.Stdin.Fd())) {
-				fmt.Fprintln(os.Stderr, "Read from standard input")
+			if !isTerminal(os.Stdin) && (len(pluginNames) == 0 && *manifest == "") {
+				fmt.Fprintln(os.Stderr, "Reading plugin names via stdin")
 				scanner := bufio.NewScanner(os.Stdin)
 				scanner.Split(bufio.ScanLines)
 				for scanner.Scan() {
