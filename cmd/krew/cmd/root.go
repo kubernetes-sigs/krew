@@ -20,6 +20,7 @@ import (
 
 	"github.com/GoogleContainerTools/krew/pkg/environment"
 	"github.com/GoogleContainerTools/krew/pkg/gitutil"
+	isatty "github.com/mattn/go-isatty"
 	"github.com/pkg/errors"
 
 	"github.com/golang/glog"
@@ -108,6 +109,10 @@ func ensureDirs(paths ...string) error {
 		}
 	}
 	return nil
+}
+
+func isTerminal(f *os.File) bool {
+	return isatty.IsTerminal(f.Fd()) || isatty.IsCygwinTerminal(f.Fd())
 }
 
 // initConfig reads in config file and ENV variables if set.

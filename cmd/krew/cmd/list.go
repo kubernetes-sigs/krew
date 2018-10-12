@@ -23,7 +23,6 @@ import (
 	"text/tabwriter"
 
 	"github.com/GoogleContainerTools/krew/pkg/installation"
-	"github.com/mattn/go-isatty"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -42,7 +41,7 @@ Plugins will be shown as "PLUGIN,VERSION"`,
 			}
 
 			// return sorted list of plugin names when piped to other commands or file
-			if !(isatty.IsTerminal(os.Stdout.Fd()) || isatty.IsCygwinTerminal(os.Stdout.Fd())) {
+			if !isTerminal(os.Stdout) {
 				var names []string
 				for name := range plugins {
 					names = append(names, name)
