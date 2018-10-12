@@ -116,7 +116,7 @@ All plugins will be downloaded and made available to: "kubectl plugin <name>"`,
 					continue
 				}
 				if plugin.Spec.Caveats != "" {
-					fmt.Fprintf(os.Stderr, "CAVEATS: %s\n", plugin.Spec.Caveats)
+					fmt.Fprintf(os.Stderr, prepCaveats(plugin.Spec.Caveats))
 				}
 				fmt.Fprintf(os.Stderr, "Installed plugin: %s\n", plugin.Name)
 			}

@@ -18,6 +18,9 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
+	"strings"
+	"unicode"
 
 	"github.com/GoogleContainerTools/krew/pkg/index"
 	"github.com/GoogleContainerTools/krew/pkg/index/indexscanner"
@@ -67,8 +70,26 @@ func printPluginInfo(out io.Writer, plugin index.Plugin) {
 		fmt.Fprintf(out, "VERSION: %s\n", plugin.Spec.Version)
 	}
 	if plugin.Spec.Caveats != "" {
-		fmt.Fprintf(out, "CAVEATS: \n%s\n", plugin.Spec.Caveats)
+		fmt.Fprintf(out, prepCaveats(plugin.Spec.Caveats))
 	}
+}
+
+// prepCaveats converts caveats string to an indented format ready for printing.
+// Example:
+//
+//     CAVEATS:
+//     \
+//      | This plugin is great, use it with great care.
+//      | Also, plugin will require the following programs to run:
+//      |  * jq
+//      |  * base64
+//     /
+func prepCaveats(s string) string {
+	out := "CAVEATS:\n\\\n"
+	s = strings.TrimRightFunc(s, unicode.IsSpace)
+	out += regexp.MustCompile("(?m)^").ReplaceAllString(s, " |  ")
+	out += "\n/\n"
+	return out
 }
 
 func init() {
