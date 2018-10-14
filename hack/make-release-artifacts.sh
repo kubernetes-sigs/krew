@@ -29,9 +29,9 @@ krew_tar_archive="krew.tar.gz"
 krew_zip_archive="krew.zip"
 
 echo >&2 "Creating ${krew_tar_archive} archive."
-pushd "${bin_dir}"; tar czvf "${SCRIPTDIR}/../out/${krew_tar_archive}" ./*; popd
+( cd "${bin_dir}"; tar czvf "${SCRIPTDIR}/../out/${krew_tar_archive}" ./*; )
 echo >&2 "Creating ${krew_zip_archive} archive."
-zip -X -q -j --verbose "out/${krew_zip_archive}" ${bin_dir}/*
+( cd "${bin_dir}"; zip -X -q --verbose "${SCRIPTDIR}/../out/${krew_zip_archive}" ./*; )
 
 checksum_cmd="shasum -a 256"
 if hash sha256sum 2>/dev/null; then
