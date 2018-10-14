@@ -111,7 +111,7 @@ All plugins will be downloaded and made available to: "kubectl plugin <name>"`,
 					continue
 				}
 				if err != nil {
-					glog.Warningf("failed to install plugin %q", plugin.Name)
+					glog.Warningf("failed to install plugin %q: %v", plugin.Name, err)
 					failed = append(failed, plugin.Name)
 					continue
 				}
