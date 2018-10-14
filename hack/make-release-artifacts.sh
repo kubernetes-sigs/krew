@@ -29,9 +29,9 @@ krew_tar_archive="krew.tar.gz"
 krew_zip_archive="krew.zip"
 
 echo >&2 "Creating ${krew_tar_archive} archive."
-tar czvf "out/${krew_tar_archive}" "${bin_dir}"
+( cd "${bin_dir}"; tar czvf "${SCRIPTDIR}/../out/${krew_tar_archive}" ./*; )
 echo >&2 "Creating ${krew_zip_archive} archive."
-zip -X -q -r --verbose "out/${krew_zip_archive}" "${bin_dir}"
+( cd "${bin_dir}"; zip -X -q --verbose "${SCRIPTDIR}/../out/${krew_zip_archive}" ./*; )
 
 checksum_cmd="shasum -a 256"
 if hash sha256sum 2>/dev/null; then
@@ -57,4 +57,4 @@ tag="$(git describe --tags --always HEAD)"
 sed -i "s/KREW_ZIP_CHECKSUM/${zip_checksum}/g" ./out/krew.yaml
 sed -i "s/KREW_TAR_CHECKSUM/${tar_checksum}/g" ./out/krew.yaml
 sed -i "s/KREW_TAG/${tag}/g" ./out/krew.yaml
-echo >&2 "Written krew.yaml."
+echo >&2 "Written out/krew.yaml."

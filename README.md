@@ -43,8 +43,8 @@ For macOS and Linux:
       set -x; cd "$(mktemp -d)" &&
       curl -fsSLO "https://github.com/GoogleContainerTools/krew/releases/download/v0.2.0/krew.{tar.gz,yaml}" &&
       tar zxvf krew.tar.gz &&
-      ./out/bin/krew-"$(uname | tr '[:upper:]' '[:lower:]')_amd64" install \
-        --manifest=krew.yaml --archive=krew.zip
+      ./krew-"$(uname | tr '[:upper:]' '[:lower:]')_amd64" install \
+        --manifest=krew.yaml --archive=krew.tar.gz
     )
     ```
 3. Add `$HOME/.krew/bin` directory to your PATH environment variable. To do
@@ -65,7 +65,7 @@ Windows:
 1. Run the following command to install krew (pass the correct
    paths to `krew.yaml` and `krew.zip` below):
 
-       .\out\bin\krew-windows_amd64.exe install --source=krew.yaml --archive=krew.zip
+       .\krew-windows_amd64.exe install --source=krew.yaml --archive=krew.zip
 
 3. Add `%USERPROFILE%\.krew\bin` to your `PATH` environment variable
    ([how?](https://java.com/en/download/help/path.xml))
