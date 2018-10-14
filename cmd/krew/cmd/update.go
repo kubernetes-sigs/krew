@@ -19,6 +19,7 @@ import (
 	"os"
 
 	"github.com/GoogleContainerTools/krew/pkg/gitutil"
+	"github.com/golang/glog"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -34,14 +35,15 @@ var updateCmd = &cobra.Command{
 	Long: `Update local plugin index.
 Fetch the newest version of Krew and all formulae from GitHub using git(1) and
 perform any necessary migrations.`,
-	RunE: ensureUpdated,
+	RunE: ensureIndexUpdated,
 }
 
-func ensureUpdated(_ *cobra.Command, _ []string) error {
+func ensureIndexUpdated(_ *cobra.Command, _ []string) error {
+	glog.V(1).Infof("Updating the local copy of plugin index (%s)", paths.IndexPath())
 	if err := gitutil.EnsureUpdated(IndexURI, paths.IndexPath()); err != nil {
-		return errors.Wrapf(err, "failed to ensure that the index path %q is updated", paths.IndexPath())
+		return errors.Wrap(err, "failed to update the local index")
 	}
-	fmt.Fprintln(os.Stderr, "Updated index")
+	fmt.Fprintln(os.Stderr, "Updated the local copy of plugin index.")
 	return nil
 }
 
