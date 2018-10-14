@@ -30,7 +30,7 @@ import (
 
 func init() {
 	var forceHEAD *bool
-	var manifest, forceDownloadFile *string
+	var manifest, downloadFileOverwrite *string
 
 	// installCmd represents the install command
 	installCmd := &cobra.Command{
@@ -61,7 +61,7 @@ All plugins will be downloaded and made available to: "kubectl plugin <name>"`,
 				return errors.New("must specify either specify stdin or --manifest or args")
 			}
 
-			if *forceDownloadFile != "" && *manifest == "" {
+			if *downloadFileOverwrite != "" && *manifest == "" {
 				return errors.New("--archive can be specified only with --manifest")
 			}
 
@@ -105,13 +105,13 @@ All plugins will be downloaded and made available to: "kubectl plugin <name>"`,
 			// Do install
 			for _, plugin := range install {
 				fmt.Fprintf(os.Stderr, "Installing plugin: %s\n", plugin.Name)
-				err := installation.Install(paths, plugin, *forceHEAD, *forceDownloadFile)
+				err := installation.Install(paths, plugin, *forceHEAD, *downloadFileOverwrite)
 				if err == installation.ErrIsAlreadyInstalled {
 					glog.Warningf("Skipping plugin %s, it is already installed", plugin.Name)
 					continue
 				}
 				if err != nil {
-					glog.Warningf("failed to install plugin %q", plugin.Name)
+					glog.Warningf("failed to install plugin %q, err: %s", plugin.Name, err)
 					failed = append(failed, plugin.Name)
 					continue
 				}
@@ -136,7 +136,7 @@ All plugins will be downloaded and made available to: "kubectl plugin <name>"`,
 
 	forceHEAD = installCmd.Flags().Bool("HEAD", false, "Force HEAD if versioned and HEAD installs are possible.")
 	manifest = installCmd.Flags().String("manifest", "", "(Development-only) specify plugin manifest directly.")
-	forceDownloadFile = installCmd.Flags().String("archive", "", "(Development-only) force all downloads to use the specified file")
+	downloadFileOverwrite = installCmd.Flags().String("archive", "", "(Development-only) force all downloads to use the specified file")
 
 	rootCmd.AddCommand(installCmd)
 }

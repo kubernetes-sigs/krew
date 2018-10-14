@@ -38,11 +38,11 @@ func (HTTPFetcher) Get(uri string) (io.ReadCloser, error) {
 	return resp.Body, nil
 }
 
-type fileFetcher struct{ f string }
+type fileFetcher struct{}
 
-func (f fileFetcher) Get(_ string) (io.ReadCloser, error) {
-	return os.Open(f.f)
+func (fileFetcher) Get(file string) (io.ReadCloser, error) {
+	return os.Open(file)
 }
 
 // NewFileFetcher returns a local file reader.
-func NewFileFetcher(path string) Fetcher { return fileFetcher{f: path} }
+func NewFileFetcher() Fetcher { return fileFetcher{} }
