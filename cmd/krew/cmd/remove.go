@@ -28,9 +28,14 @@ import (
 // removeCmd represents the remove command
 var removeCmd = &cobra.Command{
 	Use:   "remove",
-	Short: "Remove a plugin from the system",
-	Long: `Remove a plugin from the system.
-This will delete all plugin related files.`,
+	Short: "Uninstall plugins",
+	Long: `Uninstall one or more plugins.
+
+Example:
+  kubectl krew remove NAME [NAME...]
+
+Remarks:
+  Failure to uninstall a plugin will result in an error and exit immediately.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		for _, name := range args {
 			glog.V(4).Infof("Going to remove plugin %s\n", name)

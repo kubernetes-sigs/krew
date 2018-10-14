@@ -29,13 +29,13 @@ import (
 // upgradeCmd represents the upgrade command
 var upgradeCmd = &cobra.Command{
 	Use:   "upgrade",
-	Short: "Upgrade installed plugins to a newer version",
+	Short: "Upgrade installed plugins to newer versions",
 	Long: `Upgrade installed plugins to a newer version.
 This will reinstall all plugins that have a newer version in the local index.
-Use "kubectl plugin update" to renew the index. All plugins that rely on HEAD
+Use "kubectl krew update" to renew the index. All plugins that rely on HEAD
 will always be installed.
 To only upgrade single plugins provide them as arguments:
-kubectl plugin upgrade foo bar"`,
+kubectl krew upgrade foo bar"`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var ignoreUpgraded bool
 		var pluginNames []string

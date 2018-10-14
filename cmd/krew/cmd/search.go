@@ -30,9 +30,16 @@ import (
 // searchCmd represents the search command
 var searchCmd = &cobra.Command{
 	Use:   "search",
-	Short: "Discover plugins in your local index using fuzzy search",
-	Long: `Discover plugins in your local index using fuzzy search.
-Search accepts a list of words as options.`,
+	Short: "Discover kubectl plugins",
+	Long: `List kubectl plugins available on krew and search among them.
+If no arguments are provided, all plugins will be listed.
+
+Examples:
+  To list all plugins:
+    kubectl krew search
+
+  To fuzzy search plugins with a keyword:
+    kubectl krew search KEYWORD`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		plugins, err := indexscanner.LoadPluginListFromFS(paths.IndexPath())
 		if err != nil {

@@ -31,9 +31,13 @@ func init() {
 	// listCmd represents the list command
 	listCmd := &cobra.Command{
 		Use:   "list",
-		Short: "List all installed plugin names",
-		Long: `List all installed plugin names.
-Plugins will be shown as "PLUGIN,VERSION"`,
+		Short: "List installed plugins",
+		Long: `Show a list of installed plugins and their versions.
+
+Remarks:
+  Redirecting the output of this command to a program or file will only print
+  the names of the plugins installed. This output can be piped back to the
+  "install" command.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			plugins, err := installation.ListInstalledPlugins(paths.InstallPath(), paths.BinPath())
 			if err != nil {

@@ -28,15 +28,20 @@ import (
 // versionCmd represents the version command
 var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: "Version prints the current executable variables",
-	Long: `Version prints the current executable variables.
-ExecutedVersion is the version of the currently executed binary. This is detected through the path.
-IsPlugin is true if the binary is executed as a plugin.
-BasePath is the root path for all krew related binaries.
-IndexPath is the path to the index repo see git(1).
-IndexURI is the URI where the index is updated from.
-InstallPath is the base path for all plugin installations.
-DownloadPath is the path used to store download binaries.`,
+	Short: "Show krew version and diagnostics",
+	Long: `Show version information and diagnostics about krew itself.
+
+Remarks:
+  - IsPlugin is true if krew is executed as a plugin
+  - ExecutedVersion is the version of the currently executed binary. This is detected through the path.
+  - GitTag describes the release name krew is built from.
+  - GitCommit describes the git revision ID which krew is built from.
+  - IndexURI is the URI where the index is updated from.
+  - BasePath is the root directory for krew installation.
+  - IndexPath is the directory that stores the local copy of the index git repository.
+  - InstallPath is the directory for plugin installations.
+  - DownloadPath is the directory for temporarily downloading plugins.
+  - BinPath is the directory for the symbolic links to the installed plugin executables.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		selfPath, err := os.Executable()
 		if err != nil {

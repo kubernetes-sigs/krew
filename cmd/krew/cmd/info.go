@@ -33,9 +33,14 @@ import (
 // infoCmd represents the info command
 var infoCmd = &cobra.Command{
 	Use:   "info",
-	Short: "Info shows plugin details",
-	Long: `Info shows plugin details.
-Use this command to find out about plugin requirements and caveats.`,
+	Short: "Show information about a kubectl plugin",
+	Long: `Show information about a kubectl plugin.
+
+This command can be used to print information such as its download URL, last
+available version, platform availability and the caveats.
+
+Example:
+  kubectl krew info PLUGIN`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		for _, arg := range args {
 			plugin, err := indexscanner.LoadPluginFileFromFS(paths.IndexPath(), arg)
