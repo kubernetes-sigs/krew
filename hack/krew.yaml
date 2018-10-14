@@ -24,7 +24,7 @@ spec:
     sha256: KREW_ZIP_CHECKSUM
     bin: krew
     files:
-    - from: out/bin/krew-darwin_amd64
+    - from: /krew-darwin_amd64
       to: krew
     selector:
       matchLabels:
@@ -34,7 +34,7 @@ spec:
     sha256: KREW_ZIP_CHECKSUM
     bin: krew
     files:
-    - from: out/bin/krew-linux_amd64
+    - from: /krew-linux_amd64
       to: krew
     selector:
       matchLabels:
@@ -44,7 +44,7 @@ spec:
     sha256: KREW_ZIP_CHECKSUM
     bin: krew
     files:
-    - from: out/bin/krew-linux_arm
+    - from: /krew-linux_arm
       to: krew
     selector:
       matchLabels:
@@ -54,7 +54,7 @@ spec:
     sha256: KREW_ZIP_CHECKSUM
     bin: krew.exe
     files:
-    - from: out/bin/krew-windows_amd64.exe
+    - from: /krew-windows_amd64.exe
       to: krew.exe
     selector:
       matchLabels:
