@@ -18,7 +18,10 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/GoogleContainerTools/krew/pkg/environment"
 	"github.com/GoogleContainerTools/krew/pkg/version"
+	"github.com/golang/glog"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -35,9 +38,19 @@ IndexURI is the URI where the index is updated from.
 InstallPath is the base path for all plugin installations.
 DownloadPath is the path used to store download binaries.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		selfPath, err := os.Executable()
+		if err != nil {
+			glog.Fatalf("failed to get the own executable path")
+		}
+
+		executedVersion, runningAsPlugin, err := environment.GetExecutedVersion(paths.InstallPath(), selfPath, environment.Realpath)
+		if err != nil {
+			return errors.Wrap(err, "failed to find current krew version")
+		}
+
 		conf := [][]string{
-			{"IsPlugin", fmt.Sprintf("%v", krewExecutedVersion != "")},
-			{"ExecutedVersion", krewExecutedVersion},
+			{"IsPlugin", fmt.Sprintf("%v", runningAsPlugin)},
+			{"ExecutedVersion", executedVersion},
 			{"GitTag", version.GitTag()},
 			{"GitCommit", version.GitCommit()},
 			{"IndexURI", IndexURI},

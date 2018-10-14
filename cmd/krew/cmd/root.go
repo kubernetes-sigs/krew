@@ -26,12 +26,10 @@ import (
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"github.com/spf13/viper"
 )
 
 var (
-	paths               environment.Paths // krew paths used by the process
-	krewExecutedVersion string            // resolved version of krew
+	paths environment.Paths // krew paths used by the process
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -39,7 +37,7 @@ var rootCmd = &cobra.Command{
 	Use:   "krew",
 	Short: "krew is the kubectl plugin manager",
 	Long: `krew is the kubectl plugin manager.
-You can invoke krew through kubectl with: "kubectl plugin [krew] option..."`,
+You can invoke krew through kubectl: "kubectl krew [command]..."`,
 	SilenceUsage:  true,
 	SilenceErrors: true,
 }
@@ -57,11 +55,15 @@ func Execute() {
 }
 
 func init() {
-	cobra.OnInitialize(initConfig)
-	// Set glog default to stderr
-	flag.Set("logtostderr", "true")
-	// Required by glog
-	flag.Parse()
+	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
+	flag.CommandLine.Parse([]string{}) // convince pkg/flag we parsed the flags
+	flag.CommandLine.VisitAll(func(f *flag.Flag) {
+		if f.Name != "v" { // hide all glog flags except for -v
+			pflag.Lookup(f.Name).Hidden = true
+		}
+	})
+	flag.Set("logtostderr", "true") // Set glog default to stderr
+
 	paths = environment.MustGetKrewPaths()
 	if err := ensureDirs(paths.BasePath(),
 		paths.DownloadPath(),
@@ -69,34 +71,13 @@ func init() {
 		paths.BinPath()); err != nil {
 		glog.Fatal(err)
 	}
-
-	selfPath, err := os.Executable()
-	if err != nil {
-		glog.Fatalf("failed to get the own executable path")
-	}
-	if krewVersion, ok, err := environment.GetExecutedVersion(paths.InstallPath(), selfPath, environment.Realpath); err != nil {
-		glog.Fatalf("failed to find current krew version, err: %v", err)
-	} else if ok {
-		krewExecutedVersion = krewVersion
-	}
-
-	setGlogFlags(krewExecutedVersion != "")
-}
-
-// setGlogFlags will add glog flags to the CLI. This command can be executed multiple times.
-func setGlogFlags(hidden bool) {
-	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
-	// Add glog flags if not run as a plugin.
-	flag.CommandLine.VisitAll(func(f *flag.Flag) {
-		pflag.Lookup(f.Name).Hidden = hidden
-	})
 }
 
 func checkIndex(_ *cobra.Command, _ []string) error {
 	if ok, err := gitutil.IsGitCloned(paths.IndexPath()); err != nil {
 		return errors.Wrap(err, "failed to check local index git repository")
 	} else if !ok {
-		return errors.New(`krew local plugin index is not initialized (run "krew update")`)
+		return errors.New(`krew local plugin index is not initialized (run "kubectl krew update")`)
 	}
 	return nil
 }
@@ -113,9 +94,4 @@ func ensureDirs(paths ...string) error {
 
 func isTerminal(f *os.File) bool {
 	return isatty.IsTerminal(f.Fd()) || isatty.IsCygwinTerminal(f.Fd())
-}
-
-// initConfig reads in config file and ENV variables if set.
-func initConfig() {
-	viper.AutomaticEnv()
 }
