@@ -41,8 +41,8 @@ For macOS and Linux:
     ```sh
     (
       set -x; cd "$(mktemp -d)" &&
-      curl -fsSLO "https://github.com/GoogleContainerTools/krew/releases/download/v0.2.0/krew.{zip,yaml}" &&
-      unzip krew.zip &&
+      curl -fsSLO "https://github.com/GoogleContainerTools/krew/releases/download/v0.2.0/krew.{tar.gz,yaml}" &&
+      tar zxvf krew.tar.gz &&
       ./out/bin/krew-"$(uname | tr '[:upper:]' '[:lower:]')_amd64" install \
         --manifest=krew.yaml --archive=krew.zip
     )

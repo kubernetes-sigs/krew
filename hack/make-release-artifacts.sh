@@ -25,23 +25,36 @@ if [[ ! -d "${bin_dir}" ]]; then
     exit 1
 fi
 
-krew_archive="krew.zip"
-echo >&2 "Creating ${krew_archive} archive."
-zip -X -q -r --verbose out/krew.zip "${bin_dir}"
+krew_tar_archive="krew.tar.gz"
+krew_zip_archive="krew.zip"
+
+echo >&2 "Creating ${krew_tar_archive} archive."
+tar czvf "out/${krew_tar_archive}" "${bin_dir}"
+echo >&2 "Creating ${krew_zip_archive} archive."
+zip -X -q -r --verbose "out/${krew_zip_archive}" "${bin_dir}"
 
 checksum_cmd="shasum -a 256"
 if hash sha256sum 2>/dev/null; then
   checksum_cmd="sha256sum"
 fi
-zip_checksum="$(eval "${checksum_cmd[@]}" "out/${krew_archive}" | awk '{print $1;}')"
-sumfile="out/${krew_archive}.sha256"
-echo >&2 "${krew_archive} checksum: ${zip_checksum}"
-echo >&2 "${zip_checksum}" > "${sumfile}"
-echo >&2 "Written ${sumfile}."
+
+tar_sumfile="out/${krew_tar_archive}.sha256"
+tar_checksum="$(eval "${checksum_cmd[@]}" "out/${krew_tar_archive}" | awk '{print $1;}')"
+echo >&2 "${krew_tar_archive} checksum: ${tar_checksum}"
+echo "${tar_checksum}" > "${tar_sumfile}"
+echo >&2 "Written ${tar_sumfile}."
+
+zip_sumfile="out/${krew_zip_archive}.sha256"
+zip_checksum="$(eval "${checksum_cmd[@]}" "out/${krew_zip_archive}" | awk '{print $1;}')"
+echo >&2 "${krew_zip_archive} checksum: ${zip_checksum}"
+echo "${zip_checksum}" > "${zip_sumfile}"
+echo >&2 "Written ${zip_sumfile}."
+
 
 # Copy and process krew manifest
 cp ./hack/krew.yaml ./out/krew.yaml
 tag="$(git describe --tags --always HEAD)"
 sed -i "s/KREW_ZIP_CHECKSUM/${zip_checksum}/g" ./out/krew.yaml
+sed -i "s/KREW_TAR_CHECKSUM/${tar_checksum}/g" ./out/krew.yaml
 sed -i "s/KREW_TAG/${tag}/g" ./out/krew.yaml
 echo >&2 "Written krew.yaml."
