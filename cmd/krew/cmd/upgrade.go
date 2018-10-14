@@ -72,7 +72,7 @@ kubectl plugin upgrade foo bar"`,
 		}
 		return nil
 	},
-	PreRunE: ensureUpdated,
+	PreRunE: ensureIndexUpdated,
 }
 
 func init() {

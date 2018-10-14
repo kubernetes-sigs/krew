@@ -127,7 +127,7 @@ All plugins will be downloaded and made available to: "kubectl plugin <name>"`,
 		},
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			if *manifest == "" {
-				return ensureUpdated(cmd, args)
+				return ensureIndexUpdated(cmd, args)
 			}
 			glog.V(4).Infof("--manifest specified, not ensuring plugin index")
 			return nil
