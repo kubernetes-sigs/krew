@@ -27,7 +27,7 @@ import (
 
 // Upgrade will reinstall and delete the old plugin. The operation tries
 // to not get the plugin dir in a bad state if it fails during the process.
-func Upgrade(p environment.Paths, plugin index.Plugin, currentKrewVersion string) error {
+func Upgrade(p environment.Paths, plugin index.Plugin) error {
 	oldVersion, ok, err := findInstalledPluginVersion(p.InstallPath(), p.BinPath(), plugin.Name)
 	if err != nil {
 		return errors.Wrap(err, "could not detect installed plugin oldVersion")
@@ -63,17 +63,30 @@ func Upgrade(p environment.Paths, plugin index.Plugin, currentKrewVersion string
 
 	// Clean old installations
 	glog.V(4).Infof("Starting old version cleanup")
-	return removePluginVersionFromFS(p, plugin, newVersion, oldVersion, currentKrewVersion)
+	return removePluginVersionFromFS(p, plugin, newVersion, oldVersion)
 }
 
-// removePluginVersionFromFS will remove a plugin directly if it not krew. Krew on Windows needs special care
-// because active directories can't be deleted. This method will unlink old krew versions and during next run clean
+// removePluginVersionFromFS will remove a plugin directly if it not krew.
+
+// Krew on Windows needs special care because active directories can't be
+// deleted. This method will unlink old krew versions and during next run clean
 // the directory.
-func removePluginVersionFromFS(p environment.Paths, plugin index.Plugin, newVersion, oldVersion, currentKrewVersion string) error {
+func removePluginVersionFromFS(p environment.Paths, plugin index.Plugin, newVersion, oldVersion string) error {
 	// Cleanup if we haven't updated krew during this execution.
 	if plugin.Name == krewPluginName {
-		return handleKrewRemove(p, plugin, newVersion, oldVersion, currentKrewVersion)
+		glog.V(1).Infof("Handling removal for older version of krew")
+		execPath, err := os.Executable()
+		if err != nil {
+			return errors.Wrap(err, "could not get krew's own executable path")
+		}
+		executedKrewVersion, _, err := environment.GetExecutedVersion(p.InstallPath(), execPath, environment.Realpath)
+		if err != nil {
+			return errors.Wrap(err, "failed to find current krew version")
+		}
+		glog.V(1).Infof("Detected running krew version=%s", executedKrewVersion)
+		return handleKrewRemove(p, plugin, newVersion, oldVersion, executedKrewVersion)
 	}
+
 	glog.V(1).Infof("Remove old plugin installation under %q", p.PluginVersionInstallPath(plugin.Name, oldVersion))
 	return os.RemoveAll(p.PluginVersionInstallPath(plugin.Name, oldVersion))
 }
