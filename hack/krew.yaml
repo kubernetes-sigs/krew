@@ -20,8 +20,8 @@ spec:
   version: "KREW_TAG"
   shortDescription: Package manager for kubectl plugins.
   platforms:
-  - uri: https://github.com/GoogleContainerTools/krew/releases/download/KREW_TAG/krew.zip
-    sha256: KREW_ZIP_CHECKSUM
+  - uri: https://github.com/GoogleContainerTools/krew/releases/download/KREW_TAG/krew.tar.gz
+    sha256: KREW_TAR_CHECKSUM
     bin: krew
     files:
     - from: out/bin/krew-darwin_amd64
@@ -30,8 +30,8 @@ spec:
       matchLabels:
         os: darwin
         arch: amd64
-  - uri: https://github.com/GoogleContainerTools/krew/releases/download/KREW_TAG/krew.zip
-    sha256: KREW_ZIP_CHECKSUM
+  - uri: https://github.com/GoogleContainerTools/krew/releases/download/KREW_TAG/krew.tar.gz
+    sha256: KREW_TAR_CHECKSUM
     bin: krew
     files:
     - from: out/bin/krew-linux_amd64
@@ -40,8 +40,8 @@ spec:
       matchLabels:
         os: linux
         arch: amd64
-  - uri: https://github.com/GoogleContainerTools/krew/releases/download/KREW_TAG/krew.zip
-    sha256: KREW_ZIP_CHECKSUM
+  - uri: https://github.com/GoogleContainerTools/krew/releases/download/KREW_TAG/krew.tar.gz
+    sha256: KREW_TAR_CHECKSUM
     bin: krew
     files:
     - from: out/bin/krew-linux_arm
