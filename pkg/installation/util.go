@@ -30,11 +30,13 @@ import (
 	"github.com/GoogleContainerTools/krew/pkg/pathutil"
 )
 
-// GetMatchingPlatform TODO(lbb)
-func GetMatchingPlatform(i index.Plugin) (index.Platform, bool, error) {
+// GetMatchingPlatform finds the platform spec in the specified plugin that
+// matches the OS/arch of the current machine (can be overridden via KREW_OS
+// and/or KREW_ARCH).
+func GetMatchingPlatform(p index.Plugin) (index.Platform, bool, error) {
 	os, arch := osArch()
 	glog.V(4).Infof("Using os=%s arch=%s", os, arch)
-	return matchPlatformToSystemEnvs(i, os, arch)
+	return matchPlatformToSystemEnvs(p, os, arch)
 }
 
 // osArch returns the OS/arch combination to be used on the current system. It
@@ -51,13 +53,13 @@ func osArch() (string, string) {
 	return goos, goarch
 }
 
-func matchPlatformToSystemEnvs(i index.Plugin, os, arch string) (index.Platform, bool, error) {
+func matchPlatformToSystemEnvs(p index.Plugin, os, arch string) (index.Platform, bool, error) {
 	envLabels := labels.Set{
 		"os":   os,
 		"arch": arch,
 	}
 	glog.V(2).Infof("Matching platform for labels(%v)", envLabels)
-	for i, platform := range i.Spec.Platforms {
+	for i, platform := range p.Spec.Platforms {
 		sel, err := metav1.LabelSelectorAsSelector(platform.Selector)
 		if err != nil {
 			return index.Platform{}, false, errors.Wrap(err, "failed to compile label selector")
@@ -109,7 +111,7 @@ func getPluginVersion(p index.Platform, forceHEAD bool) (version, uri string, er
 		return headVersion, p.Head, nil
 	}
 	if forceHEAD && p.Head == "" {
-		return "", "", errors.New("can't force HEAD, with no HEAD specified")
+		return "", "", errors.New("can't force HEAD, plugin manifest does not have a \"head\"")
 	}
 	return strings.ToLower(p.Sha256), p.URI, nil
 }
