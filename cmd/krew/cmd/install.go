@@ -35,9 +35,27 @@ func init() {
 	// installCmd represents the install command
 	installCmd := &cobra.Command{
 		Use:   "install",
-		Short: "Install a new plugin",
-		Long: `Install a new plugin.
-All plugins will be downloaded and made available to: "kubectl plugin <name>"`,
+		Short: "Install kubectl plugins",
+		Long: `Install a plugin.
+
+This command can be used to install one or multiple plugins.
+
+Examples:
+  To install one or multiple plugins, run:
+    kubectl krew install NAME [NAME...]
+
+  To install plugins from a file, run:
+    kubectl krew install < file.txt
+
+  (For developers) To provide a custom plugin manifest, use the --manifest
+  argument Similarly, instead of downloading files from a URL, you can specify a
+  local --archive file:
+	kubectl krew install --manifest=FILE [--archive=FILE]
+
+Remarks:
+  If a plugin is already installed, it will be skipped.
+  Failure to install a plugin will not stop the installation of other plugins.
+`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var pluginNames = make([]string, len(args))
 			copy(pluginNames, args)

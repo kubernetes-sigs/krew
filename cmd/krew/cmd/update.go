@@ -31,10 +31,15 @@ const IndexURI = "https://github.com/GoogleContainerTools/krew-index.git"
 // updateCmd represents the update command
 var updateCmd = &cobra.Command{
 	Use:   "update",
-	Short: "Update local plugin index",
-	Long: `Update local plugin index.
-Fetch the newest version of Krew and all formulae from GitHub using git(1) and
-perform any necessary migrations.`,
+	Short: "Update the local copy of the plugin index",
+	Long: `Update the local copy of the plugin index.
+
+This command synchronizes the local copy of the plugin manifests with the
+plugin index from the internet.
+
+Remarks:
+  You don't need to run this command: Running "krew update" or "krew upgrade"
+  will silently run this command.`,
 	RunE: ensureIndexUpdated,
 }
 
