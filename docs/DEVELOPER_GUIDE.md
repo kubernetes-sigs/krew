@@ -1,4 +1,4 @@
-    # Developer Guide
+# Developer Guide
 
 This guide is intended for plugin developers. If you are not developing kubectl
 plugins, read the [User Guide](./USER_GUIDE.md) to learn how to use krew.
