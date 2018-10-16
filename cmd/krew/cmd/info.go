@@ -75,7 +75,7 @@ func printPluginInfo(out io.Writer, plugin index.Plugin) {
 		fmt.Fprintf(out, "VERSION: %s\n", plugin.Spec.Version)
 	}
 	if plugin.Spec.Caveats != "" {
-		fmt.Fprintf(out, prepCaveats(plugin.Spec.Caveats))
+		fmt.Fprintln(out, prepCaveats(plugin.Spec.Caveats))
 	}
 }
 
@@ -93,7 +93,7 @@ func prepCaveats(s string) string {
 	out := "CAVEATS:\n\\\n"
 	s = strings.TrimRightFunc(s, unicode.IsSpace)
 	out += regexp.MustCompile("(?m)^").ReplaceAllString(s, " |  ")
-	out += "\n/\n"
+	out += "\n/"
 	return out
 }
 
