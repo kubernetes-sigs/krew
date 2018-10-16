@@ -28,12 +28,9 @@ Read the [User Guide](./docs/USER_GUIDE.md) for detailed documentation.
 
 ### Installation
 
-> :warning: **Warning** :warning: `krew` is not yet compatible with kubectl 1.12
-> ([#33](https://github.com/GoogleContainerTools/krew/issues/33)). If you want
-> to try out krew, use [v0.1](https://github.com/GoogleContainerTools/krew/tree/v0.1.1#installation) with
-> kubectl v1.11.x or older.
+> :warning: **Warning:** krew is only compatible with kubectl v1.12 or higher.
 
-For macOS and Linux:
+**macOS and Linux:**
 
 1. Make sure that `git` is installed.
 2. Run this command in your terminal to download and install `krew`:
@@ -56,7 +53,7 @@ For macOS and Linux:
 
    and restart your shell.
 
-Windows:
+**Windows:**
 
 1. Make sure `git` is installed on your system.
 1. Download `krew.zip` and `krew.yaml` from the [Releases][releases] page.
@@ -75,6 +72,11 @@ Windows:
 ### Verifying installation
 
 Run `kubectl plugin list` command to see installed plugins. This command should show `kubectl-krew` in the results. You can now use `kubectl krew` command.
+
+### Upgrading krew
+
+Since krew itself is installed as a "kubectl plugin" managed by krew, it can be
+upgraded by running the `krew upgrade` command.
 
 ### Documentation
 
