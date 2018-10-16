@@ -134,7 +134,7 @@ Remarks:
 					continue
 				}
 				if plugin.Spec.Caveats != "" {
-					fmt.Fprintf(os.Stderr, prepCaveats(plugin.Spec.Caveats))
+					fmt.Fprintln(os.Stderr, prepCaveats(plugin.Spec.Caveats))
 				}
 				fmt.Fprintf(os.Stderr, "Installed plugin: %s\n", plugin.Name)
 			}
