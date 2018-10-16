@@ -18,6 +18,7 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', 'builder', '-f', 'hack/Dockerfile.build', '.']
   - name: 'builder'
+    env: ['TAG_NAME=${TAG_NAME}', 'SHORT_SHA=${SHORT_SHA}']
   - name: 'gcr.io/cloud-builders/gsutil'
     args: ['-m', 'cp', '-r', 'out/*', 'gs://krew/$TAG_NAME/']
   - name: 'gcr.io/cloud-builders/gsutil'
