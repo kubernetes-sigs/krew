@@ -6,9 +6,8 @@ plugins, read the [User Guide](./USER_GUIDE.md) to learn how to use krew.
 This guide explains how to package, test, run plugins locally and make them
 available on the krew index.
 
-<!-- TOC -->
+<!-- TOC depthFrom:2 -->
 
-- [Developer Guide](#developer-guide)
 - [Developing a Plugin](#developing-a-plugin)
     - [Packaging plugins for krew](#packaging-plugins-for-krew)
     - [Writing a plugin manifest](#writing-a-plugin-manifest)
@@ -23,7 +22,7 @@ available on the krew index.
 
 <!-- /TOC -->
 
-# Developing a Plugin
+## Developing a Plugin
 
 Before creating a plugin, read the [Kubernetes Plugins documentation][plugins].
 
@@ -51,8 +50,7 @@ should be able to call it like:
 
     kubectl foo
 
-
-## Packaging plugins for krew
+### Packaging plugins for krew
 
 To make a plugin installable via krew, you need to:
 
@@ -67,7 +65,7 @@ is recommended.
 It is also possible to get the latest release for a GitHub repository from the
 URL: `https://github.com/<user>/<project>/archive/master.zip`.
 
-## Writing a plugin manifest
+### Writing a plugin manifest
 
 Each krew plugin has a "plugin manifest" file that lives in the [krew index
 repository][krew].
@@ -108,7 +106,7 @@ spec:
     description and example usages.
 ```
 
-### Specifying platform-specific instructions
+#### Specifying platform-specific instructions
 
 krew makes it possible to install the same plugin on different operating systems
 (like `windows`, `darwin` (macOS), and `linux`) and different architectures
@@ -150,7 +148,7 @@ architectures using the keys `os` and `arch` respectively.
 The possible values for `os` and `arch`  come from the Go runtime. Run
 `go tool dist list` to see all possible platforms and architectures.
 
-### Specifying files to install
+#### Specifying files to install
 
 Each operating system may require a different set of files from the archive to
 be installed. You can use the `files` field in the plugin manifest to specify
@@ -182,12 +180,13 @@ this:
 ```
 
 The resulting installation directory would up just with:
-```
+
+```text
 .
 └── krew-foo-windows.exe
 ```
 
-### Specifying plugin executable
+#### Specifying plugin executable
 
 Each `platform` field requires a path to the plugin executable in the plugin's
 installation directory.
@@ -215,7 +214,7 @@ plugin name.
 > For example, if your  is named `view-logs` and your plugin binary is named
 > `run.sh`, krew will create a symbolic named `kubectl-view_logs` automatically.
 
-### Specifying a plugin download URL
+#### Specifying a plugin download URL
 
 krew plugins must be packaged as `.zip` or `.tar.gz` archives and should be made
 available to download publicly.
@@ -233,7 +232,6 @@ Downloading from a versioned URL requires fields:
 - `uri`: URL to the archive file (`.zip` or `.tar.gz`)
 - `sha256`: sha256 sum of the archive file
 
-
 Specifying `head` field makes it possible to install a file without verifying
 its checksum. If you are downloading from `master` branch of a GitHub
 repository, this can be useful. Users can install a plugin using the `head`
@@ -241,8 +239,8 @@ with:
 
     kubectl krew install --HEAD <PLUGIN>
 
-It is possible to specify only the `head`, as well as alongside `uri` and `sha256`. In
-this case, the `uri` and `sha256` fields will be used by default:
+It is possible to specify only the `head`, as well as alongside `uri` and
+`sha256`. In this case, the `uri` and `sha256` fields will be used by default:
 
 ```yaml
   platforms:
@@ -252,9 +250,10 @@ this case, the `uri` and `sha256` fields will be used by default:
     ...
 ```
 
-# Installing Plugins Locally
+## Installing Plugins Locally
 
 After you have:
+
 - written your `<PLUGIN>.yaml`
 - archived your plugin into a `.zip` or `.tar.gz` file
 
@@ -286,9 +285,9 @@ if you're on a Linux machine, you can test Windows installation with:
 
 After you have tested your plugin, remove it with `kubectl krew remove foo`.
 
-# Publishing Plugins
+## Publishing Plugins
 
-## Submitting a plugin to krew
+### Submitting a plugin to krew
 
 After you have tested that the plugin can be installed and works you should
 create a pull request to the [Krew Index][index] with your `<PLUGIN>.yaml`
@@ -303,7 +302,7 @@ available for all users.
 Please make sure to include dependencies of your plugin and extra configuration
 needed to run the plugin in the `caveats:` field.
 
-## Updating existing plugins
+### Updating existing plugins
 
 When you have a newer version of your plugin, create a new pull request that
 updates `uri` and `sha256` fields of the plugin manifest file.

@@ -1,7 +1,7 @@
 # Plugin Naming Style Guide
 
 This document explain the best practices and recommendations for naming kubectl
-plugins. These guidelines are used for reviewing the plugins submitted to 
+plugins. These guidelines are used for reviewing the plugins submitted to
 [krew-index](https://github.com/GoogleContainerTools/krew-index) repository.
 
 #### _Punctuation_
