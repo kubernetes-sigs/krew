@@ -19,6 +19,20 @@ metadata:
 spec:
   version: "KREW_TAG"
   shortDescription: Package manager for kubectl plugins.
+  caveats: |
+    krew is now installed! To start using kubectl plugins, you need to add
+    krew's installation directory to your PATH:
+
+      * macOS/Linux:
+        - Add the following to your ~/.bashrc or ~/.zshrc:
+            export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
+        - Restart your shell.
+
+      * Windows: Add %USERPROFILE%\.krew\bin to your PATH environment variable
+
+    Run "kubectl krew" to list krew commands and get help.
+    You can find documentation at https://github.com/GoogleContainerTools/krew.
+
   platforms:
   - uri: https://github.com/GoogleContainerTools/krew/releases/download/KREW_TAG/krew.tar.gz
     sha256: KREW_TAR_CHECKSUM
