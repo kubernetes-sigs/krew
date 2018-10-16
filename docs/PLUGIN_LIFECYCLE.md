@@ -1,5 +1,9 @@
 # Plugin Lifecycle
 
+(This guide is intended for developers of krew.)
+
+:warning: The instructions below may not be up to date for krew v0.2 and higher.
+
 ## Installation
 
 The plugins will be downloaded and checked against its sha256 to verify the

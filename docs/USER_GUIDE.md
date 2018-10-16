@@ -2,6 +2,18 @@
 
 This guide shows how to use `krew` as a user after installing it.
 
+<!-- TOC depthFrom:2 -->
+
+- [Discovering Plugins](#discovering-plugins)
+- [Installing Plugins](#installing-plugins)
+    - [Installing plugins with --HEAD](#installing-plugins-with---head)
+- [Listing Installed Plugins](#listing-installed-plugins)
+- [Upgrading Plugins](#upgrading-plugins)
+- [Uninstalling Plugins](#uninstalling-plugins)
+- [Uninstalling Krew](#uninstalling-krew)
+
+<!-- /TOC -->
+
 ## Discovering Plugins
 
 To find plugins, run the `kubectl krew search` command. This command lists all
@@ -64,8 +76,8 @@ file.
 
 After installing a plugin, you can use it like `kubectl <PLUGIN>`:
 
-```
-$ kubectl ca-cert
+```sh
+kubectl ca-cert
 ```
 
 ### Installing plugins with --HEAD
@@ -92,7 +104,7 @@ To list all plugins install via `krew`, run:
 
     kubectl krew list
 
-## Plugin Lifecycle
+## Upgrading Plugins
 
 Plugins you are using might have newer versions available. To upgrade a single
 plugin, run:
@@ -110,13 +122,11 @@ command may also upgrade your `krew` version.
 **Note:** Plugins installed via `--HEAD` are always upgraded. This process
 allows you to upgrade to the latest commit available in the source repository.
 
-
 ## Uninstalling Plugins
 
 When you don't need a plugin anymore you can uninstall it with:
 
     kubectl krew remove <PLUGIN>
-
 
 ## Uninstalling Krew
 
