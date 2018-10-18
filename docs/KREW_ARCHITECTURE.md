@@ -1,19 +1,26 @@
 # Architecture
 
-- [Architecture](#architecture)
-  - [Krew Plugins location](#krew-plugins-location)
+(This guide is intended for developers of krew.)
+
+:warning: The instructions below are not up to date for krew v0.2+.
+
+<!-- TOC depthFrom:2 -->
+
+- [Krew Plugins location](#krew-plugins-location)
     - [Directory structure](#directory-structure)
     - [Krew Index](#krew-index)
-      - [Index Structure](#index-structure)
+        - [Index Structure](#index-structure)
     - [Plugin Manifest File Format](#plugin-manifest-file-format)
     - [Update Index Locally](#update-index-locally)
     - [Plugin Package Format](#plugin-package-format)
-  - [Installation Methods](#installation-methods)
+- [Installation Methods](#installation-methods)
     - [Why krew should not rely on OS-Package managers](#why-krew-should-not-rely-on-os-package-managers)
-  - [Krew Itself as a Plugin](#krew-itself-as-a-plugin)
+- [Krew Itself as a Plugin](#krew-itself-as-a-plugin)
     - [Kubectl Plugin Descriptor (plugin.yaml) File Generation](#kubectl-plugin-descriptor-pluginyaml-file-generation)
     - [Single Binary](#single-binary)
-  - [Note on Potential Changes to Kubectl Plugin System](#note-on-potential-changes-to-kubectl-plugin-system)
+- [Note on Potential Changes to Kubectl Plugin System](#note-on-potential-changes-to-kubectl-plugin-system)
+
+<!-- /TOC -->
 
 ![Krew Overview](src/krew_general.svg)
 

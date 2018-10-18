@@ -1,12 +1,12 @@
 # krew
 
-krew is the kubectl plugin manager.
+krew is the package manager for kubectl plugins.
 
 ## What is krew?
 
-krew is a tool that makes it easy to install
-[kubectl plugins](https://kubernetes.io/docs/tasks/extend-kubectl/kubectl-plugins/).
-krew helps you discover plugins, install and manage them on your machine. It is
+krew is a tool that makes it easy to use [kubectl
+plugins](https://kubernetes.io/docs/tasks/extend-kubectl/kubectl-plugins/). krew
+helps you discover plugins, install and manage them on your machine. It is
 similar to tools like apt, dnf or [brew](http://brew.sh).
 
 - **For kubectl users:** krew helps you find, install and manage kubectl plugins
@@ -64,38 +64,42 @@ Read the [User Guide](./docs/USER_GUIDE.md) for detailed documentation.
 
        .\krew-windows_amd64.exe install --source=krew.yaml --archive=krew.zip
 
-3. Add `%USERPROFILE%\.krew\bin` to your `PATH` environment variable
+1. Add `%USERPROFILE%\.krew\bin` to your `PATH` environment variable
    ([how?](https://java.com/en/download/help/path.xml))
 
 [releases]: https://github.com/GoogleContainerTools/krew/releases
 
 ### Verifying installation
 
-Run `kubectl plugin list` command to see installed plugins. This command should show `kubectl-krew` in the results. You can now use `kubectl krew` command.
+Run `kubectl plugin list` command to see installed plugins. This command should
+show `kubectl-krew` in the results. You can now use `kubectl krew` command.
 
 ### Upgrading krew
 
 Since krew itself is installed as a "kubectl plugin" managed by krew, it can be
 upgraded by running the `krew upgrade` command.
 
-### Documentation
+## Documentation
 
-Read the complete [User Guide](./docs/USER_GUIDE.md) for more details.
+- **Users:**
+  - Read the [**User Guide**](./docs/USER_GUIDE.md) to learn how to use krew.
+- **Plugin Developers:**
+  - [Developer Guide](./docs/DEVELOPER_GUIDE.md): how to package and publish a
+    plugin for krew.
+  - [Naming Guide](./docs/NAMING_GUIDE.md): how to choose a good name for your
+    plugin
+- **Krew Developers:**
+  - Building Krew (not written yet)
+  - [Releasing Krew](./docs/RELEASING_KREW.md): how to release new version of
+    krew.
+  - [Plugin Lifecycle](./docs/PLUGIN_LIFECYCLE.md): how krew installs/upgrades
+    plugins and itself.
+  - [Krew Architecture](./docs/KREW_ARCHITECTURE.md): architectural decisions
+    behind designing krew.
 
-- [Documentation](./docs/)
-- [Architecture](./docs/KREW_ARCHITECTURE.md)
-- [Contributing](./CONTRIBUTING.md)
+Visit [`./docs`](./docs) for all documentation.
 
-## Publishing Plugins
-
-As a kubectl plugin developer, you need to:
-
-1. make your plugin archive (.zip or .tar.gz) available to download
-2. write a plugin manifest (.yaml) file and submit it to the [krew-index][index]
-
-Read the [Plugin Developer Guide](./docs/DEVELOPER_GUIDE.md) for details.
-
-# Roadmap
+## Roadmap
 
 - **Support Multiple Index Repositories:** Tracked under
   [#23](https://github.com/GoogleContainerTools/krew/issues/23)
@@ -105,7 +109,7 @@ Read the [Plugin Developer Guide](./docs/DEVELOPER_GUIDE.md) for details.
   covers our intentions. Accepting the KEP means that kubectl will implement
   krew commands natively, and support the plugin format.
 
-# LICENSE
+## LICENSE
 
 The code is submitted under the Apache 2.0 License described in the
 [LICENSE](./LICENSE) file.
