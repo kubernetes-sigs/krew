@@ -31,6 +31,7 @@ download_assets=(
     krew.tar.gz.sha256
     krew.zip
     krew.zip.sha256
+    krew.yaml
 )
 
 echo "Installation"
