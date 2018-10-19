@@ -121,6 +121,11 @@ func extractTARGZ(targetDir string, in io.Reader) error {
 				return errors.Wrap(err, "failed to create directory from tar")
 			}
 		case tar.TypeReg:
+			dir := filepath.Dir(path)
+			glog.V(4).Infof("tar: ensuring parent dirs exist for regular file, dir=%s", dir)
+			if err := os.MkdirAll(dir, 0755); err != nil {
+				return errors.Wrap(err, "failed to create directory for tar")
+			}
 			f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY, os.FileMode(hdr.Mode))
 			if err != nil {
 				return errors.Wrapf(err, "failed to create file %q", path)
