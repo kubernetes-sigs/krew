@@ -79,14 +79,20 @@ func Test_extractTARGZ(t *testing.T) {
 		files []string
 	}{
 		{
-			in: "test-with-directory.tar.gz",
+			in:    "test-without-directory.tar.gz",
+			files: []string{"/foo"},
+		},
+		{
+			in: "test-with-nesting-with-directory-entries.tar.gz",
 			files: []string{
 				"/test/",
 				"/test/foo"},
 		},
 		{
-			in:    "test-without-directory.tar.gz",
-			files: []string{"/foo"},
+			in: "test-with-nesting-without-directory-entries.tar.gz",
+			files: []string{
+				"/test/",
+				"/test/foo"},
 		},
 	}
 
