@@ -77,7 +77,7 @@ show `kubectl-krew` in the results. You can now use `kubectl krew` command.
 ### Upgrading krew
 
 Since krew itself is installed as a "kubectl plugin" managed by krew, it can be
-upgraded by running the `krew upgrade` command.
+upgraded like a plugin by running the `kubectl krew upgrade` command.
 
 ## Documentation
 
