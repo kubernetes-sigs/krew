@@ -52,36 +52,42 @@ should be able to call it like:
 
 ### Packaging plugins for krew
 
-To make a plugin installable via krew, you need to:
+To package a plugin via krew, you need to:
 
-1. Provide a **publicly downloadable** archive file (`.zip` or `.tar.gz`)
-2. Write a plugin manifest file (`<plugin>.yaml`) and make it available on
-   [krew index][index]
+1. Develop a plugin and archive it into a `.zip` or `.tar.gz`.
+2. Write a [plugin manifest file](#writing-a-plugin-manifest).
+3. Test installation locally with the archive and the manifest file.
+
+To make a plugin available to everyone via krew, you need to:
+
+1. Make the archive file (`.zip` or `.tar.gz`) **publicly downloadable** on a
+   URL (you can host it youself or use GitHub releases feature).
+2. Submit the plugin manifest file to the [krew index][index] repository.
 
 Plugin packages need to be available to download from the public Internet.
 A service like
 [GitHub Releases](https://help.github.com/articles/creating-releases/)
 is recommended.
-It is also possible to get the latest release for a GitHub repository from the
-URL: `https://github.com/<user>/<project>/archive/master.zip`.
 
 ### Writing a plugin manifest
 
 Each krew plugin has a "plugin manifest" file that lives in the [krew index
-repository][krew].
+repository][index].
 
 This file describes which files krew must copy out of your plugin archive and
 how to run your plugin. It is also used to determine if an upgrade to your
 plugin is available and how to install it.
 
-For the plugin named `foo` that runs only on Linux and macOS, the plugin
-manifest looks like this.
+For a plugin named `foo`, the plugin manifest file should be named `foo.yaml`.
+An example manifest for this plugin that runs only on Linux and macOS looks
+like this (see [krew index](https://github.com/GoogleContainerTools/krew-index/tree/master/plugins) for
+all plugin manifests):
 
 ```yaml
 apiVersion: krew.googlecontainertools.github.com/v1alpha2
 kind: Plugin
 metadata:
-  name: foo               # plugin name must match your manifest file name
+  name: foo               # plugin name must match your manifest file name (e.g. foo.yaml)
 spec:
   version: "v0.0.1"       # optional, only for documentation purposes
   platforms:
@@ -89,12 +95,14 @@ spec:
   - selector:             # a regular Kubernetes selector
       matchExpressions:
       - {key: os, operator: In, values: [darwin, linux]}
+    # url for downloading the package archive:
     url: https://github.com/example/foo/releases/v1.0.zip
+    # sha256sum of the file downloaded above:
     sha256: "208fde0b9f42ef71f79864b1ce594a70832c47dc5426e10ca73bf02e54d499d0"
-    files:                # copy the used files out of the zip file
-    - from: "unix/*"
-      to: "."
-    bin: "./kubectl-foo"  # path to the plugin executable after extracting files
+    files:                     # copy the used files out of the zip archive
+    - from: "/foo-*/unix/*.sh" # path to the files extracted from archive
+      to: "."               # '.' refers to the root of plugin install directory
+    bin: "./kubectl-foo"  # path to the plugin executable after copying files above
   shortDescription: Prints the environment variables.
   # (optional) use caveats field to show post-installation recommendations
   caveats: |
