@@ -20,8 +20,8 @@ krew is easy to use:
 kubectl krew search               # show all plugins
 kubectl krew install view-secret  # install a plugin named "view-secret"
 kubectl view-secret               # use the plugin
-kubectl upgrade                   # upgrade installed plugins
-kubectl remove view-secret        # uninstall a plugin
+kubectl krew upgrade              # upgrade installed plugins
+kubectl krew remove view-secret   # uninstall a plugin
 ```
 
 Read the [User Guide](./docs/USER_GUIDE.md) for detailed documentation.
