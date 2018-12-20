@@ -268,7 +268,7 @@ After you have:
 you can now test whether your plugin installs correctly on krew by running:
 
 ```bash
-kubectl krew install --manifest=foo.yaml --archive=foo.yaml
+kubectl krew install --manifest=foo.yaml --archive=foo.tar.gz
 ```
 
 - `--manifest` flag specifies a custom manifest rather than picking it up from
