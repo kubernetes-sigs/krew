@@ -91,7 +91,7 @@ func Install(p environment.Paths, plugin index.Plugin, forceHEAD bool, forceDown
 func install(plugin, version, uri, bin string, p environment.Paths, fos []index.FileOperation, forceDownloadFile string) error {
 	dst, err := downloadAndMove(version, uri, fos, filepath.Join(p.DownloadPath(), plugin), p.PluginInstallPath(plugin), forceDownloadFile)
 	if err != nil {
-		return errors.Wrap(err, "failed to dowload and move during installation")
+		return errors.Wrap(err, "failed to download and move during installation")
 	}
 
 	subPathAbs, err := filepath.Abs(dst)
