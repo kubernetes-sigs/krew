@@ -4,11 +4,13 @@
 
 ### Build/Test the release locally
 
-1. Build krew reelase assets locally:
+1. Install Go 1.11+ and [setup modules](https://github.com/golang/go/wiki/Modules#how-to-use-modules)
+
+2. Build krew reelase assets locally:
 
        hack/make-all.sh
 
-2. Try krew installation on each platform:
+3. Try krew installation on each platform:
 
     ```sh
     krew=out/bin/krew-darwin_amd64 # assuming macOS
