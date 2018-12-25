@@ -21,10 +21,10 @@ import (
 	"compress/gzip"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path"
 	"path/filepath"
-	"strings"
 
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
@@ -89,8 +89,9 @@ func extractZIP(targetDir string, read io.ReaderAt, size int64) error {
 }
 
 // extractTARGZ extracts a gzipped tar file into the target directory.
-func extractTARGZ(targetDir string, in io.Reader) error {
+func extractTARGZ(targetDir string, at io.ReaderAt, size int64) error {
 	glog.V(4).Infof("tar: extracting to %q", targetDir)
+	in := io.NewSectionReader(at, 0, size)
 
 	gzr, err := gzip.NewReader(in)
 	if err != nil {
@@ -162,20 +163,44 @@ func GetInsecure(uri, dir string, fetcher Fetcher) error {
 	return extractArchive(name, dir, body, size)
 }
 
-func extractArchive(filename, dst string, r io.ReaderAt, size int64) error {
+func extractContentType(at io.ReaderAt) (string, error) {
+	buf := make([]byte, 512)
+	n, err := at.ReadAt(buf, 0)
+	if err != nil && err != io.EOF {
+		return "", errors.Wrap(err, "failed to read first 512 bytes")
+	}
+	if n < 512 {
+		glog.V(5).Infof("Did only read %d of 512 bytes to determine the file type", n)
+	}
+	return http.DetectContentType(buf[:n]), nil
+}
+
+type extractor func(targetDir string, read io.ReaderAt, size int64) error
+
+var defaultExtractors = map[string]extractor{
+	"application/zip":      extractZIP,
+	"application/tar+gzip": extractTARGZ,
+	"application/x-gzip":   extractTARGZ,
+}
+
+func extractArchive(filename, dst string, at io.ReaderAt, size int64) error {
+	// TODO: Keep the filename for later direct download
+
 	// TODO(ahmetb) This package is not architected well, this method should not
 	// be receiving this many args. Primary problem is at GetInsecure and
 	// GetWithSha256 methods that embed extraction in them, which is orthogonal.
 
 	// TODO(ahmetb) write tests with this by mocking extractZIP function into a
 	// zipExtractor variable and check its execution.
-
-	if strings.HasSuffix(filename, ".zip") {
-		glog.V(4).Infof("detected .zip file")
-		return extractZIP(dst, r, size)
-	} else if strings.HasSuffix(filename, ".tar.gz") {
-		glog.V(4).Infof("detected .tar.gz file")
-		return extractTARGZ(dst, io.NewSectionReader(r, 0, size))
+	t, err := extractContentType(at)
+	if err != nil {
+		return errors.Wrap(err, "failed to determine content type")
 	}
-	return errors.Errorf("cannot infer a supported archive type from filename in the url (%q)", filename)
+	glog.V(4).Infof("detected %q file type", t)
+	exf, ok := defaultExtractors[t]
+	if !ok {
+		return errors.Errorf("cannot infer a supported archive type mime: (%s)", t)
+	}
+	return errors.Wrap(exf(dst, at, size), "failed to extract file")
+
 }

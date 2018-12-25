@@ -15,12 +15,15 @@
 package download
 
 import (
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/pkg/errors"
 )
 
 func testdataPath() string {
@@ -109,8 +112,12 @@ func Test_extractTARGZ(t *testing.T) {
 			t.Fatalf("failed to open %q. error=%v", tt.in, err)
 		}
 		defer tf.Close()
-
-		if err := extractTARGZ(tarDst, tf); err != nil {
+		st, err := tf.Stat()
+		if err != nil {
+			t.Fatal(err)
+			return
+		}
+		if err := extractTARGZ(tarDst, tf, st.Size()); err != nil {
 			t.Fatalf("failed to extract %q. error=%v", tt.in, err)
 		}
 
@@ -139,4 +146,133 @@ func collectFiles(t *testing.T, scanPath string) []string {
 		t.Fatalf("failed to scan extracted dir %v. error=%v", scanPath, err)
 	}
 	return outFiles
+}
+
+func Test_extractContentType(t *testing.T) {
+	type args struct {
+		file string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "type zip",
+			args: args{
+				file: filepath.Join(testdataPath(), "test-with-directory.zip"),
+			},
+			want:    "application/zip",
+			wantErr: false,
+		},
+		{
+			name: "type tar.gz",
+			args: args{
+				file: filepath.Join(testdataPath(), "test-with-nesting-with-directory-entries.tar.gz"),
+			},
+			want:    "application/x-gzip",
+			wantErr: false,
+		},
+		{
+			name: "type elf-bin",
+			args: args{
+				file: filepath.Join(testdataPath(), "elf-file"),
+			},
+			want:    "application/octet-stream",
+			wantErr: false,
+		},
+		{
+			name: "type null",
+			args: args{
+				file: filepath.Join(testdataPath(), "null-file"),
+			},
+			want:    "text/plain; charset=utf-8",
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fd, err := os.Open(tt.args.file)
+			if err != nil {
+				t.Errorf("failed to read file %s, err: %v", tt.args.file, err)
+				return
+			}
+			got, err := extractContentType(fd)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("extractContentType() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("extractContentType() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_extractArchive(t *testing.T) {
+	oldextractors := defaultExtractors
+	defer func() {
+		defaultExtractors = oldextractors
+	}()
+	defaultExtractors = map[string]extractor{
+		"application/octet-stream":  func(targetDir string, read io.ReaderAt, size int64) error { return nil },
+		"text/plain; charset=utf-8": func(targetDir string, read io.ReaderAt, size int64) error { return errors.New("fail test") },
+	}
+	type args struct {
+		filename string
+		dst      string
+		file     string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "test extraction",
+			args: args{
+				filename: "",
+				dst:      "",
+				file:     filepath.Join(testdataPath(), "elf-file"),
+			},
+			wantErr: false,
+		},
+		{
+			name: "test fail extraction",
+			args: args{
+				filename: "",
+				dst:      "",
+				file:     filepath.Join(testdataPath(), "null-file"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "test type not found extraction",
+			args: args{
+				filename: "",
+				dst:      "",
+				file:     filepath.Join(testdataPath(), "test-with-nesting-with-directory-entries.tar.gz"),
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fd, err := os.Open(tt.args.file)
+			if err != nil {
+				t.Errorf("failed to read file %s, err: %v", tt.args.file, err)
+				return
+			}
+			st, err := fd.Stat()
+			if err != nil {
+				t.Errorf("failed to stat file %s, err: %v", tt.args.file, err)
+				return
+			}
+
+			if err := extractArchive(tt.args.filename, tt.args.dst, fd, st.Size()); (err != nil) != tt.wantErr {
+				t.Errorf("extractArchive() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
 }
