@@ -172,7 +172,7 @@ func TestDownloader_Get(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "successful Get ",
+			name: "successful get",
 			fields: fields{
 				verifier: NewInsecureVerifier(),
 				fetcher:  NewFileFetcher(filepath.Join(testdataPath(), "test-with-directory.zip")),
@@ -184,7 +184,7 @@ func TestDownloader_Get(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "fail by fetching",
+			name: "fail get by fetching",
 			fields: fields{
 				verifier: NewInsecureVerifier(),
 				fetcher:  errorFetcher{},
