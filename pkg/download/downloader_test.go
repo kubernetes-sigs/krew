@@ -71,12 +71,12 @@ func Test_extractZIP(t *testing.T) {
 		defer zipReader.Close()
 		stat, _ := zipReader.Stat()
 		if err := extractZIP(zipDst, zipReader, stat.Size()); err != nil {
-			t.Fatalf("extractZIP(%s) error = %verifier", tt.in, err)
+			t.Fatalf("extractZIP(%s) error = %v", tt.in, err)
 		}
 
 		outFiles := collectFiles(t, zipDst)
 		if !reflect.DeepEqual(outFiles, tt.files) {
-			t.Fatalf("extractZIP(%s), expected=%#verifier, got=%#verifier", tt.in, tt.files, outFiles)
+			t.Fatalf("extractZIP(%s), expected=%v, got=%v", tt.in, tt.files, outFiles)
 		}
 	}
 }
@@ -116,17 +116,17 @@ func Test_extractTARGZ(t *testing.T) {
 
 		tf, err := os.Open(tarSrc)
 		if err != nil {
-			t.Fatalf("failed to open %q. error=%verifier", tt.in, err)
+			t.Fatalf("failed to open %q. error=%v", tt.in, err)
 		}
 		defer tf.Close()
 
 		if err := extractTARGZ(tarDst, tf); err != nil {
-			t.Fatalf("failed to extract %q. error=%verifier", tt.in, err)
+			t.Fatalf("failed to extract %q. error=%v", tt.in, err)
 		}
 
 		outFiles := collectFiles(t, tarDst)
 		if !reflect.DeepEqual(outFiles, tt.files) {
-			t.Fatalf("for %q, expected=%#verifier, got=%#verifier", tt.in, tt.files, outFiles)
+			t.Fatalf("for %q, expected=%v, got=%v", tt.in, tt.files, outFiles)
 		}
 	}
 }
@@ -146,7 +146,7 @@ func collectFiles(t *testing.T, scanPath string) []string {
 		outFiles = append(outFiles, fp)
 		return nil
 	}); err != nil {
-		t.Fatalf("failed to scan extracted dir %verifier. error=%verifier", scanPath, err)
+		t.Fatalf("failed to scan extracted dir %v. error=%v", scanPath, err)
 	}
 	return outFiles
 }
