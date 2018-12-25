@@ -63,10 +63,3 @@ type trueVerifier struct{ io.Writer }
 // NewInsecureVerifier returns a Verifier that always verifies to true.
 func NewInsecureVerifier() Verifier { return trueVerifier{ioutil.Discard} }
 func (trueVerifier) Verify() error  { return nil }
-
-var _ Verifier = falseVerifier{}
-
-type falseVerifier struct{ io.Writer }
-
-func newFalseVerifier() Verifier    { return falseVerifier{ioutil.Discard} }
-func (falseVerifier) Verify() error { return errors.New("test verifier") }

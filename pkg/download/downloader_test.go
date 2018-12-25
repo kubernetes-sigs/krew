@@ -23,6 +23,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/pkg/errors"
 )
 
 func testdataPath() string {
@@ -278,3 +280,10 @@ func Test_download(t *testing.T) {
 		})
 	}
 }
+
+var _ Verifier = falseVerifier{}
+
+type falseVerifier struct{ io.Writer }
+
+func newFalseVerifier() Verifier    { return falseVerifier{ioutil.Discard} }
+func (falseVerifier) Verify() error { return errors.New("test verifier") }
