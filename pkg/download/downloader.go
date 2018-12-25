@@ -160,11 +160,13 @@ func extractArchive(filename, dst string, r io.ReaderAt, size int64) error {
 	return errors.Errorf("cannot infer a supported archive type from filename in the url (%q)", filename)
 }
 
+// Downloader is responsible for fetching, verifying and extracting a binary.
 type Downloader struct {
 	verifier Verifier
 	fetcher  Fetcher
 }
 
+// NewDownloader builds a new Downloader.
 func NewDownloader(v Verifier, f Fetcher) Downloader {
 	return Downloader{
 		verifier: v,
@@ -172,6 +174,8 @@ func NewDownloader(v Verifier, f Fetcher) Downloader {
 	}
 }
 
+// Get pulls the uri and verifies it. On success, the download gets extracted
+// into dst.
 func (d Downloader) Get(uri, dst string) error {
 	body, size, err := download(uri, d.verifier, d.fetcher)
 	if err != nil {
