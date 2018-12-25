@@ -54,17 +54,14 @@ func downloadAndMove(version, uri string, fos []index.FileOperation, downloadPat
 		fetcher = download.NewFileFetcher(forceDownloadFile)
 	}
 
+	verifier := download.NewSha256Verifier(version)
 	if version == headVersion {
 		glog.V(1).Infof("Getting latest version from HEAD without sha256 verification")
-		err = download.GetInsecure(uri, downloadPath, fetcher)
-	} else {
-		glog.V(1).Infof("Getting sha256 (%s) signed version", version)
-		err = download.GetWithSha256(uri, downloadPath, version, fetcher)
+		verifier = download.NewInsecureVerifier()
 	}
-	if err != nil {
+	if err := download.NewDownloader(verifier, fetcher).Get(uri, downloadPath); err != nil {
 		return "", errors.Wrap(err, "failed to download and verify file")
 	}
-
 	return moveToInstallDir(downloadPath, installPath, version, fos)
 }
 
