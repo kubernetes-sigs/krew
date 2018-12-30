@@ -15,12 +15,16 @@
 package download
 
 import (
+	"bytes"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/pkg/errors"
 )
 
 func testdataPath() string {
@@ -40,11 +44,15 @@ func Test_extractZIP(t *testing.T) {
 			in: "test-with-directory.zip",
 			files: []string{
 				"/test/",
-				"/test/foo"}},
+				"/test/foo",
+			},
+		},
 		{
 			in: "test-without-directory.zip",
 			files: []string{
-				"/foo"}},
+				"/foo",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -68,7 +76,7 @@ func Test_extractZIP(t *testing.T) {
 
 		outFiles := collectFiles(t, zipDst)
 		if !reflect.DeepEqual(outFiles, tt.files) {
-			t.Fatalf("extractZIP(%s), expected=%#v, got=%#v", tt.in, tt.files, outFiles)
+			t.Fatalf("extractZIP(%s), expected=%v, got=%v", tt.in, tt.files, outFiles)
 		}
 	}
 }
@@ -86,13 +94,15 @@ func Test_extractTARGZ(t *testing.T) {
 			in: "test-with-nesting-with-directory-entries.tar.gz",
 			files: []string{
 				"/test/",
-				"/test/foo"},
+				"/test/foo",
+			},
 		},
 		{
 			in: "test-with-nesting-without-directory-entries.tar.gz",
 			files: []string{
 				"/test/",
-				"/test/foo"},
+				"/test/foo",
+			},
 		},
 	}
 
@@ -116,7 +126,7 @@ func Test_extractTARGZ(t *testing.T) {
 
 		outFiles := collectFiles(t, tarDst)
 		if !reflect.DeepEqual(outFiles, tt.files) {
-			t.Fatalf("for %q, expected=%#v, got=%#v", tt.in, tt.files, outFiles)
+			t.Fatalf("for %q, expected=%v, got=%v", tt.in, tt.files, outFiles)
 		}
 	}
 }
@@ -140,3 +150,140 @@ func collectFiles(t *testing.T, scanPath string) []string {
 	}
 	return outFiles
 }
+
+func TestDownloader_Get(t *testing.T) {
+	tmpDir, err := ioutil.TempDir("", "krew-test")
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	defer os.RemoveAll(tmpDir)
+
+	type fields struct {
+		verifier Verifier
+		fetcher  Fetcher
+	}
+	type args struct {
+		uri string
+		dst string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "successful get",
+			fields: fields{
+				verifier: NewInsecureVerifier(),
+				fetcher:  NewFileFetcher(filepath.Join(testdataPath(), "test-with-directory.zip")),
+			},
+			args: args{
+				uri: "foo/bar/test-with-directory.zip",
+				dst: tmpDir,
+			},
+			wantErr: false,
+		},
+		{
+			name: "fail get by fetching",
+			fields: fields{
+				verifier: NewInsecureVerifier(),
+				fetcher:  errorFetcher{},
+			},
+			args: args{
+				uri: "foo/bar/test-with-directory.zip",
+				dst: tmpDir,
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := NewDownloader(tt.fields.verifier, tt.fields.fetcher)
+			if err := d.Get(tt.args.uri, tt.args.dst); (err != nil) != tt.wantErr {
+				t.Errorf("Downloader.Get() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func Test_download(t *testing.T) {
+	filePath := filepath.Join(testdataPath(), "test-with-directory.zip")
+	downloadOriginal, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	type args struct {
+		url      string
+		verifier Verifier
+		fetcher  Fetcher
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantReader io.ReaderAt
+		wantSize   int64
+		wantErr    bool
+	}{
+		{
+			name: "successful fetch",
+			args: args{
+				url:      filePath,
+				verifier: NewInsecureVerifier(),
+				fetcher:  NewFileFetcher(filePath),
+			},
+			wantReader: bytes.NewReader(downloadOriginal),
+			wantSize:   int64(len(downloadOriginal)),
+			wantErr:    false,
+		},
+		{
+			name: "wrong data fetch",
+			args: args{
+				url:      filePath,
+				verifier: newFalseVerifier(),
+				fetcher:  NewFileFetcher(filePath),
+			},
+			wantReader: bytes.NewReader(downloadOriginal),
+			wantSize:   int64(len(downloadOriginal)),
+			wantErr:    true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			reader, size, err := download(tt.args.url, tt.args.verifier, tt.args.fetcher)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("download() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if tt.wantErr {
+				return
+			}
+			downloadedData, err := ioutil.ReadAll(io.NewSectionReader(reader, 0, size))
+			if err != nil {
+				t.Errorf("failed to read downlaod data: %v", err)
+				return
+			}
+			wantData, err := ioutil.ReadAll(io.NewSectionReader(tt.wantReader, 0, tt.wantSize))
+			if err != nil {
+				t.Errorf("failed to read downlaod data: %v", err)
+				return
+			}
+
+			if !bytes.Equal(downloadedData, wantData) {
+				t.Errorf("download() reader = %v, wantReader %v", reader, tt.wantReader)
+			}
+			if size != tt.wantSize {
+				t.Errorf("download() size = %v, wantReader %v", size, tt.wantSize)
+			}
+		})
+	}
+}
+
+var _ Verifier = falseVerifier{}
+
+type falseVerifier struct{ io.Writer }
+
+func newFalseVerifier() Verifier    { return falseVerifier{ioutil.Discard} }
+func (falseVerifier) Verify() error { return errors.New("test verifier") }

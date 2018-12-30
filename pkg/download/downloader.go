@@ -31,8 +31,8 @@ import (
 )
 
 // download gets a file from the internet in memory and writes it content
-// to a verifier.
-func download(url string, verifier verifier, fetcher Fetcher) (io.ReaderAt, int64, error) {
+// to a Verifier.
+func download(url string, verifier Verifier, fetcher Fetcher) (io.ReaderAt, int64, error) {
 	glog.V(2).Infof("Fetching %q", url)
 	body, err := fetcher.Get(url)
 	if err != nil {
@@ -142,26 +142,6 @@ func extractTARGZ(targetDir string, in io.Reader) error {
 	return nil
 }
 
-// GetWithSha256 downloads a zip, verifies it and extracts it to the dir.
-func GetWithSha256(uri, dir, sha string, fetcher Fetcher) error {
-	name := path.Base(uri)
-	body, size, err := download(uri, newSha256Verifier(sha), fetcher)
-	if err != nil {
-		return err
-	}
-	return extractArchive(name, dir, body, size)
-}
-
-// GetInsecure downloads a zip and extracts it to the dir.
-func GetInsecure(uri, dir string, fetcher Fetcher) error {
-	name := path.Base(uri)
-	body, size, err := download(uri, newTrueVerifier(), fetcher)
-	if err != nil {
-		return err
-	}
-	return extractArchive(name, dir, body, size)
-}
-
 func extractArchive(filename, dst string, r io.ReaderAt, size int64) error {
 	// TODO(ahmetb) This package is not architected well, this method should not
 	// be receiving this many args. Primary problem is at GetInsecure and
@@ -178,4 +158,28 @@ func extractArchive(filename, dst string, r io.ReaderAt, size int64) error {
 		return extractTARGZ(dst, io.NewSectionReader(r, 0, size))
 	}
 	return errors.Errorf("cannot infer a supported archive type from filename in the url (%q)", filename)
+}
+
+// Downloader is responsible for fetching, verifying and extracting a binary.
+type Downloader struct {
+	verifier Verifier
+	fetcher  Fetcher
+}
+
+// NewDownloader builds a new Downloader.
+func NewDownloader(v Verifier, f Fetcher) Downloader {
+	return Downloader{
+		verifier: v,
+		fetcher:  f,
+	}
+}
+
+// Get pulls the uri and verifies it. On success, the download gets extracted
+// into dst.
+func (d Downloader) Get(uri, dst string) error {
+	body, size, err := download(uri, d.verifier, d.fetcher)
+	if err != nil {
+		return errors.Wrapf(err, "failed to get the uri %q", uri)
+	}
+	return extractArchive(path.Base(uri), dst, body, size)
 }
