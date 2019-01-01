@@ -162,9 +162,8 @@ func detectMIMEType(at io.ReaderAt) (string, error) {
 type extractor func(targetDir string, read io.ReaderAt, size int64) error
 
 var defaultExtractors = map[string]extractor{
-	"application/zip":      extractZIP,
-	"application/tar+gzip": extractTARGZ,
-	"application/x-gzip":   extractTARGZ,
+	"application/zip":    extractZIP,
+	"application/x-gzip": extractTARGZ,
 }
 
 func extractArchive(filename, dst string, at io.ReaderAt, size int64) error {
