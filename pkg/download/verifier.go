@@ -22,24 +22,25 @@ import (
 	"io"
 	"io/ioutil"
 
+	"github.com/golang/glog"
 	"github.com/pkg/errors"
 )
 
 // Verifier can check a reader against it's correctness.
-type verifier interface {
+type Verifier interface {
 	io.Writer
 	Verify() error
 }
 
-var _ verifier = sha256Verifier{}
+var _ Verifier = sha256Verifier{}
 
 type sha256Verifier struct {
 	hash.Hash
 	wantedHash []byte
 }
 
-// newSha256Verifier creates a Verifier that tests against the given hash.
-func newSha256Verifier(hash string) verifier {
+// NewSha256Verifier creates a Verifier that tests against the given hash.
+func NewSha256Verifier(hash string) Verifier {
 	raw, _ := hex.DecodeString(hash)
 	return sha256Verifier{
 		Hash:       sha256.New(),
@@ -48,16 +49,17 @@ func newSha256Verifier(hash string) verifier {
 }
 
 func (v sha256Verifier) Verify() error {
+	glog.V(1).Infof("Compare sha256 (%s) signed version", hex.EncodeToString(v.wantedHash))
 	if bytes.Equal(v.wantedHash, v.Sum(nil)) {
 		return nil
 	}
-	return errors.Errorf("checksum does not match, want: %x, got %x", v.wantedHash, v.Sum(nil))
+	return errors.Errorf("checksum does not match, wantReader: %x, got %x", v.wantedHash, v.Sum(nil))
 }
 
-var _ verifier = trueVerifier{}
+var _ Verifier = trueVerifier{}
 
 type trueVerifier struct{ io.Writer }
 
-// newTrueVerifier returns a Verifier that always verifies to true.
-func newTrueVerifier() verifier    { return trueVerifier{ioutil.Discard} }
-func (trueVerifier) Verify() error { return nil }
+// NewInsecureVerifier returns a Verifier that always verifies to true.
+func NewInsecureVerifier() Verifier { return trueVerifier{ioutil.Discard} }
+func (trueVerifier) Verify() error  { return nil }
