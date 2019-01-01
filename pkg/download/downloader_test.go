@@ -327,11 +327,28 @@ func Test_extractContentType(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "type bash-utf8",
+			args: args{
+				file: filepath.Join(testdataPath(), "bash-utf8-file"),
+			},
+			want:    "text/plain",
+			wantErr: false,
+		},
+
+		{
+			name: "type bash-ascii",
+			args: args{
+				file: filepath.Join(testdataPath(), "bash-ascii-file"),
+			},
+			want:    "text/plain",
+			wantErr: false,
+		},
+		{
 			name: "type null",
 			args: args{
 				file: filepath.Join(testdataPath(), "null-file"),
 			},
-			want:    "text/plain; charset=utf-8",
+			want:    "text/plain",
 			wantErr: false,
 		},
 	}
@@ -342,13 +359,13 @@ func Test_extractContentType(t *testing.T) {
 				t.Errorf("failed to read file %s, err: %v", tt.args.file, err)
 				return
 			}
-			got, err := extractContentType(fd)
+			got, err := detectMIMEType(fd)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("extractContentType() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("detectMIMEType() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
-				t.Errorf("extractContentType() = %v, want %v", got, tt.want)
+				t.Errorf("detectMIMEType() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -360,8 +377,8 @@ func Test_extractArchive(t *testing.T) {
 		defaultExtractors = oldextractors
 	}()
 	defaultExtractors = map[string]extractor{
-		"application/octet-stream":  func(targetDir string, read io.ReaderAt, size int64) error { return nil },
-		"text/plain; charset=utf-8": func(targetDir string, read io.ReaderAt, size int64) error { return errors.New("fail test") },
+		"application/octet-stream": func(targetDir string, read io.ReaderAt, size int64) error { return nil },
+		"text/plain":               func(targetDir string, read io.ReaderAt, size int64) error { return errors.New("fail test") },
 	}
 	type args struct {
 		filename string

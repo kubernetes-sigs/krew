@@ -25,6 +25,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
@@ -143,7 +144,7 @@ func extractTARGZ(targetDir string, at io.ReaderAt, size int64) error {
 	return nil
 }
 
-func extractContentType(at io.ReaderAt) (string, error) {
+func detectMIMEType(at io.ReaderAt) (string, error) {
 	buf := make([]byte, 512)
 	n, err := at.ReadAt(buf, 0)
 	if err != nil && err != io.EOF {
@@ -152,7 +153,10 @@ func extractContentType(at io.ReaderAt) (string, error) {
 	if n < 512 {
 		glog.V(5).Infof("Did only read %d of 512 bytes to determine the file type", n)
 	}
-	return http.DetectContentType(buf[:n]), nil
+
+	// Cut off mime extra info beginning with ';' i.e:
+	// "text/plain; charset=utf-8" should result in "text/plain".
+	return strings.Split(http.DetectContentType(buf[:n]), ";")[0], nil
 }
 
 type extractor func(targetDir string, read io.ReaderAt, size int64) error
@@ -164,21 +168,19 @@ var defaultExtractors = map[string]extractor{
 }
 
 func extractArchive(filename, dst string, at io.ReaderAt, size int64) error {
-	// TODO: Keep the filename for later direct download
+	// TODO(lbb): Keep the filename for later direct download
 	// TODO(ahmetb) This package is not architected well, this method should not
 	// be receiving this many args. Primary problem is at GetInsecure and
 	// GetWithSha256 methods that embed extraction in them, which is orthogonal.
 
-	// TODO(ahmetb) write tests with this by mocking extractZIP function into a
-	// zipExtractor variable and check its execution.
-	t, err := extractContentType(at)
+	t, err := detectMIMEType(at)
 	if err != nil {
 		return errors.Wrap(err, "failed to determine content type")
 	}
 	glog.V(4).Infof("detected %q file type", t)
 	exf, ok := defaultExtractors[t]
 	if !ok {
-		return errors.Errorf("cannot infer a supported archive type mime: (%s)", t)
+		return errors.Errorf("mime type %q for downloaded file is not a supported archive format", t)
 	}
 	return errors.Wrap(exf(dst, at, size), "failed to extract file")
 
