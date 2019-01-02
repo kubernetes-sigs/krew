@@ -319,14 +319,6 @@ func Test_extractContentType(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "type elf-bin",
-			args: args{
-				file: filepath.Join(testdataPath(), "elf-file"),
-			},
-			want:    "application/octet-stream",
-			wantErr: false,
-		},
-		{
 			name: "type bash-utf8",
 			args: args{
 				file: filepath.Join(testdataPath(), "bash-utf8-file"),
@@ -390,15 +382,6 @@ func Test_extractArchive(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{
-			name: "test extraction",
-			args: args{
-				filename: "",
-				dst:      "",
-				file:     filepath.Join(testdataPath(), "elf-file"),
-			},
-			wantErr: false,
-		},
 		{
 			name: "test fail extraction",
 			args: args{
