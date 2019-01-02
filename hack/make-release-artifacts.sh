@@ -28,8 +28,16 @@ fi
 krew_tar_archive="krew.tar.gz"
 krew_zip_archive="krew.zip"
 
+# consistent timestamps for files in bindir to ensure consistent checksums
+while IFS= read -r -d $'\0' f
+do
+  echo "modifying atime/mtime for $f"
+  TZ=UTC touch -at "0001010000" "$f"
+  TZ=UTC touch -mt "0001010000" "$f"
+done < <(find "${bin_dir}" -print0)
+
 echo >&2 "Creating ${krew_tar_archive} archive."
-( cd "${bin_dir}"; tar czvf "${SCRIPTDIR}/../out/${krew_tar_archive}" ./*; )
+( cd "${bin_dir}"; GZIP=-n tar czvf "${SCRIPTDIR}/../out/${krew_tar_archive}" ./*; )
 echo >&2 "Creating ${krew_zip_archive} archive."
 ( cd "${bin_dir}"; zip -X -q --verbose "${SCRIPTDIR}/../out/${krew_zip_archive}" ./*; )
 
