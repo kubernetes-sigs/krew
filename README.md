@@ -62,7 +62,7 @@ Read the [User Guide](./docs/USER_GUIDE.md) for detailed documentation.
 1. Run the following command to install krew (pass the correct
    paths to `krew.yaml` and `krew.zip` below):
 
-       .\krew-windows_amd64.exe install --source=krew.yaml --archive=krew.zip
+       .\krew-windows_amd64.exe install --manifest=krew.yaml --archive=krew.zip
 
 1. Add `%USERPROFILE%\.krew\bin` to your `PATH` environment variable
    ([how?](https://java.com/en/download/help/path.xml))
