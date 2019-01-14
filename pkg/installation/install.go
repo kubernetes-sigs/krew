@@ -109,7 +109,7 @@ func install(plugin, version, uri, bin string, p environment.Paths, fos []index.
 // Remove will remove a plugin.
 func Remove(p environment.Paths, name string) error {
 	if name == krewPluginName {
-		return errors.New("removing krew is not allowed through krew, see docs for help")
+		return errors.Errorf("removing krew is not allowed through krew. Please run:\n\t rm -r %s", p.BasePath())
 	}
 	glog.V(3).Infof("Finding installed version to delete")
 	version, installed, err := findInstalledPluginVersion(p.InstallPath(), p.BinPath(), name)
