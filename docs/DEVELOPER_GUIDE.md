@@ -26,12 +26,17 @@ available on the krew index.
 
 Before creating a plugin, read the [Kubernetes Plugins documentation][plugins].
 
-In this this document you will create a plugin named `foo` which prints the
-environment variables to the screen and exits.
+**If you are writing a plugin in Go:** Consider using the
+[cli-runtime](https://github.com/kubernetes/cli-runtime/) project which is
+designed to provide the same command-line arguments, kubeconfig parser,
+Kubernetes API REST client, and printing logic.
+
+Below you will create a small plugin named `foo` which prints the environment
+variables to the screen and exits.
 
 Read the [Naming Guide](./NAMING_GUIDE.md) for choosing a name for your plugin.
 
-Create an executable file named `kubectl-foo.sh` with the following contents:
+Create an executable file named `kubectl-foo` with the following contents:
 
 ```bash
 #!/usr/bin/env bash
@@ -40,10 +45,10 @@ env
 
 Then make this script executable:
 
-    chmod +x ./kubectl-foo.sh
+    chmod +x ./kubectl-foo
 
-Since this plugin requires `bash`, it will only work on Unix platforms. If you
-need to support windows, develop a `kubectl-foo.exe` executable.
+(Since this plugin requires `bash`, it will only work on Unix platforms. If you
+need to support windows, develop a `kubectl-foo.exe` executable.)
 
 Now, if you place this plugin to anywhere in your `$PATH` directories, you
 should be able to call it like:
