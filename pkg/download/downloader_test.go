@@ -119,8 +119,12 @@ func Test_extractTARGZ(t *testing.T) {
 			t.Fatalf("failed to open %q. error=%v", tt.in, err)
 		}
 		defer tf.Close()
-
-		if err := extractTARGZ(tarDst, tf); err != nil {
+		st, err := tf.Stat()
+		if err != nil {
+			t.Fatal(err)
+			return
+		}
+		if err := extractTARGZ(tarDst, tf, st.Size()); err != nil {
 			t.Fatalf("failed to extract %q. error=%v", tt.in, err)
 		}
 
@@ -287,3 +291,174 @@ type falseVerifier struct{ io.Writer }
 
 func newFalseVerifier() Verifier    { return falseVerifier{ioutil.Discard} }
 func (falseVerifier) Verify() error { return errors.New("test verifier") }
+
+func Test_detectMIMEType(t *testing.T) {
+	type args struct {
+		file    string
+		content []byte
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "type zip",
+			args: args{
+				file: filepath.Join(testdataPath(), "test-with-directory.zip"),
+			},
+			want:    "application/zip",
+			wantErr: false,
+		},
+		{
+			name: "type tar.gz",
+			args: args{
+				file: filepath.Join(testdataPath(), "test-with-nesting-with-directory-entries.tar.gz"),
+			},
+			want:    "application/x-gzip",
+			wantErr: false,
+		},
+		{
+			name: "type bash-utf8",
+			args: args{
+				file: filepath.Join(testdataPath(), "bash-utf8-file"),
+			},
+			want:    "text/plain",
+			wantErr: false,
+		},
+
+		{
+			name: "type bash-ascii",
+			args: args{
+				file: filepath.Join(testdataPath(), "bash-ascii-file"),
+			},
+			want:    "text/plain",
+			wantErr: false,
+		},
+		{
+			name: "type null",
+			args: args{
+				file: filepath.Join(testdataPath(), "null-file"),
+			},
+			want:    "text/plain",
+			wantErr: false,
+		},
+		{
+			name: "512 zero bytes",
+			args: args{
+				content: make([]byte, 512),
+			},
+			want:    "application/octet-stream",
+			wantErr: false,
+		},
+		{
+			name: "1 zero bytes",
+			args: args{
+				content: make([]byte, 1),
+			},
+			want:    "application/octet-stream",
+			wantErr: false,
+		},
+		{
+			name: "0 zero bytes",
+			args: args{
+				content: []byte{},
+			},
+			want:    "text/plain",
+			wantErr: false,
+		},
+		{
+			name: "html",
+			args: args{
+				content: []byte("<!DOCTYPE html><html><head><title></title></head><body></body></html>"),
+			},
+			want:    "text/html",
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var at io.ReaderAt
+
+			if tt.args.file != "" {
+				fd, err := os.Open(tt.args.file)
+				if err != nil {
+					t.Errorf("failed to read file %s, err: %v", tt.args.file, err)
+					return
+				}
+				defer fd.Close()
+				at = fd
+			} else {
+				at = bytes.NewReader(tt.args.content)
+			}
+
+			got, err := detectMIMEType(at)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("detectMIMEType() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("detectMIMEType() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_extractArchive(t *testing.T) {
+	oldextractors := defaultExtractors
+	defer func() {
+		defaultExtractors = oldextractors
+	}()
+	defaultExtractors = map[string]extractor{
+		"application/octet-stream": func(targetDir string, read io.ReaderAt, size int64) error { return nil },
+		"text/plain":               func(targetDir string, read io.ReaderAt, size int64) error { return errors.New("fail test") },
+	}
+	type args struct {
+		filename string
+		dst      string
+		file     string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "test fail extraction",
+			args: args{
+				filename: "",
+				dst:      "",
+				file:     filepath.Join(testdataPath(), "null-file"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "test type not found extraction",
+			args: args{
+				filename: "",
+				dst:      "",
+				file:     filepath.Join(testdataPath(), "test-with-nesting-with-directory-entries.tar.gz"),
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fd, err := os.Open(tt.args.file)
+			if err != nil {
+				t.Errorf("failed to read file %s, err: %v", tt.args.file, err)
+				return
+			}
+			st, err := fd.Stat()
+			if err != nil {
+				t.Errorf("failed to stat file %s, err: %v", tt.args.file, err)
+				return
+			}
+
+			if err := extractArchive(tt.args.filename, tt.args.dst, fd, st.Size()); (err != nil) != tt.wantErr {
+				t.Errorf("extractArchive() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
