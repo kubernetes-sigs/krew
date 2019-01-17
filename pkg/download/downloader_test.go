@@ -292,9 +292,10 @@ type falseVerifier struct{ io.Writer }
 func newFalseVerifier() Verifier    { return falseVerifier{ioutil.Discard} }
 func (falseVerifier) Verify() error { return errors.New("test verifier") }
 
-func Test_extractContentType(t *testing.T) {
+func Test_detectMIMEType(t *testing.T) {
 	type args struct {
-		file string
+		file    string
+		content []byte
 	}
 	tests := []struct {
 		name    string
@@ -343,15 +344,56 @@ func Test_extractContentType(t *testing.T) {
 			want:    "text/plain",
 			wantErr: false,
 		},
+		{
+			name: "512 zero bytes",
+			args: args{
+				content: make([]byte, 512),
+			},
+			want:    "application/octet-stream",
+			wantErr: false,
+		},
+		{
+			name: "1 zero bytes",
+			args: args{
+				content: make([]byte, 1),
+			},
+			want:    "application/octet-stream",
+			wantErr: false,
+		},
+		{
+			name: "0 zero bytes",
+			args: args{
+				content: []byte{},
+			},
+			want:    "text/plain",
+			wantErr: false,
+		},
+		{
+			name: "html",
+			args: args{
+				content: []byte("<!DOCTYPE html><html><head><title></title></head><body></body></html>"),
+			},
+			want:    "text/html",
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			fd, err := os.Open(tt.args.file)
-			if err != nil {
-				t.Errorf("failed to read file %s, err: %v", tt.args.file, err)
-				return
+			var at io.ReaderAt
+
+			if tt.args.file != "" {
+				fd, err := os.Open(tt.args.file)
+				if err != nil {
+					t.Errorf("failed to read file %s, err: %v", tt.args.file, err)
+					return
+				}
+				defer fd.Close()
+				at = fd
+			} else {
+				at = bytes.NewReader(tt.args.content)
 			}
-			got, err := detectMIMEType(fd)
+
+			got, err := detectMIMEType(at)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("detectMIMEType() error = %v, wantErr %v", err, tt.wantErr)
 				return
