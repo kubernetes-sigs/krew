@@ -20,8 +20,10 @@ import (
 	"path/filepath"
 	"reflect"
 	"runtime"
+	"strings"
 	"testing"
 
+	"github.com/GoogleContainerTools/krew/pkg/environment"
 	"github.com/GoogleContainerTools/krew/pkg/index"
 )
 
@@ -148,6 +150,15 @@ func Test_pluginNameToBin(t *testing.T) {
 func Test_removeLink_notExists(t *testing.T) {
 	if err := removeLink("/non/existing/path"); err != nil {
 		t.Fatalf("removeLink failed with non-existing path: %+v", err)
+	}
+}
+
+func TestRemove_cantUninstallItself(t *testing.T) {
+	envPath := environment.MustGetKrewPaths()
+	expectedErrorMessagePart := "not allowed"
+	if err := Remove(envPath, "krew"); !strings.Contains(err.Error(), expectedErrorMessagePart) {
+		t.Fatalf("wrong error message for 'remove krew' action, expected message contains %q; got %q",
+			expectedErrorMessagePart, err.Error())
 	}
 }
 
