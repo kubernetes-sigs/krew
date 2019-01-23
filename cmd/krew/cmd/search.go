@@ -46,10 +46,14 @@ Examples:
 			return errors.Wrap(err, "failed to load the index")
 		}
 		names := make([]string, len(plugins.Items))
+		pluginDescriptions := make([]string, len(plugins.Items))
+		pluginDescriptionsNameMap := make(map[string]string, len(plugins.Items))
 		pluginMap := make(map[string]index.Plugin, len(plugins.Items))
 		for i, p := range plugins.Items {
 			names[i] = p.Name
+			pluginDescriptions[i] = p.Spec.Description
 			pluginMap[p.Name] = p
+			pluginDescriptionsNameMap[p.Spec.Description] = p.Name
 		}
 
 		installed, err := installation.ListInstalledPlugins(paths.InstallPath(), paths.BinPath())
@@ -60,8 +64,13 @@ Examples:
 		var matchNames []string
 		if len(args) > 0 {
 			matches := fuzzy.Find(strings.Join(args, ""), names)
+			pluginMatches := fuzzy.Find(strings.Join(args, ""), pluginDescriptions)
 			for _, m := range matches {
 				matchNames = append(matchNames, m.Str)
+			}
+			for _, pm := range pluginMatches {
+				matchName := pluginDescriptionsNameMap[pm.Str]
+				matchNames = append(matchNames, matchName)
 			}
 		} else {
 			matchNames = names
