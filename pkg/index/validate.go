@@ -34,7 +34,7 @@ var (
 		"LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"}
 )
 
-// IsSafePluginName checks if the plugin Name is save to use.
+// IsSafePluginName checks if the plugin Name is safe to use.
 func IsSafePluginName(name string) bool {
 	if !safePluginRegexp.MatchString(name) {
 		return false

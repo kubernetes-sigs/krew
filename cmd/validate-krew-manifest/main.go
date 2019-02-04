@@ -1,0 +1,179 @@
+// validate-krew-manifest makes sure a manifest file is valid.
+package main
+
+import (
+	"flag"
+	"io/ioutil"
+	"log"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
+
+	"github.com/GoogleContainerTools/krew/pkg/index"
+	"github.com/GoogleContainerTools/krew/pkg/index/indexscanner"
+
+	"github.com/golang/glog"
+	"github.com/pkg/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+)
+
+var flManifest string
+
+func init() {
+	flag.StringVar(&flManifest, "manifest", "", "path to plugin manifest file")
+	flag.Set("logtostderr", "true") // Set glog default to stderr
+	// TODO(ahmetb) iterate over glog flags and hide them (not sure if possible without using pflag)
+	flag.Parse()
+}
+
+func main() {
+	defer glog.Flush()
+
+	if flManifest == "" {
+		glog.Fatal("-manifest must be specified")
+	}
+
+	if err := validateManifestFile(flManifest); err != nil {
+		glog.Fatalf("%v", err) // with stack trace
+	}
+}
+
+func validateManifestFile(path string) error {
+	glog.V(4).Infof("reading file %s", path)
+	p, err := indexscanner.ReadPluginFile(path)
+	if err != nil {
+		return errors.Wrap(err, "failed to read plugin file")
+	}
+	filename := filepath.Base(path)
+	pluginNameFromFileName := strings.TrimSuffix(filename, filepath.Ext(filename))
+	glog.V(4).Infof("inferred plugin name as %s", pluginNameFromFileName)
+
+	// validate plugin manifest
+	if err := p.Validate(pluginNameFromFileName); err != nil {
+		return errors.Wrap(err, "plugin validation error")
+	}
+	glog.Infof("structural validation OK")
+
+	// make sure each platform matches a supported platform
+	for i, p := range p.Spec.Platforms {
+		if os, arch := findAnyMatchingPlatform(p.Selector); os == "" || arch == "" {
+			return errors.Errorf("spec.platform[%d]'s selector (%v) doesn't match any supported platforms", i, p.Selector)
+		}
+	}
+	glog.Infof("all spec.platform[] items are used")
+
+	// validate no supported <os,arch> is matching multiple platform specs
+	if err := isOverlappingPlatformSelectors(p.Spec.Platforms); err != nil {
+		return errors.Wrap(err, "overlapping platform selectors found")
+	}
+	glog.Infof("no overlapping spec.platform[].selector")
+
+	// exercise "install" for all platforms
+	for i, p := range p.Spec.Platforms { // TODO(ahmetb) make this a testable method
+		glog.Infof("installing spec.platform[%d]", i)
+		if err := installPlatformSpec(path, p); err != nil {
+			return errors.Wrapf(err, "spec.platforms[%d] failed to install", i)
+		}
+		glog.Infof("installed  spec.platforms[%d]", i)
+	}
+	log.Printf("all %d spec.platforms installed fine", len(p.Spec.Platforms))
+	return nil
+}
+
+// isOverlappingPlatformSelectors validates if multiple platforms have selectors
+// that match to a supported <os,arch> pair.
+func isOverlappingPlatformSelectors(platforms []index.Platform) error {
+	// TODO(ahmetb) implement
+	for _, v := range allPlatforms() {
+		os, arch := v[0], v[1]
+
+		var matchIndex []int
+		for i, p := range platforms {
+			if selectorMatchesOSArch(p.Selector, os, arch) {
+				matchIndex = append(matchIndex, i)
+			}
+		}
+
+		if len(matchIndex) > 1 {
+			return errors.Errorf("multiple spec.platforms (at indexes %v) have overlapping selectors that select os=%s/arch=%s", matchIndex, os, arch)
+		}
+	}
+	return nil
+}
+
+// installPlatformSpec installs the p to a temporary location on disk to verify
+// by shelling out to external command.
+func installPlatformSpec(manifestFile string, p index.Platform) error {
+	goos, goarch := findAnyMatchingPlatform(p.Selector)
+	if goos == "" || goarch == "" {
+		return errors.Errorf("no supported platform matched platform selector: %+v", p.Selector)
+	}
+
+	tmpDir, err := ioutil.TempDir(os.TempDir(), "krew-test")
+	if err != nil {
+		return errors.Wrap(err, "failed to create temp dir for plugin install")
+	}
+	defer func() {
+		if err := os.RemoveAll(tmpDir); err != nil {
+			glog.Warningf("failed to remove temp dir: %s", tmpDir)
+		}
+	}()
+
+	cmd := exec.Command("kubectl", "krew", "install", "--manifest", manifestFile, "-v=4")
+	cmd.Stdin = nil
+	cmd.Env = []string{
+		"KREW_ROOT=" + tmpDir,
+		"KREW_OS=" + goos,
+		"KREW_ARCH=" + goarch,
+	}
+	glog.V(2).Infof("installing plugin with: %+v", cmd.Env)
+	cmd.Env = append(cmd.Env, "PATH="+os.Getenv("PATH"))
+
+	b, err := cmd.CombinedOutput()
+	if err != nil {
+		output := strings.Replace(string(b), "\n", "\n\t", -1)
+		return errors.Wrapf(err, "plugin install command failed: %s", output)
+	}
+	return nil
+}
+
+// findAnyMatchingPlatform finds an <os,arch> pair matches to given selector
+func findAnyMatchingPlatform(selector *metav1.LabelSelector) (string, string) {
+	for _, p := range allPlatforms() {
+		if selectorMatchesOSArch(selector, p[0], p[1]) {
+			glog.V(4).Infof("%s MATCHED <%s,%s>", selector, p[0], p[1])
+			return p[0], p[1]
+		}
+		glog.V(4).Infof("%s didn't match <%s,%s>", selector, p[0], p[1])
+	}
+	return "", ""
+}
+
+func selectorMatchesOSArch(selector *metav1.LabelSelector, os, arch string) bool {
+	sel, err := metav1.LabelSelectorAsSelector(selector)
+	if err != nil {
+		// this should've been caught by plaform.Validate() earlier
+		glog.Warningf("Failed to convert label selector: %+v", selector)
+		return false
+	}
+	return sel.Matches(labels.Set{
+		"os":   os,
+		"arch": arch,
+	})
+}
+
+// allPlatforms returns all <os,arch> pairs recognized.
+func allPlatforms() [][2]string {
+	// TODO(ahmetb) find a more authoritative source for this list
+	return [][2]string{
+		{"windows", "386"},
+		{"windows", "amd64"},
+		{"linux", "386"},
+		{"linux", "amd64"},
+		{"linux", "arm"},
+		{"darwin", "386"},
+		{"darwin", "amd64"},
+	}
+}
