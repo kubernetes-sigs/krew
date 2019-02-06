@@ -95,12 +95,12 @@ downloaded git archive. Also, untagged plugins are very likely to be unstable.
 
 ## Listing Installed Plugins
 
-All plugins available to `kubectl` (including those not installed via krew) can
-listed using:
+All plugins available to `kubectl` (including those not installed via `krew`) can
+be listed using:
 
-    kubectl krew list
+    kubectl plugin list
 
-To list all plugins install via `krew`, run:
+To list all plugins installed via `krew`, run:
 
     kubectl krew list
 
