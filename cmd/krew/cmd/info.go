@@ -74,6 +74,9 @@ func printPluginInfo(out io.Writer, plugin index.Plugin) {
 	if plugin.Spec.Version != "" {
 		fmt.Fprintf(out, "VERSION: %s\n", plugin.Spec.Version)
 	}
+	if plugin.Spec.Homepage != "" {
+		fmt.Fprintf(out, "HOMEPAGE: %s\n", plugin.Spec.Homepage)
+	}
 	if plugin.Spec.Caveats != "" {
 		fmt.Fprintln(out, prepCaveats(plugin.Spec.Caveats))
 	}

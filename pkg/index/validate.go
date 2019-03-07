@@ -15,6 +15,7 @@
 package index
 
 import (
+	"net/url"
 	"regexp"
 	"strings"
 
@@ -72,6 +73,11 @@ func (p Plugin) Validate(name string) error {
 	for _, pl := range p.Spec.Platforms {
 		if err := pl.Validate(); err != nil {
 			return errors.Wrapf(err, "platform (%+v) is badly constructed", pl)
+		}
+	}
+	if p.Spec.Homepage != "" {
+		if _, err := url.ParseRequestURI(p.Spec.Homepage); err != nil {
+			return errors.Wrapf(err, "the homepage url %q is not a valid url", p.Spec.Homepage)
 		}
 	}
 	return nil
