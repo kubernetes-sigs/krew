@@ -33,4 +33,4 @@ spec:
       matchLabels:
         os: "windows"
   shortDescription: "exists"
-
+  homepage: "https://example.com/foo"

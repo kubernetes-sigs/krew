@@ -112,6 +112,7 @@ func TestPlugin_Validate(t *testing.T) {
 					ShortDescription: "short",
 					Description:      "",
 					Caveats:          "",
+					Homepage:         "",
 					Platforms: []Platform{{
 						Head:     "http://example.com",
 						URI:      "",
