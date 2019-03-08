@@ -241,54 +241,6 @@ func TestPlugin_Validate(t *testing.T) {
 			pluginName: "../foo",
 			wantErr:    true,
 		},
-		{
-			name: "valid homepage url",
-			fields: fields{
-				TypeMeta:   metav1.TypeMeta{APIVersion: currentAPIVersion},
-				ObjectMeta: metav1.ObjectMeta{Name: "foo"},
-				Spec: PluginSpec{
-					Version:          "",
-					ShortDescription: "short",
-					Description:      "",
-					Caveats:          "",
-					Homepage:         "http://example.com/foo/bar",
-					Platforms: []Platform{{
-						Head:     "http://example.com",
-						URI:      "",
-						Sha256:   "",
-						Selector: nil,
-						Files:    []FileOperation{{"", ""}},
-						Bin:      "foo",
-					}},
-				},
-			},
-			pluginName: "foo",
-			wantErr:    false,
-		},
-		{
-			name: "invalid homepage url",
-			fields: fields{
-				TypeMeta:   metav1.TypeMeta{APIVersion: currentAPIVersion},
-				ObjectMeta: metav1.ObjectMeta{Name: "foo"},
-				Spec: PluginSpec{
-					Version:          "",
-					ShortDescription: "short",
-					Description:      "",
-					Caveats:          "",
-					Homepage:         "this-is-an-invalid-url",
-					Platforms: []Platform{{
-						Head:     "http://example.com",
-						URI:      "",
-						Sha256:   "",
-						Selector: nil,
-						Files:    []FileOperation{{"", ""}},
-						Bin:      "foo",
-					}},
-				},
-			},
-			pluginName: "foo",
-			wantErr:    true,
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
