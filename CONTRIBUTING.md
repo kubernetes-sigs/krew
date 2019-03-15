@@ -1,28 +1,29 @@
-# How to Contribute
+# Contributing Guidelines
 
-We'd love to accept your patches and contributions to this project. There are
-just a few small guidelines you need to follow.
+Welcome to Kubernetes. We are excited about the prospect of you joining our [community](https://git.k8s.io/community)! The Kubernetes community abides by the CNCF [code of conduct](code-of-conduct.md). Here is an excerpt:
 
-## Contributor License Agreement
+_As contributors and maintainers of this project, and in the interest of fostering an open and welcoming community, we pledge to respect all people who contribute through reporting issues, posting feature requests, updating documentation, submitting pull requests or patches, and other activities._
 
-Contributions to this project must be accompanied by a Contributor License
-Agreement. You (or your employer) retain the copyright to your contribution;
-this simply gives us permission to use and redistribute your contributions as
-part of the project. Head over to <https://cla.developers.google.com/> to see
-your current agreements on file or to sign a new one.
+## Getting Started
 
-You generally only need to submit a CLA once, so if you've already submitted one
-(even if it was for a different project), you probably don't need to do it
-again.
+We have full documentation on how to get started contributing here:
 
-## Code reviews
+<!---
+If your repo has certain guidelines for contribution, put them here ahead of the general k8s resources
+-->
 
-All submissions, including submissions by project members, require review. We
-use GitHub pull requests for this purpose. Consult
-[GitHub Help](https://help.github.com/articles/about-pull-requests/) for more
-information on using pull requests.
+- [Contributor License Agreement](https://git.k8s.io/community/CLA.md) Kubernetes projects require that you sign a Contributor License Agreement (CLA) before we can accept your pull requests
+- [Kubernetes Contributor Guide](https://git.k8s.io/community/contributors/guide) - Main contributor documentation, or you can just jump directly to the [contributing section](https://git.k8s.io/community/contributors/guide#contributing)
+- [Contributor Cheat Sheet](https://git.k8s.io/community/contributors/guide/contributor-cheatsheet.md) - Common resources for existing developers
 
-## Community Guidelines
+## Mentorship
 
-This project follows [Google's Open Source Community
-Guidelines](https://opensource.google.com/conduct/).
+- [Mentoring Initiatives](https://git.k8s.io/community/mentoring) - We have a diverse set of mentorship programs available that are always looking for volunteers!
+
+## Contact Information
+
+To discuss about this project, you can use the following channels, or attend
+[SIG CLI meetings](https://github.com/kubernetes/community/tree/master/sig-cli).
+
+- [SIG CLI Slack channel](https://kubernetes.slack.com/messages/sig-cli)
+- [SIG CLI Mailing list](https://groups.google.com/forum/#!forum/kubernetes-sig-cli)
