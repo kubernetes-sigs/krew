@@ -67,7 +67,7 @@ Read the [User Guide](./docs/USER_GUIDE.md) for detailed documentation.
 1. Add `%USERPROFILE%\.krew\bin` to your `PATH` environment variable
    ([how?](https://java.com/en/download/help/path.xml))
 
-[releases]: https://github.com/GoogleContainerTools/krew/releases
+[releases]: https://github.com/kubernetes-sigs/krew/releases
 
 ### Verifying installation
 
@@ -101,19 +101,29 @@ Visit [`./docs`](./docs) for all documentation.
 
 ## Roadmap
 
-- **Support Multiple Index Repositories:** Tracked under
-  [#23](https://github.com/GoogleContainerTools/krew/issues/23)
-- **Donating krew to the SIG-CLI:** We plan to donate krew to the
-  [SIG-CLI](https://github.com/kubernetes/community/tree/master/sig-cli). We
-  have created a [KEP](https://github.com/kubernetes/community/pull/2340) that
-  covers our intentions. Accepting the KEP means that kubectl will implement
-  krew commands natively, and support the plugin format.
+Please check out the [Issue Tracker](./issues) to see the plan of record for
+new features and changes.
 
-## LICENSE
+## Community
 
-The code is submitted under the Apache 2.0 License described in the
-[LICENSE](./LICENSE) file.
+### Bug reports
 
-----
+* If you have a problem with the Krew itself, please file an
+  issue in this repository.
+* If you're having a problem with a particular plugin's installation or
+  upgrades, file an issue at [krew-index](index) repository.
+* If you're having an issue with an installed plugin, file an issue for the
+  repository the plugin's source code is hosted at.
 
-This is not an official Google project.
+### Communication channels
+
+* [Slack](https://kubernetes.slack.com/messages/sig-cli) #sig-cli
+* [Mailing List](https://groups.google.com/forum/#!forum/kubernetes-sig-cli)
+* [Kubernetes Community site](http://kubernetes.io/community/)
+
+### Code of Conduct
+
+Participation in the Kubernetes community is governed by the [Kubernetes Code
+of Conduct](https://github.com/kubernetes-sigs/kustomize/blob/master/code-of-conduct.md).
+
+[index]:https://github.com/kubernetes-sigs/krew-index
