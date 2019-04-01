@@ -111,7 +111,7 @@ new features and changes.
 * If you have a problem with the Krew itself, please file an
   issue in this repository.
 * If you're having a problem with a particular plugin's installation or
-  upgrades, file an issue at [krew-index](index) repository.
+  upgrades, file an issue at [krew-index][index] repository.
 * If you're having an issue with an installed plugin, file an issue for the
   repository the plugin's source code is hosted at.
 
