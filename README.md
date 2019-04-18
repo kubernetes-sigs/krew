@@ -28,7 +28,9 @@ Read the [User Guide](./docs/USER_GUIDE.md) for detailed documentation.
 
 ### Installation
 
-> :warning: **Warning:** krew is only compatible with kubectl v1.12 or higher.
+> :warning: **Warning:** krew is only compatible with kubectl v1.12 or higher.  
+> :warning: **Warning:** check your bash version krew is compatible with bash v4.0 or higher 
+(for osx, install the latest bash with ```brew install bash```)
 
 **macOS and Linux:**
 
