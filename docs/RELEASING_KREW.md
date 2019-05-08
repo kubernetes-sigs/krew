@@ -61,7 +61,7 @@ Krew tags versions starting with `v`. Example: `v0.2.0-rc.1`.
 
 1. **Make the new version available on krew index:** Copy the `krew.yaml` from
    the release artifacts and make a pull request to
-   [krew-index](https://github.com/GoogleContainerTools/krew-index/) repository.
+   [krew-index](https://github.com/kubernetes-sigs/krew-index/) repository.
    This will make the plugin available to upgrade for users using older versions
    of krew.
 

@@ -18,8 +18,8 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/GoogleContainerTools/krew/pkg/environment"
-	"github.com/GoogleContainerTools/krew/pkg/index"
+	"github.com/kubernetes-sigs/krew/pkg/environment"
+	"github.com/kubernetes-sigs/krew/pkg/index"
 
 	"github.com/golang/glog"
 	"github.com/pkg/errors"

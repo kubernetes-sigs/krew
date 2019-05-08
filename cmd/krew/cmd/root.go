@@ -18,8 +18,8 @@ import (
 	"flag"
 	"os"
 
-	"github.com/GoogleContainerTools/krew/pkg/environment"
-	"github.com/GoogleContainerTools/krew/pkg/gitutil"
+	"github.com/kubernetes-sigs/krew/pkg/environment"
+	"github.com/kubernetes-sigs/krew/pkg/gitutil"
 	isatty "github.com/mattn/go-isatty"
 	"github.com/pkg/errors"
 

@@ -2,7 +2,7 @@
 
 This document explain the best practices and recommendations for naming kubectl
 plugins. These guidelines are used for reviewing the plugins submitted to
-[krew-index](https://github.com/GoogleContainerTools/krew-index) repository.
+[krew-index](https://github.com/kubernetes-sigs/krew-index) repository.
 
 #### _Punctuation_
 

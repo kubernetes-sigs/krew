@@ -4,7 +4,7 @@ package main
 import (
 	"testing"
 
-	"github.com/GoogleContainerTools/krew/pkg/index"
+	"github.com/kubernetes-sigs/krew/pkg/index"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"

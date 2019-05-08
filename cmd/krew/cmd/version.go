@@ -18,9 +18,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/GoogleContainerTools/krew/pkg/environment"
-	"github.com/GoogleContainerTools/krew/pkg/version"
 	"github.com/golang/glog"
+	"github.com/kubernetes-sigs/krew/pkg/environment"
+	"github.com/kubernetes-sigs/krew/pkg/version"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )

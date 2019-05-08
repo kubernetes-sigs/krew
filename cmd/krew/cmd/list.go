@@ -22,7 +22,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/GoogleContainerTools/krew/pkg/installation"
+	"github.com/kubernetes-sigs/krew/pkg/installation"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )

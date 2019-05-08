@@ -21,8 +21,8 @@ import (
 	"path/filepath"
 	"syscall"
 
-	"github.com/GoogleContainerTools/krew/pkg/index"
-	"github.com/GoogleContainerTools/krew/pkg/pathutil"
+	"github.com/kubernetes-sigs/krew/pkg/index"
+	"github.com/kubernetes-sigs/krew/pkg/pathutil"
 
 	"github.com/golang/glog"
 	"github.com/pkg/errors"

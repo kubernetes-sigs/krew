@@ -22,7 +22,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/GoogleContainerTools/krew/pkg/index"
+	"github.com/kubernetes-sigs/krew/pkg/index"
 )
 
 func Test_findMoveTargets(t *testing.T) {
