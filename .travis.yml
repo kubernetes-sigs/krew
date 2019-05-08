@@ -2,7 +2,7 @@ sudo: false
 language: go
 go:
 - 1.10.x
-go_import_path: github.com/GoogleContainerTools/krew
+go_import_path: github.com/kubernetes-sigs/krew
 install: true
 notifications:
   email: false

@@ -31,7 +31,7 @@ spec:
       * Windows: Add %USERPROFILE%\.krew\bin to your PATH environment variable
 
     Run "kubectl krew" to list krew commands and get help.
-    You can find documentation at https://github.com/GoogleContainerTools/krew.
+    You can find documentation at https://github.com/kubernetes-sigs/krew.
 
   platforms:
   - uri: https://storage.googleapis.com/krew/KREW_TAG/krew.tar.gz

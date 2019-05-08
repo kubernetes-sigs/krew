@@ -24,7 +24,7 @@ if ! [[ "$TAG" =~ v.* ]]; then
     exit 1
 fi
 
-readme="https://github.com/GoogleContainerTools/krew/blob/${TAG}/README.md"
+readme="https://github.com/kubernetes-sigs/krew/blob/${TAG}/README.md"
 download_base="https://storage.googleapis.com/krew"
 download_assets=(
     krew.tar.gz

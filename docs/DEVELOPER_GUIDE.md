@@ -85,7 +85,7 @@ plugin is available and how to install it.
 
 For a plugin named `foo`, the plugin manifest file should be named `foo.yaml`.
 An example manifest for this plugin that runs only on Linux and macOS looks
-like this (see [krew index](https://github.com/GoogleContainerTools/krew-index/tree/master/plugins) for
+like this (see [krew index](https://github.com/kubernetes-sigs/krew-index/tree/master/plugins) for
 all plugin manifests):
 
 ```yaml
@@ -109,7 +109,7 @@ spec:
       to: "."               # '.' refers to the root of plugin install directory
     bin: "./kubectl-foo"  # path to the plugin executable after copying files above
   shortDescription: Prints the environment variables.
-  homepage: https://github.com/GoogleContainerTools/krew # optional, url for the project homepage
+  homepage: https://github.com/kubernetes-sigs/krew # optional, url for the project homepage
   # (optional) use caveats field to show post-installation recommendations
   caveats: |
     This plugin needs the following programs:
@@ -324,5 +324,5 @@ updates `uri` and `sha256` fields of the plugin manifest file.
 Optionally, you can use the `version` field to match to your plugin's released
 version string.
 
-[index]: https://github.com/GoogleContainerTools/krew-index
+[index]: https://github.com/kubernetes-sigs/krew-index
 [plugins]: https://kubernetes.io/docs/tasks/extend-kubectl/kubectl-plugins/

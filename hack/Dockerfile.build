@@ -17,7 +17,7 @@ FROM golang:1-alpine
 RUN apk add -q --no-cache bash git zip
 RUN go get github.com/mitchellh/gox
 
-ENV PROJECT_ROOT /go/src/github.com/GoogleContainerTools/krew
+ENV PROJECT_ROOT /go/src/github.com/kubernetes-sigs/krew
 RUN mkdir -p $(dirname $PROJECT_ROOT) && \
         ln -s /workspace $PROJECT_ROOT
 WORKDIR $PROJECT_ROOT
