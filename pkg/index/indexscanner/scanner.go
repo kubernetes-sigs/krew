@@ -23,7 +23,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/GoogleContainerTools/krew/pkg/index"
+	"github.com/kubernetes-sigs/krew/pkg/index"
 	"github.com/pkg/errors"
 
 	"github.com/golang/glog"

@@ -20,10 +20,10 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/GoogleContainerTools/krew/pkg/download"
-	"github.com/GoogleContainerTools/krew/pkg/environment"
-	"github.com/GoogleContainerTools/krew/pkg/index"
-	"github.com/GoogleContainerTools/krew/pkg/pathutil"
+	"github.com/kubernetes-sigs/krew/pkg/download"
+	"github.com/kubernetes-sigs/krew/pkg/environment"
+	"github.com/kubernetes-sigs/krew/pkg/index"
+	"github.com/kubernetes-sigs/krew/pkg/pathutil"
 	"github.com/pkg/errors"
 
 	"github.com/golang/glog"

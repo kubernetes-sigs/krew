@@ -15,8 +15,8 @@
 package main
 
 import (
-	"github.com/GoogleContainerTools/krew/cmd/krew/cmd"
 	"github.com/golang/glog"
+	"github.com/kubernetes-sigs/krew/cmd/krew/cmd"
 )
 
 func main() {

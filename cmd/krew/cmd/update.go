@@ -18,8 +18,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/GoogleContainerTools/krew/pkg/gitutil"
 	"github.com/golang/glog"
+	"github.com/kubernetes-sigs/krew/pkg/gitutil"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"

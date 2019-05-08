@@ -23,8 +23,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/GoogleContainerTools/krew/pkg/environment"
-	"github.com/GoogleContainerTools/krew/pkg/index"
+	"github.com/kubernetes-sigs/krew/pkg/environment"
+	"github.com/kubernetes-sigs/krew/pkg/index"
 )
 
 func Test_moveTargets(t *testing.T) {

@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/GoogleContainerTools/krew/pkg/installation"
+	"github.com/kubernetes-sigs/krew/pkg/installation"
 	"github.com/pkg/errors"
 
 	"github.com/golang/glog"

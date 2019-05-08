@@ -19,9 +19,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/GoogleContainerTools/krew/pkg/index"
-	"github.com/GoogleContainerTools/krew/pkg/index/indexscanner"
-	"github.com/GoogleContainerTools/krew/pkg/installation"
+	"github.com/kubernetes-sigs/krew/pkg/index"
+	"github.com/kubernetes-sigs/krew/pkg/index/indexscanner"
+	"github.com/kubernetes-sigs/krew/pkg/installation"
 
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
