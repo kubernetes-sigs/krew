@@ -183,7 +183,7 @@ func pluginNameToBin(name string, isWindows bool) string {
 	name = strings.Replace(name, "-", "_", -1)
 	name = "kubectl-" + name
 	if isWindows {
-		name = name + ".exe"
+		name += ".exe"
 	}
 	return name
 }

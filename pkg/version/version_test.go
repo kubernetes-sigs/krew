@@ -16,17 +16,19 @@ package version
 
 import "testing"
 
+const commitSha = "abcdef"
+
 func TestGitCommit(t *testing.T) {
 	orig := gitCommit
 	defer func() { gitCommit = orig }()
 
 	gitCommit = ""
-	if v := GitCommit(); v != "unknown" {
+	if v := GitCommit(); v != unknown {
 		t.Errorf("empty gitCommit, expected=\"unknown\" got=%q", v)
 	}
 
-	gitCommit = "abcdef"
-	if v := GitCommit(); v != "abcdef" {
+	gitCommit = commitSha
+	if v := GitCommit(); v != commitSha {
 		t.Errorf("empty gitCommit, expected=\"abcdef\" got=%q", v)
 	}
 }
@@ -36,12 +38,12 @@ func TestGitTag(t *testing.T) {
 	defer func() { gitTag = orig }()
 
 	gitTag = ""
-	if v := GitTag(); v != "unknown" {
+	if v := GitTag(); v != unknown {
 		t.Errorf("empty gitTag, expected=\"unknown\" got=%q", v)
 	}
 
-	gitTag = "abcdef"
-	if v := GitTag(); v != "abcdef" {
+	gitTag = commitSha
+	if v := GitTag(); v != commitSha {
 		t.Errorf("empty gitTag, expected=\"abcdef\" got=%q", v)
 	}
 }

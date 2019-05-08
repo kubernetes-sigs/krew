@@ -23,7 +23,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -166,8 +165,7 @@ var defaultExtractors = map[string]extractor{
 	"application/x-gzip": extractTARGZ,
 }
 
-func extractArchive(filename, dst string, at io.ReaderAt, size int64) error {
-	// TODO(lbb): Keep the filename for later direct download
+func extractArchive(dst string, at io.ReaderAt, size int64) error {
 	// TODO(ahmetb) This package is not architected well, this method should not
 	// be receiving this many args. Primary problem is at GetInsecure and
 	// GetWithSha256 methods that embed extraction in them, which is orthogonal.
@@ -206,5 +204,5 @@ func (d Downloader) Get(uri, dst string) error {
 	if err != nil {
 		return errors.Wrapf(err, "failed to get the uri %q", uri)
 	}
-	return extractArchive(path.Base(uri), dst, body, size)
+	return extractArchive(dst, body, size)
 }
