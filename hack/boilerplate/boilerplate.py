@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Notice: this script was imported from k8s.io/kubernetes/hack/boilerplate/boilerplate.py
+
 from __future__ import print_function
 
 import argparse
