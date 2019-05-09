@@ -18,8 +18,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/kubernetes-sigs/krew/pkg/installation"
 	"github.com/pkg/errors"
+	"sigs.k8s.io/krew/pkg/installation"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"

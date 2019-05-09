@@ -23,8 +23,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/kubernetes-sigs/krew/pkg/environment"
-	"github.com/kubernetes-sigs/krew/pkg/index"
+	"sigs.k8s.io/krew/pkg/environment"
+	"sigs.k8s.io/krew/pkg/index"
 )
 
 func Test_moveTargets(t *testing.T) {

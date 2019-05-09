@@ -21,7 +21,7 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "${SCRIPTDIR}/.."
 
 DEFAULT_OSARCH="darwin/amd64 windows/amd64 linux/amd64 linux/arm"
-version_pkg="github.com/kubernetes-sigs/krew/pkg/version"
+version_pkg="sigs.k8s.io/krew/pkg/version"
 
 rm -rf out/
 

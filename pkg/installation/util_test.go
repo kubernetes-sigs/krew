@@ -21,7 +21,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/kubernetes-sigs/krew/pkg/index"
+	"sigs.k8s.io/krew/pkg/index"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
 )

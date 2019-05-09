@@ -22,7 +22,7 @@ import (
 	"github.com/pkg/errors"
 	"k8s.io/client-go/util/homedir"
 
-	"github.com/kubernetes-sigs/krew/pkg/pathutil"
+	"sigs.k8s.io/krew/pkg/pathutil"
 )
 
 // Paths contains all important environment paths

@@ -26,8 +26,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
-	"github.com/kubernetes-sigs/krew/pkg/index"
-	"github.com/kubernetes-sigs/krew/pkg/pathutil"
+	"sigs.k8s.io/krew/pkg/index"
+	"sigs.k8s.io/krew/pkg/pathutil"
 )
 
 // GetMatchingPlatform finds the platform spec in the specified plugin that

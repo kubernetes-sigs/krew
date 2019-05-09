@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/kubernetes-sigs/krew/pkg/index"
-	"github.com/kubernetes-sigs/krew/pkg/index/indexscanner"
+	"sigs.k8s.io/krew/pkg/index"
+	"sigs.k8s.io/krew/pkg/index/indexscanner"
 
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
