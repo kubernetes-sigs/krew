@@ -18,13 +18,13 @@ import (
 	"os"
 	"strings"
 
-	"github.com/kubernetes-sigs/krew/pkg/index/indexscanner"
 	"github.com/pkg/errors"
+	"sigs.k8s.io/krew/pkg/index/indexscanner"
 
-	"github.com/kubernetes-sigs/krew/pkg/index"
-	"github.com/kubernetes-sigs/krew/pkg/installation"
 	"github.com/sahilm/fuzzy"
 	"github.com/spf13/cobra"
+	"sigs.k8s.io/krew/pkg/index"
+	"sigs.k8s.io/krew/pkg/installation"
 )
 
 // searchCmd represents the search command

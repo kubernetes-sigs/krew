@@ -18,8 +18,8 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/kubernetes-sigs/krew/pkg/environment"
-	"github.com/kubernetes-sigs/krew/pkg/index"
+	"sigs.k8s.io/krew/pkg/environment"
+	"sigs.k8s.io/krew/pkg/index"
 
 	"github.com/golang/glog"
 	"github.com/pkg/errors"

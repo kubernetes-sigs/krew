@@ -22,9 +22,9 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/kubernetes-sigs/krew/pkg/installation"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"sigs.k8s.io/krew/pkg/installation"
 )
 
 func init() {

@@ -19,14 +19,14 @@ import (
 	"os"
 
 	"github.com/golang/glog"
-	"github.com/kubernetes-sigs/krew/pkg/gitutil"
+	"sigs.k8s.io/krew/pkg/gitutil"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
 // IndexURI points to the upstream index.
-const IndexURI = "https://github.com/kubernetes-sigs/krew-index.git"
+const IndexURI = "https://sigs.k8s.io/krew-index.git"
 
 // updateCmd represents the update command
 var updateCmd = &cobra.Command{

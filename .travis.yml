@@ -2,7 +2,7 @@ sudo: false
 language: go
 go:
 - 1.10.x
-go_import_path: github.com/kubernetes-sigs/krew
+go_import_path: sigs.k8s.io/krew
 install: true
 notifications:
   email: false

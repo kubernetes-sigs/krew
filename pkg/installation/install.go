@@ -20,11 +20,11 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/kubernetes-sigs/krew/pkg/download"
-	"github.com/kubernetes-sigs/krew/pkg/environment"
-	"github.com/kubernetes-sigs/krew/pkg/index"
-	"github.com/kubernetes-sigs/krew/pkg/pathutil"
 	"github.com/pkg/errors"
+	"sigs.k8s.io/krew/pkg/download"
+	"sigs.k8s.io/krew/pkg/environment"
+	"sigs.k8s.io/krew/pkg/index"
+	"sigs.k8s.io/krew/pkg/pathutil"
 
 	"github.com/golang/glog"
 )

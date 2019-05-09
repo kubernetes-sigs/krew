@@ -21,8 +21,8 @@ import (
 	"path/filepath"
 	"syscall"
 
-	"github.com/kubernetes-sigs/krew/pkg/index"
-	"github.com/kubernetes-sigs/krew/pkg/pathutil"
+	"sigs.k8s.io/krew/pkg/index"
+	"sigs.k8s.io/krew/pkg/pathutil"
 
 	"github.com/golang/glog"
 	"github.com/pkg/errors"

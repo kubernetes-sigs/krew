@@ -22,9 +22,9 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/kubernetes-sigs/krew/pkg/index"
-	"github.com/kubernetes-sigs/krew/pkg/index/indexscanner"
-	"github.com/kubernetes-sigs/krew/pkg/installation"
+	"sigs.k8s.io/krew/pkg/index"
+	"sigs.k8s.io/krew/pkg/index/indexscanner"
+	"sigs.k8s.io/krew/pkg/installation"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"

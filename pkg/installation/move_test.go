@@ -22,7 +22,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/kubernetes-sigs/krew/pkg/index"
+	"sigs.k8s.io/krew/pkg/index"
 )
 
 func Test_findMoveTargets(t *testing.T) {

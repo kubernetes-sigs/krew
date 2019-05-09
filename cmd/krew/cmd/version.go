@@ -19,10 +19,10 @@ import (
 	"os"
 
 	"github.com/golang/glog"
-	"github.com/kubernetes-sigs/krew/pkg/environment"
-	"github.com/kubernetes-sigs/krew/pkg/version"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"sigs.k8s.io/krew/pkg/environment"
+	"sigs.k8s.io/krew/pkg/version"
 )
 
 // versionCmd represents the version command
