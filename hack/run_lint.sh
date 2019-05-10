@@ -21,7 +21,7 @@ HACK=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 if ! [[ -x "$GOPATH/bin/golangci-lint" ]]
 then
    echo 'Installing golangci-lint'
-   "${HACK}"/install_golangci-lint.sh -b "$GOPATH/bin" v1.16.0
+   curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b "$GOPATH/bin" v1.16.0
 fi
 
 "$GOPATH/bin/golangci-lint" run \
