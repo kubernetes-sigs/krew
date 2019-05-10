@@ -11,6 +11,7 @@ before_install:
 - go get gopkg.in/alecthomas/gometalinter.v2
 - gometalinter.v2 --install
 script:
+- hack/verify-boilerplate.sh
 - hack/gofmt.sh
 - hack/gometalinter.sh
 - go test -v -coverprofile=coverage.txt -covermode=atomic ./...

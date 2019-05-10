@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Copyright 2019 The Kubernetes Authors.
+# Copyright 2014 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +14,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -e -o pipefail
+# Notice: this script was imported from k8s.io/kubernetes/hack/verify-boilerplate.sh
 
-SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+set -o errexit
+set -o nounset
+set -o pipefail
 
-"${SCRIPTDIR}/make-binaries.sh"
-"${SCRIPTDIR}/make-release-artifacts.sh"
+KUBE_ROOT=$(dirname "${BASH_SOURCE}")/..
+
+boilerDir="${KUBE_ROOT}/hack/boilerplate"
+boiler="${boilerDir}/boilerplate.py"
+
+files_need_boilerplate=($(${boiler} "$@"))
+
+# Run boilerplate check
+if [[ ${#files_need_boilerplate[@]} -gt 0 ]]; then
+  for file in "${files_need_boilerplate[@]}"; do
+    echo "Boilerplate header is wrong for: ${file}" >&2
+  done
+
+  exit 1
+fi
