@@ -15,8 +15,6 @@
 // Package version contains the version information of the krew binary.
 package version
 
-const unknown = "unknown"
-
 var (
 	// gitCommit contains the git commit identifier.
 	gitCommit string
@@ -29,7 +27,7 @@ var (
 // default "unknown" value.
 func GitCommit() string {
 	if gitCommit == "" {
-		return unknown
+		return "unknown"
 	}
 	return gitCommit
 }
@@ -38,7 +36,7 @@ func GitCommit() string {
 // default "unknown" value.
 func GitTag() string {
 	if gitTag == "" {
-		return unknown
+		return "unknown"
 	}
 	return gitTag
 }

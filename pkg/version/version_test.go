@@ -23,7 +23,7 @@ func TestGitCommit(t *testing.T) {
 	defer func() { gitCommit = orig }()
 
 	gitCommit = ""
-	if v := GitCommit(); v != unknown {
+	if v := GitCommit(); v != "unknown" {
 		t.Errorf("empty gitCommit, expected=\"unknown\" got=%q", v)
 	}
 
@@ -38,7 +38,7 @@ func TestGitTag(t *testing.T) {
 	defer func() { gitTag = orig }()
 
 	gitTag = ""
-	if v := GitTag(); v != unknown {
+	if v := GitTag(); v != "unknown" {
 		t.Errorf("empty gitTag, expected=\"unknown\" got=%q", v)
 	}
 
