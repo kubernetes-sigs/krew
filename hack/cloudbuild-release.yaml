@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Used to push tagged releses to Google Cloud Storage with the tag name
+# Used to push tagged releases to Google Cloud Storage with the tag name
 # as well as "latest"
 steps:
   - name: 'gcr.io/cloud-builders/docker'

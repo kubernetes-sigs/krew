@@ -66,7 +66,7 @@ To package a plugin via krew, you need to:
 To make a plugin available to everyone via krew, you need to:
 
 1. Make the archive file (`.zip` or `.tar.gz`) **publicly downloadable** on a
-   URL (you can host it youself or use GitHub releases feature).
+   URL (you can host it yourself or use GitHub releases feature).
 2. Submit the plugin manifest file to the [krew index][index] repository.
 
 Plugin packages need to be available to download from the public Internet.
@@ -139,7 +139,7 @@ architectures using the keys `os` and `arch` respectively.
         os: linux
 ```
 
-**Example:** Match to a Linux or macOS platform, any architecure:
+**Example:** Match to a Linux or macOS platform, any architecture:
 
 ```yaml
 ...

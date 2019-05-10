@@ -18,7 +18,7 @@ package version
 const unknown = "unknown"
 
 var (
-	// gitCommit contains the git commit idenifier.
+	// gitCommit contains the git commit identifier.
 	gitCommit string
 
 	// gitTag contains the git tag or describe output.
