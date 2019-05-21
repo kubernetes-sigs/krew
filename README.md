@@ -71,7 +71,12 @@ Read the [User Guide](./docs/USER_GUIDE.md) for detailed documentation.
        .\krew-windows_amd64.exe install --manifest=krew.yaml --archive=krew.zip
 
 1. Add `%USERPROFILE%\.krew\bin` to your `PATH` environment variable
-   ([how?](https://java.com/en/download/help/path.xml))
+
+    ```sh
+    setx PATH "%USERPROFILE%\.krew\bin;%PATH%"
+    ```
+
+  and restart your command prompt.
 
 [releases]: https://github.com/kubernetes-sigs/krew/releases
 
