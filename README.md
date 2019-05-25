@@ -38,6 +38,8 @@ Read the [User Guide](./docs/USER_GUIDE.md) for detailed documentation.
 
 **macOS and Linux:**
 
+#### Bash and ZSH
+
 1. Make sure that `git` is installed.
 2. Run this command in your terminal to download and install `krew`:
 
@@ -58,6 +60,32 @@ Read the [User Guide](./docs/USER_GUIDE.md) for detailed documentation.
      ```
 
    and restart your shell.
+
+#### Fish
+
+1. Make sure that `git` is installed.
+2. Run this command in your terminal to download and install `krew`:
+
+    ```fish
+    begin
+      set -x; cd "(mktemp -d)" &&
+      curl -fsSLO "https://storage.googleapis.com/krew/v0.2.1/krew.{tar.gz,yaml}" &&
+      tar zxvf krew.tar.gz &&
+      set KREWNAME krew-(uname | tr '[:upper:]' '[:lower:]')_amd64 &&
+      ./$KREWNAME install \
+        --manifest=krew.yaml --archive=krew.tar.gz &&
+      set -e KREWNAME
+    end
+    ```
+3. Add `$HOME/.krew/bin` directory to your PATH environment variable. To do
+   this, update your `config.fish` file and append the following line:
+
+     ```fish
+     set -gx PATH $PATH $HOME/.krew/bin
+     ```
+
+   and restart your shell.
+
 
 **Windows:**
 
