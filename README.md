@@ -37,7 +37,9 @@ Read the [User Guide](./docs/USER_GUIDE.md) for detailed documentation.
 > :warning: **Warning:** krew is only compatible with kubectl v1.12 or higher.
 
 **macOS and Linux:**
+
 #### Bash and ZSH
+
 1. Make sure that `git` is installed.
 2. Run this command in your terminal to download and install `krew`:
 
@@ -60,12 +62,13 @@ Read the [User Guide](./docs/USER_GUIDE.md) for detailed documentation.
    and restart your shell.
 
 #### Fish
+
 1. Make sure that `git` is installed.
 2. Run this command in your terminal to download and install `krew`:
 
     ```fish
     begin
-      set -x; cd (mktemp -d) &&
+      set -x; cd "(mktemp -d)" &&
       curl -fsSLO "https://storage.googleapis.com/krew/v0.2.1/krew.{tar.gz,yaml}" &&
       tar zxvf krew.tar.gz &&
       set KREWNAME krew-(uname | tr '[:upper:]' '[:lower:]')_amd64 &&
