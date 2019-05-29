@@ -8,12 +8,10 @@ notifications:
   email: false
 before_install:
 - go get github.com/mitchellh/gox
-- go get gopkg.in/alecthomas/gometalinter.v2
-- gometalinter.v2 --install
 script:
 - hack/verify-boilerplate.sh
 - hack/gofmt.sh
-- hack/gometalinter.sh
+- hack/run_lint.sh
 - go test -v -coverprofile=coverage.txt -covermode=atomic ./...
 - hack/make-all.sh
 after_success:

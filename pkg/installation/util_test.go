@@ -21,9 +21,8 @@ import (
 	"runtime"
 	"testing"
 
-	"sigs.k8s.io/krew/pkg/index"
-
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/krew/pkg/index"
 )
 
 func Test_osArch_default(t *testing.T) {

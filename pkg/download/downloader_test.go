@@ -145,7 +145,7 @@ func collectFiles(t *testing.T, scanPath string) []string {
 		}
 		fp = strings.TrimPrefix(fp, scanPath)
 		if info.IsDir() {
-			fp = fp + "/"
+			fp += "/"
 		}
 		outFiles = append(outFiles, fp)
 		return nil
@@ -456,7 +456,7 @@ func Test_extractArchive(t *testing.T) {
 				return
 			}
 
-			if err := extractArchive(tt.args.filename, tt.args.dst, fd, st.Size()); (err != nil) != tt.wantErr {
+			if err := extractArchive(tt.args.dst, fd, st.Size()); (err != nil) != tt.wantErr {
 				t.Errorf("extractArchive() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

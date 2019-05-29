@@ -84,7 +84,7 @@ func removePluginVersionFromFS(p environment.Paths, plugin index.Plugin, newVers
 			return errors.Wrap(err, "failed to find current krew version")
 		}
 		glog.V(1).Infof("Detected running krew version=%s", executedKrewVersion)
-		return handleKrewRemove(p, plugin, newVersion, oldVersion, executedKrewVersion)
+		return handleKrewRemove(p, plugin, newVersion, executedKrewVersion)
 	}
 
 	glog.V(1).Infof("Remove old plugin installation under %q", p.PluginVersionInstallPath(plugin.Name, oldVersion))
@@ -92,7 +92,7 @@ func removePluginVersionFromFS(p environment.Paths, plugin index.Plugin, newVers
 }
 
 // handleKrewRemove will remove and unlink old krew versions.
-func handleKrewRemove(p environment.Paths, plugin index.Plugin, newVersion, oldVersion, currentKrewVersion string) error {
+func handleKrewRemove(p environment.Paths, plugin index.Plugin, newVersion, currentKrewVersion string) error {
 	dir, err := ioutil.ReadDir(p.PluginInstallPath(plugin.Name))
 	if err != nil {
 		return errors.Wrap(err, "can't read plugin dir")

@@ -32,7 +32,7 @@ type Paths struct {
 }
 
 // MustGetKrewPaths returns the inferred paths for krew. By default, it assumes
-// $HOME/.krew as the base path, but can be overriden via KREW_ROOT environment
+// $HOME/.krew as the base path, but can be overridden via KREW_ROOT environment
 // variable.
 func MustGetKrewPaths() Paths {
 	base := filepath.Join(homedir.HomeDir(), ".krew")

@@ -14,12 +14,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+set -euo pipefail
 
-#!/bin/bash
-set -e -o pipefail
+HACK=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
-SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+if ! [[ -x "$GOPATH/bin/golangci-lint" ]]
+then
+   echo 'Installing golangci-lint'
+   curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b "$GOPATH/bin" v1.16.0
+fi
 
-gometalinter.v2 \
-	${GOMETALINTER_OPTS:-"--deadline=5m"} \
-	--config $SCRIPTDIR/gometalinter.json ./...
+"$GOPATH/bin/golangci-lint" run \
+		--no-config \
+		-D errcheck \
+		-E gocritic \
+		-E goimports \
+		-E golint \
+		-E gosimple \
+		-E interfacer \
+		-E maligned \
+		-E misspell \
+		-E unconvert \
+		-E unparam \
+		-E stylecheck \
+		-E staticcheck \
+		-E structcheck \
+		-E prealloc \
+		--skip-dirs hack,docs

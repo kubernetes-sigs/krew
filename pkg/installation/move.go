@@ -63,7 +63,7 @@ func findMoveTargets(fromDir, toDir string, fo index.FileOperation) ([]move, err
 		return nil, errors.Errorf("no files in the plugin archive matched the glob pattern=%s", fo.From)
 	}
 
-	var moves []move
+	moves := make([]move, 0, len(gl))
 	for _, v := range gl {
 		newPath := filepath.Join(newDir, filepath.Base(filepath.FromSlash(v)))
 		// Check secure path
