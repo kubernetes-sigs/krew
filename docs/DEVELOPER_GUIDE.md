@@ -297,7 +297,7 @@ if you're on a Linux machine, you can test Windows installation with:
 
     KREW_OS=windows krew install --manifest=[...]
 
-After you have tested your plugin, remove it with `kubectl krew remove foo`.
+After you have tested your plugin, uninstall it with `kubectl krew uninstall foo`.
 
 ## Publishing Plugins
 
