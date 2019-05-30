@@ -15,13 +15,13 @@
 package environment
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
 	"k8s.io/client-go/util/homedir"
+	"sigs.k8s.io/krew/pkg/testutil"
 )
 
 func TestMustGetKrewPaths_resolvesToHomeDir(t *testing.T) {
@@ -144,25 +144,20 @@ func TestGetExecutedVersion(t *testing.T) {
 }
 
 func TestRealpath(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(tmp)
+	tmpDir, cleanup := testutil.NewTempDir(t)
+	defer cleanup()
 
 	// create regular file
-	if err := ioutil.WriteFile(filepath.Join(tmp, "regular-file"), nil, 0644); err != nil {
-		t.Fatal(err)
-	}
+	tmpDir.Write("regular-file", nil)
 
 	// create absolute symlink
 	orig := filepath.Clean(os.TempDir())
-	if err := os.Symlink(orig, filepath.Join(tmp, "symbolic-link-abs")); err != nil {
+	if err := os.Symlink(orig, filepath.Join(tmpDir.Root(), "symbolic-link-abs")); err != nil {
 		t.Fatal(err)
 	}
 
 	// create relative symlink
-	if err := os.Symlink("./another-file", filepath.Join(tmp, "symbolic-link-rel")); err != nil {
+	if err := os.Symlink("./another-file", filepath.Join(tmpDir.Root(), "symbolic-link-rel")); err != nil {
 		t.Fatal(err)
 	}
 
@@ -172,13 +167,13 @@ func TestRealpath(t *testing.T) {
 		want    string
 		wantErr bool
 	}{
-		{"file not exists", filepath.FromSlash("/not/exists"), "", true},
-		{"directory", tmp, tmp, false},
-		{"regular file", filepath.Join(tmp, "regular-file"), filepath.Join(tmp, "regular-file"), false},
-		{"directory unclean", filepath.Join(tmp, "foo", ".."), tmp, false},
-		{"regular file unclean", filepath.Join(tmp, "regular-file", "foo", ".."), filepath.Join(tmp, "regular-file"), false},
-		{"relative symbolic link", filepath.Join(tmp, "symbolic-link-rel"), "", true},
-		{"absolute symbolic link", filepath.Join(tmp, "symbolic-link-abs"), orig, false},
+		{"file not exists", tmpDir.Path("/not/exists"), "", true},
+		{"directory", tmpDir.Root(), tmpDir.Root(), false},
+		{"regular file", tmpDir.Path("regular-file"), tmpDir.Path("regular-file"), false},
+		{"directory unclean", tmpDir.Path("foo/.."), tmpDir.Root(), false},
+		{"regular file unclean", tmpDir.Path("regular-file/foo/.."), tmpDir.Path("regular-file"), false},
+		{"relative symbolic link", tmpDir.Path("symbolic-link-rel"), "", true},
+		{"absolute symbolic link", tmpDir.Path("symbolic-link-abs"), orig, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

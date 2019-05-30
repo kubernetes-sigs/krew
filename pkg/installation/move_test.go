@@ -17,12 +17,12 @@ package installation
 import (
 	"fmt"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"reflect"
 	"testing"
 
 	"sigs.k8s.io/krew/pkg/index"
+	"sigs.k8s.io/krew/pkg/testutil"
 )
 
 func Test_findMoveTargets(t *testing.T) {
@@ -186,24 +186,17 @@ func Test_getDirectMove(t *testing.T) {
 }
 
 func Test_moveOrCopyDir_canMoveToNonExistingDir(t *testing.T) {
-	src, err := ioutil.TempDir(os.TempDir(), "krew-move-test-src")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(src)
-	if err := ioutil.WriteFile(filepath.Join(src, "some-file"), nil, 0644); err != nil {
-		t.Fatal(err)
-	}
+	srcDir, cleanupSrc := testutil.NewTempDir(t)
+	defer cleanupSrc()
 
-	dst, err := ioutil.TempDir(os.TempDir(), "krew-move-test-dst")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(dst)
+	srcDir.Write("some-file", nil)
 
-	dst = filepath.Join(dst, "non-existing-dir")
+	dstDir, cleanupDst := testutil.NewTempDir(t)
+	defer cleanupDst()
 
-	if err := moveOrCopyDir(src, dst); err != nil {
+	dst := dstDir.Path("non-existing-dir")
+
+	if err := moveOrCopyDir(srcDir.Root(), dst); err != nil {
 		t.Fatalf("move failed: %+v", err)
 	}
 
@@ -220,32 +213,23 @@ func Test_moveOrCopyDir_canMoveToNonExistingDir(t *testing.T) {
 }
 
 func Test_moveOrCopyDir_removesExistingTarget(t *testing.T) {
-	src, err := ioutil.TempDir(os.TempDir(), "krew-move-test-src")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(src)
-	if err := ioutil.WriteFile(filepath.Join(src, "some-file"), nil, 0644); err != nil {
-		t.Fatal(err)
-	}
+	srcDir, cleanupSrc := testutil.NewTempDir(t)
+	defer cleanupSrc()
 
-	dst, err := ioutil.TempDir(os.TempDir(), "krew-move-test-dst")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(dst)
+	srcDir.Write("some-file", nil)
+
+	dstDir, cleanupDst := testutil.NewTempDir(t)
+	defer cleanupDst()
 
 	for i := 0; i < 3; i++ { // write some files
-		if err := ioutil.WriteFile(filepath.Join(dst, fmt.Sprintf("file-%d", i)), nil, 0644); err != nil {
-			t.Fatal(err)
-		}
+		dstDir.Write(fmt.Sprintf("file-%d", i), nil)
 	}
 
-	if err := moveOrCopyDir(src, dst); err != nil {
+	if err := moveOrCopyDir(srcDir.Root(), dstDir.Root()); err != nil {
 		t.Fatalf("move failed: %+v", err)
 	}
 
-	items, err := ioutil.ReadDir(dst)
+	items, err := ioutil.ReadDir(dstDir.Root())
 	if err != nil {
 		t.Fatal(err)
 	}
