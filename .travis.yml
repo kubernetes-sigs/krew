@@ -9,6 +9,7 @@ notifications:
 before_install:
 - go get github.com/mitchellh/gox
 script:
+- hack/check-code-patterns.sh
 - hack/verify-boilerplate.sh
 - hack/gofmt.sh
 - hack/run_lint.sh
