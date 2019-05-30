@@ -18,6 +18,7 @@ import (
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/krew/pkg/constants"
 )
 
 func Test_IsSafePluginName(t *testing.T) {
@@ -105,7 +106,7 @@ func TestPlugin_Validate(t *testing.T) {
 		{
 			name: "validate success",
 			fields: fields{
-				TypeMeta:   metav1.TypeMeta{APIVersion: currentAPIVersion},
+				TypeMeta:   metav1.TypeMeta{APIVersion: constants.CurrentAPIVersion},
 				ObjectMeta: metav1.ObjectMeta{Name: "foo"},
 				Spec: PluginSpec{
 					Version:          "",
@@ -152,7 +153,7 @@ func TestPlugin_Validate(t *testing.T) {
 		{
 			name: "no short description",
 			fields: fields{
-				TypeMeta:   metav1.TypeMeta{APIVersion: currentAPIVersion},
+				TypeMeta:   metav1.TypeMeta{APIVersion: constants.CurrentAPIVersion},
 				ObjectMeta: metav1.ObjectMeta{Name: "foo"},
 				Spec: PluginSpec{
 					Version:          "",
@@ -175,7 +176,7 @@ func TestPlugin_Validate(t *testing.T) {
 		{
 			name: "no file operations",
 			fields: fields{
-				TypeMeta:   metav1.TypeMeta{APIVersion: currentAPIVersion},
+				TypeMeta:   metav1.TypeMeta{APIVersion: constants.CurrentAPIVersion},
 				ObjectMeta: metav1.ObjectMeta{Name: "foo"},
 				Spec: PluginSpec{
 					Version:          "",
@@ -198,7 +199,7 @@ func TestPlugin_Validate(t *testing.T) {
 		{
 			name: "wrong plugin name",
 			fields: fields{
-				TypeMeta:   metav1.TypeMeta{APIVersion: currentAPIVersion},
+				TypeMeta:   metav1.TypeMeta{APIVersion: constants.CurrentAPIVersion},
 				ObjectMeta: metav1.ObjectMeta{Name: "wrong-name"},
 				Spec: PluginSpec{
 					Version:          "",
@@ -221,7 +222,7 @@ func TestPlugin_Validate(t *testing.T) {
 		{
 			name: "unsafe plugin name",
 			fields: fields{
-				TypeMeta:   metav1.TypeMeta{APIVersion: currentAPIVersion},
+				TypeMeta:   metav1.TypeMeta{APIVersion: constants.CurrentAPIVersion},
 				ObjectMeta: metav1.ObjectMeta{Name: "../foo"},
 				Spec: PluginSpec{
 					Version:          "",

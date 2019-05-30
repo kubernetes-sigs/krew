@@ -19,10 +19,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-)
-
-const (
-	currentAPIVersion = "krew.googlecontainertools.github.com/v1alpha2"
+	"sigs.k8s.io/krew/pkg/constants"
 )
 
 var (
@@ -48,7 +45,7 @@ func IsSafePluginName(name string) bool {
 }
 
 func isSupportedAPIVersion(apiVersion string) bool {
-	return apiVersion == currentAPIVersion
+	return apiVersion == constants.CurrentAPIVersion
 }
 
 // Validate TODO(lbb)
