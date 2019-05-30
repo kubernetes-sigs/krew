@@ -17,6 +17,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -61,7 +62,11 @@ func validateManifestFile(path string) error {
 		return errors.Wrap(err, "failed to read plugin file")
 	}
 	filename := filepath.Base(path)
-	pluginNameFromFileName := strings.TrimSuffix(filename, filepath.Ext(filename))
+	manifestExtension := filepath.Ext(filename)
+	if manifestExtension != ".yaml" {
+		return fmt.Errorf("expected manifest extension '.yaml' but found '%s'", manifestExtension)
+	}
+	pluginNameFromFileName := strings.TrimSuffix(filename, manifestExtension)
 	glog.V(4).Infof("inferred plugin name as %s", pluginNameFromFileName)
 
 	// validate plugin manifest
