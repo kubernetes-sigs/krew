@@ -23,11 +23,11 @@ similar to tools like apt, dnf or [brew](http://brew.sh).
 krew is easy to use:
 
 ```sh
-kubectl krew search               # show all plugins
-kubectl krew install view-secret  # install a plugin named "view-secret"
-kubectl view-secret               # use the plugin
-kubectl krew upgrade              # upgrade installed plugins
-kubectl krew remove view-secret   # uninstall a plugin
+kubectl krew search                 # show all plugins
+kubectl krew install view-secret    # install a plugin named "view-secret"
+kubectl view-secret                 # use the plugin
+kubectl krew upgrade                # upgrade installed plugins
+kubectl krew uninstall view-secret  # uninstall a plugin
 ```
 
 Read the [User Guide](./docs/USER_GUIDE.md) for detailed documentation.

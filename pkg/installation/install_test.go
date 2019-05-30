@@ -153,11 +153,11 @@ func Test_removeLink_notExists(t *testing.T) {
 	}
 }
 
-func TestRemove_cantUninstallItself(t *testing.T) {
+func TestUninstall_cantUninstallItself(t *testing.T) {
 	envPath := environment.MustGetKrewPaths()
 	expectedErrorMessagePart := "not allowed"
-	if err := Remove(envPath, "krew"); !strings.Contains(err.Error(), expectedErrorMessagePart) {
-		t.Fatalf("wrong error message for 'remove krew' action, expected message contains %q; got %q",
+	if err := Uninstall(envPath, "krew"); !strings.Contains(err.Error(), expectedErrorMessagePart) {
+		t.Fatalf("wrong error message for 'uninstall krew' action, expected message contains %q; got %q",
 			expectedErrorMessagePart, err.Error())
 	}
 }

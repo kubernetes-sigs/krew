@@ -126,7 +126,7 @@ allows you to upgrade to the latest commit available in the source repository.
 
 When you don't need a plugin anymore you can uninstall it with:
 
-    kubectl krew remove <PLUGIN>
+    kubectl krew uninstall <PLUGIN>
 
 ## Uninstalling Krew
 
