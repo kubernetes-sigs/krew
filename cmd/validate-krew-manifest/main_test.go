@@ -82,7 +82,7 @@ func TestValidateManifestFile(t *testing.T) {
 					ShortDescription: "test",
 					Platforms: []index.Platform{{
 						Head:  "http://test.com",
-						Files: []index.FileOperation{{"", ""}},
+						Files: []index.FileOperation{{From: "", To: ""}},
 						Bin:   "bin",
 						Selector: &v1.LabelSelector{
 							MatchLabels: map[string]string{"os": "darwin", "arch": "arm"},
@@ -109,14 +109,14 @@ func TestValidateManifestFile(t *testing.T) {
 					Platforms: []index.Platform{
 						{
 							Head:  "http://test.com",
-							Files: []index.FileOperation{{"", ""}},
+							Files: []index.FileOperation{{From: "", To: ""}},
 							Bin:   "bin",
 							Selector: &v1.LabelSelector{
 								MatchLabels: map[string]string{"os": "linux"},
 							},
 						}, {
 							Head:  "http://test.com",
-							Files: []index.FileOperation{{"", ""}},
+							Files: []index.FileOperation{{From: "", To: ""}},
 							Bin:   "bin",
 							Selector: &v1.LabelSelector{
 								MatchLabels: map[string]string{"os": "linux", "arch": "arm"},
