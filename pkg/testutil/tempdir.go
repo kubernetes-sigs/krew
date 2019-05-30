@@ -33,12 +33,16 @@ func NewTempDir(t *testing.T) (tmpDir *TempDir, cleanup func()) {
 	t.Helper()
 	root, err := ioutil.TempDir("", "krew-test")
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	tmpDir = &TempDir{t: t, root: root}
 
-	return tmpDir, func() { os.RemoveAll(root) }
+	return tmpDir, func() {
+		if err := os.RemoveAll(root); err != nil {
+			t.Logf("warning: failed to remove tempdir %s: %+v", root, err)
+		}
+	}
 }
 
 // Root returns the root of the temporary directory.
@@ -49,7 +53,6 @@ func (td *TempDir) Root() string {
 // Path returns the path to a file in the temp directory.
 // The input file is expected to use '/' as directory separator regardless of the host OS.
 func (td *TempDir) Path(file string) string {
-	td.t.Helper()
 	pathElems := []string{td.root}
 	pathElems = append(pathElems, strings.Split(file, "/")...)
 	return filepath.Join(pathElems...)
@@ -58,14 +61,12 @@ func (td *TempDir) Path(file string) string {
 // Write creates a file containing content in the temporary directory.
 func (td *TempDir) Write(file string, content []byte) *TempDir {
 	td.t.Helper()
-	td.failIfErr(os.MkdirAll(filepath.Dir(td.Path(file)), os.ModePerm))
-	return td.failIfErr(ioutil.WriteFile(td.Path(file), content, os.ModePerm))
-}
-
-func (td *TempDir) failIfErr(err error) *TempDir {
-	td.t.Helper()
-	if err != nil {
-		td.t.Fatal(err)
+	path := td.Path(file)
+	if err := os.MkdirAll(filepath.Dir(path), os.ModePerm); err != nil {
+		td.t.Fatalf("cannot create directory %q: %s", filepath.Dir(path), err)
+	}
+	if err := ioutil.WriteFile(path, content, os.ModePerm); err != nil {
+		td.t.Fatalf("cannot write to file %q: %s", path, err)
 	}
 	return td
 }

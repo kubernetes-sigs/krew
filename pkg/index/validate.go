@@ -55,7 +55,7 @@ func (p Plugin) Validate(name string) error {
 	}
 
 	if p.Kind != constants.PluginKind {
-		return errors.Errorf("plugin manifest has kind=%q, but only 'Plugin' is supported", p.Kind)
+		return errors.Errorf("plugin manifest has kind=%q, but only %q is supported", p.Kind, constants.PluginKind)
 	}
 
 	if !IsSafePluginName(name) {
