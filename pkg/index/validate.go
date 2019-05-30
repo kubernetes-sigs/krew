@@ -54,6 +54,10 @@ func (p Plugin) Validate(name string) error {
 		return errors.Errorf("plugin manifest has apiVersion=%q, not supported in this version of krew (try updating plugin index or install a newer version of krew)", p.APIVersion)
 	}
 
+	if p.Kind != constants.PluginKind {
+		return errors.Errorf("plugin manifest has kind=%q, but only 'Plugin' is supported", p.Kind)
+	}
+
 	if !IsSafePluginName(name) {
 		return errors.Errorf("the plugin name %q is not allowed, must match %q", name, safePluginRegexp.String())
 	}
