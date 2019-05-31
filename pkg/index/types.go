@@ -21,8 +21,8 @@ import (
 // Plugin is a top-level type.
 // TODO(lbb): Add deepcopy code generation.
 type Plugin struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
+	metav1.TypeMeta   `json:",inline" yaml:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty" yaml:"metadata"`
 
 	Spec PluginSpec `json:"spec"`
 }

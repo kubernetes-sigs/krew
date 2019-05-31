@@ -16,13 +16,146 @@
 package main
 
 import (
+	"strings"
 	"testing"
 
-	"sigs.k8s.io/krew/pkg/index"
-
+	"gopkg.in/yaml.v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/krew/pkg/constants"
+	"sigs.k8s.io/krew/pkg/index"
+	"sigs.k8s.io/krew/pkg/testutil"
 )
+
+func TestValidateManifestFile(t *testing.T) {
+	tests := []struct {
+		name      string
+		manifest  string
+		plugin    *index.Plugin
+		shouldErr bool
+		errMsg    string
+	}{
+		{
+			name:      "manifest does not exist",
+			manifest:  "test.yaml",
+			shouldErr: true,
+			errMsg:    "failed to read plugin file",
+		},
+		{
+			name:     "manifest has wrong file ending",
+			manifest: "test.yml",
+			plugin: &index.Plugin{
+				ObjectMeta: v1.ObjectMeta{
+					Name: "test",
+				},
+			},
+			shouldErr: true,
+			errMsg:    "expected manifest extension '.yaml'",
+		},
+		{
+			name:     "manifest validation fails",
+			manifest: "test.yaml",
+			plugin: &index.Plugin{
+				TypeMeta: v1.TypeMeta{
+					APIVersion: constants.CurrentAPIVersion,
+					Kind:       constants.PluginKind,
+				},
+				ObjectMeta: v1.ObjectMeta{
+					Name: "wrong-name",
+				},
+			},
+			shouldErr: true,
+			errMsg:    "plugin validation error",
+		},
+		{
+			name:     "architecture selector not supported",
+			manifest: "test.yaml",
+			plugin: &index.Plugin{
+				TypeMeta: v1.TypeMeta{
+					APIVersion: constants.CurrentAPIVersion,
+					Kind:       constants.PluginKind,
+				},
+				ObjectMeta: v1.ObjectMeta{
+					Name: "test",
+				},
+				Spec: index.PluginSpec{
+					ShortDescription: "test",
+					Platforms: []index.Platform{{
+						Head:  "http://test.com",
+						Files: []index.FileOperation{{From: "", To: ""}},
+						Bin:   "bin",
+						Selector: &v1.LabelSelector{
+							MatchLabels: map[string]string{"os": "darwin", "arch": "arm"},
+						},
+					}},
+				},
+			},
+			shouldErr: true,
+			errMsg:    "doesn't match any supported platforms",
+		},
+		{
+			name:     "overlapping platform selectors",
+			manifest: "test.yaml",
+			plugin: &index.Plugin{
+				TypeMeta: v1.TypeMeta{
+					APIVersion: constants.CurrentAPIVersion,
+					Kind:       constants.PluginKind,
+				},
+				ObjectMeta: v1.ObjectMeta{
+					Name: "test",
+				},
+				Spec: index.PluginSpec{
+					ShortDescription: "test",
+					Platforms: []index.Platform{
+						{
+							Head:  "http://test.com",
+							Files: []index.FileOperation{{From: "", To: ""}},
+							Bin:   "bin",
+							Selector: &v1.LabelSelector{
+								MatchLabels: map[string]string{"os": "linux"},
+							},
+						}, {
+							Head:  "http://test.com",
+							Files: []index.FileOperation{{From: "", To: ""}},
+							Bin:   "bin",
+							Selector: &v1.LabelSelector{
+								MatchLabels: map[string]string{"os": "linux", "arch": "arm"},
+							},
+						}},
+				},
+			},
+			shouldErr: true,
+			errMsg:    "overlapping platform selectors found",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			tmp, cleanup := testutil.NewTempDir(t)
+			defer cleanup()
+			if test.plugin != nil {
+				content, err := yaml.Marshal(test.plugin)
+				if err != nil {
+					t.Fatal(err)
+				}
+				tmp.Write(test.manifest, content)
+			}
+
+			err := validateManifestFile(tmp.Path(test.manifest))
+			if test.shouldErr {
+				if err == nil {
+					t.Errorf("Expected an error '%s' but found none", test.errMsg)
+				} else if !strings.Contains(err.Error(), test.errMsg) {
+					t.Errorf("Error '%s' should contain error message '%s'", err, test.errMsg)
+				}
+			} else {
+				if err != nil {
+					t.Errorf("Expected no error but found '%s'", err)
+				}
+			}
+		})
+	}
+}
 
 func Test_selectorMatchesOSArch(t *testing.T) {
 	type args struct {

@@ -25,6 +25,7 @@ import (
 
 	"sigs.k8s.io/krew/pkg/environment"
 	"sigs.k8s.io/krew/pkg/index"
+	"sigs.k8s.io/krew/pkg/testutil"
 )
 
 func Test_moveTargets(t *testing.T) {
@@ -74,53 +75,37 @@ func Test_moveTargets(t *testing.T) {
 }
 
 func Test_createOrUpdateLink(t *testing.T) {
-	tempDir, err := ioutil.TempDir(os.TempDir(), "krew-test")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(tempDir)
-
-	type args struct {
-		binDir string
-		binary string
-	}
 	tests := []struct {
 		name       string
 		pluginName string
-		args       args
+		binary     string
 		wantErr    bool
 	}{
 		{
 			name:       "normal link",
 			pluginName: "foo",
-			args: args{
-				binDir: tempDir,
-				binary: filepath.Join(testdataPath(t), "plugin-foo", "kubectl-foo"),
-			},
-			wantErr: false,
+			binary:     filepath.Join(testdataPath(t), "plugin-foo", "kubectl-foo"),
+			wantErr:    false,
 		},
 		{
 			name:       "update link",
 			pluginName: "foo",
-			args: args{
-				binDir: tempDir,
-				binary: filepath.Join(testdataPath(t), "plugin-foo", "kubectl-foo"),
-			},
-			wantErr: false,
+			binary:     filepath.Join(testdataPath(t), "plugin-foo", "kubectl-foo"),
+			wantErr:    false,
 		},
 		{
 			name:       "wrong path link",
 			pluginName: "foo",
-			args: args{
-				binDir: tempDir,
-				binary: filepath.Join(testdataPath(t), "plugin-foo", "foo", "not-exist"),
-			},
-			wantErr: true,
+			binary:     filepath.Join(testdataPath(t), "plugin-foo", "foo", "not-exist"),
+			wantErr:    true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := createOrUpdateLink(tt.args.binDir, tt.args.binary, tt.pluginName); (err != nil) != tt.wantErr {
+			tmpDir, cleanup := testutil.NewTempDir(t)
+			defer cleanup()
+
+			if err := createOrUpdateLink(tmpDir.Root(), tt.binary, tt.pluginName); (err != nil) != tt.wantErr {
 				t.Errorf("createOrUpdateLink() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -163,12 +148,10 @@ func TestUninstall_cantUninstallItself(t *testing.T) {
 }
 
 func Test_removeLink_linkExists(t *testing.T) {
-	dir, err := ioutil.TempDir("", "removelink-test")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(dir)
-	link := filepath.Join(dir, "some-symlink")
+	tmpDir, cleanup := testutil.NewTempDir(t)
+	defer cleanup()
+
+	link := filepath.Join(tmpDir.Root(), "some-symlink")
 	if err := os.Symlink(os.TempDir(), link); err != nil {
 		t.Fatal(err)
 	}
@@ -179,17 +162,15 @@ func Test_removeLink_linkExists(t *testing.T) {
 }
 
 func Test_removeLink_fails(t *testing.T) {
+	tmpDir, cleanup := testutil.NewTempDir(t)
+	defer cleanup()
+
 	// create an unreadable directory and trigger "permission denied" error
-	dir, err := ioutil.TempDir("", "removelink-test")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(dir)
-	unreadableDir := filepath.Join(dir, "unreadable")
+	unreadableDir := filepath.Join(tmpDir.Root(), "unreadable")
 	if err := os.MkdirAll(unreadableDir, 0); err != nil {
 		t.Fatal(err)
 	}
-	unreadableFile := filepath.Join(unreadableDir, "mysterious-file")
+	unreadableFile := tmpDir.Path("unreadable/mysterious-file")
 
 	if err := removeLink(unreadableFile); err == nil {
 		t.Fatalf("removeLink(%s) with unreadable file returned err==nil", unreadableFile)

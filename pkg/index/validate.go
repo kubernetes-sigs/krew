@@ -19,10 +19,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-)
-
-const (
-	currentAPIVersion = "krew.googlecontainertools.github.com/v1alpha2"
+	"sigs.k8s.io/krew/pkg/constants"
 )
 
 var (
@@ -48,13 +45,17 @@ func IsSafePluginName(name string) bool {
 }
 
 func isSupportedAPIVersion(apiVersion string) bool {
-	return apiVersion == currentAPIVersion
+	return apiVersion == constants.CurrentAPIVersion
 }
 
 // Validate TODO(lbb)
 func (p Plugin) Validate(name string) error {
 	if !isSupportedAPIVersion(p.APIVersion) {
 		return errors.Errorf("plugin manifest has apiVersion=%q, not supported in this version of krew (try updating plugin index or install a newer version of krew)", p.APIVersion)
+	}
+
+	if p.Kind != constants.PluginKind {
+		return errors.Errorf("plugin manifest has kind=%q, but only %q is supported", p.Kind, constants.PluginKind)
 	}
 
 	if !IsSafePluginName(name) {

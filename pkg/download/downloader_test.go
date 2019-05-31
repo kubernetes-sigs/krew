@@ -25,6 +25,7 @@ import (
 	"testing"
 
 	"github.com/pkg/errors"
+	"sigs.k8s.io/krew/pkg/testutil"
 )
 
 func testdataPath() string {
@@ -58,11 +59,8 @@ func Test_extractZIP(t *testing.T) {
 	for _, tt := range tests {
 		// Zip has just one file named 'foo'
 		zipSrc := filepath.Join(testdataPath(), tt.in)
-		zipDst, err := ioutil.TempDir("", "")
-		if err != nil {
-			t.Fatal(err)
-		}
-		defer os.RemoveAll(zipDst)
+		tmpDir, cleanup := testutil.NewTempDir(t)
+		defer cleanup()
 
 		zipReader, err := os.Open(zipSrc)
 		if err != nil {
@@ -70,11 +68,11 @@ func Test_extractZIP(t *testing.T) {
 		}
 		defer zipReader.Close()
 		stat, _ := zipReader.Stat()
-		if err := extractZIP(zipDst, zipReader, stat.Size()); err != nil {
+		if err := extractZIP(tmpDir.Root(), zipReader, stat.Size()); err != nil {
 			t.Fatalf("extractZIP(%s) error = %v", tt.in, err)
 		}
 
-		outFiles := collectFiles(t, zipDst)
+		outFiles := collectFiles(t, tmpDir.Root())
 		if !reflect.DeepEqual(outFiles, tt.files) {
 			t.Fatalf("extractZIP(%s), expected=%v, got=%v", tt.in, tt.files, outFiles)
 		}
@@ -108,11 +106,8 @@ func Test_extractTARGZ(t *testing.T) {
 
 	for _, tt := range tests {
 		tarSrc := filepath.Join(testdataPath(), tt.in)
-		tarDst, err := ioutil.TempDir("", "")
-		if err != nil {
-			t.Fatal(err)
-		}
-		defer os.RemoveAll(tarDst)
+		tmpDir, cleanup := testutil.NewTempDir(t)
+		defer cleanup()
 
 		tf, err := os.Open(tarSrc)
 		if err != nil {
@@ -124,11 +119,11 @@ func Test_extractTARGZ(t *testing.T) {
 			t.Fatal(err)
 			return
 		}
-		if err := extractTARGZ(tarDst, tf, st.Size()); err != nil {
+		if err := extractTARGZ(tmpDir.Root(), tf, st.Size()); err != nil {
 			t.Fatalf("failed to extract %q. error=%v", tt.in, err)
 		}
 
-		outFiles := collectFiles(t, tarDst)
+		outFiles := collectFiles(t, tmpDir.Root())
 		if !reflect.DeepEqual(outFiles, tt.files) {
 			t.Fatalf("for %q, expected=%v, got=%v", tt.in, tt.files, outFiles)
 		}
@@ -156,25 +151,14 @@ func collectFiles(t *testing.T, scanPath string) []string {
 }
 
 func TestDownloader_Get(t *testing.T) {
-	tmpDir, err := ioutil.TempDir("", "krew-test")
-	if err != nil {
-		t.Fatal(err)
-		return
-	}
-	defer os.RemoveAll(tmpDir)
-
 	type fields struct {
 		verifier Verifier
 		fetcher  Fetcher
 	}
-	type args struct {
-		uri string
-		dst string
-	}
 	tests := []struct {
 		name    string
 		fields  fields
-		args    args
+		uri     string
 		wantErr bool
 	}{
 		{
@@ -183,10 +167,7 @@ func TestDownloader_Get(t *testing.T) {
 				verifier: NewInsecureVerifier(),
 				fetcher:  NewFileFetcher(filepath.Join(testdataPath(), "test-with-directory.zip")),
 			},
-			args: args{
-				uri: "foo/bar/test-with-directory.zip",
-				dst: tmpDir,
-			},
+			uri:     "foo/bar/test-with-directory.zip",
 			wantErr: false,
 		},
 		{
@@ -195,17 +176,17 @@ func TestDownloader_Get(t *testing.T) {
 				verifier: NewInsecureVerifier(),
 				fetcher:  errorFetcher{},
 			},
-			args: args{
-				uri: "foo/bar/test-with-directory.zip",
-				dst: tmpDir,
-			},
+			uri:     "foo/bar/test-with-directory.zip",
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			tmpDir, cleanup := testutil.NewTempDir(t)
+			defer cleanup()
+
 			d := NewDownloader(tt.fields.verifier, tt.fields.fetcher)
-			if err := d.Get(tt.args.uri, tt.args.dst); (err != nil) != tt.wantErr {
+			if err := d.Get(tt.uri, tmpDir.Root()); (err != nil) != tt.wantErr {
 				t.Errorf("Downloader.Get() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
