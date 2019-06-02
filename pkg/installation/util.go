@@ -18,59 +18,14 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 
 	"sigs.k8s.io/krew/pkg/index"
 	"sigs.k8s.io/krew/pkg/pathutil"
 )
-
-// GetMatchingPlatform finds the platform spec in the specified plugin that
-// matches the OS/arch of the current machine (can be overridden via KREW_OS
-// and/or KREW_ARCH).
-func GetMatchingPlatform(p index.Plugin) (index.Platform, bool, error) {
-	os, arch := osArch()
-	glog.V(4).Infof("Using os=%s arch=%s", os, arch)
-	return matchPlatformToSystemEnvs(p, os, arch)
-}
-
-// osArch returns the OS/arch combination to be used on the current system. It
-// can be overridden by setting KREW_OS and/or KREW_ARCH environment variables.
-func osArch() (string, string) {
-	goos, goarch := runtime.GOOS, runtime.GOARCH
-	envOS, envArch := os.Getenv("KREW_OS"), os.Getenv("KREW_ARCH")
-	if envOS != "" {
-		goos = envOS
-	}
-	if envArch != "" {
-		goarch = envArch
-	}
-	return goos, goarch
-}
-
-func matchPlatformToSystemEnvs(p index.Plugin, os, arch string) (index.Platform, bool, error) {
-	envLabels := labels.Set{
-		"os":   os,
-		"arch": arch,
-	}
-	glog.V(2).Infof("Matching platform for labels(%v)", envLabels)
-	for i, platform := range p.Spec.Platforms {
-		sel, err := metav1.LabelSelectorAsSelector(platform.Selector)
-		if err != nil {
-			return index.Platform{}, false, errors.Wrap(err, "failed to compile label selector")
-		}
-		if sel.Matches(envLabels) {
-			glog.V(2).Infof("Found matching platform with index (%d)", i)
-			return platform, true, nil
-		}
-	}
-	return index.Platform{}, false, nil
-}
 
 func findInstalledPluginVersion(installPath, binDir, pluginName string) (name string, installed bool, err error) {
 	if !index.IsSafePluginName(pluginName) {
@@ -111,7 +66,7 @@ func getPluginVersion(p index.Platform) (version, uri string) {
 }
 
 func getDownloadTarget(index index.Plugin) (version, uri string, fos []index.FileOperation, bin string, err error) {
-	p, ok, err := GetMatchingPlatform(index)
+	p, ok, err := index.Spec.GetMatchingPlatform()
 	if err != nil {
 		return "", "", nil, p.Bin, errors.Wrap(err, "failed to get matching platforms")
 	}
