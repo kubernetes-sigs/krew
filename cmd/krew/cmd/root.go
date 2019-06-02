@@ -68,7 +68,8 @@ func init() {
 	if err := ensureDirs(paths.BasePath(),
 		paths.DownloadPath(),
 		paths.InstallPath(),
-		paths.BinPath()); err != nil {
+		paths.BinPath(),
+		paths.ReceiptsPath()); err != nil {
 		glog.Fatal(err)
 	}
 }
