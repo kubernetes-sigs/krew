@@ -124,14 +124,25 @@ func Uninstall(p environment.Paths, name string) error {
 	if !installed {
 		return ErrIsNotInstalled
 	}
+
 	glog.V(1).Infof("Deleting plugin version %s", version)
-	glog.V(3).Infof("Deleting path %q", p.PluginInstallPath(name))
 
 	symlinkPath := filepath.Join(p.BinPath(), pluginNameToBin(name, isWindows()))
+	glog.V(3).Infof("Unlink %q", symlinkPath)
 	if err := removeLink(symlinkPath); err != nil {
 		return errors.Wrap(err, "could not uninstall symlink of plugin")
 	}
-	return os.RemoveAll(p.PluginInstallPath(name))
+
+	pluginInstallPath := p.PluginInstallPath(name)
+	glog.V(3).Infof("Deleting path %q", pluginInstallPath)
+	if err := os.RemoveAll(pluginInstallPath); err != nil {
+		return errors.Wrapf(err, "could not remove plugin directory %q", pluginInstallPath)
+	}
+
+	pluginReceiptPath := p.PluginReceiptPath(name)
+	glog.V(3).Infof("Deleting plugin receipt %q", pluginReceiptPath)
+	err = os.Remove(pluginReceiptPath)
+	return errors.Wrapf(err, "could not remove plugin receipt %q", pluginReceiptPath)
 }
 
 func createOrUpdateLink(binDir string, binary string, plugin string) error {
