@@ -46,7 +46,7 @@ print_with_color "$color_blue" 'Running tests'
 go test -v -race sigs.k8s.io/krew/...
 
 print_with_color "$color_blue" 'Running linter'
-"$SCRIPTDIR"/run_lint.sh
+"$SCRIPTDIR"/run-lint.sh
 
 print_with_color "$color_blue" 'Check code patterns'
-"$SCRIPTDIR"/check-code-patterns.sh
+"$SCRIPTDIR"/verify-code-patterns.sh

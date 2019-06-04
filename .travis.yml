@@ -9,10 +9,10 @@ notifications:
 before_install:
 - go get github.com/mitchellh/gox
 script:
-- hack/check-code-patterns.sh
+- hack/verify-code-patterns.sh
 - hack/verify-boilerplate.sh
 - hack/verify-gofmt.sh
-- hack/run_lint.sh
+- hack/run-lint.sh
 - go test -v -coverprofile=coverage.txt -covermode=atomic ./...
 - hack/make-all.sh
 after_success:
