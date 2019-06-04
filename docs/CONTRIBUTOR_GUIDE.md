@@ -18,8 +18,16 @@ git remote set-url origin --push no_push   # to avoid pushes
 
 ## Code style
 
-Krew adheres to standard `golang` code formatting conventions, and also expects imports sorted properly.
-To automatically format code appropriately, run
+Krew adheres to standard `golang` code formatting conventions, and also expects
+imports sorted properly.
+To automatically format code appropriately, install
+[`goimports`](https://godoc.org/golang.org/x/tools/cmd/goimports) via 
+
+```bash
+go get golang.org/x/tools/cmd/goimports
+```
+
+and run:
 
 ```bash
 goimports -w cmd pkg
