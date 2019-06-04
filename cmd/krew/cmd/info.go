@@ -42,19 +42,17 @@ available version, platform availability and the caveats.
 Example:
   kubectl krew info PLUGIN`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		for _, arg := range args {
-			plugin, err := indexscanner.LoadPluginFileFromFS(paths.IndexPath(), arg)
-			if os.IsNotExist(err) {
-				return errors.Errorf("plugin %q not found", arg)
-			} else if err != nil {
-				return errors.Wrap(err, "failed to load plugin manifest")
-			}
-			printPluginInfo(os.Stdout, plugin)
+		plugin, err := indexscanner.LoadPluginFileFromFS(paths.IndexPath(), args[0])
+		if os.IsNotExist(err) {
+			return errors.Errorf("plugin %q not found", args[0])
+		} else if err != nil {
+			return errors.Wrap(err, "failed to load plugin manifest")
 		}
+		printPluginInfo(os.Stdout, plugin)
 		return nil
 	},
 	PreRunE: checkIndex,
-	Args:    cobra.MinimumNArgs(1),
+	Args:    cobra.ExactArgs(1),
 }
 
 func printPluginInfo(out io.Writer, plugin index.Plugin) {
