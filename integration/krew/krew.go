@@ -21,7 +21,7 @@ type KrewTest struct {
 	tempDir *testutil.TempDir
 }
 
-// NewKrewTest creates a fluent krew KrewTest
+// NewKrewTest creates a fluent krew KrewTest.
 func NewKrewTest(t *testing.T) (*KrewTest, func()) {
 	tempDir, cleanup := testutil.NewTempDir(t)
 	return &KrewTest{
@@ -31,13 +31,20 @@ func NewKrewTest(t *testing.T) (*KrewTest, func()) {
 	}, cleanup
 }
 
+// Cmd sets the arguments to krew.
+func (k *KrewTest) Cmd(args ...string) *KrewTest {
+	k.args = args
+	return k
+}
+
+// Root returns the krew root directory for this test.
 func (k *KrewTest) Root() string {
 	return k.tempDir.Root()
 }
 
-// Cmd sets the arguments to krew
-func (k *KrewTest) Cmd(args ...string) *KrewTest {
-	k.args = args
+// WithIndex initializes the index with the actual krew-index from github/kubernetes-sigs/krew-index.
+func (k *KrewTest) WithIndex() *KrewTest {
+	k.initializeIndex()
 	return k
 }
 
