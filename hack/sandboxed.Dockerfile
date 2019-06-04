@@ -16,16 +16,22 @@ FROM golang:alpine as builder
 
 WORKDIR /go/src/sigs.k8s.io/krew
 
+ENV KUBECTL_VERSION v1.14.2
+RUN apk add --no-cache curl && \
+    curl -Lo /usr/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl  && \
+  chmod +x /usr/bin/kubectl
+
 # build binary
 COPY . .
-RUN go build -ldflags "-s -w" ./cmd/krew
+RUN go build -tags netgo -ldflags "-s -w" ./cmd/krew
 
 # production image
 FROM alpine
-RUN apk add git
+RUN apk --no-cache add git && \
+    ln -s /usr/bin/krew /usr/bin/kubectl-krew
 
 # initialize index
 RUN mkdir -p /root/.krew/index && \
     git clone https://github.com/kubernetes-sigs/krew-index /root/.krew/index
 
-COPY --from=builder /go/src/sigs.k8s.io/krew/krew /usr/bin
+COPY --from=builder /go/src/sigs.k8s.io/krew/krew /usr/bin/kubectl /usr/bin/
