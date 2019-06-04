@@ -1,7 +1,8 @@
 # Contributor Guide
 
 This guide is intended for people who want to start working on `krew` itself.
-If you intend to write a new plugin, see [Developer Guide](./DEVELOPER_GUIDE.md) instead.
+If you intend to write a new plugin, see [Developer Guide](./DEVELOPER_GUIDE.md)
+instead.
 
 ## Setting up the environment
 
@@ -46,12 +47,14 @@ To run tests locally, the easiest way to get started is with
 hack/run-tests.sh
 ```
 
-To run a single tool independently of the other code checks, have a look at the other scripts in [`hack/`](../hack).
+To run a single tool independently of the other code checks, have a look at the
+other scripts in [`hack/`](../hack).
 
 ## Testing `krew` in a sandbox
 
 After making changes to krew, you should also check that it behaves as expected.
-You can do this without messing up the krew installation on the host system by setting the `KREW_ROOT` environment variable.
+You can do this without messing up the krew installation on the host system by
+setting the `KREW_ROOT` environment variable.
 For example:
 
 ```bash
@@ -59,11 +62,13 @@ mkdir playground
 KREW_ROOT="$PWD/playground" krew update
 ```
 
-Any changes that krew is going to apply will then be applied in the `playground/` folder, instead of the standard `~/.krew` folder.
+Any changes that krew is going to apply will then be applied in the
+`playground/` folder, instead of the standard `~/.krew` folder.
 
 ### Testing in a docker sandbox
 
-Alternatively, if the isolation provided by `KREW_ROOT` is not enough, there is also a script to run krew in a docker sandbox:
+Alternatively, if the isolation provided by `KREW_ROOT` is not enough, there is
+also a script to run krew in a docker sandbox:
 
 ```bash
 hack/run-in-docker.sh
