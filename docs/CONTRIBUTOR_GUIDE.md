@@ -47,3 +47,9 @@ KREW_ROOT="$PWD/playground" krew update
 ```
 Any changes that krew is going to apply will then be applied in the `playground/` folder, instead of the standard `~/.krew` folder.
 
+### Testing in a docker sandbox
+
+Alternatively, if the isolation provided by `KREW_ROOT` is not enough, there is also a script to run krew in a docker sandbox:
+```bash
+hack/run-in-docker.sh
+```
