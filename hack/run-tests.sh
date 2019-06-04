@@ -28,7 +28,8 @@ print_with_color() {
 }
 
 print_status() {
-  if [[ $? == 0 ]]; then
+  local result=$?  # <- this must be the first action
+  if [[ $result == 0 ]]; then
       print_with_color "$color_green" 'SUCCESS'
   else
       print_with_color "$color_red" 'FAILURE'
