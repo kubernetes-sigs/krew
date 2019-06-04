@@ -47,7 +47,12 @@ func IsGitCloned(gitPath string) (bool, error) {
 
 // update will fetch origin and set HEAD to origin/HEAD.
 func update(destinationPath string) error {
-	return exec(destinationPath, "pull", "--ff-only", "-v")
+	if err := exec(destinationPath, "fetch", "-v"); err != nil {
+		return errors.Wrapf(err, "fetch index at %q failed", destinationPath)
+	}
+
+	err := exec(destinationPath, "reset", "--hard", "@{upstream}")
+	return errors.Wrapf(err, "reset index at %q failed", destinationPath)
 }
 
 // EnsureUpdated will ensure the destination path exists and is up to date.
