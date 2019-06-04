@@ -40,7 +40,7 @@ print_with_color "$color_blue" 'Checking boilerplate'
 "$SCRIPTDIR"/verify-boilerplate.sh
 
 print_with_color "$color_blue" 'Running gofmt'
-"$SCRIPTDIR"/gofmt.sh
+"$SCRIPTDIR"/verify-gofmt.sh
 
 print_with_color "$color_blue" 'Running tests'
 go test -v -race sigs.k8s.io/krew/...
