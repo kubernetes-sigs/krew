@@ -155,9 +155,9 @@ new features and changes.
 * [Mailing List](https://groups.google.com/forum/#!forum/kubernetes-sig-cli)
 * [Kubernetes Community site](http://kubernetes.io/community/)
 
-### Contribution
+### Contributing
 
-Interested in contributing to Krew? Please refer to our [Contributing Guidelines](https://github.com/kubernetes-sigs/krew/blob/master/CONTRIBUTING.md) for more details
+Interested in contributing to Krew? Please refer to our [Contributing Guidelines](./docs/CONTRIBUTOR_GUIDE.md) for more details
 
 ### Code of Conduct
 
