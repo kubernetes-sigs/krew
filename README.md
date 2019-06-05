@@ -157,7 +157,8 @@ new features and changes.
 
 ### Contributing
 
-Interested in contributing to Krew? Please refer to our [Contributing Guidelines](./docs/CONTRIBUTOR_GUIDE.md) for more details
+Interested in contributing to Krew? Please refer to our 
+[Contributing Guidelines](./docs/CONTRIBUTOR_GUIDE.md) for more details
 
 ### Code of Conduct
 
