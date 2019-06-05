@@ -44,6 +44,10 @@ func (k *KrewTest) initializeIndex() {
 
 	indexDir := filepath.Join(k.Root(), "index")
 	if err := os.Mkdir(indexDir, 0777); err != nil {
+		if os.IsExist(err) {
+			k.t.Log("initializeIndex should only be called once")
+			return
+		}
 		k.t.Fatal(err)
 	}
 

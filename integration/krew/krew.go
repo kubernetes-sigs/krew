@@ -93,6 +93,7 @@ func (k *KrewTest) RunOrFailOutput() []byte {
 
 	start := time.Now()
 	out, err := cmd.Output()
+	k.t.Logf("krew %v: %v, %s", k.args, err, out)
 	if err != nil {
 		k.t.Fatalf("krew %v: %v, %s", k.args, err, out)
 	}
@@ -102,8 +103,16 @@ func (k *KrewTest) RunOrFailOutput() []byte {
 }
 
 func (k *KrewTest) cmd(ctx context.Context) *exec.Cmd {
-	cmd := exec.CommandContext(ctx, "krew", k.args...)
+	args := make([]string, 0, len(k.args)+1)
+	args = append(args, "krew")
+	args = append(args, k.args...)
+
+	cmd := exec.CommandContext(ctx, "kubectl", args...)
 	cmd.Env = append(os.Environ(), k.env...)
 
 	return cmd
+}
+
+func (k *KrewTest) TempDir() *testutil.TempDir {
+	return k.tempDir
 }

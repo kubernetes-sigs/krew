@@ -13,7 +13,7 @@ script:
 - hack/verify-boilerplate.sh
 - hack/verify-gofmt.sh
 - hack/run-lint.sh
-- go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+- go test -v -short -coverprofile=coverage.txt -covermode=atomic ./...
 - hack/make-all.sh
 after_success:
 - bash <(curl -s https://codecov.io/bash)
