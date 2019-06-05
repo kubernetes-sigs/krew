@@ -12,26 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM golang:alpine as builder
+FROM gcr.io/gcp-runtimes/ubuntu_16_0_4:latest
+RUN apt-get update -qqy # retain the apt cache
+RUN apt-get install -qqy git curl wget
 
-WORKDIR /go/src/sigs.k8s.io/krew
+ARG KUBECTL_VERSION=v1.14.2
+RUN curl -fsSLo /usr/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl  && \
+    chmod +x /usr/bin/kubectl
 
-ENV KUBECTL_VERSION v1.14.2
-RUN apk add --no-cache curl && \
-    curl -Lo /usr/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl  && \
-  chmod +x /usr/bin/kubectl
+# initialize index ahead of time
+RUN mkdir -p $HOME/.krew/index && \
+    git clone https://github.com/kubernetes-sigs/krew-index $HOME/.krew/index
 
-# build binary
-COPY . .
-RUN go build -tags netgo -ldflags "-s -w" ./cmd/krew
-
-# production image
-FROM alpine
-RUN apk --no-cache add git && \
-    ln -s /usr/bin/krew /usr/bin/kubectl-krew
-
-# initialize index
-RUN mkdir -p /root/.krew/index && \
-    git clone https://github.com/kubernetes-sigs/krew-index /root/.krew/index
-
-COPY --from=builder /go/src/sigs.k8s.io/krew/krew /usr/bin/kubectl /usr/bin/
+ENTRYPOINT [ "/usr/bin/env", "bash" ]

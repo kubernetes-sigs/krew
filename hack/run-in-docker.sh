@@ -14,10 +14,42 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This script starts a development container by mounting the krew binary from
+# the local filesystem.
+
 set -euo pipefail
-
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+log() { echo >&2 "$*"; }
+log_ok() { log "$(tput setaf 2)$*$(tput sgr0)"; }
+log_fail() { log "$(tput setaf 1)$*$(tput sgr0)"; }
+image="krew:sandbox"
 
-docker build -f "${SCRIPTDIR}/sandboxed.Dockerfile" -t krew:sandbox "${SCRIPTDIR}/.."
+krew_bin="${SCRIPTDIR}/../out/bin/krew-linux_amd64"
+if [[ ! -f "${krew_bin}" ]]; then
+    log "Building the ${krew_bin}."
+    env OSARCH="linux/amd64" "${SCRIPTDIR}/make-binaries.sh"
+else
+    log_ok "Using existing ${krew_bin}."
+fi
 
-docker run --rm -ti krew:sandbox
+
+docker build -f "${SCRIPTDIR}/sandboxed.Dockerfile" -q \
+    --tag "${image}" "${SCRIPTDIR}/.."
+log_ok "Sandbox image '${image}' built successfully."
+
+kubeconfig="${KUBECONFIG:-$HOME/.kube/config}"
+if [[ ! -f "${kubeconfig}" ]]; then
+    log_fail "Warning: kubeconfig not found at ${kubeconfig}, using /dev/null"
+    kubeconfig=/dev/null
+fi
+
+log_ok "Starting docker container with volume mounts:"
+log    "    kubeconfig=${kubeconfig}"
+log    "    kubectl-krew=${krew_bin}"
+log_ok "You can rebuild with make-binaries.sh without restarting the container."
+exec docker run --rm --tty --interactive \
+    --volume "${krew_bin}:/usr/local/bin/kubectl-krew" \
+    --volume "${kubeconfig}:/etc/kubeconfig" \
+    --env KUBECONFIG=/etc/kubeconfig \
+    --hostname krew \
+    "${image}"
