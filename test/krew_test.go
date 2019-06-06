@@ -78,7 +78,7 @@ func TestKrewSearchAll(t *testing.T) {
 	defer cleanup()
 
 	output := test.WithIndex().Krew("search").RunOrFailOutput()
-	if plugins := strings.Split(string(output), "\n"); len(plugins) < 10 {
+	if plugins := lines(output); len(plugins) < 10 {
 		// the first line is the header
 		t.Errorf("Expected at least %d plugins", len(plugins)-1)
 	}
@@ -90,8 +90,7 @@ func TestKrewSearchOne(t *testing.T) {
 	test, cleanup := krew.NewTest(t)
 	defer cleanup()
 
-	output := test.WithIndex().Krew("search", "krew").RunOrFailOutput()
-	plugins := strings.Split(string(output), "\n")
+	plugins := lines(test.WithIndex().Krew("search", "krew").RunOrFailOutput())
 	if len(plugins) < 2 {
 		t.Errorf("Expected krew to be a valid plugin")
 	}
@@ -109,6 +108,23 @@ func TestKrewInfo(t *testing.T) {
 	output := test.WithIndex().Krew("info", validPlugin).RunOrFailOutput()
 	if !strings.HasPrefix(string(output), "NAME: "+validPlugin) {
 		t.Errorf("The info output should begin with the name header")
+	}
+}
+
+func TestKrewList(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := krew.NewTest(t)
+	defer cleanup()
+
+	initialList := test.WithIndex().Krew("list").RunOrFailOutput()
+	test.Krew("install", validPlugin).RunOrFail()
+	eventualList := test.Krew("list").RunOrFailOutput()
+
+	if len(lines(eventualList))-len(lines(initialList)) != 1 {
+		t.Logf("initial list: %q\n", initialList)
+		t.Logf("eventual list: %q\n", eventualList)
+		t.Errorf("The list of installed plugins should grow by one when a single plugin is installed")
 	}
 }
 
@@ -147,8 +163,8 @@ func TestKrewUpdate(t *testing.T) {
 	defer cleanup()
 
 	test.Krew("update").RunOrFail()
-	output := test.Krew("search").RunOrFailOutput()
-	if plugins := strings.Split(string(output), "\n"); len(plugins) < 10 {
+	plugins := lines(test.Krew("search").RunOrFailOutput())
+	if len(plugins) < 10 {
 		// the first line is the header
 		t.Errorf("Less than %d plugins found, `krew update` most likely failed unless TestKrewSearchAll also failed", len(plugins)-1)
 	}
@@ -159,4 +175,11 @@ func skipShort(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
+}
+
+func lines(in []byte) []string {
+	if string(in) == "" {
+		return nil
+	}
+	return strings.Split(string(in), "\n")
 }
