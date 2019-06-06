@@ -29,8 +29,8 @@ import (
 
 const krewBinaryEnv = "KREW_BINARY"
 
-// KrewTest is used to set up `krew` integration tests.
-type KrewTest struct {
+// ITest is used to set up `krew` integration tests.
+type ITest struct {
 	t       *testing.T
 	plugin  string
 	args    []string
@@ -38,11 +38,11 @@ type KrewTest struct {
 	tempDir *testutil.TempDir
 }
 
-// NewKrewTest creates a fluent krew KrewTest.
-func NewKrewTest(t *testing.T) (*KrewTest, func()) {
+// NewTest creates a fluent krew ITest.
+func NewTest(t *testing.T) (*ITest, func()) {
 	tempDir, cleanup := testutil.NewTempDir(t)
 	pathEnv := setupPathEnv(t, tempDir)
-	return &KrewTest{
+	return &ITest{
 		t:       t,
 		env:     []string{pathEnv, fmt.Sprintf("KREW_ROOT=%s", tempDir.Root())},
 		tempDir: tempDir,
@@ -72,58 +72,58 @@ func setupPathEnv(t *testing.T, tempDir *testutil.TempDir) string {
 }
 
 // Call configures the runner to call plugin with arguments args.
-func (k *KrewTest) Call(plugin string, args ...string) *KrewTest {
-	k.plugin = plugin
-	k.args = args
-	return k
+func (it *ITest) Call(plugin string, args ...string) *ITest {
+	it.plugin = plugin
+	it.args = args
+	return it
 }
 
 // Krew configures the runner to call krew with arguments args.
-func (k *KrewTest) Krew(args ...string) *KrewTest {
-	k.plugin = "krew"
-	k.args = args
-	return k
+func (it *ITest) Krew(args ...string) *ITest {
+	it.plugin = "krew"
+	it.args = args
+	return it
 }
 
 // Root returns the krew root directory for this test.
-func (k *KrewTest) Root() string {
-	return k.tempDir.Root()
+func (it *ITest) Root() string {
+	return it.tempDir.Root()
 }
 
 // WithIndex initializes the index with the actual krew-index from github/kubernetes-sigs/krew-index.
-func (k *KrewTest) WithIndex() *KrewTest {
-	k.initializeIndex()
-	return k
+func (it *ITest) WithIndex() *ITest {
+	it.initializeIndex()
+	return it
 }
 
 // WithEnv sets an environment variable for the krew run.
-func (k *KrewTest) WithEnv(key string, value interface{}) *KrewTest {
+func (it *ITest) WithEnv(key string, value interface{}) *ITest {
 	if key == "KREW_ROOT" {
 		glog.V(1).Infoln("Overriding KREW_ROOT in tests is forbidden")
-		return k
+		return it
 	}
-	k.env = append(k.env, fmt.Sprintf("%s=%v", key, value))
-	return k
+	it.env = append(it.env, fmt.Sprintf("%s=%v", key, value))
+	return it
 }
 
 // RunOrFail runs the krew command and fails the test if the command returns an error.
-func (k *KrewTest) RunOrFail() {
-	k.t.Helper()
-	if err := k.Run(); err != nil {
-		k.t.Fatal(err)
+func (it *ITest) RunOrFail() {
+	it.t.Helper()
+	if err := it.Run(); err != nil {
+		it.t.Fatal(err)
 	}
 }
 
 // Run runs the krew command.
-func (k *KrewTest) Run() error {
-	k.t.Helper()
+func (it *ITest) Run() error {
+	it.t.Helper()
 
-	cmd := k.cmd(context.Background())
+	cmd := it.cmd(context.Background())
 	glog.V(1).Infoln(cmd.Args)
 
 	start := time.Now()
 	if err := cmd.Run(); err != nil {
-		return errors.Wrapf(err, "krew %v", k.args)
+		return errors.Wrapf(err, "krew %v", it.args)
 	}
 
 	glog.V(1).Infoln("Ran in", time.Since(start))
@@ -132,33 +132,33 @@ func (k *KrewTest) Run() error {
 
 // RunOrFailOutput runs the krew command and fails the test if the command
 // returns an error. It only returns the standard output.
-func (k *KrewTest) RunOrFailOutput() []byte {
-	k.t.Helper()
+func (it *ITest) RunOrFailOutput() []byte {
+	it.t.Helper()
 
-	cmd := k.cmd(context.Background())
+	cmd := it.cmd(context.Background())
 	glog.V(1).Infoln(cmd.Args)
 
 	start := time.Now()
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		k.t.Fatalf("krew %v: %v, %s", k.args, err, out)
+		it.t.Fatalf("krew %v: %v, %s", it.args, err, out)
 	}
 
 	glog.V(1).Infoln("Ran in", time.Since(start))
 	return out
 }
 
-func (k *KrewTest) cmd(ctx context.Context) *exec.Cmd {
-	args := make([]string, 0, len(k.args)+1)
-	args = append(args, k.plugin)
-	args = append(args, k.args...)
+func (it *ITest) cmd(ctx context.Context) *exec.Cmd {
+	args := make([]string, 0, len(it.args)+1)
+	args = append(args, it.plugin)
+	args = append(args, it.args...)
 
 	cmd := exec.CommandContext(ctx, "kubectl", args...)
-	cmd.Env = append(os.Environ(), k.env...)
+	cmd.Env = append(os.Environ(), it.env...)
 
 	return cmd
 }
 
-func (k *KrewTest) TempDir() *testutil.TempDir {
-	return k.tempDir
+func (it *ITest) TempDir() *testutil.TempDir {
+	return it.tempDir
 }

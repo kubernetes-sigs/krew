@@ -29,7 +29,7 @@ const (
 func TestKrewInstall(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := krew.NewKrewTest(t)
+	test, cleanup := krew.NewTest(t)
 	defer cleanup()
 
 	test.WithIndex().Krew("install", validPlugin).RunOrFailOutput()
@@ -39,7 +39,7 @@ func TestKrewInstall(t *testing.T) {
 func TestKrewHelp(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := krew.NewKrewTest(t)
+	test, cleanup := krew.NewTest(t)
 	defer cleanup()
 
 	test.Krew("help").RunOrFail()

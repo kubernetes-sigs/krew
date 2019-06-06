@@ -37,38 +37,38 @@ var (
 
 // InitializeIndex initializes the krew index in `$root/index` with the actual krew-index.
 // It caches the index tree as in-memory tar after the first run.
-func (k *KrewTest) initializeIndex() {
+func (it *ITest) initializeIndex() {
 	once.Do(func() {
 		persistentCacheFile := filepath.Join(os.TempDir(), persistentIndexCache)
 		fileInfo, err := os.Stat(persistentCacheFile)
 
 		if err == nil && fileInfo.Mode().IsRegular() {
-			k.t.Logf("Using persistent index cache from file %q", persistentCacheFile)
+			it.t.Logf("Using persistent index cache from file %q", persistentCacheFile)
 			if indexTar, err = ioutil.ReadFile(persistentCacheFile); err == nil {
 				return
 			}
 		}
 
 		if indexTar, err = initFromGitClone(); err != nil {
-			k.t.Fatalf("cannot clone repository: %s", err)
+			it.t.Fatalf("cannot clone repository: %s", err)
 		}
 
 		ioutil.WriteFile(persistentCacheFile, indexTar, 0600)
 	})
 
-	indexDir := filepath.Join(k.Root(), "index")
+	indexDir := filepath.Join(it.Root(), "index")
 	if err := os.Mkdir(indexDir, 0777); err != nil {
 		if os.IsExist(err) {
-			k.t.Log("initializeIndex should only be called once")
+			it.t.Log("initializeIndex should only be called once")
 			return
 		}
-		k.t.Fatal(err)
+		it.t.Fatal(err)
 	}
 
 	cmd := exec.Command("tar", "xzf", "-", "-C", indexDir)
 	cmd.Stdin = bytes.NewReader(indexTar)
 	if err := cmd.Run(); err != nil {
-		k.t.Fatalf("cannot restore index from cache: %s", err)
+		it.t.Fatalf("cannot restore index from cache: %s", err)
 	}
 }
 
