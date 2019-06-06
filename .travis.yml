@@ -15,7 +15,7 @@ script:
 - hack/run-lint.sh
 - go test -v -short -coverprofile=coverage.txt -covermode=atomic ./...
 - hack/make-all.sh
-- KREW_BINARY=$PWD/../out/bin/krew-linux_amd64 go test -v ./...
+- hack/run-integration-tests.sh
 after_success:
 - bash <(curl -s https://codecov.io/bash)
 env:
