@@ -13,6 +13,8 @@ import (
 	"sigs.k8s.io/krew/pkg/testutil"
 )
 
+const krewBinaryEnv = "KREW_BINARY"
+
 // KrewTest is used to set up `krew` integration tests.
 type KrewTest struct {
 	t       *testing.T
@@ -24,11 +26,34 @@ type KrewTest struct {
 // NewKrewTest creates a fluent krew KrewTest.
 func NewKrewTest(t *testing.T) (*KrewTest, func()) {
 	tempDir, cleanup := testutil.NewTempDir(t)
+	pathEnv := setupPathEnv(t, tempDir)
 	return &KrewTest{
 		t:       t,
-		env:     []string{fmt.Sprintf("KREW_ROOT=%s", tempDir.Root())},
+		env:     []string{pathEnv, fmt.Sprintf("KREW_ROOT=%s", tempDir.Root())},
 		tempDir: tempDir,
 	}, cleanup
+}
+
+func setupPathEnv(t *testing.T, tempDir *testutil.TempDir) string {
+	krewBinPath := tempDir.Path("bin")
+	if err := os.MkdirAll(krewBinPath, os.ModePerm); err != nil {
+		t.Fatal(err)
+	}
+
+	if krewBinary, found := os.LookupEnv(krewBinaryEnv); found {
+		if err := os.Symlink(krewBinary, tempDir.Path("bin/kubectl-krew")); err != nil {
+			t.Fatalf("Cannot link to krew: %s", err)
+		}
+	} else {
+		t.Logf("Environment variable %q was not found, using krew installation from host", krewBinaryEnv)
+	}
+
+	path, found := os.LookupEnv("PATH")
+	if !found {
+		t.Fatalf("PATH variable is not set up")
+	}
+
+	return fmt.Sprintf("PATH=%s:%s", krewBinPath, path)
 }
 
 // Cmd sets the arguments to krew.
