@@ -12,9 +12,7 @@ const (
 )
 
 func TestInstall(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping integration test")
-	}
+	skipShort(t)
 
 	krewTest, cleanup := krew.NewKrewTest(t)
 	defer cleanup()
@@ -23,9 +21,7 @@ func TestInstall(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping integration test")
-	}
+	skipShort(t)
 
 	krewTest, cleanup := krew.NewKrewTest(t)
 	defer cleanup()
@@ -43,9 +39,7 @@ func TestUpdate(t *testing.T) {
 }
 
 func TestUninstall(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping integration test")
-	}
+	skipShort(t)
 
 	krewTest, cleanup := krew.NewKrewTest(t)
 	defer cleanup()
@@ -60,5 +54,12 @@ func TestUninstall(t *testing.T) {
 
 	if len(indexFiles) != 0 {
 		t.Error("expected the store to be empty")
+	}
+}
+
+func skipShort(t *testing.T) {
+	t.Helper()
+	if testing.Short() {
+		t.Skip("skipping integration test")
 	}
 }

@@ -88,12 +88,10 @@ func (k *KrewTest) RunOrFailOutput() []byte {
 	k.t.Helper()
 
 	cmd := k.cmd(context.Background())
-	cmd.Stdout, cmd.Stderr = nil, nil
 	glog.V(1).Infoln(cmd.Args)
 
 	start := time.Now()
-	out, err := cmd.Output()
-	k.t.Logf("krew %v: %v, %s", k.args, err, out)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		k.t.Fatalf("krew %v: %v, %s", k.args, err, out)
 	}
