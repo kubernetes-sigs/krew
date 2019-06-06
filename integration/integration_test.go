@@ -14,20 +14,20 @@ const (
 func TestKrewInstall(t *testing.T) {
 	skipShort(t)
 
-	krewTest, cleanup := krew.NewKrewTest(t)
+	test, cleanup := krew.NewKrewTest(t)
 	defer cleanup()
 
-	krewTest.WithIndex().Cmd("install", validPlugin).RunOrFailOutput()
-	// todo(corneliusweig): make sure that the plugin can be executed as `kubectl konfig --help`
+	test.WithIndex().Krew("install", validPlugin).RunOrFailOutput()
+	test.Call(validPlugin, "--help").RunOrFail()
 }
 
 func TestKrewHelp(t *testing.T) {
 	skipShort(t)
 
-	krewTest, cleanup := krew.NewKrewTest(t)
+	test, cleanup := krew.NewKrewTest(t)
 	defer cleanup()
 
-	krewTest.Cmd("help").RunOrFail()
+	test.Krew("help").RunOrFail()
 }
 
 func skipShort(t *testing.T) {

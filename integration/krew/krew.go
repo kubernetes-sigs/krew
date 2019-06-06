@@ -18,6 +18,7 @@ const krewBinaryEnv = "KREW_BINARY"
 // KrewTest is used to set up `krew` integration tests.
 type KrewTest struct {
 	t       *testing.T
+	plugin  string
 	args    []string
 	env     []string
 	tempDir *testutil.TempDir
@@ -56,8 +57,16 @@ func setupPathEnv(t *testing.T, tempDir *testutil.TempDir) string {
 	return fmt.Sprintf("PATH=%s:%s", krewBinPath, path)
 }
 
-// Cmd sets the arguments to krew.
-func (k *KrewTest) Cmd(args ...string) *KrewTest {
+// Call configures the runner to call plugin with arguments args.
+func (k *KrewTest) Call(plugin string, args ...string) *KrewTest {
+	k.plugin = plugin
+	k.args = args
+	return k
+}
+
+// Krew configures the runner to call krew with arguments args.
+func (k *KrewTest) Krew(args ...string) *KrewTest {
+	k.plugin = "krew"
 	k.args = args
 	return k
 }
@@ -127,7 +136,7 @@ func (k *KrewTest) RunOrFailOutput() []byte {
 
 func (k *KrewTest) cmd(ctx context.Context) *exec.Cmd {
 	args := make([]string, 0, len(k.args)+1)
-	args = append(args, "krew")
+	args = append(args, k.plugin)
 	args = append(args, k.args...)
 
 	cmd := exec.CommandContext(ctx, "kubectl", args...)
