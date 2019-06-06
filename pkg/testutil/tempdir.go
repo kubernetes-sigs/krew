@@ -70,18 +70,3 @@ func (td *TempDir) Write(file string, content []byte) *TempDir {
 	}
 	return td
 }
-
-// List lists all the files in the subpath of the temp directory.
-// The input path is expected to use '/' as directory separator regardless of the host OS.
-func (td *TempDir) List(path string) ([]string, error) {
-	var files []string
-
-	err := filepath.Walk(td.Path(path), func(path string, info os.FileInfo, err error) error {
-		if err == nil && info.Mode().IsRegular() {
-			files = append(files, filepath.ToSlash(path))
-		}
-		return err
-	})
-
-	return files, err
-}

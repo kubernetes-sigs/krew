@@ -44,7 +44,7 @@ print_with_color "$color_blue" 'Running gofmt'
 "$SCRIPTDIR"/verify-gofmt.sh
 
 print_with_color "$color_blue" 'Running tests'
-go test -v -race sigs.k8s.io/krew/...
+go test -v -short -race sigs.k8s.io/krew/...
 
 print_with_color "$color_blue" 'Running linter'
 "$SCRIPTDIR"/run-lint.sh

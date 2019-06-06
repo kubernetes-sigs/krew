@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package integration
+// Package test contains integration tests for krew.
+package test
 
 import (
 	"testing"
 
-	"sigs.k8s.io/krew/integration/krew"
+	"sigs.k8s.io/krew/test/krew"
 )
 
 const (
