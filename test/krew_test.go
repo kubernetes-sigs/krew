@@ -162,6 +162,7 @@ func TestKrewUpdate(t *testing.T) {
 	test, cleanup := krew.NewTest(t)
 	defer cleanup()
 
+	// nb do not call WithIndex() here
 	test.Krew("update").RunOrFail()
 	plugins := lines(test.Krew("search").RunOrFailOutput())
 	if len(plugins) < 10 {
