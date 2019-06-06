@@ -18,43 +18,7 @@ func TestInstall(t *testing.T) {
 	defer cleanup()
 
 	krewTest.WithIndex().Cmd("install", validPlugin).RunOrFail()
-}
-
-func TestUpdate(t *testing.T) {
-	skipShort(t)
-
-	krewTest, cleanup := krew.NewKrewTest(t)
-	defer cleanup()
-
-	krewTest.WithIndex().Cmd("update").RunOrFail()
-
-	indexFiles, err := krewTest.TempDir().List("index")
-	if err != nil {
-		t.Error(err)
-	}
-
-	if len(indexFiles) == 0 {
-		t.Error("expected some index files but found none")
-	}
-}
-
-func TestUninstall(t *testing.T) {
-	skipShort(t)
-
-	krewTest, cleanup := krew.NewKrewTest(t)
-	defer cleanup()
-
-	krewTest.WithIndex().Cmd("install", validPlugin).RunOrFailOutput()
-	krewTest.Cmd("remove", validPlugin).RunOrFailOutput()
-
-	indexFiles, err := krewTest.TempDir().List("store")
-	if err != nil {
-		t.Error(err)
-	}
-
-	if len(indexFiles) != 0 {
-		t.Error("expected the store to be empty")
-	}
+	// todo(corneliusweig): make sure that the plugin can be executed as `kubectl konfig --help`
 }
 
 func skipShort(t *testing.T) {
