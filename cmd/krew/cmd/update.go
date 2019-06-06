@@ -19,14 +19,11 @@ import (
 	"os"
 
 	"github.com/golang/glog"
-	"sigs.k8s.io/krew/pkg/gitutil"
-
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"sigs.k8s.io/krew/pkg/constants"
+	"sigs.k8s.io/krew/pkg/gitutil"
 )
-
-// IndexURI points to the upstream index.
-const IndexURI = "https://github.com/kubernetes-sigs/krew-index.git"
 
 // updateCmd represents the update command
 var updateCmd = &cobra.Command{
@@ -45,7 +42,7 @@ Remarks:
 
 func ensureIndexUpdated(_ *cobra.Command, _ []string) error {
 	glog.V(1).Infof("Updating the local copy of plugin index (%s)", paths.IndexPath())
-	if err := gitutil.EnsureUpdated(IndexURI, paths.IndexPath()); err != nil {
+	if err := gitutil.EnsureUpdated(constants.IndexURI, paths.IndexPath()); err != nil {
 		return errors.Wrap(err, "failed to update the local index")
 	}
 	fmt.Fprintln(os.Stderr, "Updated the local copy of plugin index.")

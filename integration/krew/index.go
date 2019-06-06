@@ -23,7 +23,7 @@ import (
 	"sync"
 
 	"github.com/golang/glog"
-	"sigs.k8s.io/krew/cmd/krew/cmd"
+	"sigs.k8s.io/krew/pkg/constants"
 )
 
 const (
@@ -83,7 +83,7 @@ func initFromGitClone() ([]byte, error) {
 		glog.V(1).Infoln("cannot remove temporary directory:", err)
 	}()
 
-	cmd := exec.Command("git", "clone", "--depth=1", "--single-branch", "--no-tags", cmd.IndexURI)
+	cmd := exec.Command("git", "clone", "--depth=1", "--single-branch", "--no-tags", constants.IndexURI)
 	cmd.Dir = indexRoot
 	if err = cmd.Run(); err != nil {
 		return nil, err
