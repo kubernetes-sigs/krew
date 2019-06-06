@@ -11,14 +11,23 @@ const (
 	validPlugin = "konfig"
 )
 
-func TestInstall(t *testing.T) {
+func TestKrewInstall(t *testing.T) {
 	skipShort(t)
 
 	krewTest, cleanup := krew.NewKrewTest(t)
 	defer cleanup()
 
-	krewTest.WithIndex().Cmd("install", validPlugin).RunOrFail()
+	krewTest.WithIndex().Cmd("install", validPlugin).RunOrFailOutput()
 	// todo(corneliusweig): make sure that the plugin can be executed as `kubectl konfig --help`
+}
+
+func TestKrewHelp(t *testing.T) {
+	skipShort(t)
+
+	krewTest, cleanup := krew.NewKrewTest(t)
+	defer cleanup()
+
+	krewTest.Cmd("help").RunOrFail()
 }
 
 func skipShort(t *testing.T) {
