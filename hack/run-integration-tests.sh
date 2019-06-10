@@ -18,7 +18,9 @@ set -euo pipefail
 
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 BINDIR="${SCRIPTDIR}/../out/bin"
-KREW_BINARY_DEFAULT="$BINDIR/krew-linux_amd64"
+GOOS="$(go env GOOS)"
+GOARCH="$(go env GOARCH)"
+KREW_BINARY_DEFAULT="$BINDIR/krew-${GOOS}_${GOARCH}"
 
 if [[ "$#" -gt 0 && ( "$1" = '-h' || "$1" = '--help' ) ]]; then
   cat <<EOF
