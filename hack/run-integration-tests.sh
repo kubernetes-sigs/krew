@@ -44,8 +44,13 @@ install_kubectl_if_needed() {
   fi
 }
 
-install_kubectl_if_needed
 KREW_BINARY=$(readlink -f "${1:-$KREW_BINARY_DEFAULT}")  # needed for `kubectl krew` in tests
+if [[ ! -x "${KREW_BINARY}" ]]; then
+  echo "Did not find $KREW_BINARY. You need to build krew before running the integration tests"
+  exit 1
+fi
 export KREW_BINARY
+
+install_kubectl_if_needed
 
 go test -v ./...
