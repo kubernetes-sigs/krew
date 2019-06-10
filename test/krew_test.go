@@ -179,8 +179,9 @@ func skipShort(t *testing.T) {
 }
 
 func lines(in []byte) []string {
-	if string(in) == "" {
+	trimmed := strings.TrimRight(string(in), " \t\n")
+	if trimmed == "" {
 		return nil
 	}
-	return strings.Split(string(in), "\n")
+	return strings.Split(trimmed, "\n")
 }

@@ -51,7 +51,7 @@ Remarks:
 					names = append(names, name)
 				}
 				sort.Strings(names)
-				fmt.Fprint(os.Stdout, strings.Join(names, "\n"))
+				fmt.Fprintln(os.Stdout, strings.Join(names, "\n"))
 				return nil
 			}
 
