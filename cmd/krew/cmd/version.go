@@ -21,6 +21,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/environment"
 	"sigs.k8s.io/krew/pkg/version"
 )
@@ -58,7 +59,7 @@ Remarks:
 			{"ExecutedVersion", executedVersion},
 			{"GitTag", version.GitTag()},
 			{"GitCommit", version.GitCommit()},
-			{"IndexURI", IndexURI},
+			{"IndexURI", constants.IndexURI},
 			{"BasePath", paths.BasePath()},
 			{"IndexPath", paths.IndexPath()},
 			{"InstallPath", paths.InstallPath()},

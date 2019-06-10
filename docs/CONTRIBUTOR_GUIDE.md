@@ -47,8 +47,27 @@ To run tests locally, the easiest way to get started is with
 hack/run-tests.sh
 ```
 
+This will run all unit tests and code quality tools.
 To run a single tool independently of the other code checks, have a look at the
 other scripts in [`hack/`](../hack).
+
+In addition, there are integration tests to cover high-level krew functionality.
+To run integration tests, you will need to build the `krew` binary beforehand:
+
+```bash
+hack/make-binaries.sh
+hack/run-integration-tests.sh
+```
+
+The above builds binaries for all supported platforms.
+Building only for your platform produces a slightly different image but will
+work in most circumstances:
+
+```bash
+go build ./cmd/krew
+# you need to specify your local krew binary when using this method:
+hack/run-integration-tests.sh ./krew
+```
 
 ## Testing `krew` in a sandbox
 
