@@ -247,12 +247,12 @@ func Test_download(t *testing.T) {
 			}
 			downloadedData, err := ioutil.ReadAll(io.NewSectionReader(reader, 0, size))
 			if err != nil {
-				t.Errorf("failed to read downlaod data: %v", err)
+				t.Errorf("failed to read download data: %v", err)
 				return
 			}
 			wantData, err := ioutil.ReadAll(io.NewSectionReader(tt.wantReader, 0, tt.wantSize))
 			if err != nil {
-				t.Errorf("failed to read downlaod data: %v", err)
+				t.Errorf("failed to read download data: %v", err)
 				return
 			}
 

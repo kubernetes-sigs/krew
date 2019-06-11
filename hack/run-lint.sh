@@ -21,7 +21,7 @@ SCRIPTDIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 if ! [[ -x "$GOPATH/bin/golangci-lint" ]]
 then
    echo 'Installing golangci-lint'
-   curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b "$GOPATH/bin" v1.16.0
+   curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b "$GOPATH/bin" v1.17.1
 fi
 
 "$GOPATH/bin/golangci-lint" run \
