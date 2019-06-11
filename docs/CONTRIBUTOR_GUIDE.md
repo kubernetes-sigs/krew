@@ -59,16 +59,6 @@ hack/make-binaries.sh
 hack/run-integration-tests.sh
 ```
 
-The above builds binaries for all supported platforms.
-Building only for your platform produces a slightly different image but will
-work in most circumstances:
-
-```bash
-go build ./cmd/krew
-# you need to specify your local krew binary when using this method:
-hack/run-integration-tests.sh ./krew
-```
-
 ## Testing `krew` in a sandbox
 
 After making changes to krew, you should also check that it behaves as expected.

@@ -18,7 +18,9 @@ set -euo pipefail
 
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 BINDIR="${SCRIPTDIR}/../out/bin"
-KREW_BINARY_DEFAULT="$BINDIR/krew-linux_amd64"
+GOOS="$(go env GOOS)"
+GOARCH="$(go env GOARCH)"
+KREW_BINARY_DEFAULT="$BINDIR/krew-${GOOS}_${GOARCH}"
 
 if [[ "$#" -gt 0 && ( "$1" = '-h' || "$1" = '--help' ) ]]; then
   cat <<EOF
@@ -42,8 +44,13 @@ install_kubectl_if_needed() {
   fi
 }
 
-install_kubectl_if_needed
 KREW_BINARY=$(readlink -f "${1:-$KREW_BINARY_DEFAULT}")  # needed for `kubectl krew` in tests
+if [[ ! -x "${KREW_BINARY}" ]]; then
+  echo "Did not find $KREW_BINARY. You need to build krew before running the integration tests"
+  exit 1
+fi
 export KREW_BINARY
+
+install_kubectl_if_needed
 
 go test -v ./...
