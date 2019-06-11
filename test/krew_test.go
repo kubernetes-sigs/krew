@@ -104,35 +104,22 @@ func TestKrewSearchOne(t *testing.T) {
 func TestKrewInfo(t *testing.T) {
 	skipShort(t)
 
-	tests := []struct {
-		name      string
-		plugin    string
-		shouldErr bool
-	}{
-		{
-			name:   "should not fail for a valid plugin",
-			plugin: validPlugin,
-		},
-		{
-			name:      "should fail for an invalid plugin",
-			plugin:    "invalid-plugin",
-			shouldErr: true,
-		},
-	}
+	test, cleanup := krew.NewTest(t)
+	defer cleanup()
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			test, cleanup := krew.NewTest(t)
-			defer cleanup()
+	test.WithIndex().Krew("info", validPlugin).RunOrFail()
+}
 
-			err := test.WithIndex().Krew("info", tt.plugin).Run()
-			if tt.shouldErr && err == nil {
-				t.Errorf("Expected `krew info %s` to fail", tt.plugin)
-			}
-			if !tt.shouldErr && err != nil {
-				t.Errorf("Expected `krew info %s` not to fail", tt.plugin)
-			}
-		})
+func TestKrewInfoInvalidPlugin(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := krew.NewTest(t)
+	defer cleanup()
+
+	plugin := "invalid-plugin"
+	err := test.WithIndex().Krew("info", plugin).Run()
+	if err == nil {
+		t.Errorf("Expected `krew info %s` to fail", plugin)
 	}
 }
 
