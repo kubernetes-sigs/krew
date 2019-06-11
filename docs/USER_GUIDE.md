@@ -6,7 +6,6 @@ This guide shows how to use `krew` as a user after installing it.
 
 - [Discovering Plugins](#discovering-plugins)
 - [Installing Plugins](#installing-plugins)
-    - [Installing plugins with --HEAD](#installing-plugins-with---head)
 - [Listing Installed Plugins](#listing-installed-plugins)
 - [Upgrading Plugins](#upgrading-plugins)
 - [Uninstalling Plugins](#uninstalling-plugins)
@@ -44,7 +43,6 @@ To get more information on a plugin, run `kubectl krew info <PLUGIN>`:
 ```text
 $ kubectl krew info ca-cert
 NAME: ca-cert
-HEAD: https://github.com/ahmetb/kubectl-extras/archive/master.zip
 URI: https://github.com/ahmetb/kubectl-extras/archive/c403c57.zip
 SHA256: 8be8ed348d02285abc46bbf7a4cc83da0ee9d54dc2c5bf86a7b64947811b843c
 DESCRIPTION:
@@ -80,19 +78,6 @@ After installing a plugin, you can use it like `kubectl <PLUGIN>`:
 kubectl ca-cert
 ```
 
-### Installing plugins with --HEAD
-
-Some plugins are offer a way to install directly from the last revision of the
-source code from their Git repositories. Such plugins expose a `HEAD:` field in
-`kubectl info` output.
-
-To install such a plugin from its latest release, run:
-
-    kubectl krew install --HEAD <PLUGIN>
-
-**Note:** Installing with `--HEAD` does not check the integrity of the
-downloaded git archive. Also, untagged plugins are very likely to be unstable.
-
 ## Listing Installed Plugins
 
 All plugins available to `kubectl` (including those not installed via `krew`) can
@@ -118,9 +103,6 @@ without any arguments:
 
 Since `krew` itself is a plugin also managed through `krew`, running the upgrade
 command may also upgrade your `krew` version.
-
-**Note:** Plugins installed via `--HEAD` are always upgraded. This process
-allows you to upgrade to the latest commit available in the source repository.
 
 ## Uninstalling Plugins
 

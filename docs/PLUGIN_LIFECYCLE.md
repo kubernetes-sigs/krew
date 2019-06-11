@@ -8,11 +8,9 @@
 
 The plugins will be downloaded and checked against its sha256 to verify the
 integrity. The package will be uncompressed into a directory called
-`${TMP}/krew/download/<plugin-name>/<sha256-or-HEAD>/`. Then the directory will
-be renamed (mv) to `~/.krew/store/<plugin-name>/<sha256-or-HEAD>/`.
+`${TMP}/krew/download/<plugin-name>/<sha256>/`. Then the directory will
+be renamed (mv) to `~/.krew/store/<plugin-name>/<sha256>/`.
 This ensures a partially atomic and idempotent operation on most file systems.
-If both are present sha256+URI will be the default, head can be forced using `$
-kubectl plugin install foo --HEAD`.
 
 ## Upgrade
 
@@ -38,9 +36,7 @@ upgrade/install command is issued and a directory in download still exists or
 two plugin version directories exist in `/store/<plugin-name>/`, krew assumes
 that the previous operation failed.
 
-Krew informs the user and retries to reinstall the package. If `HEAD` is used,
-the plugin will always be reinstalled. To accomplish this the old plugin
-directory gets renamed to `HEAD-OLD` first. The procedure is otherwise the same.
+Krew informs the user and retries to reinstall the package.
 
 ![Self Upgrade](src/krew_upgrade_self.svg)
 
