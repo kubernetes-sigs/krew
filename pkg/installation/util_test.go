@@ -53,7 +53,7 @@ func Test_osArch_override(t *testing.T) {
 
 func Test_matchPlatformToSystemEnvs(t *testing.T) {
 	matchingPlatform := index.Platform{
-		Head: "A",
+		URI: "A",
 		Selector: &v1.LabelSelector{
 			MatchLabels: map[string]string{
 				"os": "foo",
@@ -79,7 +79,7 @@ func Test_matchPlatformToSystemEnvs(t *testing.T) {
 					Spec: index.PluginSpec{
 						Platforms: []index.Platform{
 							matchingPlatform, {
-								Head: "B",
+								URI: "B",
 								Selector: &v1.LabelSelector{
 									MatchLabels: map[string]string{
 										"os": "None",
@@ -100,7 +100,7 @@ func Test_matchPlatformToSystemEnvs(t *testing.T) {
 					Spec: index.PluginSpec{
 						Platforms: []index.Platform{
 							{
-								Head: "B",
+								URI: "B",
 								Selector: &v1.LabelSelector{
 									MatchLabels: map[string]string{
 										"os": "None",

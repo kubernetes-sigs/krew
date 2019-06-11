@@ -81,9 +81,10 @@ func TestValidateManifestFile(t *testing.T) {
 				Spec: index.PluginSpec{
 					ShortDescription: "test",
 					Platforms: []index.Platform{{
-						Head:  "http://test.com",
-						Files: []index.FileOperation{{From: "", To: ""}},
-						Bin:   "bin",
+						URI:    "http://test.com",
+						Sha256: "deadbeef",
+						Files:  []index.FileOperation{{From: "", To: ""}},
+						Bin:    "bin",
 						Selector: &v1.LabelSelector{
 							MatchLabels: map[string]string{"os": "darwin", "arch": "arm"},
 						},
@@ -108,16 +109,18 @@ func TestValidateManifestFile(t *testing.T) {
 					ShortDescription: "test",
 					Platforms: []index.Platform{
 						{
-							Head:  "http://test.com",
-							Files: []index.FileOperation{{From: "", To: ""}},
-							Bin:   "bin",
+							URI:    "http://test.com",
+							Sha256: "deadbeef",
+							Files:  []index.FileOperation{{From: "", To: ""}},
+							Bin:    "bin",
 							Selector: &v1.LabelSelector{
 								MatchLabels: map[string]string{"os": "linux"},
 							},
 						}, {
-							Head:  "http://test.com",
-							Files: []index.FileOperation{{From: "", To: ""}},
-							Bin:   "bin",
+							URI:    "http://test.com",
+							Sha256: "deadbeef",
+							Files:  []index.FileOperation{{From: "", To: ""}},
+							Bin:    "bin",
 							Selector: &v1.LabelSelector{
 								MatchLabels: map[string]string{"os": "linux", "arch": "arm"},
 							},
