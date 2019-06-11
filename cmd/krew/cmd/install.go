@@ -29,7 +29,6 @@ import (
 )
 
 func init() {
-	var forceHEAD *bool
 	var manifest, forceDownloadFile *string
 
 	// installCmd represents the install command
@@ -103,9 +102,6 @@ Remarks:
 				install = append(install, plugin)
 			}
 
-			if len(install) > 1 && *forceHEAD {
-				return errors.New("can't use --HEAD option with multiple plugins")
-			}
 			if len(install) > 1 && *manifest != "" {
 				return errors.New("can't use --manifest option with multiple plugins")
 			}
@@ -152,7 +148,6 @@ Remarks:
 		},
 	}
 
-	forceHEAD = installCmd.Flags().Bool("HEAD", false, "Force HEAD if versioned and HEAD installs are possible.")
 	manifest = installCmd.Flags().String("manifest", "", "(Development-only) specify plugin manifest directly.")
 	forceDownloadFile = installCmd.Flags().String("archive", "", "(Development-only) force all downloads to use the specified file")
 
