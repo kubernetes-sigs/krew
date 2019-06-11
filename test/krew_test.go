@@ -16,7 +16,9 @@
 package test
 
 import (
+	"bytes"
 	"fmt"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -102,12 +104,35 @@ func TestKrewSearchOne(t *testing.T) {
 func TestKrewInfo(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := krew.NewTest(t)
-	defer cleanup()
+	tests := []struct {
+		name      string
+		plugin    string
+		shouldErr bool
+	}{
+		{
+			name:   "should not fail for a valid plugin",
+			plugin: validPlugin,
+		},
+		{
+			name:      "should fail for an invalid plugin",
+			plugin:    "invalid-plugin",
+			shouldErr: true,
+		},
+	}
 
-	output := test.WithIndex().Krew("info", validPlugin).RunOrFailOutput()
-	if !strings.HasPrefix(string(output), "NAME: "+validPlugin) {
-		t.Errorf("The info output should begin with the name header")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			test, cleanup := krew.NewTest(t)
+			defer cleanup()
+
+			err := test.WithIndex().Krew("info", tt.plugin).Run()
+			if tt.shouldErr && err == nil {
+				t.Errorf("Expected `krew info %s` to fail", tt.plugin)
+			}
+			if !tt.shouldErr && err != nil {
+				t.Errorf("Expected `krew info %s` not to fail", tt.plugin)
+			}
+		})
 	}
 }
 
@@ -118,13 +143,15 @@ func TestKrewList(t *testing.T) {
 	defer cleanup()
 
 	initialList := test.WithIndex().Krew("list").RunOrFailOutput()
-	test.Krew("install", validPlugin).RunOrFail()
-	eventualList := test.Krew("list").RunOrFailOutput()
+	if bytes.Contains(initialList, []byte(validPlugin)) {
+		t.Errorf("%q should initially not be installed", validPlugin)
+	}
 
-	if len(lines(eventualList))-len(lines(initialList)) != 1 {
-		t.Logf("initial list: %q\n", initialList)
-		t.Logf("eventual list: %q\n", eventualList)
-		t.Errorf("The list of installed plugins should grow by one when a single plugin is installed")
+	test.Krew("install", validPlugin).RunOrFail()
+
+	eventualList := test.Krew("list").RunOrFailOutput()
+	if !bytes.Contains(eventualList, []byte(validPlugin)) {
+		t.Errorf("%q should eventually be installed", validPlugin)
 	}
 }
 
@@ -138,20 +165,20 @@ func TestKrewVersion(t *testing.T) {
 
 	requiredSubstrings := []string{
 		"IsPlugin",
-		fmt.Sprintf("BasePath        %s", test.Root()),
+		fmt.Sprintf(`BasePath\s+%s`, test.Root()),
 		"ExecutedVersion",
 		"GitTag",
 		"GitCommit",
-		"IndexURI        https://github.com/kubernetes-sigs/krew-index.git",
+		`IndexURI\s+https://github.com/kubernetes-sigs/krew-index.git`,
 		"IndexPath",
 		"InstallPath",
 		"DownloadPath",
 		"BinPath",
 	}
 
-	for _, s := range requiredSubstrings {
-		if !strings.Contains(string(output), s) {
-			t.Errorf("Expected to find %q in output of `krew version`", s)
+	for _, p := range requiredSubstrings {
+		if regexp.MustCompile(p).FindSubmatchIndex(output) == nil {
+			t.Errorf("Expected to find %q in output of `krew version`", p)
 		}
 	}
 }
