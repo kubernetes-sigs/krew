@@ -80,11 +80,11 @@ func (p Plugin) Validate(name string) error {
 
 // Validate TODO(lbb)
 func (p Platform) Validate() error {
-	if (p.Sha256 != "") != (p.URI != "") {
-		return errors.New("can't get version URI and sha have both to be set or unset")
+	if p.URI == "" {
+		return errors.New("URI has to be set")
 	}
-	if p.Head == "" && p.URI == "" {
-		return errors.New("head or URI have to be set")
+	if p.Sha256 == "" {
+		return errors.New("sha256 sum has to be set")
 	}
 	if p.Bin == "" {
 		return errors.New("bin has to be set")

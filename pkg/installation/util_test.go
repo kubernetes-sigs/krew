@@ -134,81 +134,19 @@ func Test_matchPlatformToSystemEnvs(t *testing.T) {
 }
 
 func Test_getPluginVersion(t *testing.T) {
-	type args struct {
-		p         index.Platform
-		forceHEAD bool
+	wantVersion := "deadbeef"
+	wantURI := "https://uri.git"
+	platform := index.Platform{
+		URI:    "https://uri.git",
+		Sha256: "dEaDbEeF",
 	}
-	tests := []struct {
-		name        string
-		args        args
-		wantVersion string
-		wantURI     string
-		wantErr     bool
-	}{
-		{
-			name: "Get Single Head",
-			args: args{
-				p: index.Platform{
-					Head:   "https://head.git",
-					URI:    "",
-					Sha256: "",
-				},
-				forceHEAD: false,
-			},
-			wantVersion: "HEAD",
-			wantURI:     "https://head.git",
-		}, {
-			name: "Get URI default",
-			args: args{
-				p: index.Platform{
-					Head:   "https://head.git",
-					URI:    "https://uri.git",
-					Sha256: "deadbeef",
-				},
-				forceHEAD: false,
-			},
-			wantVersion: "deadbeef",
-			wantURI:     "https://uri.git",
-		}, {
-			name: "Get HEAD force",
-			args: args{
-				p: index.Platform{
-					Head:   "https://head.git",
-					URI:    "https://uri.git",
-					Sha256: "deadbeef",
-				},
-				forceHEAD: true,
-			},
-			wantVersion: "HEAD",
-			wantURI:     "https://head.git",
-		}, {
-			name: "HEAD force fallback",
-			args: args{
-				p: index.Platform{
-					Head:   "",
-					URI:    "https://uri.git",
-					Sha256: "deadbeef",
-				},
-				forceHEAD: true,
-			},
-			wantErr:     true,
-			wantVersion: "",
-			wantURI:     "",
-		},
+
+	gotVersion, gotURI := getPluginVersion(platform)
+	if gotVersion != wantVersion {
+		t.Errorf("getPluginVersion() gotVersion = %v, want %v", gotVersion, wantVersion)
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			gotVersion, gotURI, err := getPluginVersion(tt.args.p, tt.args.forceHEAD)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("getPluginVersion() gotVersion = %v, want %v, got err = %v want err = %v", gotVersion, tt.wantVersion, err, tt.wantErr)
-			}
-			if gotVersion != tt.wantVersion {
-				t.Errorf("getPluginVersion() gotVersion = %v, want %v", gotVersion, tt.wantVersion)
-			}
-			if gotURI != tt.wantURI {
-				t.Errorf("getPluginVersion() gotURI = %v, want %v", gotURI, tt.wantURI)
-			}
-		})
+	if gotURI != wantURI {
+		t.Errorf("getPluginVersion() gotURI = %v, want %v", gotURI, wantURI)
 	}
 }
 
@@ -226,8 +164,7 @@ func Test_getDownloadTarget(t *testing.T) {
 		Files: nil,
 	}
 	type args struct {
-		index     index.Plugin
-		forceHEAD bool
+		index index.Plugin
 	}
 	tests := []struct {
 		name        string

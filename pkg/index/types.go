@@ -40,7 +40,6 @@ type PluginSpec struct {
 
 // Platform TODO(lbb)
 type Platform struct {
-	Head   string `json:"head,omitempty"`
 	URI    string `json:"uri,omitempty"`
 	Sha256 string `json:"sha256,omitempty"`
 
