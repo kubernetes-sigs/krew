@@ -123,7 +123,7 @@ Remarks:
 			// Do install
 			for _, plugin := range install {
 				fmt.Fprintf(os.Stderr, "Installing plugin: %s\n", plugin.Name)
-				err := installation.Install(paths, plugin, *forceHEAD, *forceDownloadFile)
+				err := installation.Install(paths, plugin, *forceDownloadFile)
 				if err == installation.ErrIsAlreadyInstalled {
 					glog.Warningf("Skipping plugin %s, it is already installed", plugin.Name)
 					continue

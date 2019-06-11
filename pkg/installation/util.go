@@ -110,7 +110,7 @@ func getPluginVersion(p index.Platform) (version, uri string) {
 	return strings.ToLower(p.Sha256), p.URI
 }
 
-func getDownloadTarget(index index.Plugin, forceHEAD bool) (version, uri string, fos []index.FileOperation, bin string, err error) {
+func getDownloadTarget(index index.Plugin) (version, uri string, fos []index.FileOperation, bin string, err error) {
 	p, ok, err := GetMatchingPlatform(index)
 	if err != nil {
 		return "", "", nil, p.Bin, errors.Wrap(err, "failed to get matching platforms")

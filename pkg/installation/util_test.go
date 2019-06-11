@@ -152,7 +152,6 @@ func Test_getPluginVersion(t *testing.T) {
 
 func Test_getDownloadTarget(t *testing.T) {
 	matchingPlatform := index.Platform{
-		Head:   "https://head.git",
 		URI:    "https://uri.git",
 		Sha256: "deadbeef",
 		Selector: &v1.LabelSelector{
@@ -178,13 +177,12 @@ func Test_getDownloadTarget(t *testing.T) {
 		{
 			name: "Find Matching Platform",
 			args: args{
-				forceHEAD: true,
 				index: index.Plugin{
 					Spec: index.PluginSpec{
 						Platforms: []index.Platform{
 							matchingPlatform,
 							{
-								Head: "https://wrong.com",
+								URI: "https://wrong.com",
 								Selector: &v1.LabelSelector{
 									MatchLabels: map[string]string{
 										"os": "None",
@@ -195,20 +193,19 @@ func Test_getDownloadTarget(t *testing.T) {
 					},
 				},
 			},
-			wantVersion: "HEAD",
-			wantURI:     "https://head.git",
+			wantVersion: "deadbeef",
+			wantURI:     "https://uri.git",
 			wantFos:     nil,
 			wantBin:     "kubectl-foo",
 			wantErr:     false,
 		}, {
 			name: "No Matching Platform",
 			args: args{
-				forceHEAD: true,
 				index: index.Plugin{
 					Spec: index.PluginSpec{
 						Platforms: []index.Platform{
 							{
-								Head: "https://wrong.com",
+								URI: "https://wrong.com",
 								Selector: &v1.LabelSelector{
 									MatchLabels: map[string]string{
 										"os": "None",
@@ -228,7 +225,7 @@ func Test_getDownloadTarget(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotVersion, gotURI, gotFos, bin, err := getDownloadTarget(tt.args.index, tt.args.forceHEAD)
+			gotVersion, gotURI, gotFos, bin, err := getDownloadTarget(tt.args.index)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getDownloadTarget() error = %v, wantErr %v", err, tt.wantErr)
 				return

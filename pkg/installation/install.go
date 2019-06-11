@@ -37,8 +37,6 @@ var (
 )
 
 const (
-	headVersion    = "HEAD"
-	headOldVersion = "HEAD-OLD"
 	krewPluginName = "krew"
 )
 
@@ -55,10 +53,6 @@ func downloadAndMove(version, uri string, fos []index.FileOperation, downloadPat
 	}
 
 	verifier := download.NewSha256Verifier(version)
-	if version == headVersion {
-		glog.V(1).Infof("Getting latest version from HEAD without sha256 verification")
-		verifier = download.NewInsecureVerifier()
-	}
 	if err := download.NewDownloader(verifier, fetcher).Get(uri, downloadPath); err != nil {
 		return "", errors.Wrap(err, "failed to download and verify file")
 	}
@@ -67,7 +61,7 @@ func downloadAndMove(version, uri string, fos []index.FileOperation, downloadPat
 
 // Install will download and install a plugin. The operation tries
 // to not get the plugin dir in a bad state if it fails during the process.
-func Install(p environment.Paths, plugin index.Plugin, forceHEAD bool, forceDownloadFile string) error {
+func Install(p environment.Paths, plugin index.Plugin, forceDownloadFile string) error {
 	glog.V(2).Infof("Looking for installed versions")
 	_, ok, err := findInstalledPluginVersion(p.InstallPath(), p.BinPath(), plugin.Name)
 	if err != nil {
@@ -78,7 +72,7 @@ func Install(p environment.Paths, plugin index.Plugin, forceHEAD bool, forceDown
 	}
 
 	glog.V(1).Infof("Finding download target for plugin %s", plugin.Name)
-	version, uri, fos, bin, err := getDownloadTarget(plugin, forceHEAD)
+	version, uri, fos, bin, err := getDownloadTarget(plugin)
 	if err != nil {
 		return err
 	}
