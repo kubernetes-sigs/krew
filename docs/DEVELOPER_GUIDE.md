@@ -231,35 +231,15 @@ plugin name.
 #### Specifying a plugin download URL
 
 krew plugins must be packaged as `.zip` or `.tar.gz` archives and should be made
-available to download publicly.
-
-There are two ways to specify a plugin archive location in the plugin manifest:
-
-1. Download from a URL pointing and verify its checksum with sha256:
-   This uses `url` and `sha256` fields. **(recommended)**
-2. Download from a URL without verifying its checksum:
-   This uses the `head` field. This is intended for development purposes where
-   the contents of the URL may change frequently.
-
-Downloading from a versioned URL requires fields:
+available for download publicly. 
+Downloading from a URL also requires a checksum of the downloaded content:
 
 - `uri`: URL to the archive file (`.zip` or `.tar.gz`)
 - `sha256`: sha256 sum of the archive file
 
-Specifying `head` field makes it possible to install a file without verifying
-its checksum. If you are downloading from `master` branch of a GitHub
-repository, this can be useful. Users can install a plugin using the `head`
-with:
-
-    kubectl krew install --HEAD <PLUGIN>
-
-It is possible to specify only the `head`, as well as alongside `uri` and
-`sha256`. In this case, the `uri` and `sha256` fields will be used by default:
-
 ```yaml
   platforms:
-  - head: https://github.com/barbaz/foo/archive/master.zip
-    uri: https://github.com/barbaz/foo/archive/v1.2.3.zip
+  - uri: https://github.com/barbaz/foo/archive/v1.2.3.zip
     sha256: "29C9C411AF879AB85049344B81B8E8A9FBC1D657D493694E2783A2D0DB240775"
     ...
 ```

@@ -20,13 +20,15 @@ spec:
   platforms:
   - files:
     - from: "*"
-    head: https://example.com
+    uri: https://example.com
+    sha256: deadbeef
     selector:
       matchExpressions:
       - {key: os, operator: In, values: [macos, linux]}
   - files:
     - from: "*"
-    head: https://example.com
+    uri: https://example.com
+    sha256: deadbeef
     selector:
       matchLabels:
         os: "windows"

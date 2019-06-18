@@ -58,9 +58,6 @@ Example:
 func printPluginInfo(out io.Writer, plugin index.Plugin) {
 	fmt.Fprintf(out, "NAME: %s\n", plugin.Name)
 	if platform, ok, err := installation.GetMatchingPlatform(plugin); err == nil && ok {
-		if platform.Head != "" {
-			fmt.Fprintf(out, "HEAD: %s\n", platform.Head)
-		}
 		if platform.URI != "" {
 			fmt.Fprintf(out, "URI: %s\n", platform.URI)
 			fmt.Fprintf(out, "SHA256: %s\n", platform.Sha256)

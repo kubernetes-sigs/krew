@@ -106,17 +106,11 @@ func pluginVersionFromPath(installPath, pluginPath string) (string, error) {
 	return elems[1], nil
 }
 
-func getPluginVersion(p index.Platform, forceHEAD bool) (version, uri string, err error) {
-	if (forceHEAD && p.Head != "") || (p.Head != "" && p.Sha256 == "" && p.URI == "") {
-		return headVersion, p.Head, nil
-	}
-	if forceHEAD && p.Head == "" {
-		return "", "", errors.New("can't force HEAD, plugin manifest does not have a \"head\"")
-	}
-	return strings.ToLower(p.Sha256), p.URI, nil
+func getPluginVersion(p index.Platform) (version, uri string) {
+	return strings.ToLower(p.Sha256), p.URI
 }
 
-func getDownloadTarget(index index.Plugin, forceHEAD bool) (version, uri string, fos []index.FileOperation, bin string, err error) {
+func getDownloadTarget(index index.Plugin) (version, uri string, fos []index.FileOperation, bin string, err error) {
 	p, ok, err := GetMatchingPlatform(index)
 	if err != nil {
 		return "", "", nil, p.Bin, errors.Wrap(err, "failed to get matching platforms")
@@ -124,10 +118,7 @@ func getDownloadTarget(index index.Plugin, forceHEAD bool) (version, uri string,
 	if !ok {
 		return "", "", nil, p.Bin, errors.New("no matching platform found")
 	}
-	version, uri, err = getPluginVersion(p, forceHEAD)
-	if err != nil {
-		return "", "", nil, p.Bin, errors.Wrap(err, "failed to get the plugin version")
-	}
+	version, uri = getPluginVersion(p)
 	glog.V(4).Infof("Matching plugin version is %s", version)
 
 	return version, uri, p.Files, p.Bin, nil

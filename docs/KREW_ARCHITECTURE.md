@@ -39,7 +39,7 @@ specific. Krew installs itself in the default plugin directory for the user.
 ### Directory structure
 
 Krew installs plugins in its root path under `~/.krew/store`. Each
-plugin has a directory with its uncompressed content from the URI or head path.
+plugin has a directory with its uncompressed content from the URI.
 Kubectl will recursively search the plugin path for plugin.yaml files. The
 download directory is a temporary directory which only exists during the
 execution of the install or upgrade command. Directory structure:
@@ -53,7 +53,7 @@ execution of the install or upgrade command. Directory structure:
     |   ├── foo.yaml
     |   └── krew.yaml
     └── store/
-        ├── foo/<sha256-or-HEAD>/
+        ├── foo/<sha256>/
         |   ├── plugin.yaml
         |   └── foo.sh
         └── krew/<sha256>/
@@ -66,7 +66,7 @@ execution of the install or upgrade command. Directory structure:
             └── krew-upgrade
 ${TMPDIR}/krew/
     └── download/ (This directory is only available during installation and upgrade)
-        └── foo/<sha256-or-HEAD>/
+        └── foo/<sha256>/
             ├── plugin.yaml
             └── foo.sh
 ```
@@ -103,7 +103,8 @@ metadata:
   name: foo
 spec:
   platforms:
-  - head: https://github.com/barbaz/foo/archive/master.tar.gz
+  - uri: https://github.com/barbaz/foo/archive/windows-v0.5.0.tar.gz
+    sha256: 29C9C411AF879AB85049344B81B8E8A9FBC1D657D493694E2783A2D0DB240775
     # This is used during installation. It uses file Globs to copy required files.
     files:
     - from: "/posix/*"
@@ -146,8 +147,8 @@ with patches and GPG signing.
 
 ### Plugin Package Format
 
-The plugin package is found under the download URI or HEAD in the Plugin
-Manifest. Currently, krew only supports downloading plugin packages of formats
+The plugin package is found under the download URI in the Plugin Manifest.
+Currently, krew only supports downloading plugin packages of formats
 `.tar.gz` and `.zip` over HTTP(S) protocol.
 
 Plugins must meet some standards even though kubectl does allow more. Krew

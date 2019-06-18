@@ -53,7 +53,7 @@ func Test_osArch_override(t *testing.T) {
 
 func Test_matchPlatformToSystemEnvs(t *testing.T) {
 	matchingPlatform := index.Platform{
-		Head: "A",
+		URI: "A",
 		Selector: &v1.LabelSelector{
 			MatchLabels: map[string]string{
 				"os": "foo",
@@ -79,7 +79,7 @@ func Test_matchPlatformToSystemEnvs(t *testing.T) {
 					Spec: index.PluginSpec{
 						Platforms: []index.Platform{
 							matchingPlatform, {
-								Head: "B",
+								URI: "B",
 								Selector: &v1.LabelSelector{
 									MatchLabels: map[string]string{
 										"os": "None",
@@ -100,7 +100,7 @@ func Test_matchPlatformToSystemEnvs(t *testing.T) {
 					Spec: index.PluginSpec{
 						Platforms: []index.Platform{
 							{
-								Head: "B",
+								URI: "B",
 								Selector: &v1.LabelSelector{
 									MatchLabels: map[string]string{
 										"os": "None",
@@ -134,87 +134,24 @@ func Test_matchPlatformToSystemEnvs(t *testing.T) {
 }
 
 func Test_getPluginVersion(t *testing.T) {
-	type args struct {
-		p         index.Platform
-		forceHEAD bool
+	wantVersion := "deadbeef"
+	wantURI := "https://uri.git"
+	platform := index.Platform{
+		URI:    "https://uri.git",
+		Sha256: "dEaDbEeF",
 	}
-	tests := []struct {
-		name        string
-		args        args
-		wantVersion string
-		wantURI     string
-		wantErr     bool
-	}{
-		{
-			name: "Get Single Head",
-			args: args{
-				p: index.Platform{
-					Head:   "https://head.git",
-					URI:    "",
-					Sha256: "",
-				},
-				forceHEAD: false,
-			},
-			wantVersion: "HEAD",
-			wantURI:     "https://head.git",
-		}, {
-			name: "Get URI default",
-			args: args{
-				p: index.Platform{
-					Head:   "https://head.git",
-					URI:    "https://uri.git",
-					Sha256: "deadbeef",
-				},
-				forceHEAD: false,
-			},
-			wantVersion: "deadbeef",
-			wantURI:     "https://uri.git",
-		}, {
-			name: "Get HEAD force",
-			args: args{
-				p: index.Platform{
-					Head:   "https://head.git",
-					URI:    "https://uri.git",
-					Sha256: "deadbeef",
-				},
-				forceHEAD: true,
-			},
-			wantVersion: "HEAD",
-			wantURI:     "https://head.git",
-		}, {
-			name: "HEAD force fallback",
-			args: args{
-				p: index.Platform{
-					Head:   "",
-					URI:    "https://uri.git",
-					Sha256: "deadbeef",
-				},
-				forceHEAD: true,
-			},
-			wantErr:     true,
-			wantVersion: "",
-			wantURI:     "",
-		},
+
+	gotVersion, gotURI := getPluginVersion(platform)
+	if gotVersion != wantVersion {
+		t.Errorf("getPluginVersion() gotVersion = %v, want %v", gotVersion, wantVersion)
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			gotVersion, gotURI, err := getPluginVersion(tt.args.p, tt.args.forceHEAD)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("getPluginVersion() gotVersion = %v, want %v, got err = %v want err = %v", gotVersion, tt.wantVersion, err, tt.wantErr)
-			}
-			if gotVersion != tt.wantVersion {
-				t.Errorf("getPluginVersion() gotVersion = %v, want %v", gotVersion, tt.wantVersion)
-			}
-			if gotURI != tt.wantURI {
-				t.Errorf("getPluginVersion() gotURI = %v, want %v", gotURI, tt.wantURI)
-			}
-		})
+	if gotURI != wantURI {
+		t.Errorf("getPluginVersion() gotURI = %v, want %v", gotURI, wantURI)
 	}
 }
 
 func Test_getDownloadTarget(t *testing.T) {
 	matchingPlatform := index.Platform{
-		Head:   "https://head.git",
 		URI:    "https://uri.git",
 		Sha256: "deadbeef",
 		Selector: &v1.LabelSelector{
@@ -226,8 +163,7 @@ func Test_getDownloadTarget(t *testing.T) {
 		Files: nil,
 	}
 	type args struct {
-		index     index.Plugin
-		forceHEAD bool
+		index index.Plugin
 	}
 	tests := []struct {
 		name        string
@@ -241,13 +177,12 @@ func Test_getDownloadTarget(t *testing.T) {
 		{
 			name: "Find Matching Platform",
 			args: args{
-				forceHEAD: true,
 				index: index.Plugin{
 					Spec: index.PluginSpec{
 						Platforms: []index.Platform{
 							matchingPlatform,
 							{
-								Head: "https://wrong.com",
+								URI: "https://wrong.com",
 								Selector: &v1.LabelSelector{
 									MatchLabels: map[string]string{
 										"os": "None",
@@ -258,20 +193,19 @@ func Test_getDownloadTarget(t *testing.T) {
 					},
 				},
 			},
-			wantVersion: "HEAD",
-			wantURI:     "https://head.git",
+			wantVersion: "deadbeef",
+			wantURI:     "https://uri.git",
 			wantFos:     nil,
 			wantBin:     "kubectl-foo",
 			wantErr:     false,
 		}, {
 			name: "No Matching Platform",
 			args: args{
-				forceHEAD: true,
 				index: index.Plugin{
 					Spec: index.PluginSpec{
 						Platforms: []index.Platform{
 							{
-								Head: "https://wrong.com",
+								URI: "https://wrong.com",
 								Selector: &v1.LabelSelector{
 									MatchLabels: map[string]string{
 										"os": "None",
@@ -291,7 +225,7 @@ func Test_getDownloadTarget(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotVersion, gotURI, gotFos, bin, err := getDownloadTarget(tt.args.index, tt.args.forceHEAD)
+			gotVersion, gotURI, gotFos, bin, err := getDownloadTarget(tt.args.index)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getDownloadTarget() error = %v, wantErr %v", err, tt.wantErr)
 				return

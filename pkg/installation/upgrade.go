@@ -37,22 +37,12 @@ func Upgrade(p environment.Paths, plugin index.Plugin) error {
 	}
 
 	// Check allowed installation
-	newVersion, uri, fos, binName, err := getDownloadTarget(plugin, oldVersion == headVersion)
-	if oldVersion == newVersion && oldVersion != headVersion {
+	newVersion, uri, fos, binName, err := getDownloadTarget(plugin)
+	if oldVersion == newVersion {
 		return ErrIsAlreadyUpgraded
 	}
 	if err != nil {
 		return errors.Wrap(err, "failed to get the current download target")
-	}
-
-	// Move head to save location
-	if oldVersion == headVersion {
-		oldHEADPath, newHEADPath := p.PluginVersionInstallPath(plugin.Name, headVersion), p.PluginVersionInstallPath(plugin.Name, headOldVersion)
-		glog.V(2).Infof("Move old HEAD from: %q to %q", oldHEADPath, newHEADPath)
-		if err = os.Rename(oldHEADPath, newHEADPath); err != nil {
-			return errors.Wrapf(err, "failed to rename HEAD to HEAD-OLD, from %q to %q", oldHEADPath, newHEADPath)
-		}
-		oldVersion = headOldVersion
 	}
 
 	// Re-Install

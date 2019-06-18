@@ -118,9 +118,8 @@ func TestPlugin_Validate(t *testing.T) {
 					Caveats:          "",
 					Homepage:         "",
 					Platforms: []Platform{{
-						Head:     "http://example.com",
-						URI:      "",
-						Sha256:   "",
+						URI:      "http://example.com",
+						Sha256:   "deadbeef",
 						Selector: nil,
 						Files:    []FileOperation{{"", ""}},
 						Bin:      "foo",
@@ -144,9 +143,8 @@ func TestPlugin_Validate(t *testing.T) {
 					Description:      "",
 					Caveats:          "",
 					Platforms: []Platform{{
-						Head:     "http://example.com",
-						URI:      "",
-						Sha256:   "",
+						URI:      "http://example.com",
+						Sha256:   "deadbeef",
 						Selector: nil,
 						Files:    []FileOperation{{"", ""}},
 						Bin:      "foo",
@@ -171,9 +169,8 @@ func TestPlugin_Validate(t *testing.T) {
 					Caveats:          "",
 					Homepage:         "",
 					Platforms: []Platform{{
-						Head:     "http://example.com",
-						URI:      "",
-						Sha256:   "",
+						URI:      "http://example.com",
+						Sha256:   "deadbeef",
 						Selector: nil,
 						Files:    []FileOperation{{"", ""}},
 						Bin:      "foo",
@@ -197,9 +194,8 @@ func TestPlugin_Validate(t *testing.T) {
 					Description:      "",
 					Caveats:          "",
 					Platforms: []Platform{{
-						Head:     "http://example.com",
-						URI:      "",
-						Sha256:   "",
+						URI:      "http://example.com",
+						Sha256:   "deadbeef",
 						Selector: nil,
 						Files:    []FileOperation{{"", ""}},
 						Bin:      "foo",
@@ -223,9 +219,8 @@ func TestPlugin_Validate(t *testing.T) {
 					Description:      "",
 					Caveats:          "",
 					Platforms: []Platform{{
-						Head:     "http://example.com",
-						URI:      "",
-						Sha256:   "",
+						URI:      "http://example.com",
+						Sha256:   "deadbeef",
 						Selector: nil,
 						Files:    []FileOperation{},
 						Bin:      "foo",
@@ -249,9 +244,8 @@ func TestPlugin_Validate(t *testing.T) {
 					Description:      "",
 					Caveats:          "",
 					Platforms: []Platform{{
-						Head:     "http://example.com",
-						URI:      "",
-						Sha256:   "",
+						URI:      "http://example.com",
+						Sha256:   "deadbeef",
 						Selector: nil,
 						Files:    []FileOperation{{"", ""}},
 						Bin:      "foo",
@@ -275,9 +269,8 @@ func TestPlugin_Validate(t *testing.T) {
 					Description:      "",
 					Caveats:          "",
 					Platforms: []Platform{{
-						Head:     "http://example.com",
-						URI:      "",
-						Sha256:   "",
+						URI:      "http://example.com",
+						Sha256:   "deadbeef",
 						Selector: nil,
 						Files:    []FileOperation{{"", ""}},
 						Bin:      "foo",
@@ -304,7 +297,6 @@ func TestPlugin_Validate(t *testing.T) {
 
 func TestPlatform_Validate(t *testing.T) {
 	type fields struct {
-		Head     string
 		URI      string
 		Sha256   string
 		Selector *metav1.LabelSelector
@@ -319,9 +311,8 @@ func TestPlatform_Validate(t *testing.T) {
 		{
 			name: "no error validation",
 			fields: fields{
-				Head:     "http://example.com",
-				URI:      "",
-				Sha256:   "",
+				URI:      "http://example.com",
+				Sha256:   "deadbeef",
 				Selector: nil,
 				Files:    []FileOperation{{"", ""}},
 				Bin:      "foo",
@@ -329,21 +320,8 @@ func TestPlatform_Validate(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "no url",
+			name: "only hash",
 			fields: fields{
-				Head:     "",
-				URI:      "",
-				Sha256:   "",
-				Selector: nil,
-				Files:    []FileOperation{{"", ""}},
-				Bin:      "foo",
-			},
-			wantErr: true,
-		},
-		{
-			name: "no only hash",
-			fields: fields{
-				Head:     "",
 				URI:      "",
 				Sha256:   "deadbeef",
 				Selector: nil,
@@ -353,9 +331,8 @@ func TestPlatform_Validate(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "no hash but uri",
+			name: "only uri",
 			fields: fields{
-				Head:     "",
 				URI:      "http://example.com",
 				Sha256:   "",
 				Selector: nil,
@@ -367,9 +344,8 @@ func TestPlatform_Validate(t *testing.T) {
 		{
 			name: "no file operations",
 			fields: fields{
-				Head:     "http://example.com",
-				URI:      "",
-				Sha256:   "",
+				URI:      "http://example.com",
+				Sha256:   "deadbeef",
 				Selector: nil,
 				Files:    []FileOperation{},
 				Bin:      "foo",
@@ -379,9 +355,8 @@ func TestPlatform_Validate(t *testing.T) {
 		{
 			name: "no bin field",
 			fields: fields{
-				Head:     "http://example.com",
-				URI:      "",
-				Sha256:   "",
+				URI:      "http://example.com",
+				Sha256:   "deadbeef",
 				Selector: nil,
 				Files:    []FileOperation{{"", ""}},
 				Bin:      "",
@@ -392,7 +367,6 @@ func TestPlatform_Validate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			p := Platform{
-				Head:     tt.fields.Head,
 				URI:      tt.fields.URI,
 				Sha256:   tt.fields.Sha256,
 				Selector: tt.fields.Selector,

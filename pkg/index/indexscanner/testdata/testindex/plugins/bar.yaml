@@ -20,7 +20,8 @@ spec:
   platforms:
   - files:
     - from: "*"
-    head: https://example.com
+    uri: https://example.com
+    sha256: alsoSet
     bin: kubectl-bar
   - files:
     - from: "*"
