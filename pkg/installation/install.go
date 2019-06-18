@@ -27,6 +27,7 @@ import (
 	"sigs.k8s.io/krew/pkg/environment"
 	"sigs.k8s.io/krew/pkg/index"
 	"sigs.k8s.io/krew/pkg/pathutil"
+	"sigs.k8s.io/krew/pkg/receipt"
 )
 
 // Plugin Lifecycle Errors
@@ -76,7 +77,17 @@ func Install(p environment.Paths, plugin index.Plugin, forceDownloadFile string)
 	if err != nil {
 		return err
 	}
-	return install(plugin.Name, version, uri, bin, p, fos, forceDownloadFile)
+
+	glog.V(2).Infof("Store install receipt for plugin %s", plugin.Name)
+	if err = receipt.Store(plugin, p.PluginReceiptPath(plugin.Name)); err != nil {
+		return errors.Wrap(err, "installation receipt could not be stored, uninstall may fail")
+	}
+
+	// The actual install should be the last action so that a failure during receipt
+	// saving does not result in an installed plugin without receipt.
+	glog.V(3).Infof("Install plugin %s", plugin.Name)
+	err = install(plugin.Name, version, uri, bin, p, fos, forceDownloadFile)
+	return errors.Wrap(err, "install failed")
 }
 
 func install(plugin, version, uri, bin string, p environment.Paths, fos []index.FileOperation, forceDownloadFile string) error {
