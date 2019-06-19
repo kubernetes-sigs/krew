@@ -48,7 +48,7 @@ func isSupportedAPIVersion(apiVersion string) bool {
 	return apiVersion == constants.CurrentAPIVersion
 }
 
-// Validate TODO(lbb)
+// Validate checks for structural validity of the Plugin object.
 func (p Plugin) Validate(name string) error {
 	if !isSupportedAPIVersion(p.APIVersion) {
 		return errors.Errorf("plugin manifest has apiVersion=%q, not supported in this version of krew (try updating plugin index or install a newer version of krew)", p.APIVersion)
@@ -78,7 +78,7 @@ func (p Plugin) Validate(name string) error {
 	return nil
 }
 
-// Validate TODO(lbb)
+// Validate checks Platform for structural validity.
 func (p Platform) Validate() error {
 	if p.URI == "" {
 		return errors.New("URI has to be set")

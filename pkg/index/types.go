@@ -18,8 +18,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// Plugin is a top-level type.
-// TODO(lbb): Add deepcopy code generation.
+// Plugin describes a plugin manifest file.
 type Plugin struct {
 	metav1.TypeMeta   `json:",inline" yaml:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty" yaml:"metadata"`
@@ -27,7 +26,7 @@ type Plugin struct {
 	Spec PluginSpec `json:"spec"`
 }
 
-// PluginSpec TODO(lbb)
+// PluginSpec describes a plugin specification.
 type PluginSpec struct {
 	Version          string `json:"version,omitempty"`
 	ShortDescription string `json:"shortDescription,omitempty"`
@@ -38,7 +37,8 @@ type PluginSpec struct {
 	Platforms []Platform `json:"platforms,omitempty"`
 }
 
-// Platform TODO(lbb)
+// Platform describes the how to match to a particular platform (os, arch) and
+// how to perform an installation on that platform.
 type Platform struct {
 	URI    string `json:"uri,omitempty"`
 	Sha256 string `json:"sha256,omitempty"`
@@ -52,16 +52,9 @@ type Platform struct {
 	Bin string `json:"bin"`
 }
 
-// FileOperation TODO(lbb)
+// FileOperation explains a file copying operation from plugin archive to the
+// installation directory.
 type FileOperation struct {
 	From string `json:"from,omitempty"`
 	To   string `json:"to,omitempty"`
-}
-
-// PluginList TODO(lbb)
-type PluginList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
-
-	Items []Plugin `json:"items"`
 }

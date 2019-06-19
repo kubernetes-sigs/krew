@@ -31,25 +31,24 @@ import (
 )
 
 // LoadPluginListFromFS will parse and retrieve all plugin files.
-func LoadPluginListFromFS(indexDir string) (index.PluginList, error) {
-	var indexList index.PluginList
+func LoadPluginListFromFS(indexDir string) ([]index.Plugin, error) {
 	indexDir, err := filepath.EvalSymlinks(indexDir)
 	if err != nil {
-		return indexList, err
+		return nil, err
 	}
 
 	files, err := ioutil.ReadDir(filepath.Join(indexDir, "plugins"))
 	if err != nil {
-		return indexList, errors.Wrap(err, "failed to open index dir")
+		return nil, errors.Wrap(err, "failed to open index dir")
 	}
 
+	list := make([]index.Plugin, 0)
 	for _, f := range files {
 		if f.IsDir() {
 			continue
 		}
 
 		pluginName := strings.TrimSuffix(f.Name(), filepath.Ext(f.Name()))
-		// TODO(lbb): Use go routines to speed up slow FS operations.
 		p, err := LoadPluginFileFromFS(indexDir, pluginName)
 		if err != nil {
 			// Index loading shouldn't fail because of one plugin.
@@ -57,11 +56,10 @@ func LoadPluginListFromFS(indexDir string) (index.PluginList, error) {
 			glog.Errorf("failed to load file %q, err: %v", pluginName, err)
 			continue
 		}
-		indexList.Items = append(indexList.Items, p)
+		list = append(list, p)
 	}
-	glog.V(4).Infof("Found %d plugins in dir %s", len(indexList.Items), indexDir)
-
-	return indexList, nil
+	glog.V(4).Infof("Found %d plugins in dir %s", len(list), indexDir)
+	return list, nil
 }
 
 // LoadPluginFileFromFS loads a plugins index file by its name. When plugin
@@ -111,7 +109,10 @@ func DecodePluginFile(r io.Reader) (index.Plugin, error) {
 	}
 	decoder := json.NewDecoder(bytes.NewReader(jsonRaw))
 
-	// TODO(lbb): Enable strict visioning.
+	// TODO(ahmetb): when we have a stable API that don't add new fields,
+	// we can consider failing on unknown fields. Currently disabling due to
+	// incremental field additions to plugin manifests independently from the
+	// installed version of krew.
 	// decoder.DisallowUnknownFields()
 	return plugin, decoder.Decode(&plugin)
 }

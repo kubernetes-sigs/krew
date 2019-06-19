@@ -112,8 +112,8 @@ func TestLoadIndexListFromFS(t *testing.T) {
 				t.Errorf("LoadPluginListFromFS() error = %v)", err)
 				return
 			}
-			if len(got.Items) != 2 {
-				t.Errorf("LoadPluginListFromFS() didn't read enough index files, got %d)", len(got.Items))
+			if len(got) != 2 {
+				t.Errorf("LoadPluginListFromFS() didn't read enough index files, got %d)", len(got))
 				return
 			}
 		})
