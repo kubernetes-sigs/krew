@@ -26,7 +26,7 @@ type Plugin struct {
 	Spec PluginSpec `json:"spec"`
 }
 
-// PluginSpec describes a plugin specification.
+// PluginSpec is the plugin specification.
 type PluginSpec struct {
 	Version          string `json:"version,omitempty"`
 	ShortDescription string `json:"shortDescription,omitempty"`
@@ -37,8 +37,8 @@ type PluginSpec struct {
 	Platforms []Platform `json:"platforms,omitempty"`
 }
 
-// Platform describes the how to match to a particular platform (os, arch) and
-// how to perform an installation on that platform.
+// Platform describes how to perform an installation on a specific platform
+// and how to match the target platform (os, arch).
 type Platform struct {
 	URI    string `json:"uri,omitempty"`
 	Sha256 string `json:"sha256,omitempty"`
@@ -52,7 +52,7 @@ type Platform struct {
 	Bin string `json:"bin"`
 }
 
-// FileOperation explains a file copying operation from plugin archive to the
+// FileOperation specifies a file copying operation from plugin archive to the
 // installation directory.
 type FileOperation struct {
 	From string `json:"from,omitempty"`

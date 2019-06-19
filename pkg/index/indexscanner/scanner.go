@@ -23,11 +23,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/pkg/errors"
-	"sigs.k8s.io/krew/pkg/index"
-
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/util/yaml"
+	"sigs.k8s.io/krew/pkg/index"
 )
 
 // LoadPluginListFromFS will parse and retrieve all plugin files.
@@ -42,7 +41,7 @@ func LoadPluginListFromFS(indexDir string) ([]index.Plugin, error) {
 		return nil, errors.Wrap(err, "failed to open index dir")
 	}
 
-	list := make([]index.Plugin, 0)
+	list := make([]index.Plugin, 0, len(files))
 	for _, f := range files {
 		if f.IsDir() {
 			continue
@@ -109,7 +108,7 @@ func DecodePluginFile(r io.Reader) (index.Plugin, error) {
 	}
 	decoder := json.NewDecoder(bytes.NewReader(jsonRaw))
 
-	// TODO(ahmetb): when we have a stable API that don't add new fields,
+	// TODO(ahmetb): when we have a stable API that won't add new fields,
 	// we can consider failing on unknown fields. Currently disabling due to
 	// incremental field additions to plugin manifests independently from the
 	// installed version of krew.
