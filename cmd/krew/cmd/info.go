@@ -26,7 +26,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"sigs.k8s.io/krew/pkg/index"
-	"sigs.k8s.io/krew/pkg/index/indexscanner"
+	"sigs.k8s.io/krew/pkg/info"
 )
 
 // infoCmd represents the info command
@@ -41,7 +41,7 @@ available version, platform availability and the caveats.
 Example:
   kubectl krew info PLUGIN`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		plugin, err := indexscanner.LoadPluginFileFromFS(paths.IndexPath(), args[0])
+		plugin, err := info.LoadManifestFromReceiptOrIndex(paths, args[0])
 		if os.IsNotExist(err) {
 			return errors.Errorf("plugin %q not found", args[0])
 		} else if err != nil {

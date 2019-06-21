@@ -56,7 +56,7 @@ func TestStore(t *testing.T) {
 	tmpDir, cleanup := testutil.NewTempDir(t)
 	defer cleanup()
 
-	dest := tmpDir.Path(pluginName + constants.ManifestExtension)
+	dest := tmpDir.Path(pluginName + ".yaml")
 
 	if err := Store(plugin, dest); err != nil {
 		t.Error(err)

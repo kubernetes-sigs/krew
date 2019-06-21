@@ -53,9 +53,10 @@ func (td *TempDir) Root() string {
 // Path returns the path to a file in the temp directory.
 // The input file is expected to use '/' as directory separator regardless of the host OS.
 func (td *TempDir) Path(file string) string {
-	pathElems := []string{td.root}
-	pathElems = append(pathElems, strings.Split(file, "/")...)
-	return filepath.Join(pathElems...)
+	if strings.HasPrefix(file, td.root) {
+		return filepath.FromSlash(file)
+	}
+	return filepath.Join(td.root, filepath.FromSlash(file))
 }
 
 // Write creates a file containing content in the temporary directory.
