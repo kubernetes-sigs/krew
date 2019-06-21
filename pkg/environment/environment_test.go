@@ -57,6 +57,9 @@ func TestPaths(t *testing.T) {
 	if got, expected := p.IndexPath(), filepath.FromSlash("/foo/index"); got != expected {
 		t.Fatalf("IndexPath()=%s; expected=%s", got, expected)
 	}
+	if got, expected := p.IndexPluginsPath(), filepath.FromSlash("/foo/index/plugins"); got != expected {
+		t.Fatalf("IndexPluginsPath()=%s; expected=%s", got, expected)
+	}
 	if got, expected := p.InstallPath(), filepath.FromSlash("/foo/store"); got != expected {
 		t.Fatalf("InstallPath()=%s; expected=%s", got, expected)
 	}

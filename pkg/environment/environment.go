@@ -60,6 +60,11 @@ func (p Paths) BasePath() string { return p.base }
 // e.g. {IndexPath}/plugins/{plugin}.yaml
 func (p Paths) IndexPath() string { return filepath.Join(p.base, "index") }
 
+// IndexPluginsPath returns the plugins directory of the index repository.
+//
+// e.g. {IndexPath}/plugins/
+func (p Paths) IndexPluginsPath() string { return filepath.Join(p.base, "index", "plugins") }
+
 // ReceiptsPath returns the base directory where plugin receipts are stored.
 //
 // e.g. {ReceiptsPath}/krew-index/{plugin}.yaml

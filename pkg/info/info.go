@@ -40,5 +40,5 @@ func LoadManifestFromReceiptOrIndex(p environment.Paths, name string) (index.Plu
 	}
 
 	glog.V(3).Infof("Plugin manifest for %q not found in the receipts dir", name)
-	return indexscanner.LoadPluginFileFromFS(p.IndexPath(), name)
+	return indexscanner.LoadPluginFileFromFS(p.IndexPluginsPath(), name)
 }
