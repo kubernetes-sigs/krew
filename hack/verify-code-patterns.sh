@@ -16,7 +16,8 @@
 
 set -euo pipefail
 
-out="$( find . -name '*_test.go' -not -path './vendor/*' -print0 | xargs -0 grep -En 'ioutil\.TempDir' || [[ $? == 123 ]] )"
+# Disallow usage of ioutil.TempDir in tests in favor of testutil.
+out="$(grep --include '*_test.go' --exclude-dir 'vendor/' -EIrn 'ioutil.\TempDir' || true)"
 if [[ -n "$out" ]]; then
   echo >&2 "You used ioutil.TempDir in tests, use 'testutil.NewTempDir()' instead:"
   echo >&2 "$out"
