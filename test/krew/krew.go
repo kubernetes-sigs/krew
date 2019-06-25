@@ -24,6 +24,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
+
 	"sigs.k8s.io/krew/pkg/testutil"
 )
 
