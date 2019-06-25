@@ -15,7 +15,6 @@
 package installation
 
 import (
-	"os"
 	"path/filepath"
 	"reflect"
 	"runtime"
@@ -25,114 +24,6 @@ import (
 
 	"sigs.k8s.io/krew/pkg/index"
 )
-
-func Test_osArch_default(t *testing.T) {
-	inOS, inArch := runtime.GOOS, runtime.GOARCH
-	outOS, outArch := osArch()
-	if inOS != outOS {
-		t.Fatalf("returned OS=%q; expected=%q", outOS, inOS)
-	}
-	if inArch != outArch {
-		t.Fatalf("returned Arch=%q; expected=%q", outArch, inArch)
-	}
-}
-func Test_osArch_override(t *testing.T) {
-	customOS, customArch := "dragons", "v1"
-	os.Setenv("KREW_OS", customOS)
-	defer os.Unsetenv("KREW_OS")
-	os.Setenv("KREW_ARCH", customArch)
-	defer os.Unsetenv("KREW_ARCH")
-
-	outOS, outArch := osArch()
-	if customOS != outOS {
-		t.Fatalf("returned OS=%q; expected=%q", outOS, customOS)
-	}
-	if customArch != outArch {
-		t.Fatalf("returned Arch=%q; expected=%q", outArch, customArch)
-	}
-}
-
-func Test_matchPlatformToSystemEnvs(t *testing.T) {
-	matchingPlatform := index.Platform{
-		URI: "A",
-		Selector: &v1.LabelSelector{
-			MatchLabels: map[string]string{
-				"os": "foo",
-			},
-		},
-		Files: nil,
-	}
-
-	type args struct {
-		i index.Plugin
-	}
-	tests := []struct {
-		name         string
-		args         args
-		wantPlatform index.Platform
-		wantFound    bool
-		wantErr      bool
-	}{
-		{
-			name: "Test Matching Index",
-			args: args{
-				i: index.Plugin{
-					Spec: index.PluginSpec{
-						Platforms: []index.Platform{
-							matchingPlatform, {
-								URI: "B",
-								Selector: &v1.LabelSelector{
-									MatchLabels: map[string]string{
-										"os": "None",
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-			wantPlatform: matchingPlatform,
-			wantFound:    true,
-			wantErr:      false,
-		}, {
-			name: "Test Matching Index Not Found",
-			args: args{
-				i: index.Plugin{
-					Spec: index.PluginSpec{
-						Platforms: []index.Platform{
-							{
-								URI: "B",
-								Selector: &v1.LabelSelector{
-									MatchLabels: map[string]string{
-										"os": "None",
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-			wantPlatform: index.Platform{},
-			wantFound:    false,
-			wantErr:      false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			gotPlatform, gotFound, err := matchPlatformToSystemEnvs(tt.args.i, "foo", "amdBar")
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetMatchingPlatform() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(gotPlatform, tt.wantPlatform) {
-				t.Errorf("GetMatchingPlatform() gotPlatform = %v, want %v", gotPlatform, tt.wantPlatform)
-			}
-			if gotFound != tt.wantFound {
-				t.Errorf("GetMatchingPlatform() gotFound = %v, want %v", gotFound, tt.wantFound)
-			}
-		})
-	}
-}
 
 func Test_getPluginVersion(t *testing.T) {
 	wantVersion := "deadbeef"

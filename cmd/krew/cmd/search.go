@@ -79,7 +79,7 @@ Examples:
 			var status string
 			if _, ok := installed[name]; ok {
 				status = "installed"
-			} else if _, ok, err := installation.GetMatchingPlatform(plugin); err != nil {
+			} else if _, ok, err := plugin.Spec.GetMatchingPlatform(); err != nil {
 				return errors.Wrapf(err, "failed to get the matching platform for plugin %s", name)
 			} else if ok {
 				status = "available"

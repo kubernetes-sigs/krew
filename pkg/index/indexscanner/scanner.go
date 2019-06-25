@@ -27,6 +27,7 @@ import (
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/util/yaml"
 
+	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/index"
 )
 
@@ -76,7 +77,7 @@ func LoadPluginFileFromFS(indexDir, pluginName string) (index.Plugin, error) {
 	if err != nil {
 		return index.Plugin{}, err
 	}
-	p, err := ReadPluginFile(filepath.Join(indexDir, pluginName+".yaml"))
+	p, err := ReadPluginFile(filepath.Join(indexDir, pluginName+constants.ManifestExtension))
 	if os.IsNotExist(err) {
 		return index.Plugin{}, err
 	} else if err != nil {

@@ -51,7 +51,7 @@ func TestValidateManifestFile(t *testing.T) {
 				},
 			},
 			shouldErr: true,
-			errMsg:    "expected manifest extension '.yaml'",
+			errMsg:    "expected manifest extension \".yaml\"",
 		},
 		{
 			name:     "manifest validation fails",
