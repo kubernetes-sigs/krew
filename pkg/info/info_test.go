@@ -48,7 +48,7 @@ var (
 				URI:      "http://example.com",
 				Sha256:   "deadbeef",
 				Selector: nil,
-				Files:    []index.FileOperation{{"", ""}},
+				Files:    []index.FileOperation{{From: "", To: ""}},
 				Bin:      "foo",
 			}},
 		},
