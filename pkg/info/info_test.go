@@ -101,19 +101,7 @@ func TestLoadManifestFromReceiptOrIndex(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			tmpDir, cleanup := testutil.NewTempDir(t)
-
-			defer func(originalKrewRoot string) {
-				cleanup()
-				var err error
-				if originalKrewRoot == "" {
-					err = os.Unsetenv("KREW_ROOT")
-				} else {
-					err = os.Setenv("KREW_ROOT", originalKrewRoot)
-				}
-				if err != nil {
-					t.Log(err)
-				}
-			}(os.Getenv("KREW_ROOT"))
+			defer cleanupEnvAndTempdir(t, os.Getenv("KREW_ROOT"), cleanup)
 			if err := os.Setenv("KREW_ROOT", tmpDir.Root()); err != nil {
 				t.Fatal(err)
 			}
@@ -135,5 +123,36 @@ func TestLoadManifestFromReceiptOrIndex(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestLoadManifestFromReceiptOrIndexReturnsIsNotExist(t *testing.T) {
+	tmpDir, cleanup := testutil.NewTempDir(t)
+	defer cleanupEnvAndTempdir(t, os.Getenv("KREW_ROOT"), cleanup)
+	if err := os.Setenv("KREW_ROOT", tmpDir.Root()); err != nil {
+		t.Fatal(err)
+	}
+
+	paths := environment.MustGetKrewPaths()
+	_, err := LoadManifestFromReceiptOrIndex(paths, pluginName)
+
+	if err == nil {
+		t.Fatalf("Expected LoadManifestFromReceiptOrIndex to fail")
+	}
+	if !os.IsNotExist(err) {
+		t.Errorf("Expected error to be ENOENT but was %q", err)
+	}
+}
+
+func cleanupEnvAndTempdir(t *testing.T, originalKrewRoot string, cleanupTempdir func()) {
+	cleanupTempdir()
+	var err error
+	if originalKrewRoot == "" {
+		err = os.Unsetenv("KREW_ROOT")
+	} else {
+		err = os.Setenv("KREW_ROOT", originalKrewRoot)
+	}
+	if err != nil {
+		t.Log(err)
 	}
 }
