@@ -68,7 +68,7 @@ func (p Paths) IndexPluginsPath() string { return filepath.Join(p.base, "index",
 // ReceiptsPath returns the base directory where plugin receipts are stored.
 //
 // e.g. {BasePath}/receipts
-func (p Paths) ReceiptsPath() string { return filepath.Join(p.base, "receipts", "krew-index") }
+func (p Paths) ReceiptsPath() string { return filepath.Join(p.base, "receipts") }
 
 // BinPath returns the path where plugin executable symbolic links are found.
 // This path should be added to $PATH in client machine.
