@@ -16,28 +16,11 @@
 
 set -euo pipefail
 
-SCRIPTDIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-
 if ! [[ -x "$GOPATH/bin/golangci-lint" ]]
 then
    echo 'Installing golangci-lint'
    curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b "$GOPATH/bin" v1.16.0
 fi
 
-"$GOPATH/bin/golangci-lint" run \
-		--no-config \
-		-D errcheck \
-		-E gocritic \
-		-E goimports \
-		-E golint \
-		-E gosimple \
-		-E interfacer \
-		-E maligned \
-		-E misspell \
-		-E unconvert \
-		-E unparam \
-		-E stylecheck \
-		-E staticcheck \
-		-E structcheck \
-		-E prealloc \
-		--skip-dirs hack,docs
+# configured by .golangci.yml
+"$GOPATH/bin/golangci-lint" run
