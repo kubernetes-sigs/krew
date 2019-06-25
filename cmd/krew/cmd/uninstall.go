@@ -18,11 +18,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/pkg/errors"
-	"sigs.k8s.io/krew/pkg/installation"
-
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+
+	"sigs.k8s.io/krew/pkg/installation"
 )
 
 // uninstallCmd represents the uninstall command

@@ -18,14 +18,14 @@ import (
 	"flag"
 	"os"
 
-	isatty "github.com/mattn/go-isatty"
-	"github.com/pkg/errors"
-	"sigs.k8s.io/krew/pkg/environment"
-	"sigs.k8s.io/krew/pkg/gitutil"
-
 	"github.com/golang/glog"
+	"github.com/mattn/go-isatty"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+
+	"sigs.k8s.io/krew/pkg/environment"
+	"sigs.k8s.io/krew/pkg/gitutil"
 )
 
 var (

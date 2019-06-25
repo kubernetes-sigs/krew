@@ -16,6 +16,7 @@ package main
 
 import (
 	"github.com/golang/glog"
+
 	"sigs.k8s.io/krew/cmd/krew/cmd"
 )
 

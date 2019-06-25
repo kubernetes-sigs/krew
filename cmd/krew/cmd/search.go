@@ -19,11 +19,11 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"sigs.k8s.io/krew/pkg/index/indexscanner"
-
 	"github.com/sahilm/fuzzy"
 	"github.com/spf13/cobra"
+
 	"sigs.k8s.io/krew/pkg/index"
+	"sigs.k8s.io/krew/pkg/index/indexscanner"
 	"sigs.k8s.io/krew/pkg/installation"
 )
 
