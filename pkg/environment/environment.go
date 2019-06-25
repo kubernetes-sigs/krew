@@ -57,23 +57,23 @@ func (p Paths) BasePath() string { return p.base }
 
 // IndexPath returns the base directory where plugin index repository is cloned.
 //
-// e.g. {IndexPath}/plugins/{plugin}.yaml
+// e.g. {BasePath}/index/
 func (p Paths) IndexPath() string { return filepath.Join(p.base, "index") }
 
 // IndexPluginsPath returns the plugins directory of the index repository.
 //
-// e.g. {IndexPath}/plugins/
+// e.g. {BasePath}/index/plugins/
 func (p Paths) IndexPluginsPath() string { return filepath.Join(p.base, "index", "plugins") }
 
 // ReceiptsPath returns the base directory where plugin receipts are stored.
 //
-// e.g. {ReceiptsPath}/krew-index/{plugin}.yaml
+// e.g. {BasePath}/receipts
 func (p Paths) ReceiptsPath() string { return filepath.Join(p.base, "receipts", "krew-index") }
 
 // BinPath returns the path where plugin executable symbolic links are found.
 // This path should be added to $PATH in client machine.
 //
-// e.g. {BinPath}/kubectl-foo
+// e.g. {BasePath}/bin
 func (p Paths) BinPath() string { return filepath.Join(p.base, "bin") }
 
 // DownloadPath returns a temporary directory for downloading plugins. It does
@@ -82,19 +82,19 @@ func (p Paths) DownloadPath() string { return filepath.Join(p.tmp, "krew-downloa
 
 // InstallPath returns the base directory for plugin installations.
 //
-// e.g. {InstallPath}/{plugin-name}
+// e.g. {BasePath}/store
 func (p Paths) InstallPath() string { return filepath.Join(p.base, "store") }
 
 // PluginInstallPath returns the path to install the plugin.
 //
-// e.g. {PluginInstallPath}/{version}/{..files..}
+// e.g. {InstallPath}/{version}/{..files..}
 func (p Paths) PluginInstallPath(plugin string) string {
 	return filepath.Join(p.InstallPath(), plugin)
 }
 
-// PluginInstallPath returns the path to install the plugin.
+// PluginReceiptPath returns the path to the install receipt for plugin.
 //
-// e.g. {PluginInstallPath}/{version}/{..files..}
+// e.g. {ReceiptsPath}/{plugin}.yaml
 func (p Paths) PluginReceiptPath(plugin string) string {
 	return filepath.Join(p.ReceiptsPath(), plugin+constants.ManifestExtension)
 }
@@ -102,7 +102,7 @@ func (p Paths) PluginReceiptPath(plugin string) string {
 // PluginVersionInstallPath returns the path to the specified version of specified
 // plugin.
 //
-// e.g. {PluginVersionInstallPath} = {PluginInstallPath}/{version}
+// e.g. {PluginInstallPath}/{plugin}/{version}
 func (p Paths) PluginVersionInstallPath(plugin, version string) string {
 	return filepath.Join(p.InstallPath(), plugin, version)
 }
