@@ -23,11 +23,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/pkg/errors"
-	"sigs.k8s.io/krew/pkg/index"
-
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/util/yaml"
+
+	"sigs.k8s.io/krew/pkg/index"
 )
 
 // LoadPluginListFromFS will parse and retrieve all plugin files.

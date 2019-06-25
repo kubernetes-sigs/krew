@@ -21,6 +21,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+
 	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/environment"
 	"sigs.k8s.io/krew/pkg/version"

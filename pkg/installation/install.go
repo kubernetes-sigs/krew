@@ -20,13 +20,13 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/golang/glog"
 	"github.com/pkg/errors"
+
 	"sigs.k8s.io/krew/pkg/download"
 	"sigs.k8s.io/krew/pkg/environment"
 	"sigs.k8s.io/krew/pkg/index"
 	"sigs.k8s.io/krew/pkg/pathutil"
-
-	"github.com/golang/glog"
 )
 
 // Plugin Lifecycle Errors
