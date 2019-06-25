@@ -65,10 +65,10 @@ func (p Paths) IndexPath() string { return filepath.Join(p.base, "index") }
 // e.g. {BasePath}/index/plugins/
 func (p Paths) IndexPluginsPath() string { return filepath.Join(p.base, "index", "plugins") }
 
-// ReceiptsPath returns the base directory where plugin receipts are stored.
+// InstallReceiptPath returns the base directory where plugin receipts are stored.
 //
 // e.g. {BasePath}/receipts
-func (p Paths) ReceiptsPath() string { return filepath.Join(p.base, "receipts") }
+func (p Paths) InstallReceiptPath() string { return filepath.Join(p.base, "receipts") }
 
 // BinPath returns the path where plugin executable symbolic links are found.
 // This path should be added to $PATH in client machine.
@@ -94,9 +94,9 @@ func (p Paths) PluginInstallPath(plugin string) string {
 
 // PluginReceiptPath returns the path to the install receipt for plugin.
 //
-// e.g. {ReceiptsPath}/{plugin}.yaml
+// e.g. {InstallReceiptPath}/{plugin}.yaml
 func (p Paths) PluginReceiptPath(plugin string) string {
-	return filepath.Join(p.ReceiptsPath(), plugin+constants.ManifestExtension)
+	return filepath.Join(p.InstallReceiptPath(), plugin+constants.ManifestExtension)
 }
 
 // PluginVersionInstallPath returns the path to the specified version of specified
