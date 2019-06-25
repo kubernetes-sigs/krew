@@ -23,6 +23,8 @@ import (
 	"sigs.k8s.io/krew/pkg/index"
 )
 
+// Store saves the given plugin at the destination.
+// The caller has to ensure that the destination directory exists.
 func Store(plugin index.Plugin, dest string) error {
 	yamlBytes, err := yaml.Marshal(plugin)
 	if err != nil {
