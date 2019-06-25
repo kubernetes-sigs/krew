@@ -1,3 +1,10 @@
+# all available settings of specific linters
+linters-settings:
+  goimports:
+    # put imports beginning with prefix after 3rd-party packages;
+    # it's a comma-separated list of prefixes
+    local-prefixes: sigs.k8s.io/krew
+
 # options for analysis running
 run:
   # which dirs to skip: they won't be analyzed;
