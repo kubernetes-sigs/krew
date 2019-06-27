@@ -85,12 +85,12 @@ func augmentPATH(t *testing.T, v string) string {
 	return v + string(os.PathListSeparator) + curPath
 }
 
-func (it *ITest) lookExecutable(file string) error {
+func (it *ITest) lookupExecutable(file string) error {
 	orig := os.Getenv("PATH")
 	defer func() { os.Setenv("PATH", orig) }()
 
 	binPath := filepath.Join(it.Root(), "bin")
-	os.Setenv("PATH", binPath+string(os.PathListSeparator)+binPath)
+	os.Setenv("PATH", binPath)
 
 	_, err := exec.LookPath(file)
 	return err
@@ -98,7 +98,8 @@ func (it *ITest) lookExecutable(file string) error {
 
 // AssertExecutableInPATH asserts that the executable file is in bin path.
 func (it *ITest) AssertExecutableInPATH(file string) {
-	if err := it.lookExecutable(file); err != nil {
+	it.t.Helper()
+	if err := it.lookupExecutable(file); err != nil {
 		it.t.Fatalf("executable %s not in PATH: %+v", file, err)
 	}
 }
@@ -106,7 +107,8 @@ func (it *ITest) AssertExecutableInPATH(file string) {
 // AssertExecutableNotInPATH asserts that the executable file is not in bin
 // path.
 func (it *ITest) AssertExecutableNotInPATH(file string) {
-	if err := it.lookExecutable(file); err == nil {
+	it.t.Helper()
+	if err := it.lookupExecutable(file); err == nil {
 		it.t.Fatalf("executable %s still exists in PATH", file)
 	}
 }

@@ -38,5 +38,4 @@ if [[ ! -x "${KREW_BINARY}" ]]; then
 fi
 export KREW_BINARY
 
-"${SCRIPTDIR}/ensure-kubectl-installed.sh"
 go test -test.v sigs.k8s.io/krew/test
