@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	"k8s.io/client-go/util/homedir"
+
 	"sigs.k8s.io/krew/pkg/testutil"
 )
 

@@ -17,6 +17,7 @@ package constants
 const (
 	CurrentAPIVersion = "krew.googlecontainertools.github.com/v1alpha2"
 	PluginKind        = "Plugin"
+	ManifestExtension = ".yaml"
 
 	// IndexURI points to the upstream index.
 	IndexURI = "https://github.com/kubernetes-sigs/krew-index.git"

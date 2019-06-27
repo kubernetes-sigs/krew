@@ -25,13 +25,14 @@ import (
 	"path/filepath"
 	"strings"
 
-	"sigs.k8s.io/krew/pkg/index"
-	"sigs.k8s.io/krew/pkg/index/indexscanner"
-
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+
+	"sigs.k8s.io/krew/pkg/constants"
+	"sigs.k8s.io/krew/pkg/index"
+	"sigs.k8s.io/krew/pkg/index/indexscanner"
 )
 
 var flManifest string
@@ -63,8 +64,8 @@ func validateManifestFile(path string) error {
 	}
 	filename := filepath.Base(path)
 	manifestExtension := filepath.Ext(filename)
-	if manifestExtension != ".yaml" {
-		return fmt.Errorf("expected manifest extension '.yaml' but found '%s'", manifestExtension)
+	if manifestExtension != constants.ManifestExtension {
+		return fmt.Errorf("expected manifest extension %q but found %q", constants.ManifestExtension, manifestExtension)
 	}
 	pluginNameFromFileName := strings.TrimSuffix(filename, manifestExtension)
 	glog.V(4).Infof("inferred plugin name as %s", pluginNameFromFileName)

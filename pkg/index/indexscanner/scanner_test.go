@@ -83,7 +83,7 @@ func Test_readIndexFile(t *testing.T) {
 				return
 			}
 			if !sel.Matches(tt.matchFirst) || sel.Matches(neverMatch) {
-				t.Errorf("readIndexFile() didn't parse label selector propperly: %##v", sel)
+				t.Errorf("readIndexFile() didn't parse label selector properly: %##v", sel)
 				return
 			}
 		})

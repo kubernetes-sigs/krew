@@ -23,6 +23,7 @@ import (
 	"sync"
 
 	"github.com/golang/glog"
+
 	"sigs.k8s.io/krew/pkg/constants"
 )
 
