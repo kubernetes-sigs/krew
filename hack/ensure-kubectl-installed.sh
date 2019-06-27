@@ -29,6 +29,7 @@ install_kubectl_if_needed() {
     goarch="$(go env GOARCH)"
     kubectl_url="https://storage.googleapis.com/kubernetes-release/release/${kubectl_version}/bin/${goos}/${goarch}/kubectl"
 
+    echo >&2 "kubectl not detected in environment, downloading ${kubectl_url}"
     mkdir -p "${bin_dir}"
     curl --fail --show-error --silent --location --output "$kubectl_path" "${kubectl_url}"
     chmod +x "$kubectl_path"

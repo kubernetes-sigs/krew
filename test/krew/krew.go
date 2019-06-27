@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -32,51 +33,82 @@ const krewBinaryEnv = "KREW_BINARY"
 
 // ITest is used to set up `krew` integration tests.
 type ITest struct {
-	t       *testing.T
-	plugin  string
-	args    []string
-	env     []string
-	tempDir *testutil.TempDir
+	t             *testing.T
+	plugin        string
+	pluginsBinDir string
+	args          []string
+	env           []string
+	tempDir       *testutil.TempDir
 }
 
 // NewTest creates a fluent krew ITest.
 func NewTest(t *testing.T) (*ITest, func()) {
 	tempDir, cleanup := testutil.NewTempDir(t)
-	pathEnv := setupPathEnv(t, tempDir)
+	binDir := setupKrewBin(t, tempDir)
+
 	return &ITest{
-		t:       t,
-		env:     []string{pathEnv, fmt.Sprintf("KREW_ROOT=%s", tempDir.Root())},
+		t:             t,
+		pluginsBinDir: binDir,
+		env: []string{
+			fmt.Sprintf("KREW_ROOT=%s", tempDir.Root()),
+			fmt.Sprintf("PATH=%s", augmentPATH(t, binDir)),
+		},
 		tempDir: tempDir,
 	}, cleanup
 }
 
-func setupPathEnv(t *testing.T, tempDir *testutil.TempDir) string {
-	krewBinPath := tempDir.Path("bin")
-	if err := os.MkdirAll(krewBinPath, os.ModePerm); err != nil {
+// setupKrewBin symlinks the $KREW_BINARY to $tempDir/bin and returns the path
+// to this directory.
+func setupKrewBin(t *testing.T, tempDir *testutil.TempDir) string {
+	krewBinary, found := os.LookupEnv(krewBinaryEnv)
+	if !found {
+		t.Fatalf("%s environment variable pointing to krew binary not set", krewBinaryEnv)
+	}
+	binPath := tempDir.Path("bin")
+	if err := os.MkdirAll(binPath, 0755); err != nil {
 		t.Fatal(err)
 	}
-
-	if krewBinary, found := os.LookupEnv(krewBinaryEnv); found {
-		if err := os.Symlink(krewBinary, tempDir.Path("bin/kubectl-krew")); err != nil {
-			t.Fatalf("Cannot link to krew: %s", err)
-		}
-	} else {
-		t.Logf("Environment variable %q was not found, using krew installation from host", krewBinaryEnv)
+	if err := os.Symlink(krewBinary, filepath.Join(binPath, "kubectl-krew")); err != nil {
+		t.Fatalf("cannot link krew binary: %s", err)
 	}
-
-	path, found := os.LookupEnv("PATH")
-	if !found {
-		t.Fatalf("PATH variable is not set up")
-	}
-
-	return fmt.Sprintf("PATH=%s:%s", krewBinPath, path)
+	return binPath
 }
 
-// Call configures the runner to call plugin with arguments args.
-func (it *ITest) Call(plugin string, args ...string) *ITest {
-	it.plugin = plugin
-	it.args = args
-	return it
+// augmentPATH apprends the value to the current $PATH and returns the new
+// value.
+func augmentPATH(t *testing.T, v string) string {
+	curPath, found := os.LookupEnv("PATH")
+	if !found {
+		t.Fatalf("$PATH variable is not set up, required to run tests")
+	}
+
+	return v + string(os.PathListSeparator) + curPath
+}
+
+func (it *ITest) lookExecutable(file string) error {
+	orig := os.Getenv("PATH")
+	defer func() { os.Setenv("PATH", orig) }()
+
+	binPath := filepath.Join(it.Root(), "bin")
+	os.Setenv("PATH", binPath+string(os.PathListSeparator)+binPath)
+
+	_, err := exec.LookPath(file)
+	return err
+}
+
+// AssertExecutableInPATH asserts that the executable file is in bin path.
+func (it *ITest) AssertExecutableInPATH(file string) {
+	if err := it.lookExecutable(file); err != nil {
+		it.t.Fatalf("executable %s not in PATH: %+v", file, err)
+	}
+}
+
+// AssertExecutableNotInPATH asserts that the executable file is not in bin
+// path.
+func (it *ITest) AssertExecutableNotInPATH(file string) {
+	if err := it.lookExecutable(file); err == nil {
+		it.t.Fatalf("executable %s still exists in PATH", file)
+	}
 }
 
 // Krew configures the runner to call krew with arguments args.
@@ -155,8 +187,7 @@ func (it *ITest) cmd(ctx context.Context) *exec.Cmd {
 	args = append(args, it.args...)
 
 	cmd := exec.CommandContext(ctx, "kubectl", args...)
-	cmd.Env = append(os.Environ(), it.env...)
-
+	cmd.Env = it.env // clear env, do not inherit from system
 	return cmd
 }
 

@@ -57,7 +57,7 @@ func TestKrewInstall(t *testing.T) {
 	defer cleanup()
 
 	test.WithIndex().Krew("install", validPlugin).RunOrFailOutput()
-	test.Call(validPlugin, "--help").RunOrFail()
+	test.AssertExecutableInPATH("kubectl-" + validPlugin)
 }
 
 func TestKrewUninstall(t *testing.T) {
@@ -68,9 +68,7 @@ func TestKrewUninstall(t *testing.T) {
 
 	test.WithIndex().Krew("install", validPlugin).RunOrFailOutput()
 	test.Krew("uninstall", validPlugin).RunOrFailOutput()
-	if err := test.Call(validPlugin, "--help").Run(); err == nil {
-		t.Errorf("Expected the plugin to be uninstalled")
-	}
+	test.AssertExecutableNotInPATH("kubectl-" + validPlugin)
 }
 
 func TestKrewSearchAll(t *testing.T) {
