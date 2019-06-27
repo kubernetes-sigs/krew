@@ -91,7 +91,7 @@ func validateManifestFile(path string) error {
 	glog.Infof("no overlapping spec.platform[].selector")
 
 	// exercise "install" for all platforms
-	for i, p := range p.Spec.Platforms { // TODO(ahmetb) make this a testable method
+	for i, p := range p.Spec.Platforms {
 		glog.Infof("installing spec.platform[%d]", i)
 		if err := installPlatformSpec(path, p); err != nil {
 			return errors.Wrapf(err, "spec.platforms[%d] failed to install", i)
@@ -105,7 +105,6 @@ func validateManifestFile(path string) error {
 // isOverlappingPlatformSelectors validates if multiple platforms have selectors
 // that match to a supported <os,arch> pair.
 func isOverlappingPlatformSelectors(platforms []index.Platform) error {
-	// TODO(ahmetb) implement
 	for _, v := range allPlatforms() {
 		os, arch := v[0], v[1]
 
@@ -184,7 +183,7 @@ func selectorMatchesOSArch(selector *metav1.LabelSelector, os, arch string) bool
 	})
 }
 
-// allPlatforms returns all <os,arch> pairs recognized.
+// allPlatforms returns all <os,arch> pairs krew is supported on.
 func allPlatforms() [][2]string {
 	// TODO(ahmetb) find a more authoritative source for this list
 	return [][2]string{

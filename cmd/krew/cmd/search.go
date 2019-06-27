@@ -43,11 +43,11 @@ Examples:
 	RunE: func(cmd *cobra.Command, args []string) error {
 		plugins, err := indexscanner.LoadPluginListFromFS(paths.IndexPath())
 		if err != nil {
-			return errors.Wrap(err, "failed to load the index")
+			return errors.Wrap(err, "failed to load the list of plugins from the index")
 		}
-		names := make([]string, len(plugins.Items))
-		pluginMap := make(map[string]index.Plugin, len(plugins.Items))
-		for i, p := range plugins.Items {
+		names := make([]string, len(plugins))
+		pluginMap := make(map[string]index.Plugin, len(plugins))
+		for i, p := range plugins {
 			names[i] = p.Name
 			pluginMap[p.Name] = p
 		}
