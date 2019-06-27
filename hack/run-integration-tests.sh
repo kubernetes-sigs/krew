@@ -18,9 +18,9 @@ set -euo pipefail
 
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 BINDIR="${SCRIPTDIR}/../out/bin"
-GOOS="$(go env GOOS)"
-GOARCH="$(go env GOARCH)"
-KREW_BINARY_DEFAULT="$BINDIR/krew-${GOOS}_${GOARCH}"
+goos="$(go env GOOS)"
+goarch="$(go env GOARCH)"
+KREW_BINARY_DEFAULT="${BINDIR}/krew-${goos}_${goarch}"
 
 if [[ "$#" -gt 0 && ( "$1" = '-h' || "$1" = '--help' ) ]]; then
   cat <<EOF
@@ -33,9 +33,9 @@ fi
 
 KREW_BINARY=$(readlink -f "${1:-$KREW_BINARY_DEFAULT}")  # needed for `kubectl krew` in tests
 if [[ ! -x "${KREW_BINARY}" ]]; then
-  echo "Did not find $KREW_BINARY. You need to build krew before running the integration tests"
+  echo "Did not find $KREW_BINARY. You need to build krew FOR ${goos}/${goarch} before running the integration tests."
   exit 1
 fi
 export KREW_BINARY
 
-go test -v ./...
+go test -test.v sigs.k8s.io/krew/test
