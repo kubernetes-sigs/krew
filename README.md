@@ -68,13 +68,13 @@ Read the [User Guide](./docs/USER_GUIDE.md) for detailed documentation.
 
     ```fish
     begin
-      set -x; cd "(mktemp -d)" &&
+      set -x; set temp_dir (mktemp -d); cd "$temp_dir" &&
       curl -fsSLO "https://storage.googleapis.com/krew/v0.2.1/krew.{tar.gz,yaml}" &&
       tar zxvf krew.tar.gz &&
       set KREWNAME krew-(uname | tr '[:upper:]' '[:lower:]')_amd64 &&
       ./$KREWNAME install \
         --manifest=krew.yaml --archive=krew.tar.gz &&
-      set -e KREWNAME
+      set -e KREWNAME; set -e temp_dir
     end
     ```
 3. Add `$HOME/.krew/bin` directory to your PATH environment variable. To do
