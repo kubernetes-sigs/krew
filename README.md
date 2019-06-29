@@ -135,7 +135,7 @@ Visit [`./docs`](./docs) for all documentation.
 
 ## Roadmap
 
-Please check out the [Issue Tracker](./issues) to see the plan of record for
+Please check out the [Issue Tracker](https://github.com/kubernetes-sigs/krew/issues) to see the plan of record for
 new features and changes.
 
 ## Community
