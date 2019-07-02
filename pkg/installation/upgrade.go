@@ -20,6 +20,7 @@ import (
 
 	"sigs.k8s.io/krew/pkg/environment"
 	"sigs.k8s.io/krew/pkg/index"
+	"sigs.k8s.io/krew/pkg/receipt"
 
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
@@ -43,6 +44,11 @@ func Upgrade(p environment.Paths, plugin index.Plugin) error {
 	}
 	if err != nil {
 		return errors.Wrap(err, "failed to get the current download target")
+	}
+
+	glog.V(2).Infof("Upgrading install receipt for plugin %s", plugin.Name)
+	if err = receipt.Store(plugin, p.PluginReceiptPath(plugin.Name)); err != nil {
+		return errors.Wrap(err, "installation receipt could not be stored, uninstall may fail")
 	}
 
 	// Re-Install

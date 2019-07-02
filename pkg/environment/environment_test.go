@@ -57,6 +57,9 @@ func TestPaths(t *testing.T) {
 	if got, expected := p.IndexPath(), filepath.FromSlash("/foo/index"); got != expected {
 		t.Fatalf("IndexPath()=%s; expected=%s", got, expected)
 	}
+	if got, expected := p.IndexPluginsPath(), filepath.FromSlash("/foo/index/plugins"); got != expected {
+		t.Fatalf("IndexPluginsPath()=%s; expected=%s", got, expected)
+	}
 	if got, expected := p.InstallPath(), filepath.FromSlash("/foo/store"); got != expected {
 		t.Fatalf("InstallPath()=%s; expected=%s", got, expected)
 	}
@@ -68,6 +71,12 @@ func TestPaths(t *testing.T) {
 	}
 	if got := p.DownloadPath(); !strings.HasSuffix(got, "krew-downloads") {
 		t.Fatalf("DownloadPath()=%s; expected suffix 'krew-downloads'", got)
+	}
+	if got := p.InstallReceiptPath(); !strings.HasSuffix(got, filepath.FromSlash("receipts")) {
+		t.Fatalf("InstallReceiptPath()=%s; expected suffix 'receipts'", got)
+	}
+	if got := p.PluginReceiptPath("my-plugin"); !strings.HasSuffix(got, filepath.FromSlash("receipts/my-plugin.yaml")) {
+		t.Fatalf("PluginReceiptPath()=%s; expected suffix 'receipts/my-plugin.yaml'", got)
 	}
 }
 

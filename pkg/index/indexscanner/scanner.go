@@ -38,7 +38,7 @@ func LoadPluginListFromFS(indexDir string) ([]index.Plugin, error) {
 		return nil, err
 	}
 
-	files, err := ioutil.ReadDir(filepath.Join(indexDir, "plugins"))
+	files, err := ioutil.ReadDir(indexDir)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to open index dir")
 	}
@@ -65,17 +65,17 @@ func LoadPluginListFromFS(indexDir string) ([]index.Plugin, error) {
 
 // LoadPluginFileFromFS loads a plugins index file by its name. When plugin
 // file not found, it returns an error that can be checked with os.IsNotExist.
-func LoadPluginFileFromFS(indexDir, pluginName string) (index.Plugin, error) {
+func LoadPluginFileFromFS(pluginsDir, pluginName string) (index.Plugin, error) {
 	if !index.IsSafePluginName(pluginName) {
 		return index.Plugin{}, errors.Errorf("plugin name %q not allowed", pluginName)
 	}
 
 	glog.V(4).Infof("Reading plugin %q", pluginName)
-	indexDir, err := filepath.EvalSymlinks(filepath.Join(indexDir, "plugins"))
+	pluginsDir, err := filepath.EvalSymlinks(pluginsDir)
 	if err != nil {
 		return index.Plugin{}, err
 	}
-	p, err := ReadPluginFile(filepath.Join(indexDir, pluginName+constants.ManifestExtension))
+	p, err := ReadPluginFile(filepath.Join(pluginsDir, pluginName+constants.ManifestExtension))
 	if os.IsNotExist(err) {
 		return index.Plugin{}, err
 	} else if err != nil {

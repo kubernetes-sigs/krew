@@ -41,7 +41,7 @@ Examples:
   To fuzzy search plugins with a keyword:
     kubectl krew search KEYWORD`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		plugins, err := indexscanner.LoadPluginListFromFS(paths.IndexPath())
+		plugins, err := indexscanner.LoadPluginListFromFS(paths.IndexPluginsPath())
 		if err != nil {
 			return errors.Wrap(err, "failed to load the list of plugins from the index")
 		}

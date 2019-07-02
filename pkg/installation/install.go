@@ -27,6 +27,7 @@ import (
 	"sigs.k8s.io/krew/pkg/environment"
 	"sigs.k8s.io/krew/pkg/index"
 	"sigs.k8s.io/krew/pkg/pathutil"
+	"sigs.k8s.io/krew/pkg/receipt"
 )
 
 // Plugin Lifecycle Errors
@@ -76,7 +77,17 @@ func Install(p environment.Paths, plugin index.Plugin, forceDownloadFile string)
 	if err != nil {
 		return err
 	}
-	return install(plugin.Name, version, uri, bin, p, fos, forceDownloadFile)
+
+	glog.V(2).Infof("Storing install receipt for plugin %s", plugin.Name)
+	if err = receipt.Store(plugin, p.PluginReceiptPath(plugin.Name)); err != nil {
+		return errors.Wrap(err, "installation receipt could not be stored, uninstall may fail")
+	}
+
+	// The actual install should be the last action so that a failure during receipt
+	// saving does not result in an installed plugin without receipt.
+	glog.V(3).Infof("Install plugin %s", plugin.Name)
+	err = install(plugin.Name, version, uri, bin, p, fos, forceDownloadFile)
+	return errors.Wrap(err, "install failed")
 }
 
 func install(plugin, version, uri, bin string, p environment.Paths, fos []index.FileOperation, forceDownloadFile string) error {
@@ -113,14 +124,25 @@ func Uninstall(p environment.Paths, name string) error {
 	if !installed {
 		return ErrIsNotInstalled
 	}
+
 	glog.V(1).Infof("Deleting plugin version %s", version)
-	glog.V(3).Infof("Deleting path %q", p.PluginInstallPath(name))
 
 	symlinkPath := filepath.Join(p.BinPath(), pluginNameToBin(name, isWindows()))
+	glog.V(3).Infof("Unlink %q", symlinkPath)
 	if err := removeLink(symlinkPath); err != nil {
 		return errors.Wrap(err, "could not uninstall symlink of plugin")
 	}
-	return os.RemoveAll(p.PluginInstallPath(name))
+
+	pluginReceiptPath := p.PluginReceiptPath(name)
+	glog.V(3).Infof("Deleting plugin receipt %q", pluginReceiptPath)
+	if err := os.Remove(pluginReceiptPath); err != nil {
+		return errors.Wrapf(err, "could not remove plugin receipt %q", pluginReceiptPath)
+	}
+
+	pluginInstallPath := p.PluginInstallPath(name)
+	glog.V(3).Infof("Deleting path %q", pluginInstallPath)
+	err = os.RemoveAll(pluginInstallPath)
+	return errors.Wrapf(err, "could not remove plugin directory %q", pluginInstallPath)
 }
 
 func createOrUpdateLink(binDir string, binary string, plugin string) error {

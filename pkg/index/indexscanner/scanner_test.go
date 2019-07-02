@@ -101,7 +101,7 @@ func TestLoadIndexListFromFS(t *testing.T) {
 		{
 			name: "load index dir",
 			args: args{
-				indexDir: filepath.Join(testdataPath(t), "testindex"),
+				indexDir: filepath.Join(testdataPath(t), "testindex", "plugins"),
 			},
 		},
 	}
@@ -134,7 +134,7 @@ func TestLoadIndexFileFromFS(t *testing.T) {
 		{
 			name: "load single index file",
 			args: args{
-				indexDir:   filepath.Join(testdataPath(t), "testindex"),
+				indexDir:   filepath.Join(testdataPath(t), "testindex", "plugins"),
 				pluginName: "foo",
 			},
 			wantErr:           false,
@@ -143,7 +143,7 @@ func TestLoadIndexFileFromFS(t *testing.T) {
 		{
 			name: "plugin file not found",
 			args: args{
-				indexDir:   filepath.FromSlash("./testdata"),
+				indexDir:   filepath.FromSlash("./testdata/plugins"),
 				pluginName: "not",
 			},
 			wantErr:           true,
@@ -152,7 +152,7 @@ func TestLoadIndexFileFromFS(t *testing.T) {
 		{
 			name: "plugin file bad name",
 			args: args{
-				indexDir:   filepath.FromSlash("./testdata"),
+				indexDir:   filepath.FromSlash("./testdata/plugins"),
 				pluginName: "wrongname",
 			},
 			wantErr:           true,

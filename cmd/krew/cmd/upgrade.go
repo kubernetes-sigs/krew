@@ -53,7 +53,7 @@ kubectl krew upgrade foo bar"`,
 		}
 
 		for _, name := range pluginNames {
-			plugin, err := indexscanner.LoadPluginFileFromFS(paths.IndexPath(), name)
+			plugin, err := indexscanner.LoadPluginFileFromFS(paths.IndexPluginsPath(), name)
 			if err != nil {
 				return errors.Wrapf(err, "failed to load the index file for plugin %s", plugin.Name)
 			}

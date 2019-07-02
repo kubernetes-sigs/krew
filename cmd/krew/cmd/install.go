@@ -84,7 +84,7 @@ Remarks:
 
 			var install []index.Plugin
 			for _, name := range pluginNames {
-				plugin, err := indexscanner.LoadPluginFileFromFS(paths.IndexPath(), name)
+				plugin, err := indexscanner.LoadPluginFileFromFS(paths.IndexPluginsPath(), name)
 				if err != nil {
 					return errors.Wrapf(err, "failed to load plugin %q from the index", name)
 				}
