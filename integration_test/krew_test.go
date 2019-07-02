@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package test contains integration tests for krew.
-package test
+// Package integrationtest contains the command-line integration tests for krew.
+package integrationtest
 
 import (
 	"bytes"
@@ -21,8 +21,6 @@ import (
 	"regexp"
 	"strings"
 	"testing"
-
-	"sigs.k8s.io/krew/test/krew"
 )
 
 const (
@@ -33,7 +31,7 @@ const (
 func TestKrewHelp(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := krew.NewTest(t)
+	test, cleanup := NewTest(t)
 	defer cleanup()
 
 	test.Krew("help").RunOrFail()
@@ -42,7 +40,7 @@ func TestKrewHelp(t *testing.T) {
 func TestUnknownCommand(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := krew.NewTest(t)
+	test, cleanup := NewTest(t)
 	defer cleanup()
 
 	if err := test.Krew("foobar").Run(); err == nil {
@@ -53,7 +51,7 @@ func TestUnknownCommand(t *testing.T) {
 func TestKrewInstall(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := krew.NewTest(t)
+	test, cleanup := NewTest(t)
 	defer cleanup()
 
 	test.WithIndex().Krew("install", validPlugin).RunOrFailOutput()
@@ -63,7 +61,7 @@ func TestKrewInstall(t *testing.T) {
 func TestKrewUninstall(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := krew.NewTest(t)
+	test, cleanup := NewTest(t)
 	defer cleanup()
 
 	test.WithIndex().Krew("install", validPlugin).RunOrFailOutput()
@@ -74,7 +72,7 @@ func TestKrewUninstall(t *testing.T) {
 func TestKrewSearchAll(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := krew.NewTest(t)
+	test, cleanup := NewTest(t)
 	defer cleanup()
 
 	output := test.WithIndex().Krew("search").RunOrFailOutput()
@@ -87,7 +85,7 @@ func TestKrewSearchAll(t *testing.T) {
 func TestKrewSearchOne(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := krew.NewTest(t)
+	test, cleanup := NewTest(t)
 	defer cleanup()
 
 	plugins := lines(test.WithIndex().Krew("search", "krew").RunOrFailOutput())
@@ -102,7 +100,7 @@ func TestKrewSearchOne(t *testing.T) {
 func TestKrewInfo(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := krew.NewTest(t)
+	test, cleanup := NewTest(t)
 	defer cleanup()
 
 	test.WithIndex().Krew("info", validPlugin).RunOrFail()
@@ -111,7 +109,7 @@ func TestKrewInfo(t *testing.T) {
 func TestKrewInfoInvalidPlugin(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := krew.NewTest(t)
+	test, cleanup := NewTest(t)
 	defer cleanup()
 
 	plugin := "invalid-plugin"
@@ -124,7 +122,7 @@ func TestKrewInfoInvalidPlugin(t *testing.T) {
 func TestKrewList(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := krew.NewTest(t)
+	test, cleanup := NewTest(t)
 	defer cleanup()
 
 	initialList := test.WithIndex().Krew("list").RunOrFailOutput()
@@ -143,7 +141,7 @@ func TestKrewList(t *testing.T) {
 func TestKrewVersion(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := krew.NewTest(t)
+	test, cleanup := NewTest(t)
 	defer cleanup()
 
 	output := test.Krew("version").RunOrFailOutput()
@@ -171,7 +169,7 @@ func TestKrewVersion(t *testing.T) {
 func TestKrewUpdate(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := krew.NewTest(t)
+	test, cleanup := NewTest(t)
 	defer cleanup()
 
 	// nb do not call WithIndex() here

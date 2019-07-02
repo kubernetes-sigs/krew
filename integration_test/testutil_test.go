@@ -12,24 +12,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package krew
+package integrationtest
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sync"
 	"testing"
 	"time"
 
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 
+	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/testutil"
 )
 
-const krewBinaryEnv = "KREW_BINARY"
+const (
+	persistentIndexCache = "krew-persistent-index-cache"
+	krewBinaryEnv        = "KREW_BINARY"
+)
+
+var (
+	initIndexOnce sync.Once
+	indexTar      []byte
+)
 
 // ITest is used to set up `krew` integration tests.
 type ITest struct {
@@ -195,4 +207,62 @@ func (it *ITest) cmd(ctx context.Context) *exec.Cmd {
 
 func (it *ITest) TempDir() *testutil.TempDir {
 	return it.tempDir
+}
+
+// InitializeIndex initializes the krew index in `$root/index` with the actual krew-index.
+// It caches the index tree as in-memory tar after the first run.
+func (it *ITest) initializeIndex() {
+	initIndexOnce.Do(func() {
+		persistentCacheFile := filepath.Join(os.TempDir(), persistentIndexCache)
+		fileInfo, err := os.Stat(persistentCacheFile)
+
+		if err == nil && fileInfo.Mode().IsRegular() {
+			it.t.Logf("Using persistent index cache from file %q", persistentCacheFile)
+			if indexTar, err = ioutil.ReadFile(persistentCacheFile); err == nil {
+				return
+			}
+		}
+
+		if indexTar, err = initFromGitClone(it.t); err != nil {
+			it.t.Fatalf("cannot clone repository: %s", err)
+		}
+
+		ioutil.WriteFile(persistentCacheFile, indexTar, 0600)
+	})
+
+	indexDir := filepath.Join(it.Root(), "index")
+	if err := os.Mkdir(indexDir, 0777); err != nil {
+		if os.IsExist(err) {
+			it.t.Log("initializeIndex should only be called once")
+			return
+		}
+		it.t.Fatal(err)
+	}
+
+	cmd := exec.Command("tar", "xzf", "-", "-C", indexDir)
+	cmd.Stdin = bytes.NewReader(indexTar)
+	if err := cmd.Run(); err != nil {
+		it.t.Fatalf("cannot restore index from cache: %s", err)
+	}
+}
+
+func initFromGitClone(t *testing.T) ([]byte, error) {
+	const tarName = "index.tar"
+	indexDir, cleanup := testutil.NewTempDir(t)
+	defer cleanup()
+	indexRoot := indexDir.Root()
+
+	cmd := exec.Command("git", "clone", "--depth=1", "--single-branch", "--no-tags", constants.IndexURI)
+	cmd.Dir = indexRoot
+	if err := cmd.Run(); err != nil {
+		return nil, err
+	}
+
+	cmd = exec.Command("tar", "czf", tarName, "-C", "krew-index", ".")
+	cmd.Dir = indexRoot
+	if err := cmd.Run(); err != nil {
+		return nil, err
+	}
+
+	return ioutil.ReadFile(filepath.Join(indexRoot, tarName))
 }
