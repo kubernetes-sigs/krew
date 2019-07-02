@@ -22,6 +22,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -36,6 +37,7 @@ import (
 const (
 	persistentIndexCache = "krew-persistent-index-cache"
 	krewBinaryEnv        = "KREW_BINARY"
+	validPlugin          = "konfig" // a plugin in central index with small size
 )
 
 var (
@@ -95,6 +97,24 @@ func augmentPATH(t *testing.T, v string) string {
 	}
 
 	return v + string(os.PathListSeparator) + curPath
+}
+
+// skipShort is a test helper for skipping tests in -test.short runs.
+func skipShort(t *testing.T) {
+	t.Helper()
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+}
+
+// lines parses command outputs into separate lines while trimming the trailing
+// newline.
+func lines(in []byte) []string {
+	trimmed := strings.TrimRight(string(in), " \t\n")
+	if trimmed == "" {
+		return nil
+	}
+	return strings.Split(trimmed, "\n")
 }
 
 func (it *ITest) lookupExecutable(file string) error {
