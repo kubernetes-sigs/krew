@@ -78,16 +78,15 @@ func Install(p environment.Paths, plugin index.Plugin, forceDownloadFile string)
 		return err
 	}
 
-	glog.V(2).Infof("Storing install receipt for plugin %s", plugin.Name)
-	if err = receipt.Store(plugin, p.PluginReceiptPath(plugin.Name)); err != nil {
-		return errors.Wrap(err, "installation receipt could not be stored, uninstall may fail")
-	}
-
 	// The actual install should be the last action so that a failure during receipt
 	// saving does not result in an installed plugin without receipt.
 	glog.V(3).Infof("Install plugin %s", plugin.Name)
-	err = install(plugin.Name, version, uri, bin, p, fos, forceDownloadFile)
-	return errors.Wrap(err, "install failed")
+	if err := install(plugin.Name, version, uri, bin, p, fos, forceDownloadFile); err != nil {
+		return errors.Wrap(err, "install failed")
+	}
+	glog.V(3).Infof("Storing install receipt for plugin %s", plugin.Name)
+	err = receipt.Store(plugin, p.PluginReceiptPath(plugin.Name))
+	return errors.Wrap(err, "installation receipt could not be stored, uninstall may fail")
 }
 
 func install(plugin, version, uri, bin string, p environment.Paths, fos []index.FileOperation, forceDownloadFile string) error {
@@ -133,16 +132,15 @@ func Uninstall(p environment.Paths, name string) error {
 		return errors.Wrap(err, "could not uninstall symlink of plugin")
 	}
 
-	pluginReceiptPath := p.PluginReceiptPath(name)
-	glog.V(3).Infof("Deleting plugin receipt %q", pluginReceiptPath)
-	if err := os.Remove(pluginReceiptPath); err != nil {
-		return errors.Wrapf(err, "could not remove plugin receipt %q", pluginReceiptPath)
-	}
-
 	pluginInstallPath := p.PluginInstallPath(name)
 	glog.V(3).Infof("Deleting path %q", pluginInstallPath)
-	err = os.RemoveAll(pluginInstallPath)
-	return errors.Wrapf(err, "could not remove plugin directory %q", pluginInstallPath)
+	if err := os.RemoveAll(pluginInstallPath); err != nil {
+		return errors.Wrapf(err, "could not remove plugin directory %q", pluginInstallPath)
+	}
+	pluginReceiptPath := p.PluginReceiptPath(name)
+	glog.V(3).Infof("Deleting plugin receipt %q", pluginReceiptPath)
+	err = os.Remove(pluginReceiptPath)
+	return errors.Wrapf(err, "could not remove plugin receipt %q", pluginReceiptPath)
 }
 
 func createOrUpdateLink(binDir string, binary string, plugin string) error {
