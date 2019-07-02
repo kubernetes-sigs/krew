@@ -14,4 +14,50 @@
 
 package integrationtest
 
-// TODO(ahmetb): implement upgrade tests (https://krew.dev/issues/233)
+import (
+	"crypto/sha256"
+	"io"
+	"os"
+	"path/filepath"
+	"testing"
+)
+
+func TestKrewUpgrade(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	cwd, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	test.WithIndex().
+		Krew("install", "--manifest", filepath.Join(cwd, "testdata", "konfig.yaml")).
+		RunOrFail()
+	location := test.AssertExecutableInPATH("kubectl-" + validPlugin)
+	initialHash := hashFile(t, location)
+
+	test.Krew("upgrade").RunOrFail()
+	test.AssertExecutableInPATH("kubectl-" + validPlugin)
+	eventualHash := hashFile(t, location)
+
+	if string(initialHash) == string(eventualHash) {
+		t.Errorf("Expecting the plugin file to change but was the same.")
+	}
+}
+
+func hashFile(t *testing.T, path string) []byte {
+	t.Helper()
+	hasher := sha256.New()
+	file, err := os.Open(path)
+	defer file.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := io.Copy(hasher, file); err != nil {
+		t.Fatal(err)
+	}
+	return hasher.Sum(nil)
+}
