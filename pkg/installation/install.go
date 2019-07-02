@@ -78,16 +78,15 @@ func Install(p environment.Paths, plugin index.Plugin, forceDownloadFile string)
 		return err
 	}
 
-	glog.V(2).Infof("Storing install receipt for plugin %s", plugin.Name)
-	if err = receipt.Store(plugin, p.PluginReceiptPath(plugin.Name)); err != nil {
-		return errors.Wrap(err, "installation receipt could not be stored, uninstall may fail")
-	}
-
 	// The actual install should be the last action so that a failure during receipt
 	// saving does not result in an installed plugin without receipt.
 	glog.V(3).Infof("Install plugin %s", plugin.Name)
-	err = install(plugin.Name, version, uri, bin, p, fos, forceDownloadFile)
-	return errors.Wrap(err, "install failed")
+	if err := install(plugin.Name, version, uri, bin, p, fos, forceDownloadFile); err != nil {
+		return errors.Wrap(err, "install failed")
+	}
+	glog.V(3).Infof("Storing install receipt for plugin %s", plugin.Name)
+	err = receipt.Store(plugin, p.PluginReceiptPath(plugin.Name))
+	return errors.Wrap(err, "installation receipt could not be stored, uninstall may fail")
 }
 
 func install(plugin, version, uri, bin string, p environment.Paths, fos []index.FileOperation, forceDownloadFile string) error {
