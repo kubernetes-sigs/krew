@@ -16,8 +16,12 @@
 
 set -e -o pipefail
 
-SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+if ! command -v "gox" &>/dev/null; then
+  echo >&2 "gox not installed in PATH, run hack/install-gox.sh."
+  exit 1
+fi
 
+SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "${SCRIPTDIR}/.."
 
 DEFAULT_OSARCH="darwin/amd64 windows/amd64 linux/amd64 linux/arm"
@@ -33,6 +37,7 @@ echo >&2 "(Stamping with git tag=${git_tag} rev=${git_rev})"
 
 env CGO_ENABLED=0 gox -osarch="${OSARCH:-$DEFAULT_OSARCH}" \
   -tags netgo \
+  -mod readonly \
   -ldflags="-w -X ${version_pkg}.gitCommit=${git_rev} \
     -X ${version_pkg}.gitTag=${git_tag}" \
   -output="out/bin/krew-{{.OS}}_{{.Arch}}" \
