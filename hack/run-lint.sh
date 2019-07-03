@@ -16,6 +16,10 @@
 
 set -euo pipefail
 
+[[ -n "${DEBUG:-}" ]] && set -x
+
+export GO111MODULE=on
+
 if ! [[ -x "$GOPATH/bin/golangci-lint" ]]
 then
    echo 'Installing golangci-lint'

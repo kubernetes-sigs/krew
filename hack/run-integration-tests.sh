@@ -18,6 +18,7 @@ set -euo pipefail
 
 [[ -n "${DEBUG:-}" ]] && set -x
 
+export GO111MODULE=on
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 BINDIR="${SCRIPTDIR}/../out/bin"
 goos="$(go env GOOS)"

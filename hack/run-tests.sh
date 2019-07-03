@@ -16,6 +16,7 @@
 
 set -euo pipefail
 
+export GO111MODULE=on
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 color_red="$(tput setaf 1)"
