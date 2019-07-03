@@ -18,7 +18,6 @@ set -euo pipefail
 
 [[ -n "${DEBUG:-}" ]] && set -x
 
-export GO111MODULE=on
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 BINDIR="${SCRIPTDIR}/../out/bin"
 goos="$(go env GOOS)"
@@ -48,4 +47,4 @@ fi
 KREW_BINARY="${krew_binary_realpath}"
 export KREW_BINARY
 
-go test -test.v sigs.k8s.io/krew/integration_test
+GO111MODULE=on go test -test.v sigs.k8s.io/krew/integration_test

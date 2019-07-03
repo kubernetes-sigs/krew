@@ -16,7 +16,6 @@
 
 set -euo pipefail
 
-export GO111MODULE=on
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 color_red="$(tput setaf 1)"
@@ -45,7 +44,7 @@ print_with_color "$color_blue" 'Running gofmt'
 "$SCRIPTDIR"/verify-gofmt.sh
 
 print_with_color "$color_blue" 'Running tests'
-go test -v -short -race sigs.k8s.io/krew/...
+GO111MODULE=on go test -v -short -race sigs.k8s.io/krew/...
 
 print_with_color "$color_blue" 'Running linter'
 "$SCRIPTDIR"/run-lint.sh
