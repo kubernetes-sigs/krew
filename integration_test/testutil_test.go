@@ -117,7 +117,7 @@ func lines(in []byte) []string {
 	return strings.Split(trimmed, "\n")
 }
 
-func (it *ITest) lookupExecutable(file string) (string, error) {
+func (it *ITest) LookupExecutable(file string) (string, error) {
 	orig := os.Getenv("PATH")
 	defer func() { os.Setenv("PATH", orig) }()
 
@@ -127,21 +127,19 @@ func (it *ITest) lookupExecutable(file string) (string, error) {
 	return exec.LookPath(file)
 }
 
-// AssertExecutableInPATH asserts that the executable file is in bin path and returns its location.
-func (it *ITest) AssertExecutableInPATH(file string) string {
+// AssertExecutableInPATH asserts that the executable file is in bin path.
+func (it *ITest) AssertExecutableInPATH(file string) {
 	it.t.Helper()
-	path, err := it.lookupExecutable(file)
-	if err != nil {
+	if _, err := it.LookupExecutable(file); err != nil {
 		it.t.Fatalf("executable %s not in PATH: %+v", file, err)
 	}
-	return path
 }
 
 // AssertExecutableNotInPATH asserts that the executable file is not in bin
 // path.
 func (it *ITest) AssertExecutableNotInPATH(file string) {
 	it.t.Helper()
-	if _, err := it.lookupExecutable(file); err == nil {
+	if _, err := it.LookupExecutable(file); err == nil {
 		it.t.Fatalf("executable %s still exists in PATH", file)
 	}
 }

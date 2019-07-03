@@ -36,7 +36,7 @@ func TestKrewUpgrade(t *testing.T) {
 	test.WithIndex().
 		Krew("install", "--manifest", filepath.Join(cwd, "testdata", "konfig.yaml")).
 		RunOrFail()
-	location := test.AssertExecutableInPATH("kubectl-" + validPlugin)
+	test.AssertExecutableInPATH("kubectl-" + validPlugin)
 	initialHash := hashFile(t, location)
 
 	test.Krew("upgrade").RunOrFail()
