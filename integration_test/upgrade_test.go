@@ -15,11 +15,11 @@
 package integrationtest
 
 import (
-	"crypto/sha256"
-	"io"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"sigs.k8s.io/krew/pkg/constants"
 )
 
 func TestKrewUpgrade(t *testing.T) {
@@ -28,36 +28,30 @@ func TestKrewUpgrade(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	cwd, err := os.Getwd()
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	test.WithIndex().
-		Krew("install", "--manifest", filepath.Join(cwd, "testdata", "konfig.yaml")).
+		Krew("install", "--manifest", filepath.Join("testdata", validPlugin+constants.ManifestExtension)).
 		RunOrFail()
-	test.AssertExecutableInPATH("kubectl-" + validPlugin)
-	initialHash := hashFile(t, location)
+	initialLocation := realLocation(test, validPlugin)
 
 	test.Krew("upgrade").RunOrFail()
-	test.AssertExecutableInPATH("kubectl-" + validPlugin)
-	eventualHash := hashFile(t, location)
+	eventualLocation := realLocation(test, validPlugin)
 
-	if string(initialHash) == string(eventualHash) {
-		t.Errorf("Expecting the plugin file to change but was the same.")
+	if initialLocation == eventualLocation {
+		t.Errorf("Expecting the plugin path to change but was the same.")
 	}
 }
 
-func hashFile(t *testing.T, path string) []byte {
-	t.Helper()
-	hasher := sha256.New()
-	file, err := os.Open(path)
-	defer file.Close()
+func realLocation(test *ITest, plugin string) string {
+	test.t.Helper()
+	linkToPlugin, err := test.LookupExecutable("kubectl-" + plugin)
 	if err != nil {
-		t.Fatal(err)
+		test.t.Fatal(err)
 	}
-	if _, err := io.Copy(hasher, file); err != nil {
-		t.Fatal(err)
+
+	realLocation, err := os.Readlink(linkToPlugin)
+	if err != nil {
+		test.t.Fatal(err)
 	}
-	return hasher.Sum(nil)
+
+	return realLocation
 }
