@@ -58,7 +58,7 @@ func TestKrewInstall_ManifestAndArchive(t *testing.T) {
 		"--manifest", filepath.Join("testdata", fooPlugin+constants.ManifestExtension),
 		"--archive", filepath.Join("testdata", fooPlugin+".tar.gz")).
 		RunOrFail()
-	test.AssertExecutableInPATH("kubectl-" + strings.ReplaceAll(fooPlugin, "-", "_"))
+	test.AssertExecutableInPATH("kubectl-" + strings.Replace(fooPlugin, "-", "_", -1))
 }
 
 func TestKrewInstall_OnlyArchiveFails(t *testing.T) {
