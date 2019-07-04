@@ -14,7 +14,17 @@
 
 package integrationtest
 
-import "testing"
+import (
+	"path/filepath"
+	"strings"
+	"testing"
+
+	"sigs.k8s.io/krew/pkg/constants"
+)
+
+const (
+	fooPlugin = "test-foo"
+)
 
 func TestKrewInstall(t *testing.T) {
 	skipShort(t)
@@ -24,4 +34,46 @@ func TestKrewInstall(t *testing.T) {
 
 	test.WithIndex().Krew("install", validPlugin).RunOrFailOutput()
 	test.AssertExecutableInPATH("kubectl-" + validPlugin)
+}
+
+func TestKrewInstall_Manifest(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	test.
+		Krew("install",
+			"--manifest", filepath.Join("testdata", validPlugin+constants.ManifestExtension)).
+		RunOrFail()
+	test.AssertExecutableInPATH("kubectl-" + validPlugin)
+}
+
+func TestKrewInstall_ManifestAndArchive(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	test.
+		Krew("install",
+			"--manifest", filepath.Join("testdata", fooPlugin+constants.ManifestExtension),
+			"--archive", filepath.Join("testdata", fooPlugin+".tar.gz")).
+		RunOrFail()
+	test.AssertExecutableInPATH("kubectl-" + strings.ReplaceAll(fooPlugin, "-", "_"))
+}
+
+func TestKrewInstall_OnlyArchiveFails(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	err := test.
+		Krew("install",
+			"--archive", filepath.Join("testdata", fooPlugin+".tar.gz")).
+		Run()
+	if err == nil {
+		t.Errorf("Expected install to fail but was successful")
+	}
 }
