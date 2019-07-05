@@ -47,4 +47,5 @@ fi
 KREW_BINARY="${krew_binary_realpath}"
 export KREW_BINARY
 
+-glog.v=4
 go test -test.v sigs.k8s.io/krew/integration_test
