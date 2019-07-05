@@ -16,6 +16,8 @@
 
 set -euo pipefail
 
+[[ -n "${DEBUG:-}" ]] && set -x
+
 if ! [[ -x "$GOPATH/bin/golangci-lint" ]]
 then
    echo 'Installing golangci-lint'
@@ -23,4 +25,4 @@ then
 fi
 
 # configured by .golangci.yml
-"$GOPATH/bin/golangci-lint" run
+GO111MODULE=on "$GOPATH/bin/golangci-lint" run
