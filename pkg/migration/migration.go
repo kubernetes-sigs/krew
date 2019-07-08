@@ -34,8 +34,8 @@ const (
 )
 
 func IsMigrated(newPaths environment.Paths) bool {
-	// todo(corneliusweig)
-	return false
+	_, err := os.Lstat(newPaths.InstallReceiptPath())
+	return err == nil
 }
 
 func DoMigration(newPaths environment.Paths) error {
@@ -45,13 +45,15 @@ func DoMigration(newPaths environment.Paths) error {
 	}
 
 	oldPaths := oldenvironment.MustGetKrewPaths()
-
 	installed, err := getPluginsToReinstall(oldPaths, newPaths)
 	if err != nil {
 		return errors.Wrapf(err, "failed to build list of plugins")
 	}
 
 	glog.Infoln("Going to re-install the following plugins: ", installed)
+	if err := os.MkdirAll(newPaths.InstallReceiptPath(), 0755); err != nil {
+		return errors.Wrapf(err, "failed to create directory %q", newPaths.InstallReceiptPath())
+	}
 
 	for _, plugin := range installed {
 		if consistent := isInstallationConsistent(oldPaths.BinPath(), plugin); !consistent {

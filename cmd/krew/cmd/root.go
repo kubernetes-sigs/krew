@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"flag"
+	"fmt"
 	"os"
 
 	"github.com/golang/glog"
@@ -26,6 +27,7 @@ import (
 
 	"sigs.k8s.io/krew/pkg/environment"
 	"sigs.k8s.io/krew/pkg/gitutil"
+	"sigs.k8s.io/krew/pkg/migration"
 )
 
 var (
@@ -40,6 +42,13 @@ var rootCmd = &cobra.Command{
 You can invoke krew through kubectl: "kubectl krew [command]..."`,
 	SilenceUsage:  true,
 	SilenceErrors: true,
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		if cmd.Use == "system receipts-upgrade" || migration.IsMigrated(paths) {
+			return nil
+		}
+		glog.Fatal("The krew home changed. Please run `krew system receipts-upgrade`")
+		return fmt.Errorf("krew home outdated")
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -69,7 +78,9 @@ func init() {
 		paths.DownloadPath(),
 		paths.InstallPath(),
 		paths.BinPath(),
-		paths.InstallReceiptPath()); err != nil {
+	// TODO(corneliusweig): re-enable when migration code is removed:
+	//  paths.InstallReceiptPath(),
+	); err != nil {
 		glog.Fatal(err)
 	}
 }
