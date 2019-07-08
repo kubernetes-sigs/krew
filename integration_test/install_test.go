@@ -16,14 +16,13 @@ package integrationtest
 
 import (
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"sigs.k8s.io/krew/pkg/constants"
 )
 
 const (
-	fooPlugin = "test-foo"
+	fooPlugin = "foo"
 )
 
 func TestKrewInstall(t *testing.T) {
@@ -58,7 +57,7 @@ func TestKrewInstall_ManifestAndArchive(t *testing.T) {
 		"--manifest", filepath.Join("testdata", fooPlugin+constants.ManifestExtension),
 		"--archive", filepath.Join("testdata", fooPlugin+".tar.gz")).
 		RunOrFail()
-	test.AssertExecutableInPATH("kubectl-" + strings.Replace(fooPlugin, "-", "_", -1))
+	test.AssertExecutableInPATH("kubectl-" + fooPlugin)
 }
 
 func TestKrewInstall_OnlyArchiveFails(t *testing.T) {
