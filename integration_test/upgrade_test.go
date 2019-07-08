@@ -31,17 +31,17 @@ func TestKrewUpgrade(t *testing.T) {
 	test.WithIndex().
 		Krew("install", "--manifest", filepath.Join("testdata", validPlugin+constants.ManifestExtension)).
 		RunOrFail()
-	initialLocation := realLocation(test, validPlugin)
+	initialLocation := resolvePluginSymlink(test, validPlugin)
 
 	test.Krew("upgrade").RunOrFail()
-	eventualLocation := realLocation(test, validPlugin)
+	eventualLocation := resolvePluginSymlink(test, validPlugin)
 
 	if initialLocation == eventualLocation {
 		t.Errorf("Expecting the plugin path to change but was the same.")
 	}
 }
 
-func realLocation(test *ITest, plugin string) string {
+func resolvePluginSymlink(test *ITest, plugin string) string {
 	test.t.Helper()
 	linkToPlugin, err := test.LookupExecutable("kubectl-" + plugin)
 	if err != nil {
