@@ -13,16 +13,4 @@ spec:
         - from: ./foo
           to: "."
       selector:
-        matchExpressions:
-        - key: os
-          operator: In
-          values: ["darwin", "linux"]
-    - uri: https://foo.bar/foo.tar.gz
-      sha256: e72bad12ce8faa84aae929894acad9d759a40d63befde2a9dcf6ba12487cc362
-      bin: foo.exe
-      files:
-        - from: ./foo
-          to: foo.exe
-      selector:
-        matchLabels:
-          os: windows
+        matchLabels: {}
