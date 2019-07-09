@@ -7,10 +7,22 @@ spec:
   shortDescription: A valid plugin for integration tests
   platforms:
     - uri: https://foo.bar/foo.tar.gz
-      sha256: e72bad12ce8faa84aae929894acad9d759a40d63befde2a9dcf6ba12487cc362
-      bin: foo
+      sha256: 354bad230cdd0966fc8c919476c4e6c7f2078b04a6ff7dead6a811cdc101d31e
+      bin: foo.sh
       files:
-        - from: ./foo
+        - from: ./foo.sh
           to: "."
       selector:
-        matchLabels: {}
+        matchExpressions:
+          - key: os
+            operator: In
+            values: ["darwin", "linux"]
+    - uri: https://foo.bar/foo.tar.gz
+      sha256: 354bad230cdd0966fc8c919476c4e6c7f2078b04a6ff7dead6a811cdc101d31e
+      bin: foo.bat
+      files:
+        - from: ./foo.bat
+          to: "."
+      selector:
+        matchLabels:
+          os: windows
