@@ -165,7 +165,7 @@ func (it *ITest) WithIndex() *ITest {
 // WithEnv sets an environment variable for the krew run.
 func (it *ITest) WithEnv(key string, value interface{}) *ITest {
 	if key == "KREW_ROOT" {
-		it.t.Log("Overriding KREW_ROOT in tests is forbidden")
+		it.t.Fatal("Overriding KREW_ROOT in tests is forbidden")
 		return it
 	}
 	it.env = append(it.env, fmt.Sprintf("%s=%v", key, value))

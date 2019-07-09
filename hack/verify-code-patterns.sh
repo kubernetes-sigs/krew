@@ -37,7 +37,7 @@ if [[ -n "$out" ]]; then
 fi
 
 # Do not use glog in test code
-out="$(grep --include '*_test.go' --exclude-dir 'vendor/' -EIrn 'github.com/golang/glog' || true)"
+out="$(grep --include '*_test.go' --exclude-dir 'vendor/' -EIrn '[kg]log\.' || true)"
 if [[ -n "$out" ]]; then
   echo >&2 "You used glog in tests, use 't.Logf' instead:"
   echo >&2 "$out"
