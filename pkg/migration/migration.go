@@ -15,6 +15,7 @@
 package migration
 
 import (
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -59,6 +60,11 @@ func DoMigration(newPaths environment.Paths) error {
 		return errors.Wrapf(err, "failed to create directory %q", newPaths.InstallReceiptPath())
 	}
 
+	// krew must be skipped by the normal migration logic
+	if err := copyKrewManifest(newPaths.IndexPluginsPath(), newPaths.InstallReceiptPath()); err != nil {
+		return errors.Wrapf(err, "failed to copy krew manifest")
+	}
+
 	for _, plugin := range installed {
 		if consistent := isInstallationConsistent(oldPaths.BinPath(), plugin); !consistent {
 			glog.Infof("Skipping inconsistent plugin installation %s.", plugin)
@@ -76,6 +82,24 @@ func DoMigration(newPaths environment.Paths) error {
 	}
 
 	return nil
+}
+
+func copyKrewManifest(srcFolder, dstFolder string) error {
+	manifestName := "krew" + constants.ManifestExtension
+	src, err := os.Open(filepath.Join(srcFolder, manifestName))
+	defer src.Close()
+	if err != nil {
+		return err
+	}
+
+	dst, err := os.Create(filepath.Join(dstFolder, manifestName))
+	defer dst.Close()
+	if err != nil {
+		return err
+	}
+
+	_, err = io.Copy(dst, src)
+	return err
 }
 
 // getPluginsToReinstall collects a list of installed plugins which can be reinstalled.
