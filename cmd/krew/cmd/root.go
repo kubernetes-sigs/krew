@@ -47,7 +47,7 @@ You can invoke krew through kubectl: "kubectl krew [command]..."`,
 		if cmd.Use == "system receipts-upgrade" || migration.IsMigrated(paths) {
 			return nil
 		}
-		glog.Fatal("The krew home changed. Please run `krew system receipts-upgrade`")
+		fmt.Fprintln(os.Stderr, "You need to perform a migration to continue using krew.\nPlease run `kubectl krew system receipts-upgrade`")
 		return fmt.Errorf("krew home outdated")
 	},
 }
