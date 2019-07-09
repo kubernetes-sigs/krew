@@ -1,0 +1,28 @@
+apiVersion: krew.googlecontainertools.github.com/v1alpha2
+kind: Plugin
+metadata:
+  name: foo
+spec:
+  version: "v0.1.0"
+  shortDescription: A valid plugin for integration tests
+  platforms:
+    - uri: https://foo.bar/foo.tar.gz
+      sha256: 354bad230cdd0966fc8c919476c4e6c7f2078b04a6ff7dead6a811cdc101d31e
+      bin: foo.sh
+      files:
+        - from: ./foo.sh
+          to: "."
+      selector:
+        matchExpressions:
+          - key: os
+            operator: In
+            values: ["darwin", "linux"]
+    - uri: https://foo.bar/foo.tar.gz
+      sha256: 354bad230cdd0966fc8c919476c4e6c7f2078b04a6ff7dead6a811cdc101d31e
+      bin: foo.bat
+      files:
+        - from: ./foo.bat
+          to: "."
+      selector:
+        matchLabels:
+          os: windows
