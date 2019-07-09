@@ -19,11 +19,98 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"sigs.k8s.io/krew/pkg/migration/oldenvironment"
-	"sigs.k8s.io/krew/pkg/testutil"
+	"sort"
 	"strings"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
+
+	"sigs.k8s.io/krew/pkg/environment"
+	"sigs.k8s.io/krew/pkg/migration/oldenvironment"
+	"sigs.k8s.io/krew/pkg/testutil"
 )
+
+func Test_getPluginsToReinstall(t *testing.T) {
+	tests := []struct {
+		name         string
+		filesPresent []string
+		expected     []string
+	}{
+		{
+			name:         "single plugin",
+			filesPresent: []string{"store/konfig/konfig.sh", "index/plugins/konfig.yaml"},
+			expected:     []string{"konfig"},
+		},
+		{
+			name: "multiple plugins",
+			filesPresent: []string{
+				"store/konfig/foo", "index/plugins/konfig.yaml",
+				"store/plug-in/foo", "index/plugins/plug-in.yaml",
+			},
+			expected: []string{"konfig", "plug-in"},
+		},
+		{
+			name: "skip unsafe name",
+			filesPresent: []string{
+				"store/LPT6/foo", "index/plugins/LPT6.yaml",
+			},
+			expected: []string{},
+		},
+		{
+			name: "skip krew",
+			filesPresent: []string{
+				"store/krew/foo", "index/plugins/krew.yaml",
+			},
+			expected: []string{},
+		},
+		{
+			name: "skip if missing in index",
+			filesPresent: []string{
+				"store/missing/foo",
+			},
+			expected: []string{},
+		},
+		{
+			name:     "check multiple conditions",
+			expected: []string{"konfig", "plug-in"},
+			filesPresent: []string{
+				"store/konfig/foo", "index/plugins/konfig.yaml",
+				"store/plug-in/foo", "index/plugins/plug-in.yaml",
+				"store/LPT6/foo", "index/plugins/LPT6.yaml",
+				"store/krew/foo", "index/plugins/krew.yaml",
+				"store/missing/foo",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			tmpDir, cleanup := testutil.NewTempDir(t)
+			defer cleanup()
+
+			os.Setenv("KREW_ROOT", tmpDir.Root())
+			defer os.Unsetenv("KREW_ROOT")
+
+			oldPaths := oldenvironment.MustGetKrewPaths()
+			newPaths := environment.MustGetKrewPaths()
+
+			for _, name := range test.filesPresent {
+				tmpDir.Touch(name)
+			}
+
+			actual, err := getPluginsToReinstall(oldPaths, newPaths)
+			if err != nil {
+				t.Fatal(err)
+			}
+			sort.Strings(actual)
+			sort.Strings(test.expected)
+
+			if diff := cmp.Diff(actual, test.expected); diff != "" {
+				t.Errorf(diff)
+			}
+		})
+	}
+}
 
 func Test_pluginNameToBin(t *testing.T) {
 	tests := []struct {

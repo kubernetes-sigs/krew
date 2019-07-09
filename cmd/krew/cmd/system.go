@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"fmt"
+
 	"sigs.k8s.io/krew/pkg/migration"
 
 	"github.com/spf13/cobra"
@@ -37,19 +38,9 @@ This command will be removed without further notice from future versions of krew
 		return migration.DoMigration(paths)
 	},
 	PreRunE: ensureIndexUpdated,
-	Hidden: true,
+	Hidden:  true,
 }
 
 func init() {
 	rootCmd.AddCommand(systemCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// systemCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// systemCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

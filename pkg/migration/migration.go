@@ -15,18 +15,20 @@
 package migration
 
 import (
-	"github.com/golang/glog"
-	"github.com/pkg/errors"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
+
+	"github.com/golang/glog"
+	"github.com/pkg/errors"
+
 	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/environment"
 	"sigs.k8s.io/krew/pkg/index"
 	"sigs.k8s.io/krew/pkg/migration/oldenvironment"
-	"strings"
 )
 
 const (
@@ -38,6 +40,8 @@ func IsMigrated(newPaths environment.Paths) bool {
 	return err == nil
 }
 
+// DoMigration searches for installed plugins, removes each plugin and reinstalls afterwards.
+// Once started, it keeps going even if there are errors.
 func DoMigration(newPaths environment.Paths) error {
 	if IsMigrated(newPaths) {
 		glog.Infoln("Already migrated")
@@ -50,7 +54,7 @@ func DoMigration(newPaths environment.Paths) error {
 		return errors.Wrapf(err, "failed to build list of plugins")
 	}
 
-	glog.Infoln("Going to re-install the following plugins: ", installed)
+	glog.Infoln("These plugins will be reinstalled: ", installed)
 	if err := os.MkdirAll(newPaths.InstallReceiptPath(), 0755); err != nil {
 		return errors.Wrapf(err, "failed to create directory %q", newPaths.InstallReceiptPath())
 	}
@@ -74,6 +78,7 @@ func DoMigration(newPaths environment.Paths) error {
 	return nil
 }
 
+// getPluginsToReinstall collects a list of installed plugins which can be reinstalled.
 func getPluginsToReinstall(oldPaths oldenvironment.Paths, newPaths environment.Paths) ([]string, error) {
 	store := oldPaths.InstallPath()
 	fileInfos, err := ioutil.ReadDir(store)
@@ -81,7 +86,7 @@ func getPluginsToReinstall(oldPaths oldenvironment.Paths, newPaths environment.P
 		return nil, err
 	}
 
-	installed := []string{}
+	renewable := []string{}
 	for _, fileInfo := range fileInfos {
 		plugin := fileInfo.Name()
 		if !fileInfo.IsDir() || !index.IsSafePluginName(plugin) || plugin == krewPluginName {
@@ -91,9 +96,9 @@ func getPluginsToReinstall(oldPaths oldenvironment.Paths, newPaths environment.P
 			glog.Infof("Skipping plugin %s, because it is missing in the index", plugin)
 			continue
 		}
-		installed = append(installed, plugin)
+		renewable = append(renewable, plugin)
 	}
-	return installed, nil
+	return renewable, nil
 }
 
 // isAvailableInIndex checks that the given plugin is available in the index
