@@ -30,6 +30,60 @@ import (
 	"sigs.k8s.io/krew/pkg/testutil"
 )
 
+func TestIsMigrated(t *testing.T) {
+	tests := []struct {
+		name         string
+		filesPresent []string
+		expected     bool
+	}{
+		{
+			name:         "One plugin and receipts",
+			filesPresent: []string{"store/konfig/konfig.sh", "receipts/present"},
+			expected:     true,
+		},
+		{
+			name:     "When nothing is installed",
+			expected: true,
+		},
+		{
+			name:         "When a plugin is installed but no receipts",
+			filesPresent: []string{"store/konfig/konfig.sh"},
+			expected:     false,
+		},
+		{
+			name:         "When no plugin is installed but a receipt exists",
+			filesPresent: []string{"receipts/present"},
+			expected:     true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			tmpDir, cleanup := testutil.NewTempDir(t)
+			defer cleanup()
+
+			os.Setenv("KREW_ROOT", tmpDir.Root())
+			defer os.Unsetenv("KREW_ROOT")
+
+			newPaths := environment.MustGetKrewPaths()
+
+			os.MkdirAll(tmpDir.Path("receipts"), os.ModePerm)
+			os.MkdirAll(tmpDir.Path("store"), os.ModePerm)
+			for _, name := range test.filesPresent {
+				tmpDir.Touch(name)
+			}
+
+			actual, err := IsMigrated(newPaths)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if actual != test.expected {
+				t.Errorf("Expected %v but found %v", test.expected, actual)
+			}
+		})
+	}
+}
+
 func Test_getPluginsToReinstall(t *testing.T) {
 	tests := []struct {
 		name         string

@@ -43,8 +43,11 @@ You can invoke krew through kubectl: "kubectl krew [command]..."`,
 	SilenceUsage:  true,
 	SilenceErrors: true,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		// todo(corneliusweig) find a way to not require running receipts-upgrade after a fresh install.
-		if cmd.Use == "system receipts-upgrade" || migration.IsMigrated(paths) {
+		isMigrated, err := migration.IsMigrated(paths)
+		if err != nil {
+			return err
+		}
+		if isMigrated || cmd.Use == "system receipts-upgrade" {
 			return nil
 		}
 		fmt.Fprintln(os.Stderr, "You need to perform a migration to continue using krew.\nPlease run `kubectl krew system receipts-upgrade`")
@@ -79,8 +82,7 @@ func init() {
 		paths.DownloadPath(),
 		paths.InstallPath(),
 		paths.BinPath(),
-	// TODO(corneliusweig): re-enable when migration code is removed:
-	//  paths.InstallReceiptPath(),
+		paths.InstallReceiptPath(),
 	); err != nil {
 		glog.Fatal(err)
 	}

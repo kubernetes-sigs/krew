@@ -59,7 +59,6 @@ type ITest struct {
 func NewTest(t *testing.T) (*ITest, func()) {
 	tempDir, cleanup := testutil.NewTempDir(t)
 	binDir := setupKrewBin(t, tempDir)
-	tempDir.Touch("receipts/ensure-dir-exists")
 
 	return &ITest{
 		t:             t,

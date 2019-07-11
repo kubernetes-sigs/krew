@@ -36,15 +36,37 @@ const (
 	krewPluginName = "krew"
 )
 
-func IsMigrated(newPaths environment.Paths) bool {
-	_, err := os.Lstat(newPaths.InstallReceiptPath())
-	return err == nil
+func IsMigrated(newPaths environment.Paths) (bool, error) {
+	receipts, err := ioutil.ReadDir(newPaths.InstallReceiptPath())
+	if err != nil {
+		return false, err
+	}
+	store, err := ioutil.ReadDir(newPaths.InstallPath())
+	if err != nil {
+		return false, err
+	}
+
+	var hasInstalledPlugins bool
+	for _, entry := range store {
+		if entry.IsDir() {
+			hasInstalledPlugins = true
+			break
+		}
+	}
+
+	hasNoReceipts := len(receipts) == 0
+
+	return !(hasInstalledPlugins && hasNoReceipts), nil
 }
 
 // DoMigration searches for installed plugins, removes each plugin and reinstalls afterwards.
 // Once started, it keeps going even if there are errors.
 func DoMigration(newPaths environment.Paths) error {
-	if IsMigrated(newPaths) {
+	isMigrated, err := IsMigrated(newPaths)
+	if err != nil {
+		return err
+	}
+	if isMigrated {
 		glog.Infoln("Already migrated")
 		return nil
 	}
