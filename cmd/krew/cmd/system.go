@@ -15,8 +15,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"sigs.k8s.io/krew/pkg/receiptsmigration"
 
 	"github.com/spf13/cobra"
@@ -30,17 +28,27 @@ var systemCmd = &cobra.Command{
 
 This command will be removed without further notice from future versions of krew.
 `,
-	Args: cobra.ExactArgs(1),
+	Args:   cobra.NoArgs,
+	Hidden: true,
+}
+
+// systemCmd represents the system command
+var receiptsUpgradeCmd = &cobra.Command{
+	Use:   "receipts-upgrade",
+	Short: "Perform a migration of the krew home",
+	Long: `Krew became more awesome! To use the new features, you need to run this
+one-time migration, which will reinstall all current plugins.
+
+This command will be removed without further notice from future versions of krew.
+`,
+	Args: cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if args[0] != "receipts-upgrade" {
-			return fmt.Errorf("only subcommand `receipts-upgrade` is supported")
-		}
 		return receiptsmigration.Migrate(paths)
 	},
 	PreRunE: ensureIndexUpdated,
-	Hidden:  true,
 }
 
 func init() {
+	systemCmd.AddCommand(receiptsUpgradeCmd)
 	rootCmd.AddCommand(systemCmd)
 }

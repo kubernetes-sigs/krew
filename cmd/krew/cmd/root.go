@@ -47,7 +47,7 @@ You can invoke krew through kubectl: "kubectl krew [command]..."`,
 		if err != nil {
 			return err
 		}
-		if isMigrated || cmd.Use == "system receipts-upgrade" {
+		if isMigrated || cmd.Use == "receipts-upgrade" {
 			return nil
 		}
 		fmt.Fprintln(os.Stderr, "You need to perform a migration to continue using krew.\nPlease run `kubectl krew system receipts-upgrade`")
