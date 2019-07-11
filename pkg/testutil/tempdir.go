@@ -71,8 +71,3 @@ func (td *TempDir) Write(file string, content []byte) *TempDir {
 	}
 	return td
 }
-
-// Touch creates a file without content in the temporary directory.
-func (td *TempDir) Touch(file string) *TempDir {
-	return td.Write(file, nil)
-}

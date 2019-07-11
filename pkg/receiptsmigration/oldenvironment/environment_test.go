@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// todo(corneliusweig) remove migration code with v0.4
 package oldenvironment
 
 import (

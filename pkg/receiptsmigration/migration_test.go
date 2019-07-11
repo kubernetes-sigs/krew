@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// todo(corneliusweig) remove migration code with v0.4
 package receiptsmigration
 
 import (
@@ -70,7 +71,7 @@ func TestIsMigrated(t *testing.T) {
 			os.MkdirAll(tmpDir.Path("receipts"), os.ModePerm)
 			os.MkdirAll(tmpDir.Path("store"), os.ModePerm)
 			for _, name := range test.filesPresent {
-				tmpDir.Touch(name)
+				touch(tmpDir, name)
 			}
 
 			actual, err := Done(newPaths)
@@ -149,7 +150,7 @@ func Test_getPluginsToReinstall(t *testing.T) {
 			newPaths := environment.MustGetKrewPaths()
 
 			for _, name := range test.filesPresent {
-				tmpDir.Touch(name)
+				touch(tmpDir, name)
 			}
 
 			actual, err := getPluginsToReinstall(oldPaths, newPaths)
@@ -265,4 +266,9 @@ func Test_isWindows_envOverride(t *testing.T) {
 	if isWindows() {
 		t.Fatalf("isWindows()=true when KREW_OS != windows")
 	}
+}
+
+// touch creates a file without content in the temporary directory.
+func touch(td *testutil.TempDir, file string) {
+	td.Write(file, nil)
 }

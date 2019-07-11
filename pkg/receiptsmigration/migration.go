@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// todo(corneliusweig) remove migration code with v0.4
 package receiptsmigration
 
 import (
@@ -80,21 +81,14 @@ func Migrate(newPaths environment.Paths) error {
 	}
 
 	glog.Infoln("These plugins will be reinstalled: ", installed)
-	if err := os.MkdirAll(newPaths.InstallReceiptPath(), 0755); err != nil {
-		return errors.Wrapf(err, "failed to create directory %q", newPaths.InstallReceiptPath())
-	}
 
 	// krew must be skipped by the normal migration logic
 	if err := copyKrewManifest(newPaths.IndexPluginsPath(), newPaths.InstallReceiptPath()); err != nil {
 		return errors.Wrapf(err, "failed to copy krew manifest")
 	}
 
+	// point of no return: keep on going when encountering errors
 	for _, plugin := range installed {
-		if consistent := isInstallationConsistent(oldPaths.BinPath(), plugin); !consistent {
-			glog.Infof("Skipping inconsistent plugin installation %s.", plugin)
-			continue
-		}
-
 		if err := uninstall(oldPaths, plugin); err != nil {
 			glog.Infof("Uninstalling of %s failed, skipping reinstall", plugin)
 			continue
@@ -183,14 +177,6 @@ func reinstall(plugin string) error {
 		glog.Info(string(output))
 	}
 	return err
-}
-
-// isInstallationConsistent checks if a plugin is linked in the bin directory.
-func isInstallationConsistent(binDir, pluginName string) bool {
-	if _, err := os.Readlink(filepath.Join(binDir, pluginNameToBin(pluginName, isWindows()))); err != nil {
-		return false
-	}
-	return true
 }
 
 // removeLink removes a symlink reference if exists.

@@ -20,9 +20,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// todo(corneliusweig) remove migration code with v0.4
 // systemCmd represents the system command
 var systemCmd = &cobra.Command{
-	Use:   "system receipts-upgrade",
+	Use:   "system",
 	Short: "Perform krew maintenance tasks",
 	Long: `Perform krew maintenance tasks such as migrating to a new krew-home layout.
 
@@ -32,6 +33,7 @@ This command will be removed without further notice from future versions of krew
 	Hidden: true,
 }
 
+// todo(corneliusweig) remove migration code with v0.4
 // systemCmd represents the system command
 var receiptsUpgradeCmd = &cobra.Command{
 	Use:   "receipts-upgrade",

@@ -82,8 +82,7 @@ func init() {
 		paths.DownloadPath(),
 		paths.InstallPath(),
 		paths.BinPath(),
-		paths.InstallReceiptPath(),
-	); err != nil {
+		paths.InstallReceiptPath()); err != nil {
 		glog.Fatal(err)
 	}
 }

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// todo(corneliusweig) remove this test file with v0.4
 package integrationtest
 
 import (
@@ -19,6 +20,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"sigs.k8s.io/krew/pkg/testutil"
 )
 
 func TestKrewSystem(t *testing.T) {
@@ -45,7 +48,7 @@ func TestKrewSystem_ReceiptForKrew(t *testing.T) {
 	defer cleanup()
 
 	prepareOldKrewRoot(test)
-	test.tempDir.Touch("store/krew/ensure-folder-exists")
+	touch(test.tempDir, "store/krew/ensure-folder-exists")
 
 	test.WithIndex().Krew("system", "receipts-upgrade").RunOrFailOutput()
 
@@ -60,7 +63,7 @@ func TestKrewSystem_IgnoreAdditionalFolders(t *testing.T) {
 
 	prepareOldKrewRoot(test)
 
-	test.tempDir.Touch("store/not-a-plugin/ensure-folder-exists")
+	touch(test.tempDir, "store/not-a-plugin/ensure-folder-exists")
 	out := test.WithIndex().Krew("system", "receipts-upgrade").RunOrFailOutput()
 
 	if !bytes.Contains(out, []byte("Skipping plugin not-a-plugin")) {
@@ -103,4 +106,9 @@ func assertReceiptExistsFor(it *ITest, plugin string) {
 	if err != nil {
 		it.t.Errorf("Expected plugin receipt %q but found none.", receipt)
 	}
+}
+
+// touch creates a file without content in the temporary directory.
+func touch(td *testutil.TempDir, file string) {
+	td.Write(file, nil)
 }
