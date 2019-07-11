@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package migration
+package receiptsmigration
 
 import (
 	"io"
@@ -29,14 +29,16 @@ import (
 	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/environment"
 	"sigs.k8s.io/krew/pkg/index"
-	"sigs.k8s.io/krew/pkg/migration/oldenvironment"
+	"sigs.k8s.io/krew/pkg/receiptsmigration/oldenvironment"
 )
 
 const (
 	krewPluginName = "krew"
 )
 
-func IsMigrated(newPaths environment.Paths) (bool, error) {
+// Done checks if the krew installation requires a migration.
+// It considers a migration necessary when plugins are installed, but no receipts are present.
+func Done(newPaths environment.Paths) (bool, error) {
 	receipts, err := ioutil.ReadDir(newPaths.InstallReceiptPath())
 	if err != nil {
 		return false, err
@@ -59,10 +61,10 @@ func IsMigrated(newPaths environment.Paths) (bool, error) {
 	return !(hasInstalledPlugins && hasNoReceipts), nil
 }
 
-// DoMigration searches for installed plugins, removes each plugin and reinstalls afterwards.
+// Migrate searches for installed plugins, removes each plugin and reinstalls afterwards.
 // Once started, it keeps going even if there are errors.
-func DoMigration(newPaths environment.Paths) error {
-	isMigrated, err := IsMigrated(newPaths)
+func Migrate(newPaths environment.Paths) error {
+	isMigrated, err := Done(newPaths)
 	if err != nil {
 		return err
 	}

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package migration
+package receiptsmigration
 
 import (
 	"io/ioutil"
@@ -26,7 +26,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"sigs.k8s.io/krew/pkg/environment"
-	"sigs.k8s.io/krew/pkg/migration/oldenvironment"
+	"sigs.k8s.io/krew/pkg/receiptsmigration/oldenvironment"
 	"sigs.k8s.io/krew/pkg/testutil"
 )
 
@@ -73,7 +73,7 @@ func TestIsMigrated(t *testing.T) {
 				tmpDir.Touch(name)
 			}
 
-			actual, err := IsMigrated(newPaths)
+			actual, err := Done(newPaths)
 			if err != nil {
 				t.Fatal(err)
 			}

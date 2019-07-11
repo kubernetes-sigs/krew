@@ -27,7 +27,7 @@ import (
 
 	"sigs.k8s.io/krew/pkg/environment"
 	"sigs.k8s.io/krew/pkg/gitutil"
-	"sigs.k8s.io/krew/pkg/migration"
+	"sigs.k8s.io/krew/pkg/receiptsmigration"
 )
 
 var (
@@ -43,7 +43,7 @@ You can invoke krew through kubectl: "kubectl krew [command]..."`,
 	SilenceUsage:  true,
 	SilenceErrors: true,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		isMigrated, err := migration.IsMigrated(paths)
+		isMigrated, err := receiptsmigration.Done(paths)
 		if err != nil {
 			return err
 		}

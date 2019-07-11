@@ -1,10 +1,10 @@
-// Copyright © 2019 NAME HERE <EMAIL ADDRESS>
+// Copyright 2019 The Kubernetes Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//      http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,7 +17,7 @@ package cmd
 import (
 	"fmt"
 
-	"sigs.k8s.io/krew/pkg/migration"
+	"sigs.k8s.io/krew/pkg/receiptsmigration"
 
 	"github.com/spf13/cobra"
 )
@@ -35,7 +35,7 @@ This command will be removed without further notice from future versions of krew
 		if args[0] != "receipts-upgrade" {
 			return fmt.Errorf("Only subcommand `receipts-upgrade` is supported.")
 		}
-		return migration.DoMigration(paths)
+		return receiptsmigration.Migrate(paths)
 	},
 	PreRunE: ensureIndexUpdated,
 	Hidden:  true,
