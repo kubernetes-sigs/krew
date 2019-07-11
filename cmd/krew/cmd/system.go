@@ -33,7 +33,7 @@ This command will be removed without further notice from future versions of krew
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if args[0] != "receipts-upgrade" {
-			return fmt.Errorf("Only subcommand `receipts-upgrade` is supported.")
+			return fmt.Errorf("only subcommand `receipts-upgrade` is supported")
 		}
 		return receiptsmigration.Migrate(paths)
 	},

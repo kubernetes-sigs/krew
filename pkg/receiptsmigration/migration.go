@@ -111,16 +111,16 @@ func Migrate(newPaths environment.Paths) error {
 func copyKrewManifest(srcFolder, dstFolder string) error {
 	manifestName := "krew" + constants.ManifestExtension
 	src, err := os.Open(filepath.Join(srcFolder, manifestName))
-	defer src.Close()
 	if err != nil {
 		return err
 	}
+	defer src.Close()
 
 	dst, err := os.Create(filepath.Join(dstFolder, manifestName))
-	defer dst.Close()
 	if err != nil {
 		return err
 	}
+	defer dst.Close()
 
 	_, err = io.Copy(dst, src)
 	return err
