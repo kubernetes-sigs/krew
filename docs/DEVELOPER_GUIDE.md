@@ -101,7 +101,7 @@ spec:
       matchExpressions:
       - {key: os, operator: In, values: [darwin, linux]}
     # url for downloading the package archive:
-    url: https://github.com/example/foo/releases/v1.0.zip
+    uri: https://github.com/example/foo/releases/v1.0.zip
     # sha256sum of the file downloaded above:
     sha256: "208fde0b9f42ef71f79864b1ce594a70832c47dc5426e10ca73bf02e54d499d0"
     files:                     # copy the used files out of the zip archive
