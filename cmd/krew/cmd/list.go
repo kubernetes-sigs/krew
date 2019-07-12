@@ -71,7 +71,7 @@ Remarks:
 }
 
 func printTable(out io.Writer, columns []string, rows [][]string) error {
-	w := tabwriter.NewWriter(out, 0, 0, 1, ' ', 0)
+	w := tabwriter.NewWriter(out, 0, 0, 2, ' ', 0)
 	fmt.Fprintf(w, strings.Join(columns, "\t"))
 	fmt.Fprintln(w)
 	for _, values := range rows {

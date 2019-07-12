@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"os"
+	"runtime"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -73,18 +74,18 @@ Examples:
 		}
 
 		var rows [][]string
-		cols := []string{"NAME", "DESCRIPTION", "STATUS"}
+		cols := []string{"NAME", "DESCRIPTION", "INSTALLED"}
 		for _, name := range matchNames {
 			plugin := pluginMap[name]
 			var status string
 			if _, ok := installed[name]; ok {
-				status = "installed"
+				status = "yes"
 			} else if _, ok, err := plugin.Spec.GetMatchingPlatform(); err != nil {
 				return errors.Wrapf(err, "failed to get the matching platform for plugin %s", name)
 			} else if ok {
-				status = "available"
+				status = "no"
 			} else {
-				status = "unavailable"
+				status = "unavailable on " + runtime.GOOS
 			}
 			rows = append(rows, []string{name, limitString(plugin.Spec.ShortDescription, 50), status})
 		}
