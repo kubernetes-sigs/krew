@@ -35,6 +35,7 @@ Read the [User Guide](./docs/USER_GUIDE.md) for detailed documentation.
 ### Installation
 
 > :warning: **Warning:** krew is only compatible with kubectl v1.12 or higher.
+> :info: **Info** Works with kubectl v1.11 or below via `kubectl-krew` rather then `kubectl krew`
 
 **macOS and Linux:**
 
