@@ -14,4 +14,44 @@
 
 package integrationtest
 
-// TODO(ahmetb): implement upgrade tests (https://krew.dev/issues/233)
+import (
+	"os"
+	"path/filepath"
+	"testing"
+
+	"sigs.k8s.io/krew/pkg/constants"
+)
+
+func TestKrewUpgrade(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	test.WithIndex().
+		Krew("install", "--manifest", filepath.Join("testdata", validPlugin+constants.ManifestExtension)).
+		RunOrFail()
+	initialLocation := resolvePluginSymlink(test, validPlugin)
+
+	test.Krew("upgrade").RunOrFail()
+	eventualLocation := resolvePluginSymlink(test, validPlugin)
+
+	if initialLocation == eventualLocation {
+		t.Errorf("Expecting the plugin path to change but was the same.")
+	}
+}
+
+func resolvePluginSymlink(test *ITest, plugin string) string {
+	test.t.Helper()
+	linkToPlugin, err := test.LookupExecutable("kubectl-" + plugin)
+	if err != nil {
+		test.t.Fatal(err)
+	}
+
+	realLocation, err := os.Readlink(linkToPlugin)
+	if err != nil {
+		test.t.Fatal(err)
+	}
+
+	return realLocation
+}

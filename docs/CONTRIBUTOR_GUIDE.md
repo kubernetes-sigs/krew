@@ -31,7 +31,7 @@ go get golang.org/x/tools/cmd/goimports
 and run:
 
 ```bash
-goimports -local sigs.k8s.io/krew -w cmd pkg test
+goimports -local sigs.k8s.io/krew -w cmd pkg integration_test
 ```
 
 In addition, a boilerplate license header is expected in all source files.
