@@ -18,6 +18,7 @@ script:
 - hack/make-all.sh
 - hack/ensure-kubectl-installed.sh
 - hack/run-integration-tests.sh
+- hack/verify-receipts-upgrade-migration.sh
 after_success:
 - bash <(curl -s https://codecov.io/bash)
 env:
