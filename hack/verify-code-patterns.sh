@@ -24,6 +24,7 @@ if [[ -n "$out" ]]; then
   exit 1
 fi
 
+# use code constant for ".yaml"
 out="$(grep --include '*.go' \
             --exclude "*_test.go" \
             --exclude 'constants.go' \
@@ -31,6 +32,14 @@ out="$(grep --include '*.go' \
             -EIrn '\.yaml"' || true)"
 if [[ -n "$out" ]]; then
   echo >&2 'You used ".yaml" in production, use constants.ManifestExtension instead:'
+  echo >&2 "$out"
+  exit 1
+fi
+
+# Do not use glog in test code
+out="$(grep --include '*_test.go' --exclude-dir 'vendor/' -EIrn '[kg]log\.' || true)"
+if [[ -n "$out" ]]; then
+  echo >&2 "You used glog in tests, use 't.Logf' instead:"
   echo >&2 "$out"
   exit 1
 fi

@@ -27,7 +27,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
 
 	"sigs.k8s.io/krew/pkg/constants"
@@ -166,7 +165,7 @@ func (it *ITest) WithIndex() *ITest {
 // WithEnv sets an environment variable for the krew run.
 func (it *ITest) WithEnv(key string, value interface{}) *ITest {
 	if key == "KREW_ROOT" {
-		glog.V(1).Infoln("Overriding KREW_ROOT in tests is forbidden")
+		it.t.Fatal("Overriding KREW_ROOT in tests is forbidden")
 		return it
 	}
 	it.env = append(it.env, fmt.Sprintf("%s=%v", key, value))
@@ -186,14 +185,14 @@ func (it *ITest) Run() error {
 	it.t.Helper()
 
 	cmd := it.cmd(context.Background())
-	glog.V(1).Infoln(cmd.Args)
+	it.t.Log(cmd.Args)
 
 	start := time.Now()
 	if err := cmd.Run(); err != nil {
 		return errors.Wrapf(err, "krew %v", it.args)
 	}
 
-	glog.V(1).Infoln("Ran in", time.Since(start))
+	it.t.Log("Ran in", time.Since(start))
 	return nil
 }
 
@@ -203,7 +202,7 @@ func (it *ITest) RunOrFailOutput() []byte {
 	it.t.Helper()
 
 	cmd := it.cmd(context.Background())
-	glog.V(1).Infoln(cmd.Args)
+	it.t.Log(cmd.Args)
 
 	start := time.Now()
 	out, err := cmd.CombinedOutput()
@@ -211,7 +210,7 @@ func (it *ITest) RunOrFailOutput() []byte {
 		it.t.Fatalf("krew %v: %v, %s", it.args, err, out)
 	}
 
-	glog.V(1).Infoln("Ran in", time.Since(start))
+	it.t.Log("Ran in", time.Since(start))
 	return out
 }
 
