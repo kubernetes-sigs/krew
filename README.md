@@ -5,6 +5,7 @@
 [![Go Report Card](https://goreportcard.com/badge/kubernetes-sigs/krew)](https://goreportcard.com/report/kubernetes-sigs/krew)
 [![LICENSE](https://img.shields.io/github/license/kubernetes-sigs/krew.svg)](https://github.com/kubernetes-sigs/krew/blob/master/LICENSE)
 [![Releases](https://img.shields.io/github/release-pre/kubernetes-sigs/krew.svg)](https://github.com/kubernetes-sigs/krew/releases)
+![GitHub stars](https://img.shields.io/github/stars/kubernetes-sigs/krew.svg?label=github%20stars&logo=github)
 
 krew is the package manager for kubectl plugins.
 
