@@ -17,14 +17,16 @@ package main
 
 import (
 	"fmt"
-	"github.com/golang/glog"
-	"github.com/spf13/pflag"
 	"io"
 	"os"
 	"regexp"
+	"strings"
+
+	"github.com/golang/glog"
+	"github.com/spf13/pflag"
+
 	"sigs.k8s.io/krew/pkg/index"
 	"sigs.k8s.io/krew/pkg/index/indexscanner"
-	"strings"
 )
 
 const (
