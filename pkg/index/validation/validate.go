@@ -110,11 +110,29 @@ func validatePlatform(p index.Platform) error {
 	if p.Bin == "" {
 		return errors.New("bin has to be set")
 	}
-	if len(p.Files) == 0 {
-		return errors.New("can't have a plugin without specifying file operations")
+	if err := validateFiles(p.Files); err != nil {
+		return errors.Wrap(err, "files is invalid")
 	}
 	if err := validateSelector(p.Selector); err != nil {
 		return errors.Wrap(err, "invalid platform selector")
+	}
+	return nil
+}
+
+func validateFiles(fops []index.FileOperation) error {
+	if fops == nil {
+		return nil
+	}
+	if len(fops) == 0 {
+		return errors.New("files has to be unspecified or non-empty")
+	}
+	for _, op := range fops {
+		if op.From == "" {
+			return errors.New("from field has to be set")
+		}
+		if op.To == "" {
+			return errors.New("to field has to be set")
+		}
 	}
 	return nil
 }

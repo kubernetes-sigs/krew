@@ -21,6 +21,7 @@ spec:
   platforms:
   - files:
     - from: "*"
+      to: "."
     uri: https://example.com
     sha256: deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef
     bin: kubectl-foo
@@ -29,6 +30,7 @@ spec:
       - {key: os, operator: In, values: [macos, linux]}
   - files:
     - from: "*"
+      to: "."
     uri: https://example.com
     sha256: deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef
     bin: kubectl-foo

@@ -146,10 +146,10 @@ func TestValidatePlugin(t *testing.T) {
 			wantErr:    true,
 		},
 		{
-			name:       "no file operations",
+			name:       "empty file operations",
 			pluginName: "foo",
 			plugin: testutil.NewPlugin().WithName("foo").WithPlatforms(
-				testutil.NewPlatform().WithFiles(nil).V()).V(),
+				testutil.NewPlatform().WithFiles([]index.FileOperation{}).V()).V(),
 			wantErr: true,
 		},
 		{
@@ -190,8 +190,8 @@ func TestValidatePlatform(t *testing.T) {
 			wantErr:  true,
 		},
 		{
-			name:     "no file operations",
-			platform: testutil.NewPlatform().WithFiles(nil).V(),
+			name:     "empty file operations",
+			platform: testutil.NewPlatform().WithFiles([]index.FileOperation{}).V(),
 			wantErr:  true,
 		},
 		{
@@ -278,6 +278,47 @@ func Test_validateSelector(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := validateSelector(tt.sel); (err != nil) != tt.wantErr {
 				t.Errorf("validateSelector() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestValidateFiles(t *testing.T) {
+	tests := []struct {
+		name    string
+		files   []index.FileOperation
+		wantErr bool
+	}{
+		{
+			name:    "success",
+			files:   []index.FileOperation{{From: "here", To: "there"}},
+			wantErr: false,
+		},
+		{
+			name:    "unspecified file operations",
+			files:   nil,
+			wantErr: false,
+		},
+		{
+			name:    "empty file operations",
+			files:   []index.FileOperation{},
+			wantErr: true,
+		},
+		{
+			name:    "empty `to` field in file operations",
+			files:   []index.FileOperation{{From: "present", To: ""}},
+			wantErr: true,
+		},
+		{
+			name:    "empty `from` field in file operations",
+			files:   []index.FileOperation{{From: "", To: "present"}},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := validateFiles(tt.files); (err != nil) != tt.wantErr {
+				t.Errorf("validateFiles() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
