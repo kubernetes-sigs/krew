@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// plugin-overview reads the manifests in a directory and creates a markdown overview page
 package main
 
 import (
