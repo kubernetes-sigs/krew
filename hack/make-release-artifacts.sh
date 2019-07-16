@@ -21,7 +21,7 @@ cd "${SCRIPTDIR}/.."
 
 bin_dir="out/bin"
 if [[ ! -d "${bin_dir}" ]]; then
-    echo >&2 "Binaries are not built (${bin_dir}), run build-binaries.sh"
+    echo >&2 "Binaries are not built (${bin_dir}), run hack/make-binaries.sh"
     exit 1
 fi
 

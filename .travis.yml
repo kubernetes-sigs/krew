@@ -16,6 +16,7 @@ script:
 - hack/run-lint.sh
 - go test -v -short -coverprofile=coverage.txt -covermode=atomic ./...
 - hack/make-all.sh
+- hack/verify-installation.sh
 - hack/ensure-kubectl-installed.sh
 - hack/run-integration-tests.sh
 - hack/verify-receipts-upgrade-migration.sh
