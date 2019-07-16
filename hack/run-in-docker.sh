@@ -46,7 +46,8 @@ fi
 log_ok "Starting docker container with volume mounts:"
 log    "    kubeconfig=${kubeconfig}"
 log    "    kubectl-krew=${krew_bin}"
-log_ok "You can rebuild with make-binaries.sh without restarting the container."
+log_ok "You can rebuild with the following command without restarting the container:"
+log    "    env OSARCH=linux/amd64 hack/make-binaries.sh"
 exec docker run --rm --tty --interactive \
     --volume "${krew_bin}:/usr/local/bin/kubectl-krew" \
     --volume "${kubeconfig}:/etc/kubeconfig" \

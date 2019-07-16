@@ -22,7 +22,7 @@ git remote set-url origin --push no_push   # to avoid pushes
 Krew adheres to standard `golang` code formatting conventions, and also expects
 imports sorted properly.
 To automatically format code appropriately, install
-[`goimports`](https://godoc.org/golang.org/x/tools/cmd/goimports) via 
+[`goimports`](https://godoc.org/golang.org/x/tools/cmd/goimports) via:
 
 ```bash
 go get golang.org/x/tools/cmd/goimports
@@ -38,6 +38,11 @@ In addition, a boilerplate license header is expected in all source files.
 
 _All new code should be covered by tests._
 
+## Compiling
+
+Use `hack/make-binary.sh` to make a binary in `out/bin/` for your current
+platform. You can use `hack/make-binaries.sh` to build binaries for all
+supported platforms.
 
 ## Running tests
 
@@ -55,7 +60,7 @@ In addition, there are integration tests to cover high-level krew functionality.
 To run integration tests, you will need to build the `krew` binary beforehand:
 
 ```bash
-hack/make-binaries.sh
+hack/make-binary.sh
 hack/run-integration-tests.sh
 ```
 
