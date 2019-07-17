@@ -15,8 +15,6 @@
 package indexscanner
 
 import (
-	"bytes"
-	"encoding/json"
 	"io"
 	"io/ioutil"
 	"os"
@@ -25,7 +23,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
-	"k8s.io/apimachinery/pkg/util/yaml"
+	"sigs.k8s.io/yaml"
 
 	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/index"
@@ -86,7 +84,6 @@ func LoadPluginFileFromFS(pluginsDir, pluginName string) (index.Plugin, error) {
 
 // ReadPluginFile loads a file from the FS. When plugin file not found, it
 // returns an error that can be checked with os.IsNotExist.
-// TODO(lbb): Add object verification
 func ReadPluginFile(indexFilePath string) (index.Plugin, error) {
 	f, err := os.Open(indexFilePath)
 	if os.IsNotExist(err) {
@@ -100,20 +97,16 @@ func ReadPluginFile(indexFilePath string) (index.Plugin, error) {
 // DecodePluginFile tries to decodes a plugin manifest from r.
 func DecodePluginFile(r io.Reader) (index.Plugin, error) {
 	var plugin index.Plugin
-	raw, err := ioutil.ReadAll(r)
+	b, err := ioutil.ReadAll(r)
 	if err != nil {
 		return plugin, err
 	}
-	jsonRaw, err := yaml.ToJSON(raw)
-	if err != nil {
-		return plugin, err
-	}
-	decoder := json.NewDecoder(bytes.NewReader(jsonRaw))
 
 	// TODO(ahmetb): when we have a stable API that won't add new fields,
-	// we can consider failing on unknown fields. Currently disabling due to
+	// we can consider failing on unknown fields. Currently, disabling due to
 	// incremental field additions to plugin manifests independently from the
 	// installed version of krew.
-	// decoder.DisallowUnknownFields()
-	return plugin, decoder.Decode(&plugin)
+	// yaml.UnmarshalStrict()
+	err = yaml.Unmarshal(b, &plugin)
+	return plugin, err
 }

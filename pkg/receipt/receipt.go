@@ -17,8 +17,8 @@ package receipt
 import (
 	"io/ioutil"
 
-	"github.com/ghodss/yaml"
 	"github.com/pkg/errors"
+	"sigs.k8s.io/yaml"
 
 	"sigs.k8s.io/krew/pkg/index"
 )
