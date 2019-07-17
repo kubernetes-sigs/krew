@@ -69,7 +69,7 @@ func TestLoadManifestFromReceiptOrIndex(t *testing.T) {
 		{
 			name: "manifest in receipts",
 			prepare: func(paths environment.Paths, tmpDir *testutil.TempDir) {
-				path := paths.PluginReceiptPath(pluginName)
+				path := paths.PluginInstallReceiptPath(pluginName)
 				tmpDir.Write(path, yamlBytes)
 			},
 		},
@@ -83,7 +83,7 @@ func TestLoadManifestFromReceiptOrIndex(t *testing.T) {
 		{
 			name: "invalid manifest in receipts",
 			prepare: func(paths environment.Paths, tmpDir *testutil.TempDir) {
-				path := paths.PluginReceiptPath(pluginName)
+				path := paths.PluginInstallReceiptPath(pluginName)
 				tmpDir.Write(path, []byte("invalid yaml file"))
 			},
 			shouldErr: true,

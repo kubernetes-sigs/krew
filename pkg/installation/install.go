@@ -85,7 +85,7 @@ func Install(p environment.Paths, plugin index.Plugin, forceDownloadFile string)
 		return errors.Wrap(err, "install failed")
 	}
 	glog.V(3).Infof("Storing install receipt for plugin %s", plugin.Name)
-	err = receipt.Store(plugin, p.PluginReceiptPath(plugin.Name))
+	err = receipt.Store(plugin, p.PluginInstallReceiptPath(plugin.Name))
 	return errors.Wrap(err, "installation receipt could not be stored, uninstall may fail")
 }
 
@@ -137,10 +137,10 @@ func Uninstall(p environment.Paths, name string) error {
 	if err := os.RemoveAll(pluginInstallPath); err != nil {
 		return errors.Wrapf(err, "could not remove plugin directory %q", pluginInstallPath)
 	}
-	pluginReceiptPath := p.PluginReceiptPath(name)
-	glog.V(3).Infof("Deleting plugin receipt %q", pluginReceiptPath)
-	err = os.Remove(pluginReceiptPath)
-	return errors.Wrapf(err, "could not remove plugin receipt %q", pluginReceiptPath)
+	PluginInstallReceiptPath := p.PluginInstallReceiptPath(name)
+	glog.V(3).Infof("Deleting plugin receipt %q", PluginInstallReceiptPath)
+	err = os.Remove(PluginInstallReceiptPath)
+	return errors.Wrapf(err, "could not remove plugin receipt %q", PluginInstallReceiptPath)
 }
 
 func createOrUpdateLink(binDir string, binary string, plugin string) error {
