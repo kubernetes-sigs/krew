@@ -58,7 +58,6 @@ func (p Plugin) Validate(name string) error {
 	if p.Kind != constants.PluginKind {
 		return errors.Errorf("plugin manifest has kind=%q, but only %q is supported", p.Kind, constants.PluginKind)
 	}
-
 	if !IsSafePluginName(name) {
 		return errors.Errorf("the plugin name %q is not allowed, must match %q", name, safePluginRegexp.String())
 	}
@@ -70,6 +69,9 @@ func (p Plugin) Validate(name string) error {
 	}
 	if len(p.Spec.Platforms) == 0 {
 		return errors.New("should have a platform specified")
+	}
+	if p.Spec.Version == "" {
+		return errors.New("should have a version specified")
 	}
 	for _, pl := range p.Spec.Platforms {
 		if err := pl.Validate(); err != nil {

@@ -39,7 +39,7 @@ var (
 		},
 		ObjectMeta: metav1.ObjectMeta{Name: pluginName},
 		Spec: index.PluginSpec{
-			Version:          "",
+			Version:          "v1.0.0",
 			ShortDescription: "short",
 			Description:      "",
 			Caveats:          "",

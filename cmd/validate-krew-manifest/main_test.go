@@ -80,6 +80,7 @@ func TestValidateManifestFile(t *testing.T) {
 					Name: "test",
 				},
 				Spec: index.PluginSpec{
+					Version:          "v1.0.0",
 					ShortDescription: "test",
 					Platforms: []index.Platform{{
 						URI:    "http://test.com",
@@ -108,6 +109,7 @@ func TestValidateManifestFile(t *testing.T) {
 				},
 				Spec: index.PluginSpec{
 					ShortDescription: "test",
+					Version:          "v1.0.0",
 					Platforms: []index.Platform{
 						{
 							URI:    "http://test.com",

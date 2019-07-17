@@ -105,7 +105,7 @@ func TestPlugin_Validate(t *testing.T) {
 		wantErr    bool
 	}{
 		{
-			name: "validate success",
+			name: "success",
 			fields: fields{
 				TypeMeta: metav1.TypeMeta{
 					APIVersion: constants.CurrentAPIVersion,
@@ -113,11 +113,8 @@ func TestPlugin_Validate(t *testing.T) {
 				},
 				ObjectMeta: metav1.ObjectMeta{Name: "foo"},
 				Spec: PluginSpec{
-					Version:          "",
+					Version:          "v1.0.0",
 					ShortDescription: "short",
-					Description:      "",
-					Caveats:          "",
-					Homepage:         "",
 					Platforms: []Platform{{
 						URI:      "http://example.com",
 						Sha256:   "deadbeef",
@@ -139,10 +136,8 @@ func TestPlugin_Validate(t *testing.T) {
 				},
 				ObjectMeta: metav1.ObjectMeta{Name: "foo"},
 				Spec: PluginSpec{
-					Version:          "",
+					Version:          "v1.0.0",
 					ShortDescription: "short",
-					Description:      "",
-					Caveats:          "",
 					Platforms: []Platform{{
 						URI:      "http://example.com",
 						Sha256:   "deadbeef",
@@ -164,11 +159,8 @@ func TestPlugin_Validate(t *testing.T) {
 				},
 				ObjectMeta: metav1.ObjectMeta{Name: "foo"},
 				Spec: PluginSpec{
-					Version:          "",
+					Version:          "v1.0.0",
 					ShortDescription: "short",
-					Description:      "",
-					Caveats:          "",
-					Homepage:         "",
 					Platforms: []Platform{{
 						URI:      "http://example.com",
 						Sha256:   "deadbeef",
@@ -182,7 +174,30 @@ func TestPlugin_Validate(t *testing.T) {
 			wantErr:    true,
 		},
 		{
-			name: "no short description",
+			name: "shortDescription unspecified",
+			fields: fields{
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: constants.CurrentAPIVersion,
+					Kind:       constants.PluginKind,
+				},
+				ObjectMeta: metav1.ObjectMeta{Name: "foo"},
+				Spec: PluginSpec{
+					Version:          "v1.0.0",
+					ShortDescription: "",
+					Platforms: []Platform{{
+						URI:      "http://example.com",
+						Sha256:   "deadbeef",
+						Selector: nil,
+						Files:    []FileOperation{{"", ""}},
+						Bin:      "foo",
+					}},
+				},
+			},
+			pluginName: "foo",
+			wantErr:    true,
+		},
+		{
+			name: "version unspecified",
 			fields: fields{
 				TypeMeta: metav1.TypeMeta{
 					APIVersion: constants.CurrentAPIVersion,
@@ -191,9 +206,7 @@ func TestPlugin_Validate(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{Name: "foo"},
 				Spec: PluginSpec{
 					Version:          "",
-					ShortDescription: "",
-					Description:      "",
-					Caveats:          "",
+					ShortDescription: "short",
 					Platforms: []Platform{{
 						URI:      "http://example.com",
 						Sha256:   "deadbeef",
@@ -215,10 +228,8 @@ func TestPlugin_Validate(t *testing.T) {
 				},
 				ObjectMeta: metav1.ObjectMeta{Name: "foo"},
 				Spec: PluginSpec{
-					Version:          "",
+					Version:          "v1.0.0",
 					ShortDescription: "short",
-					Description:      "",
-					Caveats:          "",
 					Platforms: []Platform{{
 						URI:      "http://example.com",
 						Sha256:   "deadbeef",
@@ -240,10 +251,8 @@ func TestPlugin_Validate(t *testing.T) {
 				},
 				ObjectMeta: metav1.ObjectMeta{Name: "wrong-name"},
 				Spec: PluginSpec{
-					Version:          "",
+					Version:          "v1.0.0",
 					ShortDescription: "short",
-					Description:      "",
-					Caveats:          "",
 					Platforms: []Platform{{
 						URI:      "http://example.com",
 						Sha256:   "deadbeef",
@@ -265,10 +274,8 @@ func TestPlugin_Validate(t *testing.T) {
 				},
 				ObjectMeta: metav1.ObjectMeta{Name: "../foo"},
 				Spec: PluginSpec{
-					Version:          "",
+					Version:          "v1.0.0",
 					ShortDescription: "short",
-					Description:      "",
-					Caveats:          "",
 					Platforms: []Platform{{
 						URI:      "http://example.com",
 						Sha256:   "deadbeef",

@@ -94,7 +94,7 @@ kind: Plugin
 metadata:
   name: foo               # plugin name must match your manifest file name (e.g. foo.yaml)
 spec:
-  version: "v0.0.1"       # optional, only for documentation purposes
+  version: "v0.0.1"       # required, must be in semver format, prefixed with "v"
   platforms:
   # specify installation script for linux and darwin (macOS)
   - selector:             # a regular Kubernetes selector
@@ -299,10 +299,11 @@ needed to run the plugin in the `caveats:` field.
 ### Updating existing plugins
 
 When you have a newer version of your plugin, create a new pull request that
-updates `uri` and `sha256` fields of the plugin manifest file.
+updates thew `version`, `uri` and `sha256` fields of the plugin manifest file.
 
-Optionally, you can use the `version` field to match to your plugin's released
-version string.
+Ideally, the `version` specified should match the release tag of the plugin.
+This helps users and maintainers to easily identify which version of the plugin
+they have installed.
 
 [index]: https://github.com/kubernetes-sigs/krew-index
 [plugins]: https://kubernetes.io/docs/tasks/extend-kubectl/kubectl-plugins/

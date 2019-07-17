@@ -17,6 +17,7 @@ kind: Plugin
 metadata:
   name: bar
 spec:
+  version: v1.0.0
   platforms:
   - files:
     - from: "*"
