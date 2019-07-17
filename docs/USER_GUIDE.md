@@ -48,7 +48,7 @@ SHA256: 8be8ed348d02285abc46bbf7a4cc83da0ee9d54dc2c5bf86a7b64947811b843c
 DESCRIPTION:
  Pretty print the current cluster certificate.
  The plugin formats the certificate in PEM following RFC1421.
-VERSION: master
+VERSION: v1.0.0
 CAVEATS:
  This plugin needs the following programs:
  * base64

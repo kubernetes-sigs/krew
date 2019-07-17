@@ -17,6 +17,7 @@ kind: Plugin
 metadata:
   name: foo
 spec:
+  version: v1.0.0
   platforms:
   - files:
     - from: "*"

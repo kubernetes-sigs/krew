@@ -26,21 +26,18 @@ import (
 	"sigs.k8s.io/krew/pkg/testutil"
 )
 
-const pluginName = "some"
+const testPluginName = "some"
 
 var (
-	plugin = index.Plugin{
+	testPlugin = index.Plugin{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: constants.CurrentAPIVersion,
 			Kind:       constants.PluginKind,
 		},
-		ObjectMeta: metav1.ObjectMeta{Name: pluginName},
+		ObjectMeta: metav1.ObjectMeta{Name: testPluginName},
 		Spec: index.PluginSpec{
-			Version:          "",
+			Version:          "v1.0.0",
 			ShortDescription: "short",
-			Description:      "",
-			Caveats:          "",
-			Homepage:         "",
 			Platforms: []index.Platform{{
 				URI:      "http://example.com",
 				Sha256:   "deadbeef",
@@ -58,16 +55,16 @@ func TestStore(t *testing.T) {
 
 	dest := tmpDir.Path("some.yaml")
 
-	if err := Store(plugin, dest); err != nil {
+	if err := Store(testPlugin, dest); err != nil {
 		t.Error(err)
 	}
 
-	actual, err := indexscanner.LoadPluginFileFromFS(tmpDir.Root(), pluginName)
+	actual, err := indexscanner.LoadPluginFileFromFS(tmpDir.Root(), testPluginName)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if diff := cmp.Diff(&plugin, &actual); diff != "" {
-		t.Error(diff)
+	if diff := cmp.Diff(&testPlugin, &actual); diff != "" {
+		t.Fatal(diff)
 	}
 }
