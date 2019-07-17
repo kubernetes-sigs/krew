@@ -40,7 +40,7 @@ const (
 // Done checks if the krew installation requires a migration.
 // It considers a migration necessary when plugins are installed, but no receipts are present.
 func Done(newPaths environment.Paths) (bool, error) {
-	receipts, err := ioutil.ReadDir(newPaths.InstallReceiptPath())
+	receipts, err := ioutil.ReadDir(newPaths.InstallReceiptsPath())
 	if err != nil {
 		return false, err
 	}
@@ -83,7 +83,7 @@ func Migrate(newPaths environment.Paths) error {
 	glog.Infoln("These plugins will be reinstalled: ", installed)
 
 	// krew must be skipped by the normal migration logic
-	if err := copyKrewManifest(newPaths.IndexPluginsPath(), newPaths.InstallReceiptPath()); err != nil {
+	if err := copyKrewManifest(newPaths.IndexPluginsPath(), newPaths.InstallReceiptsPath()); err != nil {
 		return errors.Wrapf(err, "failed to copy krew manifest")
 	}
 

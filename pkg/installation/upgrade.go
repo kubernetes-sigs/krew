@@ -47,7 +47,7 @@ func Upgrade(p environment.Paths, plugin index.Plugin) error {
 	}
 
 	glog.V(2).Infof("Upgrading install receipt for plugin %s", plugin.Name)
-	if err = receipt.Store(plugin, p.PluginReceiptPath(plugin.Name)); err != nil {
+	if err = receipt.Store(plugin, p.PluginInstallReceiptPath(plugin.Name)); err != nil {
 		return errors.Wrap(err, "installation receipt could not be stored, uninstall may fail")
 	}
 
