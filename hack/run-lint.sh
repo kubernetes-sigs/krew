@@ -18,11 +18,14 @@ set -euo pipefail
 
 [[ -n "${DEBUG:-}" ]] && set -x
 
-if ! [[ -x "$GOPATH/bin/golangci-lint" ]]
+gopath="$(go env GOPATH)"
+
+if ! [[ -x "$gopath/bin/golangci-lint" ]]
 then
-   echo 'Installing golangci-lint'
-   curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b "$GOPATH/bin" v1.16.0
+   echo >&2 'Installing golangci-lint'
+   curl --silent --fail --location \
+       https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b "$gopath/bin" v1.16.0
 fi
 
 # configured by .golangci.yml
-GO111MODULE=on "$GOPATH/bin/golangci-lint" run
+exec env GO111MODULE=on "$gopath/bin/golangci-lint" run
