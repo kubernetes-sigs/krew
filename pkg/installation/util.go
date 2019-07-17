@@ -15,7 +15,6 @@
 package installation
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -23,8 +22,10 @@ import (
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 
+	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/index"
 	"sigs.k8s.io/krew/pkg/pathutil"
+	"sigs.k8s.io/krew/pkg/receipt"
 )
 
 func findInstalledPluginVersion(installPath, binDir, pluginName string) (name string, installed bool, err error) {
@@ -79,27 +80,22 @@ func getDownloadTarget(index index.Plugin) (version, uri string, fos []index.Fil
 	return version, uri, p.Files, p.Bin, nil
 }
 
-// ListInstalledPlugins returns a list of all name:version for all plugins.
-func ListInstalledPlugins(installDir, binDir string) (map[string]string, error) {
-	installed := make(map[string]string)
-	plugins, err := ioutil.ReadDir(installDir)
+// ListInstalledPlugins returns a list of all install plugins in a
+// name:version format based on the install receipts at the specified dir.
+func ListInstalledPlugins(receiptsDir string) (map[string]string, error) {
+	matches, err := filepath.Glob(filepath.Join(receiptsDir, "*"+constants.ManifestExtension))
 	if err != nil {
-		return installed, errors.Wrap(err, "failed to read install dir")
+		return nil, errors.Wrapf(err, "failed to grab receipts directory (%s) for manifests", receiptsDir)
 	}
-	glog.V(4).Infof("Read installation directory: %s (%d items)", installDir, len(plugins))
-	for _, plugin := range plugins {
-		if !plugin.IsDir() {
-			glog.V(4).Infof("Skip non-directory item: %s", plugin.Name())
-			continue
-		}
-		version, ok, err := findInstalledPluginVersion(installDir, binDir, plugin.Name())
+	glog.V(4).Infof("Found %d install receipts in %s", len(matches), receiptsDir)
+	installed := make(map[string]string)
+	for _, m := range matches {
+		r, err := receipt.Load(m)
 		if err != nil {
-			return installed, errors.Wrap(err, "failed to get plugin version")
+			return nil, errors.Wrapf(err, "failed to parse plugin install receipt %s", m)
 		}
-		if ok {
-			installed[plugin.Name()] = version
-			glog.V(4).Infof("Found %q, with version %s", plugin.Name(), version)
-		}
+		glog.V(4).Infof("parsed receipt for %s: version=%s", r.GetObjectMeta().GetName(), r.Spec.Version)
+		installed[r.GetObjectMeta().GetName()] = r.Spec.Version
 	}
 	return installed, nil
 }

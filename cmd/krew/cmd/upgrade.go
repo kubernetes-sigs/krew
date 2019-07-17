@@ -40,7 +40,7 @@ kubectl krew upgrade foo bar"`,
 		var pluginNames []string
 		// Upgrade all plugins.
 		if len(args) == 0 {
-			installed, err := installation.ListInstalledPlugins(paths.InstallPath(), paths.BinPath())
+			installed, err := installation.ListInstalledPlugins(paths.InstallReceiptsPath())
 			if err != nil {
 				return errors.Wrap(err, "failed to find all installed versions")
 			}

@@ -21,6 +21,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"sigs.k8s.io/krew/pkg/index"
+	"sigs.k8s.io/krew/pkg/index/indexscanner"
 )
 
 // Store saves the given plugin at the destination.
@@ -33,4 +34,14 @@ func Store(plugin index.Plugin, dest string) error {
 
 	err = ioutil.WriteFile(dest, yamlBytes, 0644)
 	return errors.Wrapf(err, "write plugin receipt %q", dest)
+}
+
+// Load reads the plugin receipt at the specified destination.
+// If not found, it returns os.IsNotExist error.
+func Load(path string) (*index.Plugin, error) {
+	p, err := indexscanner.ReadPluginFile(path)
+	if err != nil {
+		return nil, err
+	}
+	return &p, nil
 }

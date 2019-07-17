@@ -15,6 +15,8 @@
 package receipt
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -66,5 +68,22 @@ func TestStore(t *testing.T) {
 
 	if diff := cmp.Diff(&testPlugin, &actual); diff != "" {
 		t.Fatal(diff)
+	}
+}
+
+func TestLoad(t *testing.T) {
+	p, err := Load(filepath.Join("..", "..", "integration_test", "testdata", "foo.yaml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if p == nil {
+		t.Fatal("parsed plugin is nil")
+	}
+}
+
+func TestLoad_preservesNonExistsError(t *testing.T) {
+	_, err := Load(filepath.Join("foo", "non-existing.yaml"))
+	if !os.IsNotExist(err) {
+		t.Fatalf("returned error is not ENOENT: %+v", err)
 	}
 }
