@@ -41,7 +41,7 @@ const (
 	krewPluginName = "krew"
 )
 
-func downloadAndMove(version, uri string, fos []index.FileOperation, downloadPath, installPath, forceDownloadFile string) (dst string, err error) {
+func downloadAndMove(version, sha256sum, uri string, fos []index.FileOperation, downloadPath, installPath, forceDownloadFile string) (dst string, err error) {
 	glog.V(3).Infof("Creating download dir %q", downloadPath)
 	if err = os.MkdirAll(downloadPath, 0755); err != nil {
 		return "", errors.Wrapf(err, "could not create download path %q", downloadPath)
@@ -53,7 +53,7 @@ func downloadAndMove(version, uri string, fos []index.FileOperation, downloadPat
 		fetcher = download.NewFileFetcher(forceDownloadFile)
 	}
 
-	verifier := download.NewSha256Verifier(version)
+	verifier := download.NewSha256Verifier(sha256sum)
 	if err := download.NewDownloader(verifier, fetcher).Get(uri, downloadPath); err != nil {
 		return "", errors.Wrap(err, "failed to download and verify file")
 	}
@@ -64,16 +64,15 @@ func downloadAndMove(version, uri string, fos []index.FileOperation, downloadPat
 // to not get the plugin dir in a bad state if it fails during the process.
 func Install(p environment.Paths, plugin index.Plugin, forceDownloadFile string) error {
 	glog.V(2).Infof("Looking for installed versions")
-	_, ok, err := findInstalledPluginVersion(p.InstallPath(), p.BinPath(), plugin.Name)
-	if err != nil {
-		return err
-	}
-	if ok {
+	_, err := receipt.Load(p.PluginInstallReceiptPath(plugin.Name))
+	if err == nil {
 		return ErrIsAlreadyInstalled
+	} else if !os.IsNotExist(err) {
+		return errors.Wrap(err, "failed to look up plugin receipt")
 	}
 
 	glog.V(1).Infof("Finding download target for plugin %s", plugin.Name)
-	version, uri, fos, bin, err := getDownloadTarget(plugin)
+	version, sha256, uri, fos, bin, err := getDownloadTarget(plugin)
 	if err != nil {
 		return err
 	}
@@ -81,7 +80,7 @@ func Install(p environment.Paths, plugin index.Plugin, forceDownloadFile string)
 	// The actual install should be the last action so that a failure during receipt
 	// saving does not result in an installed plugin without receipt.
 	glog.V(3).Infof("Install plugin %s", plugin.Name)
-	if err := install(plugin.Name, version, uri, bin, p, fos, forceDownloadFile); err != nil {
+	if err := install(plugin.Name, version, sha256, uri, bin, p, fos, forceDownloadFile); err != nil {
 		return errors.Wrap(err, "install failed")
 	}
 	glog.V(3).Infof("Storing install receipt for plugin %s", plugin.Name)
@@ -89,8 +88,8 @@ func Install(p environment.Paths, plugin index.Plugin, forceDownloadFile string)
 	return errors.Wrap(err, "installation receipt could not be stored, uninstall may fail")
 }
 
-func install(plugin, version, uri, bin string, p environment.Paths, fos []index.FileOperation, forceDownloadFile string) error {
-	dst, err := downloadAndMove(version, uri, fos, filepath.Join(p.DownloadPath(), plugin), p.PluginInstallPath(plugin), forceDownloadFile)
+func install(plugin, version, sha256sum, uri, bin string, p environment.Paths, fos []index.FileOperation, forceDownloadFile string) error {
+	dst, err := downloadAndMove(version, sha256sum, uri, fos, filepath.Join(p.DownloadPath(), plugin), p.PluginInstallPath(plugin), forceDownloadFile)
 	if err != nil {
 		return errors.Wrap(err, "failed to download and move during installation")
 	}
@@ -113,18 +112,22 @@ func install(plugin, version, uri, bin string, p environment.Paths, fos []index.
 // Uninstall will uninstall a plugin.
 func Uninstall(p environment.Paths, name string) error {
 	if name == krewPluginName {
-		return errors.Errorf("removing krew is not allowed through krew. Please run:\n\t rm -r %s", p.BasePath())
+		glog.Errorf("Removing krew through krew is not supported.")
+		if !isWindows() { // assume POSIX-like
+			glog.Errorf("If you’d like to uninstall krew altogether, run:\n\trm -rf -- %q", p.BasePath())
+		}
+		return errors.New("self-uninstall not allowed")
 	}
 	glog.V(3).Infof("Finding installed version to delete")
-	version, installed, err := findInstalledPluginVersion(p.InstallPath(), p.BinPath(), name)
-	if err != nil {
-		return errors.Wrap(err, "can't uninstall plugin")
-	}
-	if !installed {
-		return ErrIsNotInstalled
+
+	if _, err := receipt.Load(p.PluginInstallReceiptPath(name)); err != nil {
+		if os.IsNotExist(err) {
+			return ErrIsNotInstalled
+		}
+		return errors.Wrapf(err, "failed to look up install receipt for plugin %q", name)
 	}
 
-	glog.V(1).Infof("Deleting plugin version %s", version)
+	glog.V(1).Infof("Deleting plugin %s", name)
 
 	symlinkPath := filepath.Join(p.BinPath(), pluginNameToBin(name, isWindows()))
 	glog.V(3).Infof("Unlink %q", symlinkPath)
@@ -137,10 +140,10 @@ func Uninstall(p environment.Paths, name string) error {
 	if err := os.RemoveAll(pluginInstallPath); err != nil {
 		return errors.Wrapf(err, "could not remove plugin directory %q", pluginInstallPath)
 	}
-	PluginInstallReceiptPath := p.PluginInstallReceiptPath(name)
-	glog.V(3).Infof("Deleting plugin receipt %q", PluginInstallReceiptPath)
-	err = os.Remove(PluginInstallReceiptPath)
-	return errors.Wrapf(err, "could not remove plugin receipt %q", PluginInstallReceiptPath)
+	pluginReceiptPath := p.PluginInstallReceiptPath(name)
+	glog.V(3).Infof("Deleting plugin receipt %q", pluginReceiptPath)
+	err := os.Remove(pluginReceiptPath)
+	return errors.Wrapf(err, "could not remove plugin receipt %q", pluginReceiptPath)
 }
 
 func createOrUpdateLink(binDir string, binary string, plugin string) error {

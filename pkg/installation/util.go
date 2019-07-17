@@ -15,9 +15,7 @@
 package installation
 
 import (
-	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
@@ -28,31 +26,6 @@ import (
 	"sigs.k8s.io/krew/pkg/receipt"
 )
 
-func findInstalledPluginVersion(installPath, binDir, pluginName string) (name string, installed bool, err error) {
-	if !index.IsSafePluginName(pluginName) {
-		return "", false, errors.Errorf("the plugin name %q is not allowed", pluginName)
-	}
-	glog.V(3).Infof("Searching for installed versions of %s in %q", pluginName, binDir)
-	link, err := os.Readlink(filepath.Join(binDir, pluginNameToBin(pluginName, isWindows())))
-	if os.IsNotExist(err) {
-		return "", false, nil
-	} else if err != nil {
-		return "", false, errors.Wrap(err, "could not read plugin link")
-	}
-
-	if !filepath.IsAbs(link) {
-		if link, err = filepath.Abs(filepath.Join(binDir, link)); err != nil {
-			return "", true, errors.Wrapf(err, "failed to get the absolute path for the link of %q", link)
-		}
-	}
-
-	name, err = pluginVersionFromPath(installPath, link)
-	if err != nil {
-		return "", true, errors.Wrap(err, "cloud not parse plugin version")
-	}
-	return name, true, nil
-}
-
 func pluginVersionFromPath(installPath, pluginPath string) (string, error) {
 	// plugin path: {install_path}/{plugin_name}/{version}/...
 	elems, ok := pathutil.IsSubPath(installPath, pluginPath)
@@ -62,22 +35,23 @@ func pluginVersionFromPath(installPath, pluginPath string) (string, error) {
 	return elems[1], nil
 }
 
-func getPluginVersion(p index.Platform) (version, uri string) {
-	return strings.ToLower(p.Sha256), p.URI
-}
-
-func getDownloadTarget(index index.Plugin) (version, uri string, fos []index.FileOperation, bin string, err error) {
+func getDownloadTarget(index index.Plugin) (version, sha256sum, uri string, fos []index.FileOperation, bin string, err error) {
+	// TODO(ahmetb): We have many return values from this method, indicating
+	// code smell. More specifically we return all-or-nothing, so ideally this
+	// should be converted into a struct, like InstallOperation{} contains all
+	// the data needed to install a plugin.
 	p, ok, err := index.Spec.GetMatchingPlatform()
 	if err != nil {
-		return "", "", nil, p.Bin, errors.Wrap(err, "failed to get matching platforms")
+		return "", "", "", nil, p.Bin, errors.Wrap(err, "failed to get matching platforms")
 	}
 	if !ok {
-		return "", "", nil, p.Bin, errors.New("no matching platform found")
+		return "", "", "", nil, p.Bin, errors.New("no matching platform found")
 	}
-	version, uri = getPluginVersion(p)
-	glog.V(4).Infof("Matching plugin version is %s", version)
-
-	return version, uri, p.Files, p.Bin, nil
+	version = index.Spec.Version
+	uri = p.URI
+	sha256sum = p.Sha256
+	glog.V(4).Infof("found a matching platform, version=%s checksum=%s", version, sha256sum)
+	return version, sha256sum, uri, p.Files, p.Bin, nil
 }
 
 // ListInstalledPlugins returns a list of all install plugins in a

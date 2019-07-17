@@ -53,7 +53,7 @@ func (v sha256Verifier) Verify() error {
 	if bytes.Equal(v.wantedHash, v.Sum(nil)) {
 		return nil
 	}
-	return errors.Errorf("checksum does not match, wantReader: %x, got %x", v.wantedHash, v.Sum(nil))
+	return errors.Errorf("checksum does not match, want: %x, got %x", v.wantedHash, v.Sum(nil))
 }
 
 var _ Verifier = trueVerifier{}
