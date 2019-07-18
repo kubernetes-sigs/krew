@@ -22,6 +22,13 @@ import (
 	"sigs.k8s.io/krew/pkg/constants"
 )
 
+var (
+	defaultMeta = metav1.TypeMeta{
+		APIVersion: constants.CurrentAPIVersion,
+		Kind:       constants.PluginKind,
+	}
+)
+
 func Test_IsSafePluginName(t *testing.T) {
 	type args struct {
 		name string
@@ -107,10 +114,7 @@ func TestPlugin_Validate(t *testing.T) {
 		{
 			name: "success",
 			fields: fields{
-				TypeMeta: metav1.TypeMeta{
-					APIVersion: constants.CurrentAPIVersion,
-					Kind:       constants.PluginKind,
-				},
+				TypeMeta:   defaultMeta,
 				ObjectMeta: metav1.ObjectMeta{Name: "foo"},
 				Spec: PluginSpec{
 					Version:          "v1.0.0",
@@ -176,10 +180,7 @@ func TestPlugin_Validate(t *testing.T) {
 		{
 			name: "shortDescription unspecified",
 			fields: fields{
-				TypeMeta: metav1.TypeMeta{
-					APIVersion: constants.CurrentAPIVersion,
-					Kind:       constants.PluginKind,
-				},
+				TypeMeta:   defaultMeta,
 				ObjectMeta: metav1.ObjectMeta{Name: "foo"},
 				Spec: PluginSpec{
 					Version:          "v1.0.0",
@@ -199,10 +200,7 @@ func TestPlugin_Validate(t *testing.T) {
 		{
 			name: "version unspecified",
 			fields: fields{
-				TypeMeta: metav1.TypeMeta{
-					APIVersion: constants.CurrentAPIVersion,
-					Kind:       constants.PluginKind,
-				},
+				TypeMeta:   defaultMeta,
 				ObjectMeta: metav1.ObjectMeta{Name: "foo"},
 				Spec: PluginSpec{
 					Version:          "",
@@ -220,12 +218,28 @@ func TestPlugin_Validate(t *testing.T) {
 			wantErr:    true,
 		},
 		{
+			name: "version malformed",
+			fields: fields{
+				TypeMeta:   defaultMeta,
+				ObjectMeta: metav1.ObjectMeta{Name: "foo"},
+				Spec: PluginSpec{
+					Version:          "v01.02-a",
+					ShortDescription: "short",
+					Platforms: []Platform{{
+						URI:    "http://example.com",
+						Sha256: "deadbeef",
+						Files:  []FileOperation{{"", ""}},
+						Bin:    "foo",
+					}},
+				},
+			},
+			pluginName: "foo",
+			wantErr:    true,
+		},
+		{
 			name: "no file operations",
 			fields: fields{
-				TypeMeta: metav1.TypeMeta{
-					APIVersion: constants.CurrentAPIVersion,
-					Kind:       constants.PluginKind,
-				},
+				TypeMeta:   defaultMeta,
 				ObjectMeta: metav1.ObjectMeta{Name: "foo"},
 				Spec: PluginSpec{
 					Version:          "v1.0.0",
@@ -245,10 +259,7 @@ func TestPlugin_Validate(t *testing.T) {
 		{
 			name: "wrong plugin name",
 			fields: fields{
-				TypeMeta: metav1.TypeMeta{
-					APIVersion: constants.CurrentAPIVersion,
-					Kind:       constants.PluginKind,
-				},
+				TypeMeta:   defaultMeta,
 				ObjectMeta: metav1.ObjectMeta{Name: "wrong-name"},
 				Spec: PluginSpec{
 					Version:          "v1.0.0",
@@ -268,10 +279,7 @@ func TestPlugin_Validate(t *testing.T) {
 		{
 			name: "unsafe plugin name",
 			fields: fields{
-				TypeMeta: metav1.TypeMeta{
-					APIVersion: constants.CurrentAPIVersion,
-					Kind:       constants.PluginKind,
-				},
+				TypeMeta:   defaultMeta,
 				ObjectMeta: metav1.ObjectMeta{Name: "../foo"},
 				Spec: PluginSpec{
 					Version:          "v1.0.0",

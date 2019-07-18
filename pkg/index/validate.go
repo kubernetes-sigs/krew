@@ -21,6 +21,7 @@ import (
 	"github.com/pkg/errors"
 
 	"sigs.k8s.io/krew/pkg/constants"
+	"sigs.k8s.io/krew/pkg/installation/semver"
 )
 
 var (
@@ -72,6 +73,9 @@ func (p Plugin) Validate(name string) error {
 	}
 	if p.Spec.Version == "" {
 		return errors.New("should have a version specified")
+	}
+	if _, err := semver.Parse(p.Spec.Version); err != nil {
+		return errors.Wrap(err, "failed to parse plugin version")
 	}
 	for _, pl := range p.Spec.Platforms {
 		if err := pl.Validate(); err != nil {

@@ -60,9 +60,15 @@ echo >&2 "Written ${zip_sumfile}."
 
 
 # Copy and process krew manifest
+git_describe="$(git describe --tags --dirty --always)"
+if [[ ! "${git_describe}" =~ v.* ]]; then
+  # if tag cannot be inferred (e.g. CI/CD), still provide a valid
+  # version field for krew.yaml
+  git_describe="v0.0.0-${git_describe}"
+fi
+krew_version="${TAG_NAME:-$git_describe}"
 cp ./hack/krew.yaml ./out/krew.yaml
-git_tag="${TAG_NAME:-$(git describe --tags --dirty --always)}"
 sed -i "s/KREW_ZIP_CHECKSUM/${zip_checksum}/g" ./out/krew.yaml
 sed -i "s/KREW_TAR_CHECKSUM/${tar_checksum}/g" ./out/krew.yaml
-sed -i "s/KREW_TAG/${git_tag}/g" ./out/krew.yaml
+sed -i "s/KREW_TAG/${krew_version}/g" ./out/krew.yaml
 echo >&2 "Written out/krew.yaml."
