@@ -15,6 +15,8 @@
 package receipt
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -66,5 +68,22 @@ func TestStore(t *testing.T) {
 
 	if diff := cmp.Diff(&testPlugin, &actual); diff != "" {
 		t.Fatal(diff)
+	}
+}
+
+func TestLoad(t *testing.T) {
+	// TODO(ahmetb): Avoid reading test data from other packages. It would be
+	// good to have an in-memory Plugin object (issue#270) that we can Store()
+	// first then load here.
+	_, err := Load(filepath.Join("..", "..", "integration_test", "testdata", "foo.yaml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestLoad_preservesNonExistsError(t *testing.T) {
+	_, err := Load(filepath.Join("foo", "non-existing.yaml"))
+	if !os.IsNotExist(err) {
+		t.Fatalf("returned error is not ENOENT: %+v", err)
 	}
 }
