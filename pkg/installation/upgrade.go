@@ -18,13 +18,13 @@ import (
 	"io/ioutil"
 	"os"
 
-	"sigs.k8s.io/krew/pkg/environment"
-	"sigs.k8s.io/krew/pkg/index"
-	"sigs.k8s.io/krew/pkg/installation/semver"
-	"sigs.k8s.io/krew/pkg/receipt"
-
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
+
+	"sigs.k8s.io/krew/pkg/environment"
+	"sigs.k8s.io/krew/pkg/index"
+	"sigs.k8s.io/krew/pkg/installation/receipt"
+	"sigs.k8s.io/krew/pkg/installation/semver"
 )
 
 // Upgrade will reinstall and delete the old plugin. The operation tries

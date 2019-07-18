@@ -26,8 +26,8 @@ import (
 	"sigs.k8s.io/krew/pkg/download"
 	"sigs.k8s.io/krew/pkg/environment"
 	"sigs.k8s.io/krew/pkg/index"
+	"sigs.k8s.io/krew/pkg/installation/receipt"
 	"sigs.k8s.io/krew/pkg/pathutil"
-	"sigs.k8s.io/krew/pkg/receipt"
 )
 
 // Plugin Lifecycle Errors

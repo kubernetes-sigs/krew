@@ -22,8 +22,8 @@ import (
 
 	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/index"
+	"sigs.k8s.io/krew/pkg/installation/receipt"
 	"sigs.k8s.io/krew/pkg/pathutil"
-	"sigs.k8s.io/krew/pkg/receipt"
 )
 
 func pluginVersionFromPath(installPath, pluginPath string) (string, error) {
