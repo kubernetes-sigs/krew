@@ -72,12 +72,12 @@ func TestStore(t *testing.T) {
 }
 
 func TestLoad(t *testing.T) {
-	p, err := Load(filepath.Join("..", "..", "integration_test", "testdata", "foo.yaml"))
+	// TODO(ahmetb): Avoid reading test data from other packages. It would be
+	// good to have an in-memory Plugin object (issue#270) that we can Store()
+	// first then load here.
+	_, err := Load(filepath.Join("..", "..", "integration_test", "testdata", "foo.yaml"))
 	if err != nil {
 		t.Fatal(err)
-	}
-	if p == nil {
-		t.Fatal("parsed plugin is nil")
 	}
 }
 
