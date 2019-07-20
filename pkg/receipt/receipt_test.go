@@ -42,7 +42,7 @@ var (
 			ShortDescription: "short",
 			Platforms: []index.Platform{{
 				URI:      "http://example.com",
-				Sha256:   "deadbeef",
+				Sha256:   "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
 				Selector: nil,
 				Files:    []index.FileOperation{{From: "", To: ""}},
 				Bin:      "foo",

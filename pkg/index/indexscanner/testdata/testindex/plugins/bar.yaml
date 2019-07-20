@@ -22,11 +22,11 @@ spec:
   - files:
     - from: "*"
     uri: https://example.com
-    sha256: alsoSet
+    sha256: deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef
     bin: kubectl-bar
   - files:
     - from: "*"
     uri: https://example.com
-    sha256: alsoSet
+    sha256: deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef
     bin: kubectl-bar
   shortDescription: "exists"

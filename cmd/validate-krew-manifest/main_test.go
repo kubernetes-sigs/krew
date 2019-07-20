@@ -84,7 +84,7 @@ func TestValidateManifestFile(t *testing.T) {
 					ShortDescription: "test",
 					Platforms: []index.Platform{{
 						URI:    "http://test.com",
-						Sha256: "deadbeef",
+						Sha256: "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
 						Files:  []index.FileOperation{{From: "", To: ""}},
 						Bin:    "bin",
 						Selector: &v1.LabelSelector{
@@ -113,7 +113,7 @@ func TestValidateManifestFile(t *testing.T) {
 					Platforms: []index.Platform{
 						{
 							URI:    "http://test.com",
-							Sha256: "deadbeef",
+							Sha256: "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
 							Files:  []index.FileOperation{{From: "", To: ""}},
 							Bin:    "bin",
 							Selector: &v1.LabelSelector{
@@ -121,7 +121,7 @@ func TestValidateManifestFile(t *testing.T) {
 							},
 						}, {
 							URI:    "http://test.com",
-							Sha256: "deadbeef",
+							Sha256: "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
 							Files:  []index.FileOperation{{From: "", To: ""}},
 							Bin:    "bin",
 							Selector: &v1.LabelSelector{

@@ -121,7 +121,7 @@ func TestPlugin_Validate(t *testing.T) {
 					ShortDescription: "short",
 					Platforms: []Platform{{
 						URI:      "http://example.com",
-						Sha256:   "deadbeef",
+						Sha256:   "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
 						Selector: nil,
 						Files:    []FileOperation{{"", ""}},
 						Bin:      "foo",
@@ -144,7 +144,7 @@ func TestPlugin_Validate(t *testing.T) {
 					ShortDescription: "short",
 					Platforms: []Platform{{
 						URI:      "http://example.com",
-						Sha256:   "deadbeef",
+						Sha256:   "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
 						Selector: nil,
 						Files:    []FileOperation{{"", ""}},
 						Bin:      "foo",
@@ -167,7 +167,7 @@ func TestPlugin_Validate(t *testing.T) {
 					ShortDescription: "short",
 					Platforms: []Platform{{
 						URI:      "http://example.com",
-						Sha256:   "deadbeef",
+						Sha256:   "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
 						Selector: nil,
 						Files:    []FileOperation{{"", ""}},
 						Bin:      "foo",
@@ -187,7 +187,7 @@ func TestPlugin_Validate(t *testing.T) {
 					ShortDescription: "",
 					Platforms: []Platform{{
 						URI:      "http://example.com",
-						Sha256:   "deadbeef",
+						Sha256:   "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
 						Selector: nil,
 						Files:    []FileOperation{{"", ""}},
 						Bin:      "foo",
@@ -207,7 +207,7 @@ func TestPlugin_Validate(t *testing.T) {
 					ShortDescription: "short",
 					Platforms: []Platform{{
 						URI:      "http://example.com",
-						Sha256:   "deadbeef",
+						Sha256:   "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
 						Selector: nil,
 						Files:    []FileOperation{{"", ""}},
 						Bin:      "foo",
@@ -227,7 +227,7 @@ func TestPlugin_Validate(t *testing.T) {
 					ShortDescription: "short",
 					Platforms: []Platform{{
 						URI:    "http://example.com",
-						Sha256: "deadbeef",
+						Sha256: "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
 						Files:  []FileOperation{{"", ""}},
 						Bin:    "foo",
 					}},
@@ -246,7 +246,7 @@ func TestPlugin_Validate(t *testing.T) {
 					ShortDescription: "short",
 					Platforms: []Platform{{
 						URI:      "http://example.com",
-						Sha256:   "deadbeef",
+						Sha256:   "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
 						Selector: nil,
 						Files:    []FileOperation{},
 						Bin:      "foo",
@@ -266,7 +266,7 @@ func TestPlugin_Validate(t *testing.T) {
 					ShortDescription: "short",
 					Platforms: []Platform{{
 						URI:      "http://example.com",
-						Sha256:   "deadbeef",
+						Sha256:   "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
 						Selector: nil,
 						Files:    []FileOperation{{"", ""}},
 						Bin:      "foo",
@@ -286,7 +286,7 @@ func TestPlugin_Validate(t *testing.T) {
 					ShortDescription: "short",
 					Platforms: []Platform{{
 						URI:      "http://example.com",
-						Sha256:   "deadbeef",
+						Sha256:   "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
 						Selector: nil,
 						Files:    []FileOperation{{"", ""}},
 						Bin:      "foo",
@@ -328,7 +328,7 @@ func TestPlatform_Validate(t *testing.T) {
 			name: "no error validation",
 			fields: fields{
 				URI:      "http://example.com",
-				Sha256:   "deadbeef",
+				Sha256:   "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
 				Selector: nil,
 				Files:    []FileOperation{{"", ""}},
 				Bin:      "foo",
@@ -336,10 +336,10 @@ func TestPlatform_Validate(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "only hash",
+			name: "url is missing",
 			fields: fields{
 				URI:      "",
-				Sha256:   "deadbeef",
+				Sha256:   "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
 				Selector: nil,
 				Files:    []FileOperation{{"", ""}},
 				Bin:      "foo",
@@ -347,7 +347,7 @@ func TestPlatform_Validate(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "only uri",
+			name: "sha256 is missing",
 			fields: fields{
 				URI:      "http://example.com",
 				Sha256:   "",
@@ -358,10 +358,21 @@ func TestPlatform_Validate(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name: "sha256 is malformed",
+			fields: fields{
+				URI:      "http://example.com",
+				Sha256:   "DEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEF",
+				Selector: nil,
+				Files:    []FileOperation{{"", ""}},
+				Bin:      "foo",
+			},
+			wantErr: true,
+		},
+		{
 			name: "no file operations",
 			fields: fields{
 				URI:      "http://example.com",
-				Sha256:   "deadbeef",
+				Sha256:   "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
 				Selector: nil,
 				Files:    []FileOperation{},
 				Bin:      "foo",
@@ -372,7 +383,7 @@ func TestPlatform_Validate(t *testing.T) {
 			name: "no bin field",
 			fields: fields{
 				URI:      "http://example.com",
-				Sha256:   "deadbeef",
+				Sha256:   "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
 				Selector: nil,
 				Files:    []FileOperation{{"", ""}},
 				Bin:      "",
@@ -393,5 +404,25 @@ func TestPlatform_Validate(t *testing.T) {
 				t.Errorf("Platform.Validate() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
+	}
+}
+
+func Test_isValidSHA256(t *testing.T) {
+	tests := []struct {
+		in   string
+		want bool
+	}{
+		{"", false},
+		{"d41d8cd98f00b204e9800998ecf8427e", false},
+		{"dc2f2e1ec8a0acb6f3e23580d4a8b38c44823e948c40342e13ff6e8e12edb15a", true},
+		{"DC2F2E1EC8A0ACB6F3E23580D4A8B38C44823E948C40342E13FF6E8E12EDB15A", false},  // uppercase
+		{"xc2f2e1ec8a0acb6f3e23580d4a8b38c44823e948c40342e13ff6e8e12edb15a", false},  // has 'x'
+		{"dc2f2e1ec8a0acb6f3e23580d4a8b38c44823e948c40342e13ff6e8e12edb15", false},   // 1 missing character
+		{"dc2f2e1ec8a0acb6f3e23580d4a8b38c44823e948c40342e13ff6e8e12edb15ab", false}, // 1 extra character
+	}
+	for _, tt := range tests {
+		if got := isValidSHA256(tt.in); got != tt.want {
+			t.Errorf("isValidSHA256(%s) = %v, want %v", tt.in, got, tt.want)
+		}
 	}
 }
