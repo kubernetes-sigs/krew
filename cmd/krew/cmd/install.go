@@ -121,7 +121,7 @@ Remarks:
 				fmt.Fprintf(os.Stderr, "Installing plugin: %s\n", plugin.Name)
 				err := installation.Install(paths, plugin, *forceDownloadFile)
 				if err == installation.ErrIsAlreadyInstalled {
-					glog.Warningf("Skipping plugin %s, it is already installed", plugin.Name)
+					glog.Warningf("Skipping plugin %q, it is already installed", plugin.Name)
 					continue
 				}
 				if err != nil {

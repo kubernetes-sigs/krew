@@ -20,6 +20,7 @@ import (
 
 	"sigs.k8s.io/krew/pkg/environment"
 	"sigs.k8s.io/krew/pkg/index"
+	"sigs.k8s.io/krew/pkg/installation/semver"
 	"sigs.k8s.io/krew/pkg/receipt"
 
 	"github.com/golang/glog"
@@ -29,22 +30,34 @@ import (
 // Upgrade will reinstall and delete the old plugin. The operation tries
 // to not get the plugin dir in a bad state if it fails during the process.
 func Upgrade(p environment.Paths, plugin index.Plugin) error {
-	oldVersion, ok, err := findInstalledPluginVersion(p.InstallPath(), p.BinPath(), plugin.Name)
+	installReceipt, err := receipt.Load(p.PluginInstallReceiptPath(plugin.Name))
 	if err != nil {
-		return errors.Wrap(err, "could not detect installed plugin oldVersion")
-	}
-	if !ok {
-		return errors.Errorf("can't upgrade plugin %q, it is not installed", plugin.Name)
+		return errors.Wrapf(err, "failed to load install receipt for plugin %q", plugin.Name)
 	}
 
-	// Check allowed installation
-	newVersion, uri, fos, binName, err := getDownloadTarget(plugin)
-	if oldVersion == newVersion {
-		return ErrIsAlreadyUpgraded
+	curVersion := installReceipt.Spec.Version
+	curv, err := semver.Parse(curVersion)
+	if err != nil {
+		return errors.Wrapf(err, "failed to parse installed version (%q) plugin %q as semantic version", curVersion, plugin.Name)
 	}
+
+	// Find available installation candidate
+	newVersion, sha256sum, uri, fos, binName, err := getDownloadTarget(plugin)
 	if err != nil {
 		return errors.Wrap(err, "failed to get the current download target")
 	}
+	newv, err := semver.Parse(newVersion)
+	if err != nil {
+		return errors.Wrapf(err, "failed to parse installation candidate version spec (%q) for plugin %q", newVersion, plugin.Name)
+	}
+	glog.V(2).Infof("Comparing versions: current=%s target=%s", curv, newv)
+
+	// See if it's a newer version
+	if !semver.Less(curv, newv) {
+		glog.V(3).Infof("Plugin does not need upgrade (%s ≥ %s)", curv, newv)
+		return ErrIsAlreadyUpgraded
+	}
+	glog.V(1).Infof("Plugin needs upgrade (%s < %s)", curv, newv)
 
 	glog.V(2).Infof("Upgrading install receipt for plugin %s", plugin.Name)
 	if err = receipt.Store(plugin, p.PluginInstallReceiptPath(plugin.Name)); err != nil {
@@ -53,13 +66,13 @@ func Upgrade(p environment.Paths, plugin index.Plugin) error {
 
 	// Re-Install
 	glog.V(1).Infof("Installing new version %s", newVersion)
-	if err := install(plugin.Name, newVersion, uri, binName, p, fos, ""); err != nil {
+	if err := install(plugin.Name, newVersion, sha256sum, uri, binName, p, fos, ""); err != nil {
 		return errors.Wrap(err, "failed to install new version")
 	}
 
 	// Clean old installations
 	glog.V(4).Infof("Starting old version cleanup")
-	return removePluginVersionFromFS(p, plugin, newVersion, oldVersion)
+	return removePluginVersionFromFS(p, plugin, newVersion, curVersion)
 }
 
 // removePluginVersionFromFS will remove a plugin directly if it not krew.

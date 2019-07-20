@@ -25,23 +25,6 @@ import (
 	"sigs.k8s.io/krew/pkg/index"
 )
 
-func Test_getPluginVersion(t *testing.T) {
-	wantVersion := "deadbeef"
-	wantURI := "https://uri.git"
-	platform := index.Platform{
-		URI:    "https://uri.git",
-		Sha256: "dEaDbEeF",
-	}
-
-	gotVersion, gotURI := getPluginVersion(platform)
-	if gotVersion != wantVersion {
-		t.Errorf("getPluginVersion() gotVersion = %v, want %v", gotVersion, wantVersion)
-	}
-	if gotURI != wantURI {
-		t.Errorf("getPluginVersion() gotURI = %v, want %v", gotURI, wantURI)
-	}
-}
-
 func Test_getDownloadTarget(t *testing.T) {
 	matchingPlatform := index.Platform{
 		URI:    "https://uri.git",
@@ -58,19 +41,21 @@ func Test_getDownloadTarget(t *testing.T) {
 		index index.Plugin
 	}
 	tests := []struct {
-		name        string
-		args        args
-		wantVersion string
-		wantURI     string
-		wantFos     []index.FileOperation
-		wantBin     string
-		wantErr     bool
+		name          string
+		args          args
+		wantVersion   string
+		wantSHA256Sum string
+		wantURI       string
+		wantFos       []index.FileOperation
+		wantBin       string
+		wantErr       bool
 	}{
 		{
 			name: "Find Matching Platform",
 			args: args{
 				index: index.Plugin{
 					Spec: index.PluginSpec{
+						Version: "v1.0.1",
 						Platforms: []index.Platform{
 							matchingPlatform,
 							{
@@ -85,16 +70,18 @@ func Test_getDownloadTarget(t *testing.T) {
 					},
 				},
 			},
-			wantVersion: "deadbeef",
-			wantURI:     "https://uri.git",
-			wantFos:     nil,
-			wantBin:     "kubectl-foo",
-			wantErr:     false,
+			wantVersion:   "v1.0.1",
+			wantSHA256Sum: "deadbeef",
+			wantURI:       "https://uri.git",
+			wantFos:       nil,
+			wantBin:       "kubectl-foo",
+			wantErr:       false,
 		}, {
 			name: "No Matching Platform",
 			args: args{
 				index: index.Plugin{
 					Spec: index.PluginSpec{
+						Version: "v1.0.2",
 						Platforms: []index.Platform{
 							{
 								URI: "https://wrong.com",
@@ -108,22 +95,21 @@ func Test_getDownloadTarget(t *testing.T) {
 					},
 				},
 			},
-			wantVersion: "",
-			wantURI:     "",
-			wantFos:     nil,
-			wantBin:     "",
-			wantErr:     true,
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotVersion, gotURI, gotFos, bin, err := getDownloadTarget(tt.args.index)
+			gotVersion, gotSHA256Sum, gotURI, gotFos, bin, err := getDownloadTarget(tt.args.index)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getDownloadTarget() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if gotVersion != tt.wantVersion {
 				t.Errorf("getDownloadTarget() gotVersion = %v, want %v", gotVersion, tt.wantVersion)
+			}
+			if gotSHA256Sum != tt.wantSHA256Sum {
+				t.Errorf("getDownloadTarget() gotSHA256Sum = %v, want %v", gotSHA256Sum, tt.wantSHA256Sum)
 			}
 			if bin != tt.wantBin {
 				t.Errorf("getDownloadTarget() bin = %v, want %v", bin, tt.wantBin)
@@ -133,68 +119,6 @@ func Test_getDownloadTarget(t *testing.T) {
 			}
 			if !reflect.DeepEqual(gotFos, tt.wantFos) {
 				t.Errorf("getDownloadTarget() gotFos = %v, want %v", gotFos, tt.wantFos)
-			}
-		})
-	}
-}
-
-func Test_findInstalledPluginVersion(t *testing.T) {
-	type args struct {
-		installPath string
-		binDir      string
-		pluginName  string
-	}
-	tests := []struct {
-		name          string
-		args          args
-		wantName      string
-		wantInstalled bool
-		wantErr       bool
-	}{
-		{
-			name: "Find version",
-			args: args{
-				installPath: filepath.Join(testdataPath(t), "index"),
-				binDir:      filepath.Join(testdataPath(t), "bin"),
-				pluginName:  "foo",
-			},
-			wantName:      "deadbeef",
-			wantInstalled: true,
-			wantErr:       false,
-		}, {
-			name: "No installed version",
-			args: args{
-				installPath: filepath.Join(testdataPath(t), "index"),
-				binDir:      filepath.Join(testdataPath(t), "bin"),
-				pluginName:  "not-found",
-			},
-			wantName:      "",
-			wantInstalled: false,
-			wantErr:       false,
-		}, {
-			name: "Insecure name",
-			args: args{
-				installPath: filepath.Join(testdataPath(t), "index"),
-				binDir:      filepath.Join(testdataPath(t), "bin"),
-				pluginName:  "../foo",
-			},
-			wantName:      "",
-			wantInstalled: false,
-			wantErr:       true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			gotName, gotInstalled, err := findInstalledPluginVersion(tt.args.installPath, tt.args.binDir, tt.args.pluginName)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("getOtherInstalledVersion() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if gotName != tt.wantName {
-				t.Errorf("getOtherInstalledVersion() gotName = %v, want %v", gotName, tt.wantName)
-			}
-			if gotInstalled != tt.wantInstalled {
-				t.Errorf("getOtherInstalledVersion() gotInstalled = %v, want %v", gotInstalled, tt.wantInstalled)
 			}
 		})
 	}
