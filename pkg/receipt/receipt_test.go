@@ -20,48 +20,23 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"sigs.k8s.io/krew/pkg/constants"
-	"sigs.k8s.io/krew/pkg/index"
 	"sigs.k8s.io/krew/pkg/index/indexscanner"
 	"sigs.k8s.io/krew/pkg/testutil"
-)
-
-const testPluginName = "some"
-
-var (
-	testPlugin = index.Plugin{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: constants.CurrentAPIVersion,
-			Kind:       constants.PluginKind,
-		},
-		ObjectMeta: metav1.ObjectMeta{Name: testPluginName},
-		Spec: index.PluginSpec{
-			Version:          "v1.0.0",
-			ShortDescription: "short",
-			Platforms: []index.Platform{{
-				URI:      "http://example.com",
-				Sha256:   "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
-				Selector: nil,
-				Files:    []index.FileOperation{{From: "", To: ""}},
-				Bin:      "foo",
-			}},
-		},
-	}
 )
 
 func TestStore(t *testing.T) {
 	tmpDir, cleanup := testutil.NewTempDir(t)
 	defer cleanup()
 
-	dest := tmpDir.Path("some.yaml")
+	testPlugin := testutil.NewPlugin().WithName("some-plugin").WithPlatforms(testutil.NewPlatform().V()).V()
+	dest := tmpDir.Path("some-plugin.yaml")
 
 	if err := Store(testPlugin, dest); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
-	actual, err := indexscanner.LoadPluginFileFromFS(tmpDir.Root(), testPluginName)
+	actual, err := indexscanner.LoadPluginFileFromFS(tmpDir.Root(), "some-plugin")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -72,12 +47,20 @@ func TestStore(t *testing.T) {
 }
 
 func TestLoad(t *testing.T) {
-	// TODO(ahmetb): Avoid reading test data from other packages. It would be
-	// good to have an in-memory Plugin object (issue#270) that we can Store()
-	// first then load here.
-	_, err := Load(filepath.Join("..", "..", "integration_test", "testdata", "foo.yaml"))
+	tmpDir, cleanup := testutil.NewTempDir(t)
+	defer cleanup()
+
+	testPlugin := testutil.NewPlugin().WithName("foo").WithPlatforms(testutil.NewPlatform().V()).V()
+	if err := Store(testPlugin, tmpDir.Path("foo.yaml")); err != nil {
+		t.Fatal(err)
+	}
+
+	gotPlugin, err := Load(tmpDir.Path("foo.yaml"))
 	if err != nil {
 		t.Fatal(err)
+	}
+	if diff := cmp.Diff(&gotPlugin, &testPlugin); diff != "" {
+		t.Fatal(diff)
 	}
 }
 

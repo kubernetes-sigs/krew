@@ -27,6 +27,7 @@ import (
 
 	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/index"
+	"sigs.k8s.io/krew/pkg/index/validation"
 )
 
 // LoadPluginListFromFS will parse and retrieve all plugin files.
@@ -64,7 +65,7 @@ func LoadPluginListFromFS(indexDir string) ([]index.Plugin, error) {
 // LoadPluginFileFromFS loads a plugins index file by its name. When plugin
 // file not found, it returns an error that can be checked with os.IsNotExist.
 func LoadPluginFileFromFS(pluginsDir, pluginName string) (index.Plugin, error) {
-	if !index.IsSafePluginName(pluginName) {
+	if !validation.IsSafePluginName(pluginName) {
 		return index.Plugin{}, errors.Errorf("plugin name %q not allowed", pluginName)
 	}
 
@@ -79,7 +80,7 @@ func LoadPluginFileFromFS(pluginsDir, pluginName string) (index.Plugin, error) {
 	} else if err != nil {
 		return index.Plugin{}, errors.Wrap(err, "failed to read the plugin manifest")
 	}
-	return p, p.Validate(pluginName)
+	return p, validation.ValidatePlugin(pluginName, p)
 }
 
 // ReadPluginFile loads a file from the FS. When plugin file not found, it
