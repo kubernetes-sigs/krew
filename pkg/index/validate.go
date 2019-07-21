@@ -24,8 +24,13 @@ import (
 	"sigs.k8s.io/krew/pkg/installation/semver"
 )
 
+const (
+	sha256Pattern = `^[a-f0-9]{64}$`
+)
+
 var (
 	safePluginRegexp = regexp.MustCompile(`^[\w-]+$`)
+	validSHA256      = regexp.MustCompile(sha256Pattern)
 
 	// windowsForbidden is taken from  https://docs.microsoft.com/en-us/windows/desktop/FileIO/naming-a-file
 	windowsForbidden = []string{"CON", "PRN", "AUX", "NUL", "COM1", "COM2",
@@ -49,6 +54,8 @@ func IsSafePluginName(name string) bool {
 func isSupportedAPIVersion(apiVersion string) bool {
 	return apiVersion == constants.CurrentAPIVersion
 }
+
+func isValidSHA256(s string) bool { return validSHA256.MatchString(s) }
 
 // Validate checks for structural validity of the Plugin object.
 func (p Plugin) Validate(name string) error {
@@ -92,6 +99,9 @@ func (p Platform) Validate() error {
 	}
 	if p.Sha256 == "" {
 		return errors.New("sha256 sum has to be set")
+	}
+	if !isValidSHA256(p.Sha256) {
+		return errors.Errorf("sha256 value %s is not valid, must match pattern %s", p.Sha256, sha256Pattern)
 	}
 	if p.Bin == "" {
 		return errors.New("bin has to be set")

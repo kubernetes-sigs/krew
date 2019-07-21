@@ -28,7 +28,7 @@ import (
 func Test_getDownloadTarget(t *testing.T) {
 	matchingPlatform := index.Platform{
 		URI:    "https://uri.git",
-		Sha256: "deadbeef",
+		Sha256: "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
 		Selector: &v1.LabelSelector{
 			MatchLabels: map[string]string{
 				"os": runtime.GOOS,
@@ -71,7 +71,7 @@ func Test_getDownloadTarget(t *testing.T) {
 				},
 			},
 			wantVersion:   "v1.0.1",
-			wantSHA256Sum: "deadbeef",
+			wantSHA256Sum: "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
 			wantURI:       "https://uri.git",
 			wantFos:       nil,
 			wantBin:       "kubectl-foo",

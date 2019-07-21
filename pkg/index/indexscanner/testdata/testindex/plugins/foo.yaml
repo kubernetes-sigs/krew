@@ -22,7 +22,7 @@ spec:
   - files:
     - from: "*"
     uri: https://example.com
-    sha256: deadbeef
+    sha256: deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef
     bin: kubectl-foo
     selector:
       matchExpressions:
@@ -30,7 +30,7 @@ spec:
   - files:
     - from: "*"
     uri: https://example.com
-    sha256: deadbeef
+    sha256: deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef
     bin: kubectl-foo
     selector:
       matchLabels:

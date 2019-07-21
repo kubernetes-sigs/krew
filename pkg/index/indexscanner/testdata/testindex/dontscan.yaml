@@ -21,14 +21,14 @@ spec:
   - files:
     - from: "*"
     uri: https://example.com
-    sha256: deadbeef
+    sha256: deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef
     selector:
       matchExpressions:
       - {key: os, operator: In, values: [macos, linux]}
   - files:
     - from: "*"
     uri: https://example.com
-    sha256: deadbeef
+    sha256: deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef
     selector:
       matchLabels:
         os: "windows"
