@@ -30,7 +30,10 @@ import (
 )
 
 func init() {
-	var manifest, forceDownloadFile *string
+	var (
+		manifest, forceDownloadFile *string
+		noUpdateIndex               *bool
+	)
 
 	// installCmd represents the install command
 	installCmd := &cobra.Command{
@@ -141,16 +144,21 @@ Remarks:
 			return nil
 		},
 		PreRunE: func(cmd *cobra.Command, args []string) error {
-			if *manifest == "" {
-				return ensureIndexUpdated(cmd, args)
+			if *manifest != "" {
+				glog.V(4).Infof("--manifest specified, not ensuring plugin index")
+				return nil
 			}
-			glog.V(4).Infof("--manifest specified, not ensuring plugin index")
-			return nil
+			if *noUpdateIndex {
+				glog.V(4).Infof("--no-update-index specified, skipping updating local copy of plugin index")
+				return nil
+			}
+			return ensureIndexUpdated(cmd, args)
 		},
 	}
 
 	manifest = installCmd.Flags().String("manifest", "", "(Development-only) specify plugin manifest directly.")
 	forceDownloadFile = installCmd.Flags().String("archive", "", "(Development-only) force all downloads to use the specified file")
+	noUpdateIndex = installCmd.Flags().Bool("no-update-index", false, "(Experimental) do not update local copy of plugin index before installing")
 
 	rootCmd.AddCommand(installCmd)
 }

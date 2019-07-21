@@ -26,54 +26,63 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// upgradeCmd represents the upgrade command
-var upgradeCmd = &cobra.Command{
-	Use:   "upgrade",
-	Short: "Upgrade installed plugins to newer versions",
-	Long: `Upgrade installed plugins to a newer version.
+func init() {
+	var noUpdateIndex *bool
+
+	// upgradeCmd represents the upgrade command
+	var upgradeCmd = &cobra.Command{
+		Use:   "upgrade",
+		Short: "Upgrade installed plugins to newer versions",
+		Long: `Upgrade installed plugins to a newer version.
 This will reinstall all plugins that have a newer version in the local index.
 Use "kubectl krew update" to renew the index.
 To only upgrade single plugins provide them as arguments:
 kubectl krew upgrade foo bar"`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		var ignoreUpgraded bool
-		var pluginNames []string
-		// Upgrade all plugins.
-		if len(args) == 0 {
-			installed, err := installation.ListInstalledPlugins(paths.InstallReceiptsPath())
-			if err != nil {
-				return errors.Wrap(err, "failed to find all installed versions")
-			}
-			for name := range installed {
-				pluginNames = append(pluginNames, name)
-			}
-			ignoreUpgraded = true
-		} else {
-			pluginNames = args
-		}
-
-		for _, name := range pluginNames {
-			plugin, err := indexscanner.LoadPluginFileFromFS(paths.IndexPluginsPath(), name)
-			if err != nil {
-				return errors.Wrapf(err, "failed to load the index file for plugin %s", plugin.Name)
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var ignoreUpgraded bool
+			var pluginNames []string
+			// Upgrade all plugins.
+			if len(args) == 0 {
+				installed, err := installation.ListInstalledPlugins(paths.InstallReceiptsPath())
+				if err != nil {
+					return errors.Wrap(err, "failed to find all installed versions")
+				}
+				for name := range installed {
+					pluginNames = append(pluginNames, name)
+				}
+				ignoreUpgraded = true
+			} else {
+				pluginNames = args
 			}
 
-			glog.V(2).Infof("Upgrading plugin: %s\n", plugin.Name)
-			err = installation.Upgrade(paths, plugin)
-			if ignoreUpgraded && err == installation.ErrIsAlreadyUpgraded {
-				fmt.Fprintf(os.Stderr, "Skipping plugin %s, it is already on the newest version\n", plugin.Name)
-				continue
-			}
-			if err != nil {
-				return errors.Wrapf(err, "failed to upgrade plugin %q", plugin.Name)
-			}
-			fmt.Fprintf(os.Stderr, "Upgraded plugin: %s\n", plugin.Name)
-		}
-		return nil
-	},
-	PreRunE: ensureIndexUpdated,
-}
+			for _, name := range pluginNames {
+				plugin, err := indexscanner.LoadPluginFileFromFS(paths.IndexPluginsPath(), name)
+				if err != nil {
+					return errors.Wrapf(err, "failed to load the index file for plugin %s", plugin.Name)
+				}
 
-func init() {
+				glog.V(2).Infof("Upgrading plugin: %s\n", plugin.Name)
+				err = installation.Upgrade(paths, plugin)
+				if ignoreUpgraded && err == installation.ErrIsAlreadyUpgraded {
+					fmt.Fprintf(os.Stderr, "Skipping plugin %s, it is already on the newest version\n", plugin.Name)
+					continue
+				}
+				if err != nil {
+					return errors.Wrapf(err, "failed to upgrade plugin %q", plugin.Name)
+				}
+				fmt.Fprintf(os.Stderr, "Upgraded plugin: %s\n", plugin.Name)
+			}
+			return nil
+		},
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			if *noUpdateIndex {
+				glog.V(4).Infof("--no-update-index specified, skipping updating local copy of plugin index")
+				return nil
+			}
+			return ensureIndexUpdated(cmd, args)
+		},
+	}
+
+	noUpdateIndex = upgradeCmd.Flags().Bool("no-update-index", false, "(Experimental) do not update local copy of plugin index before upgrading")
 	rootCmd.AddCommand(upgradeCmd)
 }
