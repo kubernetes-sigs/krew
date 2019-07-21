@@ -23,113 +23,58 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/yaml"
 
-	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/index"
 	"sigs.k8s.io/krew/pkg/testutil"
 )
 
 func TestValidateManifestFile(t *testing.T) {
 	tests := []struct {
-		name      string
-		manifest  string
-		plugin    *index.Plugin
-		shouldErr bool
-		errMsg    string
+		name          string
+		manifestFile  string
+		writeManifest bool
+		shouldErr     bool
+		errMsg        string
+		plugin        index.Plugin
 	}{
 		{
-			name:      "manifest does not exist",
-			manifest:  "test.yaml",
-			shouldErr: true,
-			errMsg:    "failed to read plugin file",
+			name:          "manifest does not exist",
+			manifestFile:  "test.yaml",
+			writeManifest: false,
+			shouldErr:     true,
+			errMsg:        "failed to read plugin file",
 		},
 		{
-			name:     "manifest has wrong file ending",
-			manifest: "test.yml",
-			plugin: &index.Plugin{
-				ObjectMeta: v1.ObjectMeta{
-					Name: "test",
-				},
-			},
-			shouldErr: true,
-			errMsg:    "expected manifest extension \".yaml\"",
+			name:          "manifest has wrong file ending",
+			manifestFile:  "test.yml",
+			writeManifest: true,
+			plugin:        testutil.NewPlugin().WithName("test").V(),
+			shouldErr:     true,
+			errMsg:        "expected manifest extension \".yaml\"",
 		},
 		{
-			name:     "manifest validation fails",
-			manifest: "test.yaml",
-			plugin: &index.Plugin{
-				TypeMeta: v1.TypeMeta{
-					APIVersion: constants.CurrentAPIVersion,
-					Kind:       constants.PluginKind,
-				},
-				ObjectMeta: v1.ObjectMeta{
-					Name: "wrong-name",
-				},
-			},
-			shouldErr: true,
-			errMsg:    "plugin validation error",
+			name:          "manifest validation fails (name mismatch)",
+			manifestFile:  "foo.yaml",
+			writeManifest: true,
+			plugin:        testutil.NewPlugin().WithName("not-foo").V(),
+			shouldErr:     true,
+			errMsg:        "plugin validation error",
 		},
 		{
-			name:     "architecture selector not supported",
-			manifest: "test.yaml",
-			plugin: &index.Plugin{
-				TypeMeta: v1.TypeMeta{
-					APIVersion: constants.CurrentAPIVersion,
-					Kind:       constants.PluginKind,
-				},
-				ObjectMeta: v1.ObjectMeta{
-					Name: "test",
-				},
-				Spec: index.PluginSpec{
-					Version:          "v1.0.0",
-					ShortDescription: "test",
-					Platforms: []index.Platform{{
-						URI:    "http://test.com",
-						Sha256: "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
-						Files:  []index.FileOperation{{From: "", To: ""}},
-						Bin:    "bin",
-						Selector: &v1.LabelSelector{
-							MatchLabels: map[string]string{"os": "darwin", "arch": "arm"},
-						},
-					}},
-				},
-			},
+			name:          "architecture selector not supported",
+			manifestFile:  "test.yaml",
+			writeManifest: true,
+			plugin: testutil.NewPlugin().WithName("test").WithPlatforms(
+				testutil.NewPlatform().WithOSArch("darwin", "arm").V()).V(),
 			shouldErr: true,
 			errMsg:    "doesn't match any supported platforms",
 		},
 		{
-			name:     "overlapping platform selectors",
-			manifest: "test.yaml",
-			plugin: &index.Plugin{
-				TypeMeta: v1.TypeMeta{
-					APIVersion: constants.CurrentAPIVersion,
-					Kind:       constants.PluginKind,
-				},
-				ObjectMeta: v1.ObjectMeta{
-					Name: "test",
-				},
-				Spec: index.PluginSpec{
-					ShortDescription: "test",
-					Version:          "v1.0.0",
-					Platforms: []index.Platform{
-						{
-							URI:    "http://test.com",
-							Sha256: "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
-							Files:  []index.FileOperation{{From: "", To: ""}},
-							Bin:    "bin",
-							Selector: &v1.LabelSelector{
-								MatchLabels: map[string]string{"os": "linux"},
-							},
-						}, {
-							URI:    "http://test.com",
-							Sha256: "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
-							Files:  []index.FileOperation{{From: "", To: ""}},
-							Bin:    "bin",
-							Selector: &v1.LabelSelector{
-								MatchLabels: map[string]string{"os": "linux", "arch": "arm"},
-							},
-						}},
-				},
-			},
+			name:          "overlapping platform selectors",
+			manifestFile:  "test.yaml",
+			writeManifest: true,
+			plugin: testutil.NewPlugin().WithName("test").WithPlatforms(
+				testutil.NewPlatform().WithOS("linux").V(),
+				testutil.NewPlatform().WithOSArch("linux", "amd64").V()).V(),
 			shouldErr: true,
 			errMsg:    "overlapping platform selectors found",
 		},
@@ -139,15 +84,16 @@ func TestValidateManifestFile(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			tmp, cleanup := testutil.NewTempDir(t)
 			defer cleanup()
-			if test.plugin != nil {
+
+			if test.writeManifest {
 				content, err := yaml.Marshal(test.plugin)
 				if err != nil {
 					t.Fatal(err)
 				}
-				tmp.Write(test.manifest, content)
+				tmp.Write(test.manifestFile, content)
 			}
 
-			err := validateManifestFile(tmp.Path(test.manifest))
+			err := validateManifestFile(tmp.Path(test.manifestFile))
 			if test.shouldErr {
 				if err == nil {
 					t.Errorf("Expected an error '%s' but found none", test.errMsg)

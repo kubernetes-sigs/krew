@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package index
+// Package validation implements functions to validate Krew plugin types.
+package validation
 
 import (
 	"regexp"
@@ -21,6 +22,7 @@ import (
 	"github.com/pkg/errors"
 
 	"sigs.k8s.io/krew/pkg/constants"
+	"sigs.k8s.io/krew/pkg/index"
 	"sigs.k8s.io/krew/pkg/installation/semver"
 )
 
@@ -57,8 +59,9 @@ func isSupportedAPIVersion(apiVersion string) bool {
 
 func isValidSHA256(s string) bool { return validSHA256.MatchString(s) }
 
-// Validate checks for structural validity of the Plugin object.
-func (p Plugin) Validate(name string) error {
+// ValidatePlugin checks for structural validity of the Plugin object with given
+// name.
+func ValidatePlugin(name string, p index.Plugin) error {
 	if !isSupportedAPIVersion(p.APIVersion) {
 		return errors.Errorf("plugin manifest has apiVersion=%q, not supported in this version of krew (try updating plugin index or install a newer version of krew)", p.APIVersion)
 	}
@@ -85,15 +88,15 @@ func (p Plugin) Validate(name string) error {
 		return errors.Wrap(err, "failed to parse plugin version")
 	}
 	for _, pl := range p.Spec.Platforms {
-		if err := pl.Validate(); err != nil {
+		if err := ValidatePlatform(pl); err != nil {
 			return errors.Wrapf(err, "platform (%+v) is badly constructed", pl)
 		}
 	}
 	return nil
 }
 
-// Validate checks Platform for structural validity.
-func (p Platform) Validate() error {
+// ValidatePlatform checks Platform for structural validity.
+func ValidatePlatform(p index.Platform) error {
 	if p.URI == "" {
 		return errors.New("URI has to be set")
 	}

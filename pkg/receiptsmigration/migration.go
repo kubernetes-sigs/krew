@@ -29,7 +29,7 @@ import (
 
 	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/environment"
-	"sigs.k8s.io/krew/pkg/index"
+	"sigs.k8s.io/krew/pkg/index/validation"
 	"sigs.k8s.io/krew/pkg/receiptsmigration/oldenvironment"
 )
 
@@ -131,7 +131,7 @@ func getPluginsToReinstall(oldPaths oldenvironment.Paths, newPaths environment.P
 	renewable := []string{}
 	for _, fileInfo := range fileInfos {
 		plugin := fileInfo.Name()
-		if !fileInfo.IsDir() || !index.IsSafePluginName(plugin) || plugin == krewPluginName {
+		if !fileInfo.IsDir() || !validation.IsSafePluginName(plugin) || plugin == krewPluginName {
 			continue
 		}
 		if !isAvailableInIndex(newPaths, plugin) {

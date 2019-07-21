@@ -20,42 +20,17 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/yaml"
 
-	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/environment"
-	"sigs.k8s.io/krew/pkg/index"
 	"sigs.k8s.io/krew/pkg/testutil"
 )
 
-const pluginName = "some"
-
-var (
-	plugin = index.Plugin{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: constants.CurrentAPIVersion,
-			Kind:       constants.PluginKind,
-		},
-		ObjectMeta: metav1.ObjectMeta{Name: pluginName},
-		Spec: index.PluginSpec{
-			Version:          "v1.0.0",
-			ShortDescription: "short",
-			Description:      "",
-			Caveats:          "",
-			Homepage:         "",
-			Platforms: []index.Platform{{
-				URI:      "http://example.com",
-				Sha256:   "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
-				Selector: nil,
-				Files:    []index.FileOperation{{From: "", To: ""}},
-				Bin:      "foo",
-			}},
-		},
-	}
-)
-
 func TestLoadManifestFromReceiptOrIndex(t *testing.T) {
+	const pluginName = "some-plugin"
+	plugin := testutil.NewPlugin().WithName(pluginName).
+		WithPlatforms(testutil.NewPlatform().V()).V()
+
 	yamlBytes, err := yaml.Marshal(plugin)
 	if err != nil {
 		t.Fatal(err)
@@ -117,6 +92,7 @@ func TestLoadManifestFromReceiptOrIndex(t *testing.T) {
 			} else {
 				if err != nil {
 					t.Error(err)
+					return
 				}
 				if diff := cmp.Diff(&plugin, &actual); diff != "" {
 					t.Error(diff)
@@ -126,7 +102,7 @@ func TestLoadManifestFromReceiptOrIndex(t *testing.T) {
 	}
 }
 
-func TestLoadManifestFromReceiptOrIndexReturnsIsNotExist(t *testing.T) {
+func TestLoadManifestFromReceiptOrIndex_ReturnsIsNotExist(t *testing.T) {
 	tmpDir, cleanup := testutil.NewTempDir(t)
 	defer cleanupEnvAndTempdir(t, os.Getenv("KREW_ROOT"), cleanup)
 	if err := os.Setenv("KREW_ROOT", tmpDir.Root()); err != nil {
@@ -134,13 +110,13 @@ func TestLoadManifestFromReceiptOrIndexReturnsIsNotExist(t *testing.T) {
 	}
 
 	paths := environment.MustGetKrewPaths()
-	_, err := LoadManifestFromReceiptOrIndex(paths, pluginName)
+	_, err := LoadManifestFromReceiptOrIndex(paths, "non-existing-plugin")
 
 	if err == nil {
 		t.Fatalf("Expected LoadManifestFromReceiptOrIndex to fail")
 	}
 	if !os.IsNotExist(err) {
-		t.Errorf("Expected error to be ENOENT but was %q", err)
+		t.Fatalf("Expected error to be ENOENT but was %q", err)
 	}
 }
 

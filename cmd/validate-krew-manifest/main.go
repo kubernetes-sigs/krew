@@ -33,6 +33,7 @@ import (
 	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/index"
 	"sigs.k8s.io/krew/pkg/index/indexscanner"
+	"sigs.k8s.io/krew/pkg/index/validation"
 )
 
 var flManifest string
@@ -71,7 +72,7 @@ func validateManifestFile(path string) error {
 	glog.V(4).Infof("inferred plugin name as %s", pluginNameFromFileName)
 
 	// validate plugin manifest
-	if err := p.Validate(pluginNameFromFileName); err != nil {
+	if err := validation.ValidatePlugin(pluginNameFromFileName, p); err != nil {
 		return errors.Wrap(err, "plugin validation error")
 	}
 	glog.Infof("structural validation OK")
@@ -173,7 +174,7 @@ func findAnyMatchingPlatform(selector *metav1.LabelSelector) (string, string) {
 func selectorMatchesOSArch(selector *metav1.LabelSelector, os, arch string) bool {
 	sel, err := metav1.LabelSelectorAsSelector(selector)
 	if err != nil {
-		// this should've been caught by plaform.Validate() earlier
+		// this should've been caught by validation.ValidatePlatform() earlier
 		glog.Warningf("Failed to convert label selector: %+v", selector)
 		return false
 	}

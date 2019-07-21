@@ -20,29 +20,14 @@ import (
 	"runtime"
 	"testing"
 
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"sigs.k8s.io/krew/pkg/index"
+	"sigs.k8s.io/krew/pkg/testutil"
 )
 
 func Test_getDownloadTarget(t *testing.T) {
-	matchingPlatform := index.Platform{
-		URI:    "https://uri.git",
-		Sha256: "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
-		Selector: &v1.LabelSelector{
-			MatchLabels: map[string]string{
-				"os": runtime.GOOS,
-			},
-		},
-		Bin:   "kubectl-foo",
-		Files: nil,
-	}
-	type args struct {
-		index index.Plugin
-	}
 	tests := []struct {
 		name          string
-		args          args
+		plugin        index.Plugin
 		wantVersion   string
 		wantSHA256Sum string
 		wantURI       string
@@ -51,56 +36,36 @@ func Test_getDownloadTarget(t *testing.T) {
 		wantErr       bool
 	}{
 		{
-			name: "Find Matching Platform",
-			args: args{
-				index: index.Plugin{
-					Spec: index.PluginSpec{
-						Version: "v1.0.1",
-						Platforms: []index.Platform{
-							matchingPlatform,
-							{
-								URI: "https://wrong.com",
-								Selector: &v1.LabelSelector{
-									MatchLabels: map[string]string{
-										"os": "None",
-									},
-								},
-							},
-						},
-					},
-				},
-			},
+			name: "matches to a platform in the list",
+			plugin: testutil.NewPlugin().
+				WithVersion("v1.0.1").WithPlatforms(
+				testutil.NewPlatform().WithOS("none").V(),
+				testutil.NewPlatform().WithBin("kubectl-foo").
+					WithOS(runtime.GOOS).
+					WithFiles([]index.FileOperation{{From: "a", To: "b"}}).
+					WithSHA256("f0f0f0").
+					WithURI("http://localhost").V()).V(),
 			wantVersion:   "v1.0.1",
-			wantSHA256Sum: "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
-			wantURI:       "https://uri.git",
-			wantFos:       nil,
+			wantSHA256Sum: "f0f0f0",
+			wantURI:       "http://localhost",
+			wantFos:       []index.FileOperation{{From: "a", To: "b"}},
 			wantBin:       "kubectl-foo",
 			wantErr:       false,
-		}, {
-			name: "No Matching Platform",
-			args: args{
-				index: index.Plugin{
-					Spec: index.PluginSpec{
-						Version: "v1.0.2",
-						Platforms: []index.Platform{
-							{
-								URI: "https://wrong.com",
-								Selector: &v1.LabelSelector{
-									MatchLabels: map[string]string{
-										"os": "None",
-									},
-								},
-							},
-						},
-					},
-				},
-			},
+		},
+		{
+			name: "does not match to a platform",
+			plugin: testutil.NewPlugin().
+				WithVersion("v1.0.1").
+				WithPlatforms(
+					testutil.NewPlatform().WithOS("foo").V(),
+					testutil.NewPlatform().WithOS("bar").V(),
+				).V(),
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotVersion, gotSHA256Sum, gotURI, gotFos, bin, err := getDownloadTarget(tt.args.index)
+			gotVersion, gotSHA256Sum, gotURI, gotFos, bin, err := getDownloadTarget(tt.plugin)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getDownloadTarget() error = %v, wantErr %v", err, tt.wantErr)
 				return

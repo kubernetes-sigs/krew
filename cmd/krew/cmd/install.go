@@ -21,6 +21,7 @@ import (
 
 	"sigs.k8s.io/krew/pkg/index"
 	"sigs.k8s.io/krew/pkg/index/indexscanner"
+	"sigs.k8s.io/krew/pkg/index/validation"
 	"sigs.k8s.io/krew/pkg/installation"
 
 	"github.com/golang/glog"
@@ -96,7 +97,7 @@ Remarks:
 				if err != nil {
 					return errors.Wrap(err, "failed to load custom manifest file")
 				}
-				if err := plugin.Validate(plugin.Name); err != nil {
+				if err := validation.ValidatePlugin(plugin.Name, plugin); err != nil {
 					return errors.Wrap(err, "plugin manifest validation error")
 				}
 				install = append(install, plugin)
