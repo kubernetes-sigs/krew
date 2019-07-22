@@ -29,12 +29,13 @@ func Test_osArch(t *testing.T) {
 	inOS, inArch := runtime.GOOS, runtime.GOARCH
 	outOS, outArch := osArch()
 	if inOS != outOS {
-		t.Fatalf("returned OS=%q; expected=%q", outOS, inOS)
+		t.Errorf("returned OS=%q; expected=%q", outOS, inOS)
 	}
 	if inArch != outArch {
-		t.Fatalf("returned Arch=%q; expected=%q", outArch, inArch)
+		t.Errorf("returned Arch=%q; expected=%q", outArch, inArch)
 	}
 }
+
 func Test_osArch_override(t *testing.T) {
 	customOS, customArch := "dragons", "metav1"
 	os.Setenv("KREW_OS", customOS)
@@ -46,19 +47,20 @@ func Test_osArch_override(t *testing.T) {
 
 	outOS, outArch := osArch()
 	if customOS != outOS {
-		t.Fatalf("returned OS=%q; expected=%q", outOS, customOS)
+		t.Errorf("returned OS=%q; expected=%q", outOS, customOS)
 	}
 	if customArch != outArch {
-		t.Fatalf("returned Arch=%q; expected=%q", outArch, customArch)
+		t.Errorf("returned Arch=%q; expected=%q", outArch, customArch)
 	}
 }
 
 func Test_matchPlatform(t *testing.T) {
 	const targetOS, targetArch = "foo", "amd64"
-	matchingPlatform := testutil.NewPlatform().WithOSArch("foo", "amd64").V()
-	nonMatchingPlatform := testutil.NewPlatform().WithOSArch("bar", "amd64").V()
+	matchingPlatform := testutil.NewPlatform().WithOSArch(targetOS, targetArch).V()
+	differentOS := testutil.NewPlatform().WithOSArch("other", targetArch).V()
+	differentArch := testutil.NewPlatform().WithOSArch(targetOS, "other").V()
 
-	p, ok, err := matchPlatform([]index.Platform{matchingPlatform, nonMatchingPlatform}, targetOS, targetArch)
+	p, ok, err := matchPlatform([]index.Platform{differentOS, differentArch, matchingPlatform}, targetOS, targetArch)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -69,7 +71,7 @@ func Test_matchPlatform(t *testing.T) {
 		t.Fatalf("got a different object from the matching platform:\n%s", diff)
 	}
 
-	_, ok, err = matchPlatform([]index.Platform{nonMatchingPlatform}, targetOS, targetArch)
+	_, ok, err = matchPlatform([]index.Platform{differentOS, differentArch}, targetOS, targetArch)
 	if err != nil {
 		t.Fatal(err)
 	}
