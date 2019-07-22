@@ -96,38 +96,3 @@ func testdataPath(t *testing.T) string {
 	}
 	return filepath.Join(pwd, "testdata")
 }
-
-func Test_pluginVersionFromPath(t *testing.T) {
-	type args struct {
-		installPath string
-		pluginPath  string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    string
-		wantErr bool
-	}{
-		{
-			name: "normal version",
-			args: args{
-				installPath: filepath.FromSlash("install/"),
-				pluginPath:  filepath.FromSlash("install/foo/HEAD/kubectl-foo"),
-			},
-			want:    "HEAD",
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := pluginVersionFromPath(tt.args.installPath, tt.args.pluginPath)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("pluginVersionFromPath() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("pluginVersionFromPath() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}

@@ -23,17 +23,7 @@ import (
 	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/index"
 	"sigs.k8s.io/krew/pkg/installation/receipt"
-	"sigs.k8s.io/krew/pkg/pathutil"
 )
-
-func pluginVersionFromPath(installPath, pluginPath string) (string, error) {
-	// plugin path: {install_path}/{plugin_name}/{version}/...
-	elems, ok := pathutil.IsSubPath(installPath, pluginPath)
-	if !ok || len(elems) < 2 {
-		return "", errors.Errorf("failed to get the version from execution path=%q, with install path=%q", pluginPath, installPath)
-	}
-	return elems[1], nil
-}
 
 func getDownloadTarget(index index.Plugin) (version, sha256sum, uri string, fos []index.FileOperation, bin string, err error) {
 	// TODO(ahmetb): We have many return values from this method, indicating
