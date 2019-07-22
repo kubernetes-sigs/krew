@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package index
+package installation
 
 import (
 	"os"
@@ -22,34 +22,37 @@ import (
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+
+	"sigs.k8s.io/krew/pkg/index"
 )
 
 // GetMatchingPlatform finds the platform spec in the specified plugin that
 // matches the OS/arch of the current machine (can be overridden via KREW_OS
 // and/or KREW_ARCH).
-func (s *PluginSpec) GetMatchingPlatform() (Platform, bool, error) {
+func GetMatchingPlatform(platforms []index.Platform) (index.Platform, bool, error) {
 	os, arch := osArch()
-	glog.V(4).Infof("Using os=%s arch=%s", os, arch)
-	return s.matchPlatformToSystemEnvs(os, arch)
+	return matchPlatform(platforms, os, arch)
 }
 
-func (s *PluginSpec) matchPlatformToSystemEnvs(os, arch string) (Platform, bool, error) {
+// matchPlatform returns the first matching platform to given os/arch.
+func matchPlatform(platforms []index.Platform, os, arch string) (index.Platform, bool, error) {
 	envLabels := labels.Set{
 		"os":   os,
 		"arch": arch,
 	}
 	glog.V(2).Infof("Matching platform for labels(%v)", envLabels)
-	for i, platform := range s.Platforms {
+
+	for i, platform := range platforms {
 		sel, err := metav1.LabelSelectorAsSelector(platform.Selector)
 		if err != nil {
-			return Platform{}, false, errors.Wrap(err, "failed to compile label selector")
+			return index.Platform{}, false, errors.Wrap(err, "failed to compile label selector")
 		}
 		if sel.Matches(envLabels) {
 			glog.V(2).Infof("Found matching platform with index (%d)", i)
 			return platform, true, nil
 		}
 	}
-	return Platform{}, false, nil
+	return index.Platform{}, false, nil
 }
 
 // osArch returns the OS/arch combination to be used on the current system. It

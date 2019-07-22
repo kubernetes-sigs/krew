@@ -43,3 +43,13 @@ if [[ -n "$out" ]]; then
   echo >&2 "$out"
   exit 1
 fi
+
+# Do not initialize index.{Plugin,Platform} structs in test code.
+out="$(grep --include '*_test.go' --exclude-dir 'vendor/' -EIrn '[^]](index\.)(Plugin|Platform){' || true)"
+if [[ -n "$out" ]]; then
+  echo >&2 "Do not use index.Platform or index.Plugin structs directly in tests,"
+  echo >&2 "use testutil.NewPlugin() or testutil.NewPlatform() instead:"
+  echo >&2 "-----"
+  echo >&2 "$out"
+  exit 1
+fi

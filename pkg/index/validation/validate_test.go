@@ -151,6 +151,12 @@ func TestValidatePlugin(t *testing.T) {
 			wantErr:    true,
 		},
 		{
+			name:       "no platform specified",
+			pluginName: "foo",
+			plugin:     testutil.NewPlugin().WithName("foo").WithPlatforms().V(),
+			wantErr:    true,
+		},
+		{
 			name:       "no file operations",
 			pluginName: "foo",
 			plugin: testutil.NewPlugin().WithName("foo").WithPlatforms(
