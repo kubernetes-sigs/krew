@@ -27,6 +27,7 @@ import (
 
 	"sigs.k8s.io/krew/pkg/index"
 	"sigs.k8s.io/krew/pkg/info"
+	"sigs.k8s.io/krew/pkg/installation"
 )
 
 // infoCmd represents the info command
@@ -56,7 +57,7 @@ Example:
 
 func printPluginInfo(out io.Writer, plugin index.Plugin) {
 	fmt.Fprintf(out, "NAME: %s\n", plugin.Name)
-	if platform, ok, err := plugin.Spec.GetMatchingPlatform(); err == nil && ok {
+	if platform, ok, err := installation.GetMatchingPlatform(plugin.Spec.Platforms); err == nil && ok {
 		if platform.URI != "" {
 			fmt.Fprintf(out, "URI: %s\n", platform.URI)
 			fmt.Fprintf(out, "SHA256: %s\n", platform.Sha256)

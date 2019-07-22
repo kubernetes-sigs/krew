@@ -79,7 +79,15 @@ func NewPlatform() *R {
 }
 
 func (p *R) WithOS(os string) *R {
-	p.v.Selector.MatchLabels = map[string]string{"os": os}
+	p.v.Selector = &metav1.LabelSelector{MatchLabels: map[string]string{"os": os}}
+	return p
+}
+
+func (p *R) WithOSes(os ...string) *R {
+	p.v.Selector = &metav1.LabelSelector{MatchExpressions: []metav1.LabelSelectorRequirement{{
+		Key:      "os",
+		Operator: metav1.LabelSelectorOpIn,
+		Values:   os}}}
 	return p
 }
 

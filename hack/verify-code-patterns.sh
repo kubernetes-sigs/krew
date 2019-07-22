@@ -43,3 +43,17 @@ if [[ -n "$out" ]]; then
   echo >&2 "$out"
   exit 1
 fi
+
+# Do not initialize index.{Plugin,Platform} structs in test code.
+#
+# TODO(ahmetb): ideally this plugin should cleanly scan all (index\.)(Plugin|Platform) occurrences except slice literals
+# (which are prefixed with []). However I could not get negative lookbehind pattern to work with grep to match to ones
+# that do not have a [] prefix.
+out="$(grep --include '*_test.go' --exclude-dir 'vendor/' -EIrn '\s+(index\.)(Plugin|Platform){' || true)"
+if [[ -n "$out" ]]; then
+  echo >&2 "Do not use index.Platform or index.Plugin structs directly in tests,"
+  echo >&2 "use testutil.NewPlugin() or testutil.NewPlatform() instead:"
+  echo >&2 "-----"
+  echo >&2 "$out"
+  exit 1
+fi

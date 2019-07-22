@@ -40,7 +40,7 @@ func getDownloadTarget(index index.Plugin) (version, sha256sum, uri string, fos 
 	// code smell. More specifically we return all-or-nothing, so ideally this
 	// should be converted into a struct, like InstallOperation{} contains all
 	// the data needed to install a plugin.
-	p, ok, err := index.Spec.GetMatchingPlatform()
+	p, ok, err := GetMatchingPlatform(index.Spec.Platforms)
 	if err != nil {
 		return "", "", "", nil, p.Bin, errors.Wrap(err, "failed to get matching platforms")
 	}

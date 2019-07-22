@@ -166,13 +166,8 @@ func Test_findAnyMatchingPlatform(t *testing.T) {
 }
 
 func Test_isOverlappingPlatformSelectors_noOverlap(t *testing.T) {
-	p1 := index.Platform{
-		Selector: &metav1.LabelSelector{MatchExpressions: []v1.LabelSelectorRequirement{{
-			Key:      "os",
-			Operator: v1.LabelSelectorOpIn,
-			Values:   []string{"darwin", "linux"}}}}}
-	p2 := index.Platform{
-		Selector: &metav1.LabelSelector{MatchLabels: map[string]string{"os": "windows"}}}
+	p1 := testutil.NewPlatform().WithOSes("darwin", "linux").V()
+	p2 := testutil.NewPlatform().WithOSes("windows").V()
 
 	err := isOverlappingPlatformSelectors([]index.Platform{p1, p2})
 	if err != nil {
@@ -181,14 +176,8 @@ func Test_isOverlappingPlatformSelectors_noOverlap(t *testing.T) {
 }
 
 func Test_isOverlappingPlatformSelectors_overlap(t *testing.T) {
-	p1 := index.Platform{
-		Selector: &metav1.LabelSelector{MatchExpressions: []v1.LabelSelectorRequirement{{
-			Key:      "os",
-			Operator: v1.LabelSelectorOpIn,
-			Values:   []string{"darwin", "linux"}}}}}
-	p2 := index.Platform{
-		Selector: &metav1.LabelSelector{MatchLabels: map[string]string{"os": "darwin"}}}
-
+	p1 := testutil.NewPlatform().WithOS("darwin").V()
+	p2 := testutil.NewPlatform().WithOSes("darwin", "linux").V()
 	err := isOverlappingPlatformSelectors([]index.Platform{p1, p2})
 	if err == nil {
 		t.Fatal("expected overlap")
