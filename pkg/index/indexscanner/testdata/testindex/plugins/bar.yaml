@@ -24,9 +24,15 @@ spec:
     uri: https://example.com
     sha256: deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef
     bin: kubectl-bar
+    selector:
+      matchLabels:
+        os: windows
   - files:
     - from: "*"
     uri: https://example.com
     sha256: deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef
     bin: kubectl-bar
+    selector:
+      matchLabels:
+        os: linux
   shortDescription: "exists"
