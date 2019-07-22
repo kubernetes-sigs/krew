@@ -151,35 +151,37 @@ func moveAllFiles(fromDir, toDir string, fos []index.FileOperation) error {
 	return nil
 }
 
-func moveToInstallDir(download, pluginDir, version string, fos []index.FileOperation) (string, error) {
-	glog.V(4).Infof("Creating plugin dir %q", pluginDir)
-	if err := os.MkdirAll(pluginDir, 0755); err != nil {
-		return "", errors.Wrapf(err, "error creating path to %q", pluginDir)
+// moveToInstallDir moves plugins from srcDir to dstDir (created in this method) with given FileOperation.
+func moveToInstallDir(srcDir, installDir string, fos []index.FileOperation) error {
+	glog.V(4).Infof("Creating plugin installation directory %q", installDir)
+	if err := os.MkdirAll(installDir, 0755); err != nil {
+		return errors.Wrapf(err, "error creating installation directory at %q", installDir)
 	}
 
-	tempdir, err := ioutil.TempDir("", "krew-temp-move")
-	glog.V(4).Infof("Creating temp plugin move operations dir %q", tempdir)
+	tmp, err := ioutil.TempDir("", "krew-temp-move")
+	glog.V(4).Infof("Creating temp plugin move operations dir %q", tmp)
 	if err != nil {
-		return "", errors.Wrap(err, "failed to find a temporary director")
+		return errors.Wrap(err, "failed to find a temporary director")
 	}
-	defer os.RemoveAll(tempdir)
+	defer os.RemoveAll(tmp)
 
-	if err = moveAllFiles(download, tempdir, fos); err != nil {
-		return "", errors.Wrap(err, "failed to move files")
-	}
-
-	installPath := filepath.Join(pluginDir, version)
-	glog.V(2).Infof("Move directory %q to %q", tempdir, installPath)
-	if err = moveOrCopyDir(tempdir, installPath); err != nil {
-		defer os.Remove(installPath)
-		return "", errors.Wrapf(err, "could not rename file from %q to %q", tempdir, installPath)
+	if err = moveAllFiles(srcDir, tmp, fos); err != nil {
+		return errors.Wrap(err, "failed to move files")
 	}
 
-	return installPath, nil
+	glog.V(2).Infof("Move directory %q to %q", tmp, installDir)
+	if err = moveOrCopyDir(tmp, installDir); err != nil {
+		defer func() {
+			glog.V(3).Info("Cleaning up installation directory due to error during copying files")
+			os.Remove(installDir)
+		}()
+		return errors.Wrapf(err, "could not rename file from %q to %q", tmp, installDir)
+	}
+	return nil
 }
 
-// moveOrCopyDir will try to rename a dir or file. If rename is not supported a
-// manual copy will be performed. Existing files at "to" will be deleted
+// moveOrCopyDir will try to rename a dir or file. If rename is not supported, a manual copy will be performed.
+// Existing files at "to" will be deleted.
 func moveOrCopyDir(from, to string) error {
 	// Try atomic rename (does not work cross partition).
 	fi, err := os.Stat(to)

@@ -17,6 +17,7 @@ package installation
 import (
 	"io/ioutil"
 	"os"
+	"path/filepath"
 
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
@@ -38,17 +39,22 @@ func Upgrade(p environment.Paths, plugin index.Plugin) error {
 	curVersion := installReceipt.Spec.Version
 	curv, err := semver.Parse(curVersion)
 	if err != nil {
-		return errors.Wrapf(err, "failed to parse installed version (%q) plugin %q as semantic version", curVersion, plugin.Name)
+		return errors.Wrapf(err, "failed to parse installed plugin version (%q) as a semver value", curVersion)
 	}
 
 	// Find available installation candidate
-	newVersion, sha256sum, uri, fos, binName, err := getDownloadTarget(plugin)
+	candidate, ok, err := GetMatchingPlatform(plugin.Spec.Platforms)
 	if err != nil {
-		return errors.Wrap(err, "failed to get the current download target")
+		return errors.Wrap(err, "failed trying to find a matching platform in plugin spec")
 	}
+	if !ok {
+		return errors.Wrapf(err, "plugin %q does not offer installation for this platform", plugin.Name)
+	}
+
+	newVersion := plugin.Spec.Version
 	newv, err := semver.Parse(newVersion)
 	if err != nil {
-		return errors.Wrapf(err, "failed to parse installation candidate version spec (%q) for plugin %q", newVersion, plugin.Name)
+		return errors.Wrapf(err, "failed to parse candidate version spec (%q)", newVersion)
 	}
 	glog.V(2).Infof("Comparing versions: current=%s target=%s", curv, newv)
 
@@ -66,7 +72,13 @@ func Upgrade(p environment.Paths, plugin index.Plugin) error {
 
 	// Re-Install
 	glog.V(1).Infof("Installing new version %s", newVersion)
-	if err := install(plugin.Name, newVersion, sha256sum, uri, binName, p, fos, ""); err != nil {
+	if err := install(installOperation{
+		pluginName:         plugin.Name,
+		platform:           candidate,
+		downloadStagingDir: filepath.Join(p.DownloadPath(), plugin.Name),
+		installDir:         p.PluginVersionInstallPath(plugin.Name, newVersion),
+		binDir:             p.BinPath(),
+	}, InstallOpts{}); err != nil {
 		return errors.Wrap(err, "failed to install new version")
 	}
 
@@ -76,7 +88,7 @@ func Upgrade(p environment.Paths, plugin index.Plugin) error {
 }
 
 // removePluginVersionFromFS will remove a plugin directly if it not krew.
-
+//
 // Krew on Windows needs special care because active directories can't be
 // deleted. This method will unlink old krew versions and during next run clean
 // the directory.

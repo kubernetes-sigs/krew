@@ -30,39 +30,34 @@ import (
 	"sigs.k8s.io/krew/pkg/pathutil"
 )
 
-// Plugin Lifecycle Errors
+// InstallOpts specifies options for plugin installation operation.
+type InstallOpts struct {
+	ArchiveFileOverride string
+}
+
+type installOperation struct {
+	pluginName string
+	platform   index.Platform
+
+	downloadStagingDir string
+	installDir         string
+	binDir             string
+}
+
+const (
+	krewPluginName = "krew"
+)
+
+// Plugin lifecycle errors
 var (
 	ErrIsAlreadyInstalled = errors.New("can't install, the newest version is already installed")
 	ErrIsNotInstalled     = errors.New("plugin is not installed")
 	ErrIsAlreadyUpgraded  = errors.New("can't upgrade, the newest version is already installed")
 )
 
-const (
-	krewPluginName = "krew"
-)
-
-func downloadAndMove(version, sha256sum, uri string, fos []index.FileOperation, downloadPath, installPath, forceDownloadFile string) (dst string, err error) {
-	glog.V(3).Infof("Creating download dir %q", downloadPath)
-	if err = os.MkdirAll(downloadPath, 0755); err != nil {
-		return "", errors.Wrapf(err, "could not create download path %q", downloadPath)
-	}
-	defer os.RemoveAll(downloadPath)
-
-	var fetcher download.Fetcher = download.HTTPFetcher{}
-	if forceDownloadFile != "" {
-		fetcher = download.NewFileFetcher(forceDownloadFile)
-	}
-
-	verifier := download.NewSha256Verifier(sha256sum)
-	if err := download.NewDownloader(verifier, fetcher).Get(uri, downloadPath); err != nil {
-		return "", errors.Wrap(err, "failed to download and verify file")
-	}
-	return moveToInstallDir(downloadPath, installPath, version, fos)
-}
-
 // Install will download and install a plugin. The operation tries
 // to not get the plugin dir in a bad state if it fails during the process.
-func Install(p environment.Paths, plugin index.Plugin, forceDownloadFile string) error {
+func Install(p environment.Paths, plugin index.Plugin, opts InstallOpts) error {
 	glog.V(2).Infof("Looking for installed versions")
 	_, err := receipt.Load(p.PluginInstallReceiptPath(plugin.Name))
 	if err == nil {
@@ -71,16 +66,26 @@ func Install(p environment.Paths, plugin index.Plugin, forceDownloadFile string)
 		return errors.Wrap(err, "failed to look up plugin receipt")
 	}
 
-	glog.V(1).Infof("Finding download target for plugin %s", plugin.Name)
-	version, sha256, uri, fos, bin, err := getDownloadTarget(plugin)
+	// Find available installation candidate
+	candidate, ok, err := GetMatchingPlatform(plugin.Spec.Platforms)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed trying to find a matching platform in plugin spec")
+	}
+	if !ok {
+		return errors.Wrapf(err, "plugin %q does not offer installation for this platform", plugin.Name)
 	}
 
 	// The actual install should be the last action so that a failure during receipt
 	// saving does not result in an installed plugin without receipt.
-	glog.V(3).Infof("Install plugin %s", plugin.Name)
-	if err := install(plugin.Name, version, sha256, uri, bin, p, fos, forceDownloadFile); err != nil {
+	glog.V(3).Infof("Install plugin %s at version=%s", plugin.Name, plugin.Spec.Version)
+	if err := install(installOperation{
+		pluginName: plugin.Name,
+		platform:   candidate,
+
+		downloadStagingDir: filepath.Join(p.DownloadPath(), plugin.Name),
+		binDir:             p.BinPath(),
+		installDir:         p.PluginVersionInstallPath(plugin.Name, plugin.Spec.Version),
+	}, opts); err != nil {
 		return errors.Wrap(err, "install failed")
 	}
 	glog.V(3).Infof("Storing install receipt for plugin %s", plugin.Name)
@@ -88,25 +93,52 @@ func Install(p environment.Paths, plugin index.Plugin, forceDownloadFile string)
 	return errors.Wrap(err, "installation receipt could not be stored, uninstall may fail")
 }
 
-func install(plugin, version, sha256sum, uri, bin string, p environment.Paths, fos []index.FileOperation, forceDownloadFile string) error {
-	dst, err := downloadAndMove(version, sha256sum, uri, fos, filepath.Join(p.DownloadPath(), plugin), p.PluginInstallPath(plugin), forceDownloadFile)
-	if err != nil {
-		return errors.Wrap(err, "failed to download and move during installation")
+func install(op installOperation, opts InstallOpts) error {
+	// Download and extract
+	glog.V(3).Infof("Creating download staging directory %q", op.downloadStagingDir)
+	if err := os.MkdirAll(op.downloadStagingDir, 0755); err != nil {
+		return errors.Wrapf(err, "could not create download path %q", op.downloadStagingDir)
+	}
+	defer func() {
+		glog.V(3).Infof("Deleting the download staging directory %s", op.downloadStagingDir)
+		_ = os.RemoveAll(op.downloadStagingDir)
+	}()
+	if err := downloadAndExtract(op.downloadStagingDir, op.platform.URI, op.platform.Sha256, opts.ArchiveFileOverride); err != nil {
+		return errors.Wrap(err, "failed to download and extract")
 	}
 
-	subPathAbs, err := filepath.Abs(dst)
-	if err != nil {
-		return errors.Wrapf(err, "failed to get the absolute fullPath of %q", dst)
+	if err := moveToInstallDir(op.downloadStagingDir, op.installDir, op.platform.Files); err != nil {
+		return errors.Wrap(err, "failed while moving files to the installation directory")
 	}
-	fullPath := filepath.Join(dst, filepath.FromSlash(bin))
+
+	subPathAbs, err := filepath.Abs(op.installDir)
+	if err != nil {
+		return errors.Wrapf(err, "failed to get the absolute fullPath of %q", op.installDir)
+	}
+	fullPath := filepath.Join(op.installDir, filepath.FromSlash(op.platform.Bin))
 	pathAbs, err := filepath.Abs(fullPath)
 	if err != nil {
 		return errors.Wrapf(err, "failed to get the absolute fullPath of %q", fullPath)
 	}
 	if _, ok := pathutil.IsSubPath(subPathAbs, pathAbs); !ok {
-		return errors.Wrapf(err, "the fullPath %q does not extend the sub-fullPath %q", fullPath, dst)
+		return errors.Wrapf(err, "the fullPath %q does not extend the sub-fullPath %q", fullPath, op.installDir)
 	}
-	return createOrUpdateLink(p.BinPath(), filepath.Join(dst, filepath.FromSlash(bin)), plugin)
+	err = createOrUpdateLink(op.binDir, fullPath, op.pluginName)
+	return errors.Wrap(err, "failed to link installed plugin")
+}
+
+// downloadAndExtract downloads the specified archive uri (or uses the provided overrideFile, if a non-empty value)
+// while validating its checksum with the provided sha256sum, and extracts its contents to extractDir that must be.
+// created.
+func downloadAndExtract(extractDir, uri, sha256sum, overrideFile string) error {
+	var fetcher download.Fetcher = download.HTTPFetcher{}
+	if overrideFile != "" {
+		fetcher = download.NewFileFetcher(overrideFile)
+	}
+
+	verifier := download.NewSha256Verifier(sha256sum)
+	err := download.NewDownloader(verifier, fetcher).Get(uri, extractDir)
+	return errors.Wrap(err, "failed to download and verify file")
 }
 
 // Uninstall will uninstall a plugin.
@@ -157,7 +189,7 @@ func createOrUpdateLink(binDir string, binary string, plugin string) error {
 	}
 
 	// Create new
-	glog.V(2).Infof("Creating symlink from %q to %q", binary, dst)
+	glog.V(2).Infof("Creating symlink to %q at %q", binary, dst)
 	if err := os.Symlink(binary, dst); err != nil {
 		return errors.Wrapf(err, "failed to create a symlink form %q to %q", binDir, dst)
 	}
