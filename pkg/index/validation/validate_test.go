@@ -25,47 +25,36 @@ import (
 )
 
 func Test_IsSafePluginName(t *testing.T) {
-	type args struct {
-		name string
-	}
 	tests := []struct {
-		name string
-		args args
-		want bool
+		name       string
+		pluginName string
+		want       bool
 	}{
 		{
-			name: "secure name",
-			args: args{
-				name: "foo-bar",
-			},
-			want: true,
+			name:       "secure name",
+			pluginName: "foo-bar",
+			want:       true,
 		},
 		{
-			name: "insecure path name",
-			args: args{
-				name: "/foo-bar",
-			},
-			want: false,
+			name:       "insecure path name",
+			pluginName: "/foo-bar",
+			want:       false,
 		},
 		{
-			name: "relative name",
-			args: args{
-				name: "..foo-bar",
-			},
-			want: false,
+			name:       "relative name",
+			pluginName: "..foo-bar",
+			want:       false,
 		},
 		{
-			name: "bad windows name",
-			args: args{
-				name: "nul",
-			},
-			want: false,
+			name:       "bad windows name",
+			pluginName: "nul",
+			want:       false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := IsSafePluginName(tt.args.name); got != tt.want {
-				t.Errorf("IsSafePluginName() = %v, want %v", got, tt.want)
+			if got := IsSafePluginName(tt.pluginName); got != tt.want {
+				t.Errorf("IsSafePluginName(%s) = %v, want %v", tt.pluginName, got, tt.want)
 			}
 		})
 	}
@@ -210,14 +199,85 @@ func TestValidatePlatform(t *testing.T) {
 			platform: testutil.NewPlatform().WithBin("").V(),
 			wantErr:  true,
 		},
+		{
+			name: "invalid platform selector",
+			platform: testutil.NewPlatform().WithSelector(&metav1.LabelSelector{
+				MatchLabels: map[string]string{"unsupported-field": "orange"}}).V(),
+			wantErr: true,
+		},
 		// TODO(ahmetb): add test case "bin field outside the plugin installation directory"
 		// by testing .WithBin("foo/../../../malicious-file").
 		// It appears like currently we're allowing this.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := ValidatePlatform(tt.platform); (err != nil) != tt.wantErr {
-				t.Errorf("ValidatePlatform() error = %v, wantErr %v", err, tt.wantErr)
+			if err := validatePlatform(tt.platform); (err != nil) != tt.wantErr {
+				t.Errorf("validatePlatform() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func Test_validateSelector(t *testing.T) {
+	var tests = []struct {
+		name    string
+		sel     *metav1.LabelSelector
+		wantErr bool
+	}{
+		{
+			name:    "nil selector",
+			sel:     nil,
+			wantErr: true,
+		},
+		{
+			name:    "empty (wildcard) selector",
+			sel:     &metav1.LabelSelector{},
+			wantErr: true,
+		},
+		{
+			name:    "valid matchLabels",
+			sel:     &metav1.LabelSelector{MatchLabels: map[string]string{"os": "foo", "arch": "bar"}},
+			wantErr: false,
+		},
+		{
+			name: "valid matchExpressions",
+			sel: &metav1.LabelSelector{
+				MatchExpressions: []metav1.LabelSelectorRequirement{
+					{Key: "os",
+						Operator: metav1.LabelSelectorOpIn,
+						Values:   []string{"apple", "orange"},
+					}}},
+			wantErr: false,
+		},
+		{
+			name:    "empty matchLabels",
+			sel:     &metav1.LabelSelector{MatchLabels: map[string]string{}},
+			wantErr: true,
+		},
+		{
+			name:    "empty matchExpressions",
+			sel:     &metav1.LabelSelector{MatchExpressions: []metav1.LabelSelectorRequirement{}},
+			wantErr: true,
+		},
+		{
+			name:    "unsupported key in matchLabels",
+			sel:     &metav1.LabelSelector{MatchLabels: map[string]string{"unsupported-key": "value"}},
+			wantErr: true,
+		},
+		{
+			name: "unsupported key in matchExpressions",
+			sel: &metav1.LabelSelector{
+				MatchExpressions: []metav1.LabelSelectorRequirement{
+					{Key: "unsupported-key",
+						Operator: metav1.LabelSelectorOpIn,
+						Values:   []string{"apple", "orange"}}}},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := validateSelector(tt.sel); (err != nil) != tt.wantErr {
+				t.Errorf("validateSelector() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

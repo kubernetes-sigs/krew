@@ -20,6 +20,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/index"
@@ -88,15 +89,15 @@ func ValidatePlugin(name string, p index.Plugin) error {
 		return errors.Wrap(err, "failed to parse plugin version")
 	}
 	for _, pl := range p.Spec.Platforms {
-		if err := ValidatePlatform(pl); err != nil {
+		if err := validatePlatform(pl); err != nil {
 			return errors.Wrapf(err, "platform (%+v) is badly constructed", pl)
 		}
 	}
 	return nil
 }
 
-// ValidatePlatform checks Platform for structural validity.
-func ValidatePlatform(p index.Platform) error {
+// validatePlatform checks Platform for structural validity.
+func validatePlatform(p index.Platform) error {
 	if p.URI == "" {
 		return errors.New("URI has to be set")
 	}
@@ -112,5 +113,41 @@ func ValidatePlatform(p index.Platform) error {
 	if len(p.Files) == 0 {
 		return errors.New("can't have a plugin without specifying file operations")
 	}
+	if err := validateSelector(p.Selector); err != nil {
+		return errors.Wrap(err, "invalid platform selector")
+	}
+	return nil
+}
+
+// validateSelector checks if the platform selector uses supported keys and is not empty or nil.
+func validateSelector(sel *metav1.LabelSelector) error {
+	if sel == nil {
+		return errors.New("nil selector is not supported")
+	}
+	if sel.MatchLabels == nil && len(sel.MatchExpressions) == 0 {
+		return errors.New("empty selector is not supported")
+	}
+
+	// check for unsupported keys
+	keys := []string{}
+	for k := range sel.MatchLabels {
+		keys = append(keys, k)
+	}
+	for _, expr := range sel.MatchExpressions {
+		keys = append(keys, expr.Key)
+	}
+	for _, key := range keys {
+		if key != "os" && key != "arch" {
+			return errors.Errorf("key %q not supported", key)
+		}
+	}
+
+	if sel.MatchLabels != nil && len(sel.MatchLabels) == 0 {
+		return errors.New("matchLabels specified but empty")
+	}
+	if sel.MatchExpressions != nil && len(sel.MatchExpressions) == 0 {
+		return errors.New("matchExpressions specified but empty")
+	}
+
 	return nil
 }
