@@ -124,6 +124,9 @@ func validateSelector(sel *metav1.LabelSelector) error {
 	if sel == nil {
 		return errors.New("nil selector is not supported")
 	}
+	if sel.MatchLabels == nil && len(sel.MatchExpressions) == 0 {
+		return errors.New("empty selector is not supported")
+	}
 
 	// check for unsupported keys
 	keys := []string{}

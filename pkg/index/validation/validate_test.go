@@ -224,6 +224,11 @@ func Test_validateSelector(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name:    "empty (wildcard) selector",
+			sel:     &metav1.LabelSelector{},
+			wantErr: true,
+		},
+		{
 			name:    "valid matchLabels",
 			sel:     &metav1.LabelSelector{MatchLabels: map[string]string{"os": "foo", "arch": "bar"}},
 			wantErr: false,
