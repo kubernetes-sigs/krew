@@ -283,7 +283,7 @@ func Test_validateSelector(t *testing.T) {
 	}
 }
 
-func TestValidateFiles(t *testing.T) {
+func Test_validateFiles(t *testing.T) {
 	tests := []struct {
 		name    string
 		files   []index.FileOperation

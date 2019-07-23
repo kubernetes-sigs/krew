@@ -165,6 +165,11 @@ func moveToInstallDir(srcDir, installDir string, fos []index.FileOperation) erro
 	}
 	defer os.RemoveAll(tmp)
 
+	if fos == nil {
+		fos = []index.FileOperation{{From: "*", To: "."}}
+		glog.V(4).Infof("file operation not specified, assuming %v", fos)
+	}
+
 	if err = moveAllFiles(srcDir, tmp, fos); err != nil {
 		return errors.Wrap(err, "failed to move files")
 	}

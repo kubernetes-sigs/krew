@@ -187,14 +187,14 @@ wildcard may install more files than desired.
 ```
 
 - To copy all files in the `bin/` directory of the extracted archive to
-  the root of your plugin, use the default:
+  the root of your plugin, leave out the `files:` field, which is equivalent to
 
   ```yaml
-      files:   # unspecified, equivalent to [{from: "*", to: "."}]
+      files: [{from: "*", to: "."}]
   ```
   
-  This would copy out binaries for both platforms to the installation
-  directory on user’s machine, despite only one of them will be used:
+  This copies out binaries for both platforms to the installation directory
+  onto the user’s machine, despite only one of them will be used:
   
   ```text
   .
