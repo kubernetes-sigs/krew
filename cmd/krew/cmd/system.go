@@ -33,7 +33,7 @@ This command will be removed without further notice from future versions of krew
 	Hidden: true,
 }
 
-// todo(corneliusweig) remove migration code with v0.4
+// TODO(corneliusweig) remove migration code with v0.4
 // systemCmd represents the system command
 var receiptsUpgradeCmd = &cobra.Command{
 	Use:   "receipts-upgrade",

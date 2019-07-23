@@ -32,8 +32,8 @@ func init() {
 	// listCmd represents the list command
 	listCmd := &cobra.Command{
 		Use:   "list",
-		Short: "List installed plugins",
-		Long: `Show a list of installed plugins and their versions.
+		Short: "List installed kubectl plugins",
+		Long: `Show a list of installed kubectl plugins and their versions.
 
 Remarks:
   Redirecting the output of this command to a program or file will only print

@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -37,6 +38,7 @@ const (
 	persistentIndexCache = "krew-persistent-index-cache"
 	krewBinaryEnv        = "KREW_BINARY"
 	validPlugin          = "konfig" // a plugin in central index with small size
+	validPlugin2         = "mtail"  // a plugin in central index with small size
 )
 
 var (
@@ -51,6 +53,7 @@ type ITest struct {
 	pluginsBinDir string
 	args          []string
 	env           []string
+	stdin         io.Reader
 	tempDir       *testutil.TempDir
 }
 
@@ -171,6 +174,12 @@ func (it *ITest) WithEnv(key string, value interface{}) *ITest {
 	return it
 }
 
+// WithStdin sets standard input for the krew command execution.
+func (it *ITest) WithStdin(r io.Reader) *ITest {
+	it.stdin = r
+	return it
+}
+
 // RunOrFail runs the krew command and fails the test if the command returns an error.
 func (it *ITest) RunOrFail() {
 	it.t.Helper()
@@ -201,6 +210,9 @@ func (it *ITest) RunOrFailOutput() []byte {
 	it.t.Helper()
 
 	cmd := it.cmd(context.Background())
+	if it.stdin != nil {
+		cmd.Stdin = it.stdin
+	}
 	it.t.Log(cmd.Args)
 
 	start := time.Now()

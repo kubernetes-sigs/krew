@@ -22,6 +22,14 @@ import (
 	"sigs.k8s.io/krew/pkg/constants"
 )
 
+func TestKrewUpgrade_WithoutIndexInitialized(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+	test.Krew("upgrade").RunOrFailOutput()
+}
+
 func TestKrewUpgrade(t *testing.T) {
 	skipShort(t)
 
