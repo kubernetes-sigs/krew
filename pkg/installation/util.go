@@ -21,28 +21,8 @@ import (
 	"github.com/pkg/errors"
 
 	"sigs.k8s.io/krew/pkg/constants"
-	"sigs.k8s.io/krew/pkg/index"
 	"sigs.k8s.io/krew/pkg/installation/receipt"
 )
-
-func getDownloadTarget(index index.Plugin) (version, sha256sum, uri string, fos []index.FileOperation, bin string, err error) {
-	// TODO(ahmetb): We have many return values from this method, indicating
-	// code smell. More specifically we return all-or-nothing, so ideally this
-	// should be converted into a struct, like InstallOperation{} contains all
-	// the data needed to install a plugin.
-	p, ok, err := GetMatchingPlatform(index.Spec.Platforms)
-	if err != nil {
-		return "", "", "", nil, p.Bin, errors.Wrap(err, "failed to get matching platforms")
-	}
-	if !ok {
-		return "", "", "", nil, p.Bin, errors.New("no matching platform found")
-	}
-	version = index.Spec.Version
-	uri = p.URI
-	sha256sum = p.Sha256
-	glog.V(4).Infof("found a matching platform, version=%s checksum=%s", version, sha256sum)
-	return version, sha256sum, uri, p.Files, p.Bin, nil
-}
 
 // ListInstalledPlugins returns a list of all install plugins in a
 // name:version format based on the install receipts at the specified dir.

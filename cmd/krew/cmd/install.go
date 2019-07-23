@@ -31,8 +31,8 @@ import (
 
 func init() {
 	var (
-		manifest, forceDownloadFile *string
-		noUpdateIndex               *bool
+		manifest, archiveFileOverride *string
+		noUpdateIndex                 *bool
 	)
 
 	// installCmd represents the install command
@@ -77,10 +77,10 @@ Remarks:
 			}
 
 			if len(pluginNames) != 0 && *manifest != "" {
-				return errors.New("must specify either specify stdin or --manifest or args")
+				return errors.New("must specify either specify either plugin names (via positional arguments or STDIN), or --manifest; not both")
 			}
 
-			if *forceDownloadFile != "" && *manifest == "" {
+			if *archiveFileOverride != "" && *manifest == "" {
 				return errors.New("--archive can be specified only with --manifest")
 			}
 
@@ -104,24 +104,20 @@ Remarks:
 				install = append(install, plugin)
 			}
 
-			if len(install) > 1 && *manifest != "" {
-				return errors.New("can't use --manifest option with multiple plugins")
-			}
-
 			if len(install) == 0 {
 				return cmd.Help()
 			}
 
-			// Print plugin namesFromFile
 			for _, plugin := range install {
 				glog.V(2).Infof("Will install plugin: %s\n", plugin.Name)
 			}
 
 			var failed []string
-			// Do install
 			for _, plugin := range install {
 				fmt.Fprintf(os.Stderr, "Installing plugin: %s\n", plugin.Name)
-				err := installation.Install(paths, plugin, *forceDownloadFile)
+				err := installation.Install(paths, plugin, installation.InstallOpts{
+					ArchiveFileOverride: *archiveFileOverride,
+				})
 				if err == installation.ErrIsAlreadyInstalled {
 					glog.Warningf("Skipping plugin %q, it is already installed", plugin.Name)
 					continue
@@ -155,7 +151,7 @@ Remarks:
 	}
 
 	manifest = installCmd.Flags().String("manifest", "", "(Development-only) specify plugin manifest directly.")
-	forceDownloadFile = installCmd.Flags().String("archive", "", "(Development-only) force all downloads to use the specified file")
+	archiveFileOverride = installCmd.Flags().String("archive", "", "(Development-only) force all downloads to use the specified file")
 	noUpdateIndex = installCmd.Flags().Bool("no-update-index", false, "(Experimental) do not update local copy of plugin index before installing")
 
 	rootCmd.AddCommand(installCmd)

@@ -16,6 +16,8 @@ package installation
 
 import (
 	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -210,5 +212,48 @@ func Test_isWindows_envOverride(t *testing.T) {
 	os.Setenv("KREW_OS", "not-windows")
 	if isWindows() {
 		t.Fatalf("isWindows()=true when KREW_OS != windows")
+	}
+}
+
+func Test_downloadAndExtract(t *testing.T) {
+	tmpDir, cleanup := testutil.NewTempDir(t)
+	defer cleanup()
+
+	// start a local http server to serve the test archive from pkg/download/testdata
+	testdataDir := filepath.Join(testdataPath(t), "..", "..", "download", "testdata")
+	server := httptest.NewServer(http.FileServer(http.Dir(testdataDir)))
+	defer server.Close()
+
+	url := server.URL + "/test-without-directory.tar.gz"
+	checksum := "433b9e0b6cb9f064548f451150799daadcc70a3496953490c5148c8e550d2f4e"
+
+	if err := downloadAndExtract(tmpDir.Root(), url, checksum, ""); err != nil {
+		t.Fatal(err)
+	}
+	files, err := ioutil.ReadDir(tmpDir.Root())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(files) == 0 {
+		t.Fatal("no files found in the extract output directory")
+	}
+}
+
+func Test_downloadAndExtract_fileOverride(t *testing.T) {
+	tmpDir, cleanup := testutil.NewTempDir(t)
+	defer cleanup()
+
+	testFile := filepath.Join(testdataPath(t), "..", "..", "download", "testdata", "test-without-directory.tar.gz")
+	checksum := "433b9e0b6cb9f064548f451150799daadcc70a3496953490c5148c8e550d2f4e"
+
+	if err := downloadAndExtract(tmpDir.Root(), "", checksum, testFile); err != nil {
+		t.Fatal(err)
+	}
+	files, err := ioutil.ReadDir(tmpDir.Root())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(files) == 0 {
+		t.Fatal("no files found in the extract output directory")
 	}
 }
