@@ -39,19 +39,17 @@ func init() {
 	installCmd := &cobra.Command{
 		Use:   "install",
 		Short: "Install kubectl plugins",
-		Long: `Install a plugin.
-
-This command can be used to install one or multiple plugins.
+		Long: `Install one or multiple kubectl plugins.
 
 Examples:
   To install one or multiple plugins, run:
     kubectl krew install NAME [NAME...]
 
-  To install plugins from a file, run:
+  To install plugins from a newline-delimited file, run:
     kubectl krew install < file.txt
 
   (For developers) To provide a custom plugin manifest, use the --manifest
-  argument Similarly, instead of downloading files from a URL, you can specify a
+  argument. Similarly, instead of downloading files from a URL, you can specify a
   local --archive file:
 	kubectl krew install --manifest=FILE [--archive=FILE]
 

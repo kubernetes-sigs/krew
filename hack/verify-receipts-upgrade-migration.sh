@@ -17,7 +17,7 @@
 # This script tests "krew system receipts-migration" which was introduced for
 # migrating krew 0.2.x to krew 0.3.x.
 #
-# TODO(ahmmetb,corneliusweig) remove at/after krew 0.4.x when receipts-migration
+# TODO(ahmetb,corneliusweig) remove at/after krew 0.4.x when receipts-migration
 # is no longer supported.
 
 set -euo pipefail

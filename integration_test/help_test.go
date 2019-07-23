@@ -22,5 +22,8 @@ func TestKrewHelp(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
+	test.Krew().RunOrFail() // no args
 	test.Krew("help").RunOrFail()
+	test.Krew("-h").RunOrFail()
+	test.Krew("--help").RunOrFail()
 }

@@ -16,6 +16,7 @@ package integrationtest
 
 import (
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"sigs.k8s.io/krew/pkg/constants"
@@ -27,12 +28,69 @@ const (
 
 func TestKrewInstall(t *testing.T) {
 	skipShort(t)
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	if err := test.Krew("install", validPlugin); err == nil {
+		t.Fatal("expected to fail without initializing the index")
+	}
+
+	test = test.WithIndex()
+	if err := test.Krew("install"); err == nil {
+		t.Fatal("expected failure without any args or stdin")
+	}
+
+	test.Krew("install", validPlugin).RunOrFailOutput()
+	test.AssertExecutableInPATH("kubectl-" + validPlugin)
+}
+
+func TestKrewInstallReRun(t *testing.T) {
+	skipShort(t)
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	test = test.WithIndex()
+	test.Krew("install", validPlugin).RunOrFail()
+	test.Krew("install", validPlugin).RunOrFail()
+	test.AssertExecutableInPATH("kubectl-" + validPlugin)
+}
+
+func TestKrewInstall_MultiplePositionalArgs(t *testing.T) {
+	skipShort(t)
 
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test.WithIndex().Krew("install", validPlugin).RunOrFailOutput()
+	test.WithIndex().Krew("install", validPlugin, validPlugin2).RunOrFailOutput()
 	test.AssertExecutableInPATH("kubectl-" + validPlugin)
+	test.AssertExecutableInPATH("kubectl-" + validPlugin2)
+}
+
+func TestKrewInstall_Stdin(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	test.WithIndex().WithStdin(strings.NewReader(validPlugin + "\n" + validPlugin2)).
+		Krew("install").RunOrFailOutput()
+
+	test.AssertExecutableInPATH("kubectl-" + validPlugin)
+	test.AssertExecutableInPATH("kubectl-" + validPlugin2)
+}
+
+func TestKrewInstall_StdinAndPositionalArguments(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	// when stdin is detected, it's ignored in favor of positional arguments
+	test.WithIndex().
+		WithStdin(strings.NewReader(validPlugin2)).
+		Krew("install", validPlugin).RunOrFail()
+	test.AssertExecutableInPATH("kubectl-" + validPlugin)
+	test.AssertExecutableNotInPATH("kubectl-" + validPlugin2)
 }
 
 func TestKrewInstall_Manifest(t *testing.T) {
@@ -60,7 +118,7 @@ func TestKrewInstall_ManifestAndArchive(t *testing.T) {
 	test.AssertExecutableInPATH("kubectl-" + fooPlugin)
 }
 
-func TestKrewInstall_OnlyArchiveFails(t *testing.T) {
+func TestKrewInstall_OnlyArchive(t *testing.T) {
 	skipShort(t)
 
 	test, cleanup := NewTest(t)
@@ -71,5 +129,20 @@ func TestKrewInstall_OnlyArchiveFails(t *testing.T) {
 		Run()
 	if err == nil {
 		t.Errorf("Expected install to fail but was successful")
+	}
+}
+
+func TestKrewInstall_PositionalArgumentsAndManifest(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	err := test.Krew("install", validPlugin,
+		"--manifest", filepath.Join("testdata", fooPlugin+constants.ManifestExtension),
+		"--archive", filepath.Join("testdata", fooPlugin+".tar.gz")).
+		Run()
+	if err == nil {
+		t.Fatal("expected failure")
 	}
 }
