@@ -15,8 +15,9 @@
 package integrationtest
 
 import (
-	"bytes"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 func TestKrewList(t *testing.T) {
@@ -26,14 +27,18 @@ func TestKrewList(t *testing.T) {
 	defer cleanup()
 
 	initialList := test.WithIndex().Krew("list").RunOrFailOutput()
-	if bytes.Contains(initialList, []byte(validPlugin)) {
-		t.Errorf("%q should initially not be installed", validPlugin)
+	initialOut := []byte{'\n'}
+
+	if diff := cmp.Diff(initialList, initialOut); diff != "" {
+		t.Fatalf("expected empty output from 'list':\n%s", diff)
 	}
 
 	test.Krew("install", validPlugin).RunOrFail()
+	expected := []byte(validPlugin + "\n")
 
 	eventualList := test.Krew("list").RunOrFailOutput()
-	if !bytes.Contains(eventualList, []byte(validPlugin)) {
-		t.Errorf("%q should eventually be installed", validPlugin)
+	if diff := cmp.Diff(eventualList, expected); diff != "" {
+		t.Fatalf("'list' output doesn't match:\n%s", diff)
 	}
+	// TODO(ahmetb): install multiple plugins and see if the output is sorted
 }

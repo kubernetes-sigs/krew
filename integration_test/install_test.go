@@ -49,8 +49,9 @@ func TestKrewInstallReRun(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test.WithIndex().Krew("install", validPlugin).RunOrFail()
-	test.WithIndex().Krew("install", validPlugin).RunOrFail()
+	test = test.WithIndex()
+	test.Krew("install", validPlugin).RunOrFail()
+	test.Krew("install", validPlugin).RunOrFail()
 	test.AssertExecutableInPATH("kubectl-" + validPlugin)
 }
 
