@@ -107,6 +107,7 @@ func install(op installOperation, opts InstallOpts) error {
 		return errors.Wrap(err, "failed to download and extract")
 	}
 
+	applyDefaults(&op.platform)
 	if err := moveToInstallDir(op.downloadStagingDir, op.installDir, op.platform.Files); err != nil {
 		return errors.Wrap(err, "failed while moving files to the installation directory")
 	}
@@ -125,6 +126,13 @@ func install(op installOperation, opts InstallOpts) error {
 	}
 	err = createOrUpdateLink(op.binDir, fullPath, op.pluginName)
 	return errors.Wrap(err, "failed to link installed plugin")
+}
+
+func applyDefaults(platform *index.Platform) {
+	if platform.Files == nil {
+		platform.Files = []index.FileOperation{{From: "*", To: "."}}
+		glog.V(4).Infof("file operation not specified, assuming %v", platform.Files)
+	}
 }
 
 // downloadAndExtract downloads the specified archive uri (or uses the provided overrideFile, if a non-empty value)

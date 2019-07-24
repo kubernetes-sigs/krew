@@ -20,6 +20,7 @@ spec:
   platforms:
   - files:
     - from: "*"
+      to: "."
     uri: https://example.com
     sha256: deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef
     selector:
@@ -27,6 +28,7 @@ spec:
       - {key: os, operator: In, values: [macos, linux]}
   - files:
     - from: "*"
+      to: "."
     uri: https://example.com
     sha256: deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef
     selector:

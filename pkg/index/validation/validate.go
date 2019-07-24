@@ -99,22 +99,39 @@ func ValidatePlugin(name string, p index.Plugin) error {
 // validatePlatform checks Platform for structural validity.
 func validatePlatform(p index.Platform) error {
 	if p.URI == "" {
-		return errors.New("URI has to be set")
+		return errors.New("`uri` has to be set")
 	}
 	if p.Sha256 == "" {
-		return errors.New("sha256 sum has to be set")
+		return errors.New("`sha256` sum has to be set")
 	}
 	if !isValidSHA256(p.Sha256) {
-		return errors.Errorf("sha256 value %s is not valid, must match pattern %s", p.Sha256, sha256Pattern)
+		return errors.Errorf("`sha256` value %s is not valid, must match pattern %s", p.Sha256, sha256Pattern)
 	}
 	if p.Bin == "" {
-		return errors.New("bin has to be set")
+		return errors.New("`bin` has to be set")
 	}
-	if len(p.Files) == 0 {
-		return errors.New("can't have a plugin without specifying file operations")
+	if err := validateFiles(p.Files); err != nil {
+		return errors.Wrap(err, "`files` is invalid")
 	}
 	if err := validateSelector(p.Selector); err != nil {
 		return errors.Wrap(err, "invalid platform selector")
+	}
+	return nil
+}
+
+func validateFiles(fops []index.FileOperation) error {
+	if fops == nil {
+		return nil
+	}
+	if len(fops) == 0 {
+		return errors.New("`files` has to be unspecified or non-empty")
+	}
+	for _, op := range fops {
+		if op.From == "" {
+			return errors.New("`from` field has to be set")
+		} else if op.To == "" {
+			return errors.New("`to` field has to be set")
+		}
 	}
 	return nil
 }
@@ -143,10 +160,10 @@ func validateSelector(sel *metav1.LabelSelector) error {
 	}
 
 	if sel.MatchLabels != nil && len(sel.MatchLabels) == 0 {
-		return errors.New("matchLabels specified but empty")
+		return errors.New("`matchLabels` specified but empty")
 	}
 	if sel.MatchExpressions != nil && len(sel.MatchExpressions) == 0 {
-		return errors.New("matchExpressions specified but empty")
+		return errors.New("`matchExpressions` specified but empty")
 	}
 
 	return nil

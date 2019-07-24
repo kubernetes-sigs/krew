@@ -21,6 +21,7 @@ spec:
   platforms:
   - files:
     - from: "*"
+      to: "."
     uri: https://example.com
     sha256: deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef
     bin: kubectl-bar
@@ -29,6 +30,7 @@ spec:
         os: windows
   - files:
     - from: "*"
+      to: "."
     uri: https://example.com
     sha256: deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef
     bin: kubectl-bar

@@ -104,7 +104,8 @@ spec:
     uri: https://github.com/example/foo/releases/v1.0.zip
     # sha256sum of the file downloaded above:
     sha256: "208fde0b9f42ef71f79864b1ce594a70832c47dc5426e10ca73bf02e54d499d0"
-    files:                     # copy the used files out of the zip archive
+    # copy the used files out of the zip archive, defaults to `[{from: "*", to: "."}]`
+    files:
     - from: "/foo-*/unix/*.sh" # path to the files extracted from archive
       to: "."               # '.' refers to the root of plugin install directory
     bin: "./kubectl-foo"  # path to the plugin executable after copying files above
@@ -169,20 +170,12 @@ be installed. You can use the `files` field in the plugin manifest to specify
 which files should be copied into the plugin directory after extracting the
 plugin archive.
 
-The `file:` list specifies the copy operations (like `mv(1) <from> <to>`) to
-the files `from` the archive `to` the installation destination.
+The `files:` list specifies the copy operations (like `mv(1) <from> <to>`) to
+the files `from` the archive `to` the installation destination. If the `files`
+list is unspecified, it defaults to `[{from: "*", to: "."}]`. Mind that a
+wildcard may install more files than desired.
 
-**Example:** Copy all files in the `bin/` directory of the extracted archive to
-the root of your plugin:
-
-```yaml
-    files:
-    - from: bin/*.exe
-      to: .
-```
-
-Given the file operation above, if the extracted plugin archive looked like
-this:
+**Example:** Consider a plugin whose extracted archive looks like
 
 ```text
 .
@@ -193,12 +186,36 @@ this:
     └── kubectl-foo-windows.exe
 ```
 
-The resulting installation directory would up just with:
+- To copy all files in the `bin/` directory of the extracted archive to
+  the root of your plugin, leave out the `files:` field, which is equivalent to
 
-```text
-.
-└── krew-foo-windows.exe
-```
+  ```yaml
+      files: [{from: "*", to: "."}]
+  ```
+  
+  This copies out binaries for both platforms to the installation directory
+  onto the user’s machine, despite only one of them will be used:
+  
+  ```text
+  .
+  └── krew-foo-windows.exe
+  └── krew-foo-linux
+  ```
+
+- For a more fine-grained control, specify each copy operation:
+
+  ```yaml
+      files:
+      - from: bin/*.exe
+        to: .
+  ```
+
+  This will result in the following files in the installation directory:
+
+  ```text
+  .
+  └── krew-foo-windows.exe
+  ```
 
 #### Specifying plugin executable
 
