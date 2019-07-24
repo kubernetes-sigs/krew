@@ -25,6 +25,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+
 	"sigs.k8s.io/krew/pkg/environment"
 	"sigs.k8s.io/krew/pkg/index"
 	"sigs.k8s.io/krew/pkg/testutil"
@@ -255,5 +257,43 @@ func Test_downloadAndExtract_fileOverride(t *testing.T) {
 	}
 	if len(files) == 0 {
 		t.Fatal("no files found in the extract output directory")
+	}
+}
+
+func Test_applyDefaults(t *testing.T) {
+	tests := []struct {
+		name     string
+		platform index.Platform
+		expected index.Platform
+	}{
+		{
+			name:     "with files given",
+			platform: testutil.NewPlatform().WithFiles([]index.FileOperation{{From: "here", To: "there"}}).V(),
+			expected: testutil.NewPlatform().WithFiles([]index.FileOperation{{From: "here", To: "there"}}).V(),
+		},
+		{
+			name:     "with empty files",
+			platform: testutil.NewPlatform().WithFiles([]index.FileOperation{}).V(),
+			expected: testutil.NewPlatform().WithFiles([]index.FileOperation{}).V(),
+		},
+		{
+			name:     "with unspecified files",
+			platform: testutil.NewPlatform().WithFiles(nil).V(),
+			expected: testutil.NewPlatform().WithFiles([]index.FileOperation{{From: "*", To: "."}}).V(),
+		},
+		{
+			name:     "no defaults for other fields",
+			platform: testutil.NewPlatform().WithBin("").WithOS("").WithSelector(nil).WithSHA256("").WithURI("").V(),
+			expected: testutil.NewPlatform().WithBin("").WithOS("").WithSelector(nil).WithSHA256("").WithURI("").V(),
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			applyDefaults(&test.platform)
+			if diff := cmp.Diff(test.platform, test.expected); diff != "" {
+				t.Error(diff)
+			}
+		})
 	}
 }
