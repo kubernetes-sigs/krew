@@ -16,6 +16,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -23,7 +24,6 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
-	"github.com/spf13/pflag"
 
 	"sigs.k8s.io/krew/pkg/index"
 	"sigs.k8s.io/krew/pkg/index/indexscanner"
@@ -43,11 +43,11 @@ var (
 )
 
 func main() {
-	pluginsDir := pflag.String("plugins-dir", "", "The directory containing the plugin manifests")
-	pflag.Parse()
+	pluginsDir := flag.String("plugins-dir", "", "The directory containing the plugin manifests")
+	flag.Parse()
 
 	if *pluginsDir == "" {
-		pflag.Usage()
+		flag.Usage()
 		return
 	}
 
