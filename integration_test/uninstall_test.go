@@ -68,7 +68,7 @@ func TestKrewRemove_ManifestRemovedFromIndex(t *testing.T) {
 		t.Fatalf("could not read local manifest file at %s: %v", localManifest, err)
 	}
 	test.Krew("install", validPlugin).RunOrFail()
-	if err := os.RemoveAll(localManifest); err != nil {
+	if err := os.Remove(localManifest); err != nil {
 		t.Fatalf("failed to remove local manifest file: %v", err)
 	}
 	test.Krew("remove", validPlugin).RunOrFail()
