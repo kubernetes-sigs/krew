@@ -118,6 +118,7 @@ upgraded like a plugin by running the `kubectl krew upgrade` command.
 
 - **Users:**
   - Read the [**User Guide**](./docs/USER_GUIDE.md) to learn how to use krew.
+  - Have a look at the [plugin overview](./docs/plugins-overview.md) page.
 - **Plugin Developers:**
   - [Developer Guide](./docs/DEVELOPER_GUIDE.md): how to package and publish a
     plugin for krew.
