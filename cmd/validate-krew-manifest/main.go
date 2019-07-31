@@ -77,6 +77,16 @@ func validateManifestFile(path string) error {
 	}
 	glog.Infof("structural validation OK")
 
+	if maxLen := 80; maxLen < getMaxLinelength(p.Spec.Description) {
+		glog.Warningf("line length in `description` exceeds %d characters", maxLen)
+	}
+	if maxLen := 70; maxLen < getMaxLinelength(p.Spec.ShortDescription) {
+		glog.Warningf("line length in `shortDescription` exceeds %d characters", maxLen)
+	}
+	if maxLen := 80; maxLen < getMaxLinelength(p.Spec.Caveats) {
+		glog.Warningf("line length in `caveats` exceeds %d characters", maxLen)
+	}
+
 	// make sure each platform matches a supported platform
 	for i, p := range p.Spec.Platforms {
 		if os, arch := findAnyMatchingPlatform(p.Selector); os == "" || arch == "" {
@@ -196,4 +206,14 @@ func allPlatforms() [][2]string {
 		{"darwin", "386"},
 		{"darwin", "amd64"},
 	}
+}
+
+func getMaxLinelength(s string) int {
+	max := 0
+	for _, line := range strings.Split(s, "\n") {
+		if l := len(line); max < l {
+			max = l
+		}
+	}
+	return max
 }
