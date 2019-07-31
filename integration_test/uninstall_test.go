@@ -14,7 +14,13 @@
 
 package integrationtest
 
-import "testing"
+import (
+	"os"
+	"path/filepath"
+	"testing"
+
+	"sigs.k8s.io/krew/pkg/constants"
+)
 
 func TestKrewUninstall(t *testing.T) {
 	skipShort(t)
@@ -48,4 +54,23 @@ func TestKrewRemove_AliasSupported(t *testing.T) {
 	test.WithIndex().Krew("install", validPlugin).RunOrFailOutput()
 	test.Krew("remove", validPlugin).RunOrFailOutput()
 	test.AssertExecutableNotInPATH("kubectl-" + validPlugin)
+}
+
+func TestKrewRemove_ManifestRemovedFromIndex(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	test = test.WithIndex()
+	localManifest := filepath.Join(test.Root(), "index", "plugins", validPlugin+constants.ManifestExtension)
+	if _, err := os.Stat(localManifest); err != nil {
+		t.Fatalf("could not read local manifest file at %s: %v", localManifest, err)
+	}
+	test.Krew("install", validPlugin).RunOrFail()
+	if err := os.RemoveAll(localManifest); err != nil {
+		t.Fatalf("failed to remove local manifest file: %v", err)
+
+	}
+	test.Krew("remove", validPlugin)
 }
