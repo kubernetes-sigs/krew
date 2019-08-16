@@ -33,6 +33,9 @@ kubectl krew uninstall view-secret  # uninstall a plugin
 
 Read the [User Guide](./docs/USER_GUIDE.md) for detailed documentation.
 
+Check out the list of [kubectl plugins available on krew][list] or just run
+`kubectl krew search` to discover plugins available on your OS.
+
 ### Installation
 
 > :warning: **Warning:** krew is only compatible with kubectl v1.12 or higher.
@@ -158,7 +161,7 @@ new features and changes.
 
 ### Contributing
 
-Interested in contributing to Krew? Please refer to our 
+Interested in contributing to Krew? Please refer to our
 [Contributing Guidelines](./docs/CONTRIBUTOR_GUIDE.md) for more details
 
 ### Code of Conduct
@@ -167,3 +170,4 @@ Participation in the Kubernetes community is governed by the [Kubernetes Code
 of Conduct](https://github.com/kubernetes-sigs/kustomize/blob/master/code-of-conduct.md).
 
 [index]:https://github.com/kubernetes-sigs/krew-index
+[list]: http://sigs.k8s.io/krew-index/plugins.md
