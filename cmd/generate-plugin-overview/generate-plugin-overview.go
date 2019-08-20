@@ -32,13 +32,16 @@ const (
 	separator  = " | "
 	pageHeader = `## Available kubectl plugins
 
-The following kubectl plugins are currently available
-on [Krew plugin index](https://sigs.k8s.io/krew-index).
-
 To install these kubectl plugins:
 
 1. [Install Krew](https://github.com/kubernetes-sigs/krew#installation)
 2. Run ` + "`kubectl krew install PLUGIN_NAME`" + ` to install a plugin via Krew.
+
+The following kubectl plugins are currently available on
+[Krew plugin index](https://sigs.k8s.io/krew-index). Note that this table may be
+outdated. For the most up-to-date list of plugins, visit the
+[krew-index](https://github.com/kubernetes-sigs/krew-index/tree/master/plugins)
+repository or run <code>kubectl krew search</code>.
 `
 
 	pageFooter = `
