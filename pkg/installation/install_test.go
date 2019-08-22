@@ -297,3 +297,39 @@ func Test_applyDefaults(t *testing.T) {
 		})
 	}
 }
+
+func TestCleanupStaleKrewInstallations(t *testing.T) {
+	dir, close := testutil.NewTempDir(t)
+	defer close()
+
+	testFiles := []string{
+		"dir1/f1.txt",
+		"dir2/f2.txt",
+		"dir3/subdir/f3.txt",
+		"file1.txt",
+		"file2.txt",
+	}
+	for _, tf := range testFiles {
+		dir.Write(filepath.FromSlash(tf), nil)
+	}
+
+	err := CleanupStaleKrewInstallations(dir.Root(), "dir2")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ls, err := ioutil.ReadDir(dir.Root())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var got []string
+	for _, l := range ls {
+		got = append(got, l.Name())
+	}
+
+	expected := []string{"dir2", "file1.txt", "file2.txt"}
+	if diff := cmp.Diff(expected, got); diff != "" {
+		t.Fatal(diff)
+	}
+}
