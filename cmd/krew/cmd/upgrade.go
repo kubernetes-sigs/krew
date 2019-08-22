@@ -58,7 +58,7 @@ kubectl krew upgrade foo bar"`,
 			for _, name := range pluginNames {
 				plugin, err := indexscanner.LoadPluginFileFromFS(paths.IndexPluginsPath(), name)
 				if err != nil {
-					return errors.Wrapf(err, "failed to load the index file for plugin %s", plugin.Name)
+					return errors.Wrapf(err, "failed to load the plugin manifest for plugin %s", name)
 				}
 
 				glog.V(2).Infof("Upgrading plugin: %s\n", plugin.Name)
