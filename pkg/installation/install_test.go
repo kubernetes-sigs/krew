@@ -195,25 +195,25 @@ func Test_removeLink_regularFileExists(t *testing.T) {
 	}
 }
 
-func Test_isWindows(t *testing.T) {
+func TestIsWindows(t *testing.T) {
 	expected := runtime.GOOS == "windows"
-	got := isWindows()
+	got := IsWindows()
 	if expected != got {
-		t.Fatalf("isWindows()=%v; expected=%v (on %s)", got, expected, runtime.GOOS)
+		t.Fatalf("IsWindows()=%v; expected=%v (on %s)", got, expected, runtime.GOOS)
 	}
 }
 
-func Test_isWindows_envOverride(t *testing.T) {
+func TestIsWindows_envOverride(t *testing.T) {
 	defer os.Unsetenv("KREW_OS")
 
 	os.Setenv("KREW_OS", "windows")
-	if !isWindows() {
-		t.Fatalf("isWindows()=false when KREW_OS=windows")
+	if !IsWindows() {
+		t.Fatalf("IsWindows()=false when KREW_OS=windows")
 	}
 
 	os.Setenv("KREW_OS", "not-windows")
-	if isWindows() {
-		t.Fatalf("isWindows()=true when KREW_OS != windows")
+	if IsWindows() {
+		t.Fatalf("IsWindows()=true when KREW_OS != windows")
 	}
 }
 

@@ -29,9 +29,7 @@ func TestKrewVersion(t *testing.T) {
 	output := test.Krew("version").RunOrFailOutput()
 
 	requiredSubstrings := []string{
-		"IsPlugin",
 		fmt.Sprintf(`BasePath\s+%s`, test.Root()),
-		"ExecutedVersion",
 		"GitTag",
 		"GitCommit",
 		`IndexURI\s+https://github.com/kubernetes-sigs/krew-index.git`,

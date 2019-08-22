@@ -15,15 +15,11 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
-	"github.com/golang/glog"
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	"sigs.k8s.io/krew/pkg/constants"
-	"sigs.k8s.io/krew/pkg/environment"
 	"sigs.k8s.io/krew/pkg/version"
 )
 
@@ -34,8 +30,6 @@ var versionCmd = &cobra.Command{
 	Long: `Show version information and diagnostics about krew itself.
 
 Remarks:
-  - IsPlugin is true if krew is executed as a plugin
-  - ExecutedVersion is the version of the currently executed binary. This is detected through the path.
   - GitTag describes the release name krew is built from.
   - GitCommit describes the git revision ID which krew is built from.
   - IndexURI is the URI where the index is updated from.
@@ -45,19 +39,7 @@ Remarks:
   - DownloadPath is the directory for temporarily downloading plugins.
   - BinPath is the directory for the symbolic links to the installed plugin executables.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		selfPath, err := os.Executable()
-		if err != nil {
-			glog.Fatalf("failed to get the own executable path")
-		}
-
-		executedVersion, runningAsPlugin, err := environment.GetExecutedVersion(paths.InstallPath(), selfPath, environment.Realpath)
-		if err != nil {
-			return errors.Wrap(err, "failed to find current krew version")
-		}
-
 		conf := [][]string{
-			{"IsPlugin", fmt.Sprintf("%v", runningAsPlugin)},
-			{"ExecutedVersion", executedVersion},
 			{"GitTag", version.GitTag()},
 			{"GitCommit", version.GitCommit()},
 			{"IndexURI", constants.IndexURI},
