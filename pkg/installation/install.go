@@ -101,7 +101,9 @@ func install(op installOperation, opts InstallOpts) error {
 	}
 	defer func() {
 		glog.V(3).Infof("Deleting the download staging directory %s", op.downloadStagingDir)
-		_ = os.RemoveAll(op.downloadStagingDir)
+		if err := os.RemoveAll(op.downloadStagingDir); err != nil {
+			glog.Warningf("failed to clean up download staging directory: %s", err)
+		}
 	}()
 	if err := downloadAndExtract(op.downloadStagingDir, op.platform.URI, op.platform.Sha256, opts.ArchiveFileOverride); err != nil {
 		return errors.Wrap(err, "failed to download and extract")
