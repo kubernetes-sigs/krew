@@ -72,6 +72,7 @@ func extractZIP(targetDir string, read io.ReaderAt, size int64) error {
 
 		dst, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, f.Mode())
 		if err != nil {
+			src.Close()
 			return errors.Wrap(err, "can't create file in zip destination dir")
 		}
 		close := func() {
