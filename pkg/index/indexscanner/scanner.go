@@ -92,6 +92,7 @@ func ReadPluginFile(indexFilePath string) (index.Plugin, error) {
 	} else if err != nil {
 		return index.Plugin{}, errors.Wrap(err, "failed to open index file")
 	}
+	defer f.Close()
 	return DecodePluginFile(f)
 }
 
