@@ -22,4 +22,9 @@ const (
 
 	// IndexURI points to the upstream index.
 	IndexURI = "https://github.com/kubernetes-sigs/krew-index.git"
+
+	SecurityNotice = `
+>> Plugins do not undergo any kind of security validation.
+>> Please keep in mind that you are running these plugins at your own risk.
+`
 )

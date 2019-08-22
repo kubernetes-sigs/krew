@@ -23,6 +23,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
+	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/index"
 	"sigs.k8s.io/krew/pkg/index/indexscanner"
 	"sigs.k8s.io/krew/pkg/index/validation"
@@ -147,6 +148,9 @@ Remarks:
 				return nil
 			}
 			return ensureIndexUpdated(cmd, args)
+		},
+		PostRun: func(_ *cobra.Command, args []string) {
+			fmt.Fprintln(os.Stderr, constants.SecurityNotice)
 		},
 	}
 
