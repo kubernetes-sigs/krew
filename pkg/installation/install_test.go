@@ -323,7 +323,7 @@ func TestCleanupStaleKrewInstallations(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	var got []string
+	got := make([]string, 0, len(ls))
 	for _, l := range ls {
 		got = append(got, l.Name())
 	}
