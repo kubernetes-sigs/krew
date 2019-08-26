@@ -47,7 +47,7 @@ func IsSafePluginName(name string) bool {
 		return false
 	}
 	for _, forbidden := range windowsForbidden {
-		if strings.ToLower(forbidden) == strings.ToLower(name) {
+		if strings.EqualFold(forbidden, name) {
 			return false
 		}
 	}
