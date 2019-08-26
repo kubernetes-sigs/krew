@@ -22,8 +22,9 @@ import (
 )
 
 const securityNotice = `
->> Plugins do not undergo any kind of security validation.
->> Please keep in mind that you are running these plugins at your own risk.
+WARNING: You installed a plugin from the krew-index plugin repository.
+   These plugins are not audited for security by the Krew maintainers.
+   Run them at your own risk.
 `
 
 func PrintSecurityNotice(_ *cobra.Command, _ []string) {
