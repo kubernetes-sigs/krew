@@ -23,7 +23,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
-	"sigs.k8s.io/krew/pkg/constants"
+	"sigs.k8s.io/krew/cmd/krew/cmd/internal"
 	"sigs.k8s.io/krew/pkg/index"
 	"sigs.k8s.io/krew/pkg/index/indexscanner"
 	"sigs.k8s.io/krew/pkg/index/validation"
@@ -149,9 +149,7 @@ Remarks:
 			}
 			return ensureIndexUpdated(cmd, args)
 		},
-		PostRun: func(_ *cobra.Command, args []string) {
-			fmt.Fprintln(os.Stderr, constants.SecurityNotice)
-		},
+		PostRun: internal.PrintSecurityNotice,
 	}
 
 	manifest = installCmd.Flags().String("manifest", "", "(Development-only) specify plugin manifest directly.")

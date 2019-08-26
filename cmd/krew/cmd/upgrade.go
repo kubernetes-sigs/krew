@@ -22,7 +22,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
-	"sigs.k8s.io/krew/pkg/constants"
+	"sigs.k8s.io/krew/cmd/krew/cmd/internal"
 	"sigs.k8s.io/krew/pkg/index/indexscanner"
 	"sigs.k8s.io/krew/pkg/installation"
 )
@@ -82,9 +82,7 @@ kubectl krew upgrade foo bar"`,
 			}
 			return ensureIndexUpdated(cmd, args)
 		},
-		PostRun: func(_ *cobra.Command, args []string) {
-			fmt.Fprintln(os.Stderr, constants.SecurityNotice)
-		},
+		PostRun: internal.PrintSecurityNotice,
 	}
 
 	noUpdateIndex = upgradeCmd.Flags().Bool("no-update-index", false, "(Experimental) do not update local copy of plugin index before upgrading")

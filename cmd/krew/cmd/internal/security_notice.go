@@ -12,14 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package constants
+package internal
 
-const (
-	CurrentAPIVersion = "krew.googlecontainertools.github.com/v1alpha2"
-	PluginKind        = "Plugin"
-	ManifestExtension = ".yaml"
-	KrewPluginName    = "krew" // plugin name of krew itself
+import (
+	"os"
 
-	// IndexURI points to the upstream index.
-	IndexURI = "https://github.com/kubernetes-sigs/krew-index.git"
+	"github.com/fatih/color"
+	"github.com/spf13/cobra"
 )
+
+const securityNotice = `
+>> Plugins do not undergo any kind of security validation.
+>> Please keep in mind that you are running these plugins at your own risk.
+`
+
+func PrintSecurityNotice(_ *cobra.Command, _ []string) {
+	d := color.New(color.FgRed, color.Bold)
+	d.Fprintln(os.Stderr, securityNotice)
+}
