@@ -15,19 +15,19 @@
 package internal
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
 
-const securityNotice = `
-WARNING: You installed a plugin from the krew-index plugin repository.
+const securityNotice = `You installed a plugin from the krew-index plugin repository.
    These plugins are not audited for security by the Krew maintainers.
    Run them at your own risk.
 `
 
 func PrintSecurityNotice(_ *cobra.Command, _ []string) {
-	d := color.New(color.FgRed, color.Bold)
-	d.Fprintln(os.Stderr, securityNotice)
+	boldRed := color.New(color.FgRed, color.Bold).SprintfFunc()
+	fmt.Fprintf(os.Stderr, "\n%s: %s\n", boldRed("WARNING"), securityNotice)
 }
