@@ -195,25 +195,25 @@ func Test_removeLink_regularFileExists(t *testing.T) {
 	}
 }
 
-func Test_isWindows(t *testing.T) {
+func TestIsWindows(t *testing.T) {
 	expected := runtime.GOOS == "windows"
-	got := isWindows()
+	got := IsWindows()
 	if expected != got {
-		t.Fatalf("isWindows()=%v; expected=%v (on %s)", got, expected, runtime.GOOS)
+		t.Fatalf("IsWindows()=%v; expected=%v (on %s)", got, expected, runtime.GOOS)
 	}
 }
 
-func Test_isWindows_envOverride(t *testing.T) {
+func TestIsWindows_envOverride(t *testing.T) {
 	defer os.Unsetenv("KREW_OS")
 
 	os.Setenv("KREW_OS", "windows")
-	if !isWindows() {
-		t.Fatalf("isWindows()=false when KREW_OS=windows")
+	if !IsWindows() {
+		t.Fatalf("IsWindows()=false when KREW_OS=windows")
 	}
 
 	os.Setenv("KREW_OS", "not-windows")
-	if isWindows() {
-		t.Fatalf("isWindows()=true when KREW_OS != windows")
+	if IsWindows() {
+		t.Fatalf("IsWindows()=true when KREW_OS != windows")
 	}
 }
 
@@ -295,5 +295,41 @@ func Test_applyDefaults(t *testing.T) {
 				t.Error(diff)
 			}
 		})
+	}
+}
+
+func TestCleanupStaleKrewInstallations(t *testing.T) {
+	dir, close := testutil.NewTempDir(t)
+	defer close()
+
+	testFiles := []string{
+		"dir1/f1.txt",
+		"dir2/f2.txt",
+		"dir3/subdir/f3.txt",
+		"file1.txt",
+		"file2.txt",
+	}
+	for _, tf := range testFiles {
+		dir.Write(filepath.FromSlash(tf), nil)
+	}
+
+	err := CleanupStaleKrewInstallations(dir.Root(), "dir2")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ls, err := ioutil.ReadDir(dir.Root())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	got := make([]string, 0, len(ls))
+	for _, l := range ls {
+		got = append(got, l.Name())
+	}
+
+	expected := []string{"dir2", "file1.txt", "file2.txt"}
+	if diff := cmp.Diff(expected, got); diff != "" {
+		t.Fatal(diff)
 	}
 }

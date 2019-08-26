@@ -15,6 +15,7 @@
 package installation
 
 import (
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -23,6 +24,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 
+	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/download"
 	"sigs.k8s.io/krew/pkg/environment"
 	"sigs.k8s.io/krew/pkg/index"
@@ -43,10 +45,6 @@ type installOperation struct {
 	installDir         string
 	binDir             string
 }
-
-const (
-	krewPluginName = "krew"
-)
 
 // Plugin lifecycle errors
 var (
@@ -153,9 +151,9 @@ func downloadAndExtract(extractDir, uri, sha256sum, overrideFile string) error {
 
 // Uninstall will uninstall a plugin.
 func Uninstall(p environment.Paths, name string) error {
-	if name == krewPluginName {
+	if name == constants.KrewPluginName {
 		glog.Errorf("Removing krew through krew is not supported.")
-		if !isWindows() { // assume POSIX-like
+		if !IsWindows() { // assume POSIX-like
 			glog.Errorf("If you’d like to uninstall krew altogether, run:\n\trm -rf -- %q", p.BasePath())
 		}
 		return errors.New("self-uninstall not allowed")
@@ -171,7 +169,7 @@ func Uninstall(p environment.Paths, name string) error {
 
 	glog.V(1).Infof("Deleting plugin %s", name)
 
-	symlinkPath := filepath.Join(p.BinPath(), pluginNameToBin(name, isWindows()))
+	symlinkPath := filepath.Join(p.BinPath(), pluginNameToBin(name, IsWindows()))
 	glog.V(3).Infof("Unlink %q", symlinkPath)
 	if err := removeLink(symlinkPath); err != nil {
 		return errors.Wrap(err, "could not uninstall symlink of plugin")
@@ -189,7 +187,7 @@ func Uninstall(p environment.Paths, name string) error {
 }
 
 func createOrUpdateLink(binDir string, binary string, plugin string) error {
-	dst := filepath.Join(binDir, pluginNameToBin(plugin, isWindows()))
+	dst := filepath.Join(binDir, pluginNameToBin(plugin, IsWindows()))
 
 	if err := removeLink(dst); err != nil {
 		return errors.Wrap(err, "failed to remove old symlink")
@@ -228,7 +226,8 @@ func removeLink(path string) error {
 	return nil
 }
 
-func isWindows() bool {
+// IsWindows sees if KREW_OS or runtime.GOOS to find out if current execution mode is win32.
+func IsWindows() bool {
 	goos := runtime.GOOS
 	if env := os.Getenv("KREW_OS"); env != "" {
 		goos = env
@@ -245,4 +244,25 @@ func pluginNameToBin(name string, isWindows bool) string {
 		name += ".exe"
 	}
 	return name
+}
+
+// CleanupStaleKrewInstallations removes the versions that aren't the current version.
+func CleanupStaleKrewInstallations(dir string, currentVersion string) error {
+	ls, err := ioutil.ReadDir(dir)
+	if err != nil {
+		return errors.Wrap(err, "failed to read krew store directory")
+	}
+	glog.V(2).Infof("Found %d entries in krew store directory", len(ls))
+	for _, d := range ls {
+		glog.V(2).Infof("Found a krew installation: %s (%s)", d.Name(), d.Mode())
+		if d.IsDir() && d.Name() != currentVersion {
+			glog.V(1).Infof("Deleting stale krew install directory: %s", d.Name())
+			p := filepath.Join(dir, d.Name())
+			if err := os.RemoveAll(p); err != nil {
+				return errors.Wrapf(err, "failed to remove stale krew version at path '%s'", p)
+			}
+			glog.V(1).Infof("Stale installation directory removed")
+		}
+	}
+	return nil
 }

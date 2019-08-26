@@ -23,7 +23,6 @@ import (
 	"k8s.io/client-go/util/homedir"
 
 	"sigs.k8s.io/krew/pkg/constants"
-	"sigs.k8s.io/krew/pkg/pathutil"
 )
 
 // Paths contains all important environment paths
@@ -105,32 +104,6 @@ func (p Paths) PluginInstallReceiptPath(plugin string) string {
 // e.g. {PluginInstallPath}/{plugin}/{version}
 func (p Paths) PluginVersionInstallPath(plugin, version string) string {
 	return filepath.Join(p.InstallPath(), plugin, version)
-}
-
-// GetExecutedVersion returns the currently executed version. If krew is
-// not executed as an plugin it will return a nil error and an empty string.
-func GetExecutedVersion(installPath string, executionPath string, pathResolver func(string) (string, error)) (string, bool, error) {
-	path, err := pathResolver(executionPath)
-	if err != nil {
-		return "", false, errors.Wrap(err, "failed to resolve path")
-	}
-
-	currentBinaryPath, err := filepath.Abs(path)
-	if err != nil {
-		return "", false, err
-	}
-
-	pluginsPath, err := filepath.Abs(filepath.Join(installPath, "krew"))
-	if err != nil {
-		return "", false, err
-	}
-
-	elems, ok := pathutil.IsSubPath(pluginsPath, currentBinaryPath)
-	if !ok || len(elems) < 2 {
-		return "", false, nil
-	}
-
-	return elems[0], true, nil
 }
 
 // Realpath evaluates symbolic links. If the path is not a symbolic link, it

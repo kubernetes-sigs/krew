@@ -25,8 +25,11 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
+	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/environment"
 	"sigs.k8s.io/krew/pkg/gitutil"
+	"sigs.k8s.io/krew/pkg/installation"
+	"sigs.k8s.io/krew/pkg/installation/receipt"
 	"sigs.k8s.io/krew/pkg/receiptsmigration"
 )
 
@@ -40,19 +43,9 @@ var rootCmd = &cobra.Command{
 	Short: "krew is the kubectl plugin manager",
 	Long: `krew is the kubectl plugin manager.
 You can invoke krew through kubectl: "kubectl krew [command]..."`,
-	SilenceUsage:  true,
-	SilenceErrors: true,
-	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		isMigrated, err := receiptsmigration.Done(paths)
-		if err != nil {
-			return err
-		}
-		if isMigrated || cmd.Use == "receipts-upgrade" {
-			return nil
-		}
-		fmt.Fprintln(os.Stderr, "You need to perform a migration to continue using krew.\nPlease run `kubectl krew system receipts-upgrade`")
-		return fmt.Errorf("krew home outdated")
-	},
+	SilenceUsage:      true,
+	SilenceErrors:     true,
+	PersistentPreRunE: preRun,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -85,6 +78,42 @@ func init() {
 		paths.InstallReceiptsPath()); err != nil {
 		glog.Fatal(err)
 	}
+}
+
+func preRun(cmd *cobra.Command, _ []string) error {
+	// detect if receipts migration (v0.2.x->v0.3.x) is complete
+	isMigrated, err := receiptsmigration.Done(paths)
+	if err != nil {
+		return err
+	}
+	if !isMigrated && cmd.Use != "receipts-upgrade" {
+		fmt.Fprintln(os.Stderr, "You need to perform a migration to continue using krew.\nPlease run `kubectl krew system receipts-upgrade`")
+		return fmt.Errorf("krew home outdated")
+	}
+
+	if installation.IsWindows() {
+		glog.V(4).Infof("detected windows, will check for old krew installations to clean up")
+		err := cleanupStaleKrewInstallations()
+		if err != nil {
+			glog.Warningf("Failed to clean up old installations of krew (on windows).")
+			glog.Warningf("You may need to clean them up manually. Error: %v", err)
+		}
+	}
+	return nil
+}
+
+func cleanupStaleKrewInstallations() error {
+	r, err := receipt.Load(paths.PluginInstallReceiptPath(constants.KrewPluginName))
+	if os.IsNotExist(err) {
+		glog.V(1).Infof("could not find krew's own plugin receipt, skipping cleanup of stale krew installations")
+		return nil
+	} else if err != nil {
+		return errors.Wrap(err, "cannot load krew's own plugin receipt")
+	}
+	v := r.Spec.Version
+
+	glog.V(1).Infof("Clean up krew stale installations, current=%s", v)
+	return installation.CleanupStaleKrewInstallations(paths.PluginInstallPath(constants.KrewPluginName), v)
 }
 
 func checkIndex(_ *cobra.Command, _ []string) error {
