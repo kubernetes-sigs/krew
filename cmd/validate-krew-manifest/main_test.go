@@ -183,3 +183,58 @@ func Test_isOverlappingPlatformSelectors_overlap(t *testing.T) {
 		t.Fatal("expected overlap")
 	}
 }
+
+func Test_validateLineLength(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected bool
+	}{
+		{
+			name:     "single line below limit",
+			input:    "short string",
+			expected: true,
+		},
+		{
+			name:     "single line above limit",
+			input:    "long string long string long string",
+			expected: false,
+		},
+		{
+			name: "multiple lines, one too long",
+			input: `
+line below limit
+line below limit
+long string long string long string
+line below limit
+line below limit
+`,
+			expected: false,
+		},
+		{
+			name: "single word above length limit",
+			input: "	https://krew.dev/is_really_awesome   ",
+			expected: true,
+		},
+		{
+			name: "multiple lines with single word above length limit",
+			input: `
+line below limit
+line below limit
+https://krew.dev/is_really_awesome
+line below limit
+line below limit
+`,
+			expected: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			actual := validateLineLength(test.input, 20)
+			if actual != test.expected {
+				t.Errorf("expected %v, got %v", test.expected, actual)
+			}
+		})
+	}
+}

@@ -77,13 +77,13 @@ func validateManifestFile(path string) error {
 	}
 	glog.Infof("structural validation OK")
 
-	if maxLen := 80; maxLen < getMaxLinelength(p.Spec.Description) {
+	if maxLen := 80; !validateLineLength(p.Spec.Description, maxLen) {
 		glog.Warningf("line length in `description` exceeds %d characters", maxLen)
 	}
-	if maxLen := 70; maxLen < getMaxLinelength(p.Spec.ShortDescription) {
+	if maxLen := 70; !validateLineLength(p.Spec.ShortDescription, maxLen) {
 		glog.Warningf("line length in `shortDescription` exceeds %d characters", maxLen)
 	}
-	if maxLen := 80; maxLen < getMaxLinelength(p.Spec.Caveats) {
+	if maxLen := 80; !validateLineLength(p.Spec.Caveats, maxLen) {
 		glog.Warningf("line length in `caveats` exceeds %d characters", maxLen)
 	}
 
@@ -208,12 +208,16 @@ func allPlatforms() [][2]string {
 	}
 }
 
-func getMaxLinelength(s string) int {
-	max := 0
+// validateLineLength checks if the maximum line length is below maxLen.
+// Lines may exceed this limit, if they are just one word, i.e. without spaces.
+func validateLineLength(s string, maxLen int) bool {
 	for _, line := range strings.Split(s, "\n") {
-		if l := len(line); max < l {
-			max = l
+		if len(line) <= maxLen {
+			continue
+		}
+		if strings.Contains(strings.TrimSpace(line), " ") {
+			return false
 		}
 	}
-	return max
+	return true
 }
