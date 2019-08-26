@@ -31,5 +31,7 @@ linters:
     - staticcheck
     - structcheck
     - prealloc
+    - deadcode
+    - varcheck
   disable:
     - errcheck
