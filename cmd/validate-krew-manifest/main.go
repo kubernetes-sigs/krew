@@ -78,13 +78,13 @@ func validateManifestFile(path string) error {
 	glog.Infof("structural validation OK")
 
 	if maxLen := 80; !validateLineLength(p.Spec.Description, maxLen) {
-		glog.Warningf("line length in `description` exceeds %d characters", maxLen)
+		return fmt.Errorf("line length in `description` exceeds %d characters", maxLen)
 	}
 	if maxLen := 70; !validateLineLength(p.Spec.ShortDescription, maxLen) {
-		glog.Warningf("line length in `shortDescription` exceeds %d characters", maxLen)
+		return fmt.Errorf("line length in `shortDescription` exceeds %d characters", maxLen)
 	}
 	if maxLen := 80; !validateLineLength(p.Spec.Caveats, maxLen) {
-		glog.Warningf("line length in `caveats` exceeds %d characters", maxLen)
+		return fmt.Errorf("line length in `caveats` exceeds %d characters", maxLen)
 	}
 
 	// make sure each platform matches a supported platform
