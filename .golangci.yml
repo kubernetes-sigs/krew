@@ -16,6 +16,9 @@ run:
     - hack
     - docs
 
+  # include test files
+  tests: true
+
 linters:
   enable:
     - gocritic
