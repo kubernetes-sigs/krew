@@ -113,7 +113,7 @@ Remarks:
 				glog.V(2).Infof("Will install plugin: %s\n", plugin.Name)
 			}
 
-			var failed []string
+			var failed, skipped []string
 			for _, plugin := range install {
 				fmt.Fprintf(os.Stderr, "Installing plugin: %s\n", plugin.Name)
 				err := installation.Install(paths, plugin, installation.InstallOpts{
@@ -121,6 +121,7 @@ Remarks:
 				})
 				if err == installation.ErrIsAlreadyInstalled {
 					glog.Warningf("Skipping plugin %q, it is already installed", plugin.Name)
+					skipped = append(skipped, plugin.Name)
 					continue
 				}
 				if err != nil {
@@ -133,7 +134,10 @@ Remarks:
 				}
 				fmt.Fprintf(os.Stderr, "Installed plugin: %s\n", plugin.Name)
 			}
-			if len(failed) > 0 {
+			if len(failed)+len(skipped) < len(install) {
+				internal.PrintSecurityNotice()
+			}
+			if 0 < len(failed) {
 				return errors.Errorf("failed to install some plugins: %+v", failed)
 			}
 			return nil
@@ -149,7 +153,6 @@ Remarks:
 			}
 			return ensureIndexUpdated(cmd, args)
 		},
-		PostRun: internal.PrintSecurityNotice,
 	}
 
 	manifest = installCmd.Flags().String("manifest", "", "(Development-only) specify plugin manifest directly.")

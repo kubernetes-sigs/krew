@@ -19,15 +19,13 @@ import (
 	"os"
 
 	"github.com/fatih/color"
-	"github.com/spf13/cobra"
 )
 
 const securityNotice = `You installed a plugin from the krew-index plugin repository.
    These plugins are not audited for security by the Krew maintainers.
-   Run them at your own risk.
-`
+   Run them at your own risk.`
 
-func PrintSecurityNotice(_ *cobra.Command, _ []string) {
+func PrintSecurityNotice() {
 	boldRed := color.New(color.FgRed, color.Bold).SprintfFunc()
 	fmt.Fprintf(os.Stderr, "\n%s: %s\n", boldRed("WARNING"), securityNotice)
 }

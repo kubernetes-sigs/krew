@@ -40,7 +40,7 @@ Use "kubectl krew update" to renew the index.
 To only upgrade single plugins provide them as arguments:
 kubectl krew upgrade foo bar"`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var ignoreUpgraded bool
+			var ignoreUpgraded, printSecurityNotice bool
 			var pluginNames []string
 			// Upgrade all plugins.
 			if len(args) == 0 {
@@ -55,6 +55,11 @@ kubectl krew upgrade foo bar"`,
 			} else {
 				pluginNames = args
 			}
+			defer func() {
+				if printSecurityNotice {
+					internal.PrintSecurityNotice()
+				}
+			}()
 
 			for _, name := range pluginNames {
 				plugin, err := indexscanner.LoadPluginFileFromFS(paths.IndexPluginsPath(), name)
@@ -71,6 +76,7 @@ kubectl krew upgrade foo bar"`,
 				if err != nil {
 					return errors.Wrapf(err, "failed to upgrade plugin %q", plugin.Name)
 				}
+				printSecurityNotice = true
 				fmt.Fprintf(os.Stderr, "Upgraded plugin: %s\n", plugin.Name)
 			}
 			return nil
@@ -82,7 +88,6 @@ kubectl krew upgrade foo bar"`,
 			}
 			return ensureIndexUpdated(cmd, args)
 		},
-		PostRun: internal.PrintSecurityNotice,
 	}
 
 	noUpdateIndex = upgradeCmd.Flags().Bool("no-update-index", false, "(Experimental) do not update local copy of plugin index before upgrading")
