@@ -9,6 +9,7 @@ require (
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/mattn/go-isatty v0.0.3
+	github.com/pavius/impi v0.0.0-20180302134524-c1cbdcb8df2b // indirect
 	github.com/pkg/errors v0.8.0
 	github.com/sahilm/fuzzy v0.0.5
 	github.com/spf13/cobra v0.0.3
