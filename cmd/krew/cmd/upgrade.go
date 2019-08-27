@@ -18,12 +18,12 @@ import (
 	"fmt"
 	"os"
 
-	"sigs.k8s.io/krew/pkg/index/indexscanner"
-	"sigs.k8s.io/krew/pkg/installation"
-
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+
+	"sigs.k8s.io/krew/pkg/index/indexscanner"
+	"sigs.k8s.io/krew/pkg/installation"
 )
 
 func init() {

@@ -21,11 +21,11 @@ import (
 	"path/filepath"
 	"syscall"
 
-	"sigs.k8s.io/krew/pkg/index"
-	"sigs.k8s.io/krew/pkg/pathutil"
-
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
+
+	"sigs.k8s.io/krew/pkg/index"
+	"sigs.k8s.io/krew/pkg/pathutil"
 )
 
 type move struct {

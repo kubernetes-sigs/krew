@@ -19,14 +19,14 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/golang/glog"
+	"github.com/pkg/errors"
+	"github.com/spf13/cobra"
+
 	"sigs.k8s.io/krew/pkg/index"
 	"sigs.k8s.io/krew/pkg/index/indexscanner"
 	"sigs.k8s.io/krew/pkg/index/validation"
 	"sigs.k8s.io/krew/pkg/installation"
-
-	"github.com/golang/glog"
-	"github.com/pkg/errors"
-	"github.com/spf13/cobra"
 )
 
 func init() {
