@@ -15,9 +15,9 @@
 package cmd
 
 import (
-	"sigs.k8s.io/krew/pkg/receiptsmigration"
-
 	"github.com/spf13/cobra"
+
+	"sigs.k8s.io/krew/pkg/receiptsmigration"
 )
 
 // todo(corneliusweig) remove migration code with v0.4
