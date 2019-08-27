@@ -27,5 +27,5 @@ const securityNotice = `You installed a plugin from the krew-index plugin reposi
 
 func PrintSecurityNotice() {
 	boldRed := color.New(color.FgRed, color.Bold).SprintfFunc()
-	fmt.Fprintf(os.Stderr, "\n%s: %s\n", boldRed("WARNING"), securityNotice)
+	fmt.Fprintf(os.Stderr, "%s: %s\n", boldRed("WARNING"), securityNotice)
 }

@@ -113,7 +113,7 @@ Remarks:
 				glog.V(2).Infof("Will install plugin: %s\n", plugin.Name)
 			}
 
-			var failed, skipped []string
+			var failed []string
 			for _, plugin := range install {
 				fmt.Fprintf(os.Stderr, "Installing plugin: %s\n", plugin.Name)
 				err := installation.Install(paths, plugin, installation.InstallOpts{
@@ -121,7 +121,6 @@ Remarks:
 				})
 				if err == installation.ErrIsAlreadyInstalled {
 					glog.Warningf("Skipping plugin %q, it is already installed", plugin.Name)
-					skipped = append(skipped, plugin.Name)
 					continue
 				}
 				if err != nil {
@@ -133,11 +132,9 @@ Remarks:
 					fmt.Fprintln(os.Stderr, prepCaveats(plugin.Spec.Caveats))
 				}
 				fmt.Fprintf(os.Stderr, "Installed plugin: %s\n", plugin.Name)
-			}
-			if len(failed)+len(skipped) < len(install) {
 				internal.PrintSecurityNotice()
 			}
-			if 0 < len(failed) {
+			if len(failed) > 0 {
 				return errors.Errorf("failed to install some plugins: %+v", failed)
 			}
 			return nil
