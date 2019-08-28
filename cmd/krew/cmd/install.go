@@ -23,6 +23,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
+	"sigs.k8s.io/krew/cmd/krew/cmd/internal"
 	"sigs.k8s.io/krew/pkg/index"
 	"sigs.k8s.io/krew/pkg/index/indexscanner"
 	"sigs.k8s.io/krew/pkg/index/validation"
@@ -131,6 +132,7 @@ Remarks:
 					fmt.Fprintln(os.Stderr, prepCaveats(plugin.Spec.Caveats))
 				}
 				fmt.Fprintf(os.Stderr, "Installed plugin: %s\n", plugin.Name)
+				internal.PrintSecurityNotice()
 			}
 			if len(failed) > 0 {
 				return errors.Errorf("failed to install some plugins: %+v", failed)

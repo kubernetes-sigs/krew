@@ -22,6 +22,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
+	"sigs.k8s.io/krew/cmd/krew/cmd/internal"
 	"sigs.k8s.io/krew/pkg/index/indexscanner"
 	"sigs.k8s.io/krew/pkg/installation"
 )
@@ -71,6 +72,7 @@ kubectl krew upgrade foo bar"`,
 					return errors.Wrapf(err, "failed to upgrade plugin %q", plugin.Name)
 				}
 				fmt.Fprintf(os.Stderr, "Upgraded plugin: %s\n", plugin.Name)
+				internal.PrintSecurityNotice()
 			}
 			return nil
 		},
