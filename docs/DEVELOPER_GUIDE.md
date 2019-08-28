@@ -31,6 +31,11 @@ Before creating a plugin, read the [Kubernetes Plugins documentation][plugins].
 designed to provide the same command-line arguments, kubeconfig parser,
 Kubernetes API REST client, and printing logic.
 
+**Quick start for Go:** For Go plugins, there's a 
+[GitHub template repo](https://github.com/replicatedhq/krew-plugin-template) 
+that implements these best practices and also configures GoReleaser and a 
+GitHub Action to create releases when a tag is pushed.
+
 Below you will create a small plugin named `foo` which prints the environment
 variables to the screen and exits.
 
