@@ -35,7 +35,13 @@ fi
 if ! [[ -x "${gopath}/bin/impi" ]]
 then
    echo >&2 'Installing impi'
+   tmp="$(mktemp -d)"
+   pwd="$(pwd)"
+   trap 'rm -rf -- "${tmp}"' EXIT
+   cd "${tmp}"
+   go mod init foo
    go get github.com/pavius/impi/cmd/impi@c1cbdcb
+   cd "${pwd}"
 fi
 
 "$gopath/bin/impi" --local sigs.k8s.io/krew --scheme stdThirdPartyLocal ./...
