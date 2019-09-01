@@ -19,7 +19,6 @@ set -euo pipefail
 [[ -n "${DEBUG:-}" ]] && set -x
 
 gopath="$(go env GOPATH)"
-export GO111MODULE=on
 
 if ! [[ -x "$gopath/bin/golangci-lint" ]]
 then
@@ -29,19 +28,23 @@ then
 fi
 
 # configured by .golangci.yml
-"$gopath/bin/golangci-lint" run
+GO111MODULE=on "$gopath/bin/golangci-lint" run
+
+install_impi() {
+   impi_dir="$(mktemp -d)"
+   trap 'rm -rf -- ${impi_dir}' EXIT
+   
+   GOPATH="${impi_dir}" \
+   GO111MODULE=off \
+   GOBIN="${gopath}/bin" \
+   go get github.com/pavius/impi/cmd/impi
+}
 
 # install impi that ensures import grouping is done consistently
 if ! [[ -x "${gopath}/bin/impi" ]]
 then
    echo >&2 'Installing impi'
-   tmp="$(mktemp -d)"
-   pwd="$(pwd)"
-   trap 'rm -rf -- "${tmp}"' EXIT
-   cd "${tmp}"
-   go mod init foo
-   go get github.com/pavius/impi/cmd/impi@c1cbdcb
-   cd "${pwd}"
+   install_impi
 fi
 
 "$gopath/bin/impi" --local sigs.k8s.io/krew --scheme stdThirdPartyLocal ./...
