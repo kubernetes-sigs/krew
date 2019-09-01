@@ -212,16 +212,16 @@ line below limit
 			expected: false,
 		},
 		{
-			name: "single word above length limit",
+			name: "long line with a URL",
 			input: "	https://krew.dev/is_really_awesome   ",
 			expected: true,
 		},
 		{
-			name: "multiple lines with single word above length limit",
+			name: "multiple lines with long line containing a URL",
 			input: `
 line below limit
 line below limit
-https://krew.dev/is_really_awesome
+This is a long line with a URL https://krew.dev/is_really_awesome
 line below limit
 line below limit
 `,

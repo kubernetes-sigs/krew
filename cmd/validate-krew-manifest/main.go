@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -215,9 +216,18 @@ func validateLineLength(s string, maxLen int) bool {
 		if len(line) <= maxLen {
 			continue
 		}
-		if strings.Contains(strings.TrimSpace(line), " ") {
+		if !containsURI(line) {
 			return false
 		}
 	}
 	return true
+}
+
+func containsURI(line string) bool {
+	for _, word := range strings.Fields(line) {
+		if _, err := url.ParseRequestURI(word); err == nil {
+			return true
+		}
+	}
+	return false
 }
