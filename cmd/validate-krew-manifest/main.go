@@ -40,7 +40,10 @@ var flManifest string
 
 func init() {
 	flag.StringVar(&flManifest, "manifest", "", "path to plugin manifest file")
-	flag.Set("logtostderr", "true") // Set glog default to stderr
+	// Set glog default to stderr
+	if err := flag.Set("logtostderr", "true"); err != nil {
+		glog.Fatal(err)
+	}
 	// TODO(ahmetb) iterate over glog flags and hide them (not sure if possible without using pflag)
 	flag.Parse()
 }

@@ -257,7 +257,9 @@ func (it *ITest) initializeIndex() {
 			it.t.Fatalf("cannot clone repository: %s", err)
 		}
 
-		ioutil.WriteFile(persistentCacheFile, indexTar, 0600)
+		if err = ioutil.WriteFile(persistentCacheFile, indexTar, 0600); err != nil {
+			it.t.Fatalf("cannot write persistent cache file: %s", err)
+		}
 	})
 
 	indexDir := filepath.Join(it.Root(), "index")
