@@ -28,4 +28,23 @@ then
 fi
 
 # configured by .golangci.yml
-exec env GO111MODULE=on "$gopath/bin/golangci-lint" run
+GO111MODULE=on "$gopath/bin/golangci-lint" run
+
+install_impi() {
+   impi_dir="$(mktemp -d)"
+   trap 'rm -rf -- ${impi_dir}' EXIT
+   
+   GOPATH="${impi_dir}" \
+   GO111MODULE=off \
+   GOBIN="${gopath}/bin" \
+   go get github.com/pavius/impi/cmd/impi
+}
+
+# install impi that ensures import grouping is done consistently
+if ! [[ -x "${gopath}/bin/impi" ]]
+then
+   echo >&2 'Installing impi'
+   install_impi
+fi
+
+"$gopath/bin/impi" --local sigs.k8s.io/krew --scheme stdThirdPartyLocal ./...
