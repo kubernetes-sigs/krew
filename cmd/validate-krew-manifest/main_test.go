@@ -193,28 +193,27 @@ func Test_validateLineLength(t *testing.T) {
 		{
 			name:     "single line below limit",
 			input:    "short string",
-			expected: true,
+			expected: false,
+		},
+		{
+			name:     "single line with UTF characters",
+			input:    "\u1f98\u1f97\u1f96\u1f95\u1f94\u1f93\u1f92\u1f91\u1f90\u1f89\u1f88\u1f78\u1f68\u1f58\u1f38\u1f18",
+			expected: false,
 		},
 		{
 			name:     "single line above limit",
 			input:    "long string long string long string",
-			expected: false,
+			expected: true,
 		},
 		{
-			name: "multiple lines, one too long",
-			input: `
-line below limit
-line below limit
-long string long string long string
-line below limit
-line below limit
-`,
-			expected: false,
+			name:     "multiple lines, one too long",
+			input:    "line below limit\nline below limit\nlong string long string long string\rline below limit\rline below limit",
+			expected: true,
 		},
 		{
 			name: "long line with a URL",
 			input: "	https://krew.dev/is_really_awesome   ",
-			expected: true,
+			expected: false,
 		},
 		{
 			name: "multiple lines with long line containing a URL",
@@ -225,13 +224,13 @@ This is a long line with a URL https://krew.dev/is_really_awesome
 line below limit
 line below limit
 `,
-			expected: true,
+			expected: false,
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			actual := validateLineLength(test.input, 20)
+			actual := isLineLengthInvalid(test.input, 16)
 			if actual != test.expected {
 				t.Errorf("expected %v, got %v", test.expected, actual)
 			}

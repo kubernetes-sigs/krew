@@ -25,6 +25,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
@@ -78,13 +79,13 @@ func validateManifestFile(path string) error {
 	}
 	glog.Infof("structural validation OK")
 
-	if maxLen := 80; !validateLineLength(p.Spec.Description, maxLen) {
+	if maxLen := 80; isLineLengthInvalid(p.Spec.Description, maxLen) {
 		return fmt.Errorf("line length in `description` exceeds %d characters", maxLen)
 	}
-	if maxLen := 70; !validateLineLength(p.Spec.ShortDescription, maxLen) {
+	if maxLen := 70; isLineLengthInvalid(p.Spec.ShortDescription, maxLen) {
 		return fmt.Errorf("line length in `shortDescription` exceeds %d characters", maxLen)
 	}
-	if maxLen := 80; !validateLineLength(p.Spec.Caveats, maxLen) {
+	if maxLen := 80; isLineLengthInvalid(p.Spec.Caveats, maxLen) {
 		return fmt.Errorf("line length in `caveats` exceeds %d characters", maxLen)
 	}
 
@@ -209,18 +210,18 @@ func allPlatforms() [][2]string {
 	}
 }
 
-// validateLineLength checks if the maximum line length is below maxLen.
-// Lines may exceed this limit, if they are just one word, i.e. without spaces.
-func validateLineLength(s string, maxLen int) bool {
-	for _, line := range strings.Split(s, "\n") {
-		if len(line) <= maxLen {
+// isLineLengthInvalid checks if the maximum line length is below maxLen.
+// Lines may exceed this limit, if they contain a URI.
+func isLineLengthInvalid(s string, maxLen int) bool {
+	for _, line := range strings.Split(s, "\n\r") {
+		if utf8.RuneCountInString(line) <= maxLen {
 			continue
 		}
 		if !containsURI(line) {
-			return false
+			return true
 		}
 	}
-	return true
+	return false
 }
 
 func containsURI(line string) bool {
