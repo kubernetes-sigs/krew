@@ -18,7 +18,7 @@
 # the local filesystem.
 
 set -euo pipefail
-SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 log() { echo >&2 "$*"; }
 log_ok() { log "$(tput setaf 2)$*$(tput sgr0)"; }
 log_fail() { log "$(tput setaf 1)$*$(tput sgr0)"; }
@@ -26,31 +26,30 @@ image="krew:sandbox"
 
 krew_bin="${SCRIPTDIR}/../out/bin/krew-linux_amd64"
 if [[ ! -f "${krew_bin}" ]]; then
-    log "Building the ${krew_bin}."
-    env OSARCH="linux/amd64" "${SCRIPTDIR}/make-binaries.sh"
+  log "Building the ${krew_bin}."
+  env OSARCH="linux/amd64" "${SCRIPTDIR}/make-binaries.sh"
 else
-    log_ok "Using existing ${krew_bin}."
+  log_ok "Using existing ${krew_bin}."
 fi
 
-
 docker build -f "${SCRIPTDIR}/sandboxed.Dockerfile" -q \
-    --tag "${image}" "${SCRIPTDIR}/.."
+  --tag "${image}" "${SCRIPTDIR}/.."
 log_ok "Sandbox image '${image}' built successfully."
 
 kubeconfig="${KUBECONFIG:-$HOME/.kube/config}"
 if [[ ! -f "${kubeconfig}" ]]; then
-    log_fail "Warning: kubeconfig not found at ${kubeconfig}, using /dev/null"
-    kubeconfig=/dev/null
+  log_fail "Warning: kubeconfig not found at ${kubeconfig}, using /dev/null"
+  kubeconfig=/dev/null
 fi
 
 log_ok "Starting docker container with volume mounts:"
-log    "    kubeconfig=${kubeconfig}"
-log    "    kubectl-krew=${krew_bin}"
+log "    kubeconfig=${kubeconfig}"
+log "    kubectl-krew=${krew_bin}"
 log_ok "You can rebuild with the following command without restarting the container:"
-log    "    env OSARCH=linux/amd64 hack/make-binaries.sh"
+log "    env OSARCH=linux/amd64 hack/make-binaries.sh"
 exec docker run --rm --tty --interactive \
-    --volume "${krew_bin}:/usr/local/bin/kubectl-krew" \
-    --volume "${kubeconfig}:/etc/kubeconfig" \
-    --env KUBECONFIG=/etc/kubeconfig \
-    --hostname krew \
-    "${image}"
+  --volume "${krew_bin}:/usr/local/bin/kubectl-krew" \
+  --volume "${kubeconfig}:/etc/kubeconfig" \
+  --env KUBECONFIG=/etc/kubeconfig \
+  --hostname krew \
+  "${image}"

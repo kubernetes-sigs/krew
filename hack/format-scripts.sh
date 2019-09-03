@@ -14,9 +14,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -e -o pipefail
+set -euo pipefail
 
-SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+[[ -n "${DEBUG:-}" ]] && set -x
 
-"${SCRIPTDIR}/make-binaries.sh"
-"${SCRIPTDIR}/make-release-artifacts.sh"
+gopath="$(go env GOPATH)"
+
+# install shfmt that ensures consistent formal in scripts
+if ! [[ -x "${gopath}/bin/shfmt" ]]; then
+  echo >&2 'Installing shfmt'
+  curl --silent --fail --location https://github.com/mvdan/sh/releases/download/v2.6.4/shfmt_v2.6.4_linux_amd64 >"${gopath}/bin/shfmt"
+  chmod u+x "${gopath}/bin/shfmt"
+fi
+
+"$gopath/bin/shfmt" -w -i=2 hack

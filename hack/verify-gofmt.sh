@@ -18,9 +18,9 @@ set -euo pipefail
 
 files=$(find . -name "*.go" -not -path './vendor/*' -print0 | xargs -0 gofmt -l -s)
 if [[ $files ]]; then
-    echo "Gofmt errors in files:"
-    echo "$files"
-    diff=$(find . -name "*.go" -not -path './vendor/*' -print0 | xargs -0 gofmt -d -s)
-    echo "$diff"
-    exit 1
+  echo "Gofmt errors in files:"
+  echo "$files"
+  diff=$(find . -name "*.go" -not -path './vendor/*' -print0 | xargs -0 gofmt -d -s)
+  echo "$diff"
+  exit 1
 fi

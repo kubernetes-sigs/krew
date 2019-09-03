@@ -21,23 +21,23 @@ set -euo pipefail
 
 [[ -n "${DEBUG:-}" ]] && set -x
 
-SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 build_dir="${SCRIPTDIR}/../out"
 goos="$(go env GOOS)"
 goarch="$(go env GOARCH)"
 
 krew_manifest="${build_dir}/krew.yaml"
 if [[ ! -f "${krew_manifest}" ]]; then
-    echo >&2 "Could not find manifest ${krew_manifest}.";
-    echo >&2 "Did you run hack/make-all.sh?";
-    exit 1
+  echo >&2 "Could not find manifest ${krew_manifest}."
+  echo >&2 "Did you run hack/make-all.sh?"
+  exit 1
 fi
 
 krew_archive="${build_dir}/krew.tar.gz"
 if [[ ! -f "${krew_archive}" ]]; then
-    echo >&2 "Could not find archive ${krew_archive}.";
-    echo >&2 "Did you run hack/make-all.sh?";
-    exit 1
+  echo >&2 "Could not find archive ${krew_archive}."
+  echo >&2 "Did you run hack/make-all.sh?"
+  exit 1
 fi
 
 temp_dir="$(mktemp -d)"
@@ -52,10 +52,10 @@ system_path="/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin"
 
 echo >&2 "Installing the krew build to a temporary directory."
 env -i KREW_ROOT="${krew_root}" \
-    "${krew_binary}" install \
-        --manifest="${krew_manifest}" \
-        --archive "${krew_archive}"
+  "${krew_binary}" install \
+  --manifest="${krew_manifest}" \
+  --archive "${krew_archive}"
 
 echo >&2 "Verifying krew installation (symlink)."
 env -i PATH="${krew_root}/bin:${system_path}" /bin/bash -c \
-    "which kubectl-krew 1>/dev/null"
+  "which kubectl-krew 1>/dev/null"

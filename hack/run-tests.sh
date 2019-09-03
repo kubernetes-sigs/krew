@@ -16,7 +16,7 @@
 
 set -euo pipefail
 
-SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 color_red="$(tput setaf 1)"
 color_green="$(tput setaf 2)"
@@ -24,15 +24,15 @@ color_blue="$(tput setaf 4)"
 color_reset="$(tput sgr0)"
 
 print_with_color() {
-      echo "${1}${*:2}${color_reset}"
+  echo "${1}${*:2}${color_reset}"
 }
 
 print_status() {
-  local result=$?  # <- this must be the first action
+  local result=$? # <- this must be the first action
   if [[ $result == 0 ]]; then
-      print_with_color "$color_green" 'SUCCESS'
+    print_with_color "$color_green" 'SUCCESS'
   else
-      print_with_color "$color_red" 'FAILURE'
+    print_with_color "$color_red" 'FAILURE'
   fi
 }
 trap print_status EXIT

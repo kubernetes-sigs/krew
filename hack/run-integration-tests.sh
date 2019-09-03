@@ -18,13 +18,13 @@ set -euo pipefail
 
 [[ -n "${DEBUG:-}" ]] && set -x
 
-SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BINDIR="${SCRIPTDIR}/../out/bin"
 goos="$(go env GOOS)"
 goarch="$(go env GOARCH)"
 KREW_BINARY_DEFAULT="${BINDIR}/krew-${goos}_${goarch}"
 
-if [[ "$#" -gt 0 && ( "$1" = '-h' || "$1" = '--help' ) ]]; then
+if [[ "$#" -gt 0 && ("$1" == '-h' || "$1" == '--help') ]]; then
   cat <<EOF
 Usage:
   $0 krew  # uses the given krew binary for running integration tests
@@ -32,7 +32,6 @@ Usage:
 EOF
   exit 0
 fi
-
 
 KREW_BINARY="${1:-$KREW_BINARY_DEFAULT}" # needed for `kubectl krew` in tests
 if [[ ! -e "${KREW_BINARY}" ]]; then

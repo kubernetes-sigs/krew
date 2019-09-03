@@ -20,31 +20,38 @@ set -euo pipefail
 
 gopath="$(go env GOPATH)"
 
-if ! [[ -x "$gopath/bin/golangci-lint" ]]
-then
-   echo >&2 'Installing golangci-lint'
-   curl --silent --fail --location \
-       https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b "$gopath/bin" v1.17.1
+if ! [[ -x "$gopath/bin/golangci-lint" ]]; then
+  echo >&2 'Installing golangci-lint'
+  curl --silent --fail --location \
+    https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b "$gopath/bin" v1.17.1
 fi
 
 # configured by .golangci.yml
 GO111MODULE=on "$gopath/bin/golangci-lint" run
 
 install_impi() {
-   impi_dir="$(mktemp -d)"
-   trap 'rm -rf -- ${impi_dir}' EXIT
-   
-   GOPATH="${impi_dir}" \
-   GO111MODULE=off \
-   GOBIN="${gopath}/bin" \
-   go get github.com/pavius/impi/cmd/impi
+  impi_dir="$(mktemp -d)"
+  trap 'rm -rf -- ${impi_dir}' EXIT
+
+  GOPATH="${impi_dir}" \
+    GO111MODULE=off \
+    GOBIN="${gopath}/bin" \
+    go get github.com/pavius/impi/cmd/impi
 }
 
 # install impi that ensures import grouping is done consistently
-if ! [[ -x "${gopath}/bin/impi" ]]
-then
-   echo >&2 'Installing impi'
-   install_impi
+if ! [[ -x "${gopath}/bin/impi" ]]; then
+  echo >&2 'Installing impi'
+  install_impi
 fi
 
 "$gopath/bin/impi" --local sigs.k8s.io/krew --scheme stdThirdPartyLocal ./...
+
+# install shfmt that ensures consistent format in shell scripts
+if ! [[ -x "${gopath}/bin/shfmt" ]]; then
+  echo >&2 'Installing shfmt'
+  curl --silent --fail --location https://github.com/mvdan/sh/releases/download/v2.6.4/shfmt_v2.6.4_linux_amd64 >"${gopath}/bin/shfmt"
+  chmod u+x "${gopath}/bin/shfmt"
+fi
+
+"$gopath/bin/shfmt" -d -i=2 hack

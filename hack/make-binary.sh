@@ -17,7 +17,7 @@
 # This script builds krew binary for the current OS/arch.
 
 set -e -o pipefail
-SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 exec env OSARCH="$(go env GOOS)/$(go env GOARCH)" \
-    "${SCRIPTDIR}/make-binaries.sh"
+  "${SCRIPTDIR}/make-binaries.sh"
