@@ -31,6 +31,12 @@ Before creating a plugin, read the [Kubernetes Plugins documentation][plugins].
 designed to provide the same command-line arguments, kubeconfig parser,
 Kubernetes API REST client, and printing logic.
 
+**Unofficial Quickstart for Go:** For Go plugins, there's a
+[GitHub template repo](https://github.com/replicatedhq/krew-plugin-template)
+that implements these best practices and also configures GoReleaser and a
+GitHub Action to create releases when a tag is pushed. Note: this template
+repo is not maintained by the Krew project.
+
 Below you will create a small plugin named `foo` which prints the environment
 variables to the screen and exits.
 
@@ -192,10 +198,10 @@ wildcard may install more files than desired.
   ```yaml
       files: [{from: "*", to: "."}]
   ```
-  
+
   This copies out binaries for both platforms to the installation directory
   onto the user’s machine, despite only one of them will be used:
-  
+
   ```text
   .
   └── krew-foo-windows.exe
@@ -248,7 +254,7 @@ plugin name.
 #### Specifying a plugin download URL
 
 krew plugins must be packaged as `.zip` or `.tar.gz` archives and should be made
-available for download publicly. 
+available for download publicly.
 Downloading from a URL also requires a checksum of the downloaded content:
 
 - `uri`: URL to the archive file (`.zip` or `.tar.gz`)
