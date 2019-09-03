@@ -62,13 +62,16 @@ func Execute() {
 
 func init() {
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
-	flag.CommandLine.Parse([]string{}) // convince pkg/flag we parsed the flags
+	_ = flag.CommandLine.Parse([]string{}) // convince pkg/flag we parsed the flags
 	flag.CommandLine.VisitAll(func(f *flag.Flag) {
 		if f.Name != "v" { // hide all glog flags except for -v
 			pflag.Lookup(f.Name).Hidden = true
 		}
 	})
-	flag.Set("logtostderr", "true") // Set glog default to stderr
+	if err := flag.Set("logtostderr", "true"); err != nil {
+		fmt.Printf("can't set log to stderr %+v", err)
+		os.Exit(1)
+	}
 
 	paths = environment.MustGetKrewPaths()
 	if err := ensureDirs(paths.BasePath(),

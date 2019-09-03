@@ -61,7 +61,9 @@ func extractZIP(targetDir string, read io.ReaderAt, size int64) error {
 	for _, f := range zipReader.File {
 		path := filepath.Join(targetDir, filepath.FromSlash(f.Name))
 		if f.FileInfo().IsDir() {
-			os.MkdirAll(path, f.Mode())
+			if err := os.MkdirAll(path, f.Mode()); err != nil {
+				return errors.Wrap(err, "can't create directory tree")
+			}
 			continue
 		}
 

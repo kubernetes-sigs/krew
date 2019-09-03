@@ -50,7 +50,7 @@ func TestSha256Verifier(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			v := NewSha256Verifier(tt.args.hash)
-			io.Copy(v, bytes.NewReader(tt.write))
+			_, _ = io.Copy(v, bytes.NewReader(tt.write))
 			if err := v.Verify(); (err != nil) != tt.wantError {
 				t.Errorf("NewSha256Verifier().Write(%x).Verify() = %v, wantReader %v", tt.write, err, tt.wantError)
 				return
@@ -84,7 +84,7 @@ func TestTrueVerifier(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			v := NewInsecureVerifier()
-			io.Copy(v, bytes.NewReader(tt.write))
+			_, _ = io.Copy(v, bytes.NewReader(tt.write))
 			if err := v.Verify(); (err != nil) != tt.wantError {
 				t.Errorf("NewInsecureVerifier().Write(%x).Verify() = %v, wantReader %v", tt.write, err, tt.wantError)
 				return

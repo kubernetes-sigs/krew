@@ -68,8 +68,8 @@ func TestIsMigrated(t *testing.T) {
 
 			newPaths := environment.MustGetKrewPaths()
 
-			os.MkdirAll(tmpDir.Path("receipts"), os.ModePerm)
-			os.MkdirAll(tmpDir.Path("store"), os.ModePerm)
+			_ = os.MkdirAll(tmpDir.Path("receipts"), os.ModePerm)
+			_ = os.MkdirAll(tmpDir.Path("store"), os.ModePerm)
 			for _, name := range test.filesPresent {
 				touch(tmpDir, name)
 			}

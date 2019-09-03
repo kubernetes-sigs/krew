@@ -4,6 +4,9 @@ linters-settings:
     # put imports beginning with prefix after 3rd-party packages;
     # it's a comma-separated list of prefixes
     local-prefixes: sigs.k8s.io/krew
+  errcheck:
+    check-type-assertions: false
+    check-blank: false
 
 # options for analysis running
 run:
@@ -36,5 +39,4 @@ linters:
     - prealloc
     - deadcode
     - varcheck
-  disable:
     - errcheck
