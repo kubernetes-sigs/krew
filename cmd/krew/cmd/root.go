@@ -68,9 +68,9 @@ func init() {
 			pflag.Lookup(f.Name).Hidden = true
 		}
 	})
-	// Set glog default to stderr
 	if err := flag.Set("logtostderr", "true"); err != nil {
-		glog.Fatal(err)
+		fmt.Printf("can't set log to stderr %+v", err)
+		os.Exit(1)
 	}
 
 	paths = environment.MustGetKrewPaths()

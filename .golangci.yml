@@ -7,8 +7,6 @@ linters-settings:
   errcheck:
     check-type-assertions: false
     check-blank: false
-    exclude: .errcheck-excluded.txt
-
 
 # options for analysis running
 run:
