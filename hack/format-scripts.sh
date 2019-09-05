@@ -27,4 +27,5 @@ if ! [[ -x "${gopath}/bin/shfmt" ]]; then
   chmod u+x "${gopath}/bin/shfmt"
 fi
 
-"$gopath/bin/shfmt" -w -i=2 hack
+SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+"$gopath/bin/shfmt" -w -i=2 "${SCRIPTDIR}"
