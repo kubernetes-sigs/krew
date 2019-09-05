@@ -20,11 +20,20 @@ set -euo pipefail
 
 gopath="$(go env GOPATH)"
 
+install_shfmt() {
+  shfmt_dir="$(mktemp -d)"
+  trap 'rm -rf -- ${shfmt_dir}' EXIT
+
+  GOPATH="${shfmt_dir}" \
+    GO111MODULE=off \
+    GOBIN="${gopath}/bin" \
+    go get mvdan.cc/sh/cmd/shfmt
+}
+
 # install shfmt that ensures consistent formal in scripts
 if ! [[ -x "${gopath}/bin/shfmt" ]]; then
   echo >&2 'Installing shfmt'
-  curl --silent --fail --location https://github.com/mvdan/sh/releases/download/v2.6.4/shfmt_v2.6.4_linux_amd64 >"${gopath}/bin/shfmt"
-  chmod u+x "${gopath}/bin/shfmt"
+  install_shfmt
 fi
 
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
