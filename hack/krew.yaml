@@ -34,7 +34,7 @@ spec:
     You can find documentation at https://github.com/kubernetes-sigs/krew.
 
   platforms:
-  - uri: https://storage.googleapis.com/krew/KREW_TAG/krew.tar.gz
+  - uri: https://github.com/kubernetes-sigs/krew/releases/download/KREW_TAG/krew.tar.gz
     sha256: KREW_TAR_CHECKSUM
     bin: krew
     files:
@@ -44,7 +44,7 @@ spec:
       matchLabels:
         os: darwin
         arch: amd64
-  - uri: https://storage.googleapis.com/krew/KREW_TAG/krew.tar.gz
+  - uri: https://github.com/kubernetes-sigs/krew/releases/download/KREW_TAG/krew.tar.gz
     sha256: KREW_TAR_CHECKSUM
     bin: krew
     files:
@@ -54,7 +54,7 @@ spec:
       matchLabels:
         os: linux
         arch: amd64
-  - uri: https://storage.googleapis.com/krew/KREW_TAG/krew.tar.gz
+  - uri: https://github.com/kubernetes-sigs/krew/releases/download/KREW_TAG/krew.tar.gz
     sha256: KREW_TAR_CHECKSUM
     bin: krew
     files:
@@ -64,7 +64,7 @@ spec:
       matchLabels:
         os: linux
         arch: arm
-  - uri: https://storage.googleapis.com/krew/KREW_TAG/krew.zip
+  - uri: https://github.com/kubernetes-sigs/krew/releases/download/KREW_TAG/krew.zip
     sha256: KREW_ZIP_CHECKSUM
     bin: krew.exe
     files:

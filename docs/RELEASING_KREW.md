@@ -67,18 +67,5 @@ Krew tags versions starting with `v`. Example: `v0.2.0-rc.1`.
 
 ## Release artifacts
 
-When a release is tagged, the Build Trigger configured on Google Cloud Build
-will pick up the `hack/cloudbuild-release.yaml`, build the release artifacts,
-and upload them to Google Cloud Storage bucket `gs://krew/${TAG}/`
-automatically.
-
-The last tagged release will also be available under `gs://krew/latest/`
-
-Similarly, another Build Trigger configured on GCB builds each commit merged
-to `master` and pushes the artifacts to `gs://krew/builds/{short_commit_sha}`.
-
-The Google Cloud Storage bucket `gs://krew` is hosted in
-`google-samples` GCP project. This bucket is publicly viewable/listable.
-
-If there's custom action needed (e.g. re-tagging a release), use `gsutil`
-tool or Google Cloud Console to modify this bucket.
+When a tag is pushed to the repository, Travis CI will make a release on GitHub
+and upload the release artifacts as files on the release.
