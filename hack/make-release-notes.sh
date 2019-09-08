@@ -25,7 +25,7 @@ if ! [[ "$TAG" =~ v.* ]]; then
 fi
 
 readme="https://github.com/kubernetes-sigs/krew/blob/${TAG}/README.md"
-download_base="https://storage.googleapis.com/krew"
+download_base="https://github.com/kubernetes-sigs/krew/releases/download"
 download_assets=(
     krew.tar.gz
     krew.tar.gz.sha256
