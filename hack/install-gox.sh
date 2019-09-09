@@ -19,25 +19,25 @@ set -euo pipefail
 
 scratch_dir="$(mktemp -d)"
 cleanup() {
-    rm -rf "${scratch_dir}"
+  rm -rf "${scratch_dir}"
 }
 trap cleanup EXIT
 
 install_gox() {
-    gobin="$(go env GOPATH)/bin"
-    cd "${scratch_dir}";
-    env GOPATH="${scratch_dir}" \
-        GO111MODULE=off \
-        GOBIN="${gobin}" \
-        go get github.com/mitchellh/gox
+  gobin="$(go env GOPATH)/bin"
+  cd "${scratch_dir}"
+  env GOPATH="${scratch_dir}" \
+    GO111MODULE=off \
+    GOBIN="${gobin}" \
+    go get github.com/mitchellh/gox
 }
 
 ensure_gox() {
-    command -v "gox" &>/dev/null
+  command -v "gox" &>/dev/null
 }
 
 install_gox
 if ! ensure_gox; then
- echo >&2 "gox not in PATH";
- exit 1
+  echo >&2 "gox not in PATH"
+  exit 1
 fi

@@ -26,10 +26,10 @@ fi
 
 # use code constant for ".yaml"
 out="$(grep --include '*.go' \
-            --exclude "*_test.go" \
-            --exclude 'constants.go' \
-            --exclude-dir 'vendor/' \
-            -EIrn '\.yaml"' || true)"
+  --exclude "*_test.go" \
+  --exclude 'constants.go' \
+  --exclude-dir 'vendor/' \
+  -EIrn '\.yaml"' || true)"
 if [[ -n "$out" ]]; then
   echo >&2 'You used ".yaml" in production, use constants.ManifestExtension instead:'
   echo >&2 "$out"

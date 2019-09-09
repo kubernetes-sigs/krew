@@ -18,14 +18,12 @@
 # combinations specified via OSARCH variable).
 
 set -e -o pipefail
-SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 if ! command -v "gox" &>/dev/null; then
   echo >&2 "gox not installed in PATH, run hack/install-gox.sh."
   exit 1
 fi
-
-
 
 supported_platforms="darwin/amd64 windows/amd64 linux/amd64 linux/arm"
 version_pkg="sigs.k8s.io/krew/pkg/version"

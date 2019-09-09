@@ -20,18 +20,18 @@
 
 TAG="${TAG:?TAG environment variable must be set for this script}"
 if ! [[ "$TAG" =~ v.* ]]; then
-    echo >&2 "TAG must be in format v.*"
-    exit 1
+  echo >&2 "TAG must be in format v.*"
+  exit 1
 fi
 
 readme="https://github.com/kubernetes-sigs/krew/blob/${TAG}/README.md"
 download_base="https://storage.googleapis.com/krew"
 download_assets=(
-    krew.tar.gz
-    krew.tar.gz.sha256
-    krew.zip
-    krew.zip.sha256
-    krew.yaml
+  krew.tar.gz
+  krew.tar.gz.sha256
+  krew.zip
+  krew.zip.sha256
+  krew.yaml
 )
 
 echo "Installation"
@@ -45,12 +45,12 @@ echo "It is recommended to follow [installation instructions](${readme})"
 echo "and not using these artifacts directly."
 echo
 for f in "${download_assets[@]}"; do
-    echo "- $download_base/${TAG}/${f}"
+  echo "- $download_base/${TAG}/${f}"
 done
 echo
 echo "Thanks to our contributors for helping out with ${TAG}:"
-git log "$(git describe --tags --abbrev=0)..HEAD" --format=%an | \
-    sort | uniq -c | sort -rn | \
-    sed -E 's,^(\s+[0-9]+\s),- ,g'
+git log "$(git describe --tags --abbrev=0)..HEAD" --format=%an |
+  sort | uniq -c | sort -rn |
+  sed -E 's,^(\s+[0-9]+\s),- ,g'
 echo
 echo "(krew ${TAG} is tagged on $(date -u).)"
