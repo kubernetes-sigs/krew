@@ -64,9 +64,9 @@ if ! [[ -x "${gopath}/bin/shfmt" ]]; then
 fi
 
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-shfmt_help() {
-  echo "To fix run: shfmt -w -i=2 ${SCRIPTDIR}"
-}
-
-trap 'shfmt_help' ERR
-"$gopath/bin/shfmt" -d -i=2 "${SCRIPTDIR}"
+shfmt_out="$($gopath/bin/shfmt -l -i=2 ${SCRIPTDIR})"
+if [[ -n "${shfmt_out}" ]]; then
+  echo >&2 "The following shell scripts need to be formatted, run: 'shfmt -w -i=2 ${SCRIPTDIR}'"
+  echo >&2 "${shfmt_out}"
+  exit 1
+fi
