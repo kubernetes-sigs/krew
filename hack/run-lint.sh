@@ -64,4 +64,9 @@ if ! [[ -x "${gopath}/bin/shfmt" ]]; then
 fi
 
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+shfmt_help() {
+  echo "To fix run: shfmt -w -i=2 ${SCRIPTDIR}"
+}
+
+trap 'shfmt_help' ERR
 "$gopath/bin/shfmt" -d -i=2 "${SCRIPTDIR}"
