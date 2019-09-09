@@ -34,6 +34,19 @@ and run:
 goimports -local sigs.k8s.io/krew -w cmd pkg integration_test
 ```
 
+Shell scripts are automatically formatted by `shfmt`, to install and to validate run:
+
+```bash
+hach/run-lint.sh
+```
+
+If there is a divergence, diff will be provided. Otherwise, no output.
+Diff can be fixed by running:
+
+```bash
+shfmt -w -i=2 **/*.sh
+```
+
 In addition, a boilerplate license header is expected in all source files.
 
 _All new code should be covered by tests._
