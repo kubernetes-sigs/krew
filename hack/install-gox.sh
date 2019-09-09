@@ -15,7 +15,7 @@
 # limitations under the License.
 
 set -euo pipefail
-[[ -n "${DEBUG:-}" ]] && set -x
+[[ -n ${DEBUG:-} ]] && set -x
 
 scratch_dir="$(mktemp -d)"
 cleanup() {

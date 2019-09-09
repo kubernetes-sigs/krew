@@ -25,7 +25,7 @@ log_fail() { log "$(tput setaf 1)$*$(tput sgr0)"; }
 image="krew:sandbox"
 
 krew_bin="${SCRIPTDIR}/../out/bin/krew-linux_amd64"
-if [[ ! -f "${krew_bin}" ]]; then
+if [[ ! -f ${krew_bin} ]]; then
   log "Building the ${krew_bin}."
   env OSARCH="linux/amd64" "${SCRIPTDIR}/make-binaries.sh"
 else
@@ -37,7 +37,7 @@ docker build -f "${SCRIPTDIR}/sandboxed.Dockerfile" -q \
 log_ok "Sandbox image '${image}' built successfully."
 
 kubeconfig="${KUBECONFIG:-$HOME/.kube/config}"
-if [[ ! -f "${kubeconfig}" ]]; then
+if [[ ! -f ${kubeconfig} ]]; then
   log_fail "Warning: kubeconfig not found at ${kubeconfig}, using /dev/null"
   kubeconfig=/dev/null
 fi

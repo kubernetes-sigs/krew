@@ -22,7 +22,7 @@
 
 set -euo pipefail
 
-[[ -n "${DEBUG:-}" ]] && set -x
+[[ -n ${DEBUG:-} ]] && set -x
 
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BINDIR="${SCRIPTDIR}/../out/bin"
@@ -87,7 +87,7 @@ verify_plugin_receipt() {
 
 main() {
   new_krew="${BINDIR}/krew-${goos}_${goarch}"
-  if [[ ! -e "${new_krew}" ]]; then
+  if [[ ! -e ${new_krew} ]]; then
     echo >&2 "Could not find ${new_krew}."
     exit 1
   fi

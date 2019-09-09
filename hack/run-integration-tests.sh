@@ -16,7 +16,7 @@
 
 set -euo pipefail
 
-[[ -n "${DEBUG:-}" ]] && set -x
+[[ -n ${DEBUG:-} ]] && set -x
 
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BINDIR="${SCRIPTDIR}/../out/bin"
@@ -24,7 +24,7 @@ goos="$(go env GOOS)"
 goarch="$(go env GOARCH)"
 KREW_BINARY_DEFAULT="${BINDIR}/krew-${goos}_${goarch}"
 
-if [[ "$#" -gt 0 && ("$1" == '-h' || "$1" == '--help') ]]; then
+if [[ $# -gt 0 && ($1 == '-h' || $1 == '--help') ]]; then
   cat <<EOF
 Usage:
   $0 krew  # uses the given krew binary for running integration tests
@@ -34,12 +34,12 @@ EOF
 fi
 
 KREW_BINARY="${1:-$KREW_BINARY_DEFAULT}" # needed for `kubectl krew` in tests
-if [[ ! -e "${KREW_BINARY}" ]]; then
+if [[ ! -e ${KREW_BINARY} ]]; then
   echo >&2 "Could not find $KREW_BINARY. You need to build krew for ${goos}/${goarch} before running the integration tests."
   exit 1
 fi
 krew_binary_realpath="$(readlink -f "${KREW_BINARY}")"
-if [[ ! -x "${krew_binary_realpath}" ]]; then
+if [[ ! -x ${krew_binary_realpath} ]]; then
   echo >&2 "krew binary at ${krew_binary_realpath} is not an executable"
   exit 1
 fi

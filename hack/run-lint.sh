@@ -16,7 +16,7 @@
 
 set -euo pipefail
 
-[[ -n "${DEBUG:-}" ]] && set -x
+[[ -n ${DEBUG:-} ]] && set -x
 
 gopath="$(go env GOPATH)"
 
@@ -64,9 +64,9 @@ if ! [[ -x "${gopath}/bin/shfmt" ]]; then
 fi
 
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-shfmt_out="$($gopath/bin/shfmt -l -i=2 ${SCRIPTDIR})"
-if [[ -n "${shfmt_out}" ]]; then
-  echo >&2 "The following shell scripts need to be formatted, run: 'shfmt -w -i=2 ${SCRIPTDIR}'"
+shfmt_out="$($gopath/bin/shfmt -l -s -i=2 ${SCRIPTDIR})"
+if [[ -n ${shfmt_out} ]]; then
+  echo >&2 "The following shell scripts need to be formatted, run: 'shfmt -w -s -i=2 ${SCRIPTDIR}'"
   echo >&2 "${shfmt_out}"
   exit 1
 fi

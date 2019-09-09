@@ -20,7 +20,7 @@ SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "${SCRIPTDIR}/.."
 
 bin_dir="out/bin"
-if [[ ! -d "${bin_dir}" ]]; then
+if [[ ! -d ${bin_dir} ]]; then
   echo >&2 "Binaries are not built (${bin_dir}), run hack/make-binaries.sh"
   exit 1
 fi
@@ -65,7 +65,7 @@ echo >&2 "Written ${zip_sumfile}."
 
 # Copy and process krew manifest
 git_describe="$(git describe --tags --dirty --always)"
-if [[ ! "${git_describe}" =~ v.* ]]; then
+if [[ ! ${git_describe} =~ v.* ]]; then
   # if tag cannot be inferred (e.g. CI/CD), still provide a valid
   # version field for krew.yaml
   git_describe="v0.0.0-detached.${git_describe}"

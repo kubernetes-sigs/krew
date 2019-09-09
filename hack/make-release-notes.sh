@@ -19,7 +19,7 @@
 #     git tag -a v0.1 -m "$(TAG=v0.1 hack/make-release-notes.sh)"
 
 TAG="${TAG:?TAG environment variable must be set for this script}"
-if ! [[ "$TAG" =~ v.* ]]; then
+if ! [[ $TAG =~ v.* ]]; then
   echo >&2 "TAG must be in format v.*"
   exit 1
 fi

@@ -19,7 +19,7 @@
 
 set -euo pipefail
 
-[[ -n "${DEBUG:-}" ]] && set -x
+[[ -n ${DEBUG:-} ]] && set -x
 
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 build_dir="${SCRIPTDIR}/../out"
@@ -27,14 +27,14 @@ goos="$(go env GOOS)"
 goarch="$(go env GOARCH)"
 
 krew_manifest="${build_dir}/krew.yaml"
-if [[ ! -f "${krew_manifest}" ]]; then
+if [[ ! -f ${krew_manifest} ]]; then
   echo >&2 "Could not find manifest ${krew_manifest}."
   echo >&2 "Did you run hack/make-all.sh?"
   exit 1
 fi
 
 krew_archive="${build_dir}/krew.tar.gz"
-if [[ ! -f "${krew_archive}" ]]; then
+if [[ ! -f ${krew_archive} ]]; then
   echo >&2 "Could not find archive ${krew_archive}."
   echo >&2 "Did you run hack/make-all.sh?"
   exit 1

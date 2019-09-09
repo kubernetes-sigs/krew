@@ -45,7 +45,7 @@ Otherwise, problematic scripts will be listed and a command will be
 provided to format them:
 
 ```bash
-shfmt -w -i=2 hack/
+shfmt -w -s -i=2 hack/
 ```
 
 In addition, a boilerplate license header is expected in all source files.
