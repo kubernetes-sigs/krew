@@ -44,11 +44,12 @@ func init() {
 		fmt.Printf("can't set log to stderr %+v", err)
 		os.Exit(1)
 	}
-	// TODO(ahmetb) iterate over glog flags and hide them (not sure if possible without using pflag)
-	flag.Parse()
 }
 
 func main() {
+	// TODO(ahmetb) iterate over glog flags and hide them (not sure if possible without using pflag)
+	flag.Parse()
+
 	defer glog.Flush()
 
 	if flManifest == "" {
