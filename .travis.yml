@@ -34,10 +34,10 @@ deploy:
   on:
     tags: true
   file:
+  - out/krew.yaml
   - out/krew.tar.gz
   - out/krew.tar.gz.sha256
-  - out/krew.zip
-  - out/krew.zip.sha256
-  - out/krew.yaml
+  - out/krew.exe
+  - out/krew.exe.sha256
   api_key:
     secure: t4a69ruCl15etso89c/GSone/gEvWnG6+w4q6NUhjViVaJJuIFDth1C1KxuF/wWW9r2R6zpGNj1uEhfXlc1VB1gGJnq/dkxW7iiVpjPFZUpBYJlK49esrytTGmlNuoKSlX4WTyXEgyH/zui8psJdeVhdDu4yCDrWdkb54gjyp7enluvPNxD40naGybeCNUfWLHvbCOQU4zPQIS2E2Sb7IPlup4LfcUDZYoGuGiBxN9nbU4GOk5gYB1jcQ2j2bDdWtEqp0T19auyWtv/gkU7Mn6Ebt+PG3OxBuyVbw2rq0eB7SeR/6lSrkj2TX4jiMsStNRE+W7Es3t+b8BSOLJcXfi7GA2iyDA70vZYS97bo8TCnezKr65O39ADtmgjVAx+eGOUhuOJj3d1Ft6yK7EILaYMq9zy90EyeMTcuqekFSUo8b1dnyP3fgkDyEyZ0YUiTlUUDkjJO+m+kMqoGH4FpkTgD+JmsXNTBzJ9PpRhP6d/Ti8OuwtjT7iEGmgp5aqPTti01vcxDK7xremNx5Vbqd7QHwFvOcJFPD9oF7rEMbFLpGfn61YHqefGnAxAItLmAOeMAH8A1j5xByB/4NsCukKJSJc3is0ClGL/d44BmeVtVrCM6/0lsCSOfyC5ph2f8o/yyC/26ShFsDyN6vB57VWTzXbUm3ybaT3GgRFTyC+Q=

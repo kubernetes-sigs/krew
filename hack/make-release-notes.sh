@@ -29,8 +29,8 @@ download_base="https://github.com/kubernetes-sigs/krew/releases/download"
 download_assets=(
   krew.tar.gz
   krew.tar.gz.sha256
-  krew.zip
-  krew.zip.sha256
+  krew.exe
+  krew.exe.sha256
   krew.yaml
 )
 

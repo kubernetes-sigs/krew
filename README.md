@@ -94,15 +94,15 @@ Check out the list of [kubectl plugins available on krew][list] or just run
 **Windows:**
 
 1. Make sure `git` is installed on your system.
-1. Download `krew.zip` and `krew.yaml` from the [Releases][releases] page.
-1. Extract the `krew.zip` archive to a directory, navigate to the directory.
-1. Launch a command-line window (`cmd.exe`) in that directory.
+1. Download `krew.exe` and `krew.yaml` from the [Releases][releases] page to
+   a directory.
+1. Launch a command-line window (`cmd.exe`) and navigate to that directory.
 1. Run the following command to install krew (pass the correct
    paths to `krew.yaml` and `krew.zip` below):
 
-       .\krew-windows_amd64.exe install --manifest=krew.yaml --archive=krew.zip
+       krew install --manifest=krew.yaml
 
-1. Add `%USERPROFILE%\.krew\bin` to your `PATH` environment variable
+1. Add `%USERPROFILE%\.krew\bin` directory to your `PATH` environment variable
    ([how?](https://java.com/en/download/help/path.xml))
 
 [releases]: https://github.com/kubernetes-sigs/krew/releases

@@ -64,8 +64,8 @@ spec:
       matchLabels:
         os: linux
         arch: arm
-  - uri: https://github.com/kubernetes-sigs/krew/releases/download/KREW_TAG/krew.zip
-    sha256: KREW_ZIP_CHECKSUM
+  - uri: https://github.com/kubernetes-sigs/krew/releases/download/KREW_TAG/krew.tar.gz
+    sha256: KREW_TAR_CHECKSUM
     bin: krew.exe
     files:
     - from: ./krew-windows_amd64.exe
