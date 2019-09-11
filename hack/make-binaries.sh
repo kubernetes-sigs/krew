@@ -37,7 +37,7 @@ git_rev="${SHORT_SHA:-$(git rev-parse --short HEAD)}"
 git_tag="${TAG_NAME:-$(git describe --tags --dirty --always)}"
 echo >&2 "(Stamping with git tag=${git_tag} rev=${git_rev})"
 
-env CGO_ENABLED=0 gox -osarch="${OSARCH:-$supported_platforms}" \
+env GO111MODULE=on CGO_ENABLED=0 gox -osarch="${OSARCH:-$supported_platforms}" \
   -tags netgo \
   -mod readonly \
   -ldflags="-w -X ${version_pkg}.gitCommit=${git_rev} \

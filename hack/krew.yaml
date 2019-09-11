@@ -18,6 +18,7 @@ metadata:
   name: krew
 spec:
   version: "KREW_TAG"
+  homepage: https://sigs.k8s.io/krew
   shortDescription: Package manager for kubectl plugins.
   caveats: |
     krew is now installed! To start using kubectl plugins, you need to add
@@ -30,8 +31,12 @@ spec:
 
       * Windows: Add %USERPROFILE%\.krew\bin to your PATH environment variable
 
-    Run "kubectl krew" to list krew commands and get help.
-    You can find documentation at https://github.com/kubernetes-sigs/krew.
+    To list krew commands and to get help, run:
+      $ kubectl krew
+    For a full list of available plugins, run:
+      $ kubectl krew search
+
+    You can find documentation at https://sigs.k8s.io/krew.
 
   platforms:
   - uri: https://github.com/kubernetes-sigs/krew/releases/download/KREW_TAG/krew.tar.gz

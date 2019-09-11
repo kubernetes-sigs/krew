@@ -18,7 +18,7 @@
     KREW_ROOT="$(mktemp -d)" KREW_OS=linux \
         $krew install --manifest=out/krew.yaml --archive=out/krew.tar.gz && \
     KREW_ROOT="$(mktemp -d)" KREW_OS=windows \
-        $krew install --manifest=out/krew.yaml --archive=out/krew.zip
+        $krew install --manifest=out/krew.yaml --archive=out/krew.tar.gz
     ```
 
 ### Release a new version
