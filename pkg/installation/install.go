@@ -70,7 +70,7 @@ func Install(p environment.Paths, plugin index.Plugin, opts InstallOpts) error {
 		return errors.Wrap(err, "failed trying to find a matching platform in plugin spec")
 	}
 	if !ok {
-		return errors.Wrapf(err, "plugin %q does not offer installation for this platform", plugin.Name)
+		return errors.Errorf("plugin %q does not offer installation for this platform", plugin.Name)
 	}
 
 	// The actual install should be the last action so that a failure during receipt
