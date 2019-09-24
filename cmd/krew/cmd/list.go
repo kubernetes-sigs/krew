@@ -72,10 +72,10 @@ Remarks:
 
 func printTable(out io.Writer, columns []string, rows [][]string) error {
 	w := tabwriter.NewWriter(out, 0, 0, 2, ' ', 0)
-	fmt.Fprintf(w, strings.Join(columns, "\t"))
+	fmt.Fprint(w, strings.Join(columns, "\t"))
 	fmt.Fprintln(w)
 	for _, values := range rows {
-		fmt.Fprintf(w, strings.Join(values, "\t"))
+		fmt.Fprint(w, strings.Join(values, "\t"))
 		fmt.Fprintln(w)
 	}
 	return w.Flush()
