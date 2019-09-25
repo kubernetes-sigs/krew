@@ -71,6 +71,9 @@ Krew tags versions starting with `v`. Example: `v0.2.0-rc.1`.
    This will make the plugin available to upgrade for users using older versions
    of krew.
 
+1. **Update krew-index CI**: For validating manifests, the CI should use the latest version
+   (see `.travis.yml` in `krew-index` the repository).
+
 ## Release artifacts
 
 When a tag is pushed to the repository, Travis CI will make a release on GitHub
