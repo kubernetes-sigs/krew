@@ -38,7 +38,7 @@ Krew tags versions starting with `v`. Example: `v0.2.0-rc.1`.
 1. **Commit the changes back:**
 
        git commit -am "Release ${TAG:?TAG required}"
-       
+
 1. **Push PR and merge changes**: The repository hooks forbid direct pushes to
    master, so the changes from the previous step need to be pushed and merged
    as a regular PR.
@@ -46,6 +46,7 @@ Krew tags versions starting with `v`. Example: `v0.2.0-rc.1`.
 1. **Tag the release:**
 
     ```sh
+    git fetch origin
     git reset --hard origin/master    # when the previous merge is done
     release_notes="$(TAG=$TAG hack/make-release-notes.sh)"
     git tag -a "${TAG:?TAG required}" -m "${release_notes}"
@@ -57,22 +58,18 @@ Krew tags versions starting with `v`. Example: `v0.2.0-rc.1`.
 
 1. **Push the tag:**
 
-       git push --follow-tags
-
-    Due to branch restrictions on GitHub preventing pushing to a branch
-    directly, this command may require `-f`.
+       git push --tags
 
 1. **Verify on Releases tab on GitHub**
 
 1. **Make the new version available on krew index:** Get the latest `krew.yaml` from
 
        curl -LO https://github.com/kubernetes-sigs/krew/releases/download/v0.3.2-rc.1/krew.yaml
-       
+
    and make a pull request to
    [krew-index](https://github.com/kubernetes-sigs/krew-index/) repository.
    This will make the plugin available to upgrade for users using older versions
    of krew.
-   
 
 ## Release artifacts
 
