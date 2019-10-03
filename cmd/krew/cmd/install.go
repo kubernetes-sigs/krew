@@ -17,6 +17,8 @@ package cmd
 import (
 	"bufio"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"os"
 
 	"github.com/golang/glog"
@@ -30,10 +32,45 @@ import (
 	"sigs.k8s.io/krew/pkg/installation"
 )
 
+// Downloads data from url to a filepath location
+func downloadFile(url string) (string, error) {
+
+	tmpFile, err := ioutil.TempFile(os.TempDir(), "krew-")
+	if err != nil {
+		return "", err
+	}
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("bad status: %s", resp.Status)
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	if _, err = tmpFile.Write([]byte(string(body))); err != nil {
+		return "", err
+	}
+
+	// Close the file
+	if err := tmpFile.Close(); err != nil {
+		return "", err
+	}
+
+	return tmpFile.Name(), nil
+}
+
 func init() {
 	var (
-		manifest, archiveFileOverride *string
-		noUpdateIndex                 *bool
+		manifest, manifestURL, archiveFileOverride *string
+		noUpdateIndex                              *bool
 	)
 
 	// installCmd represents the install command
@@ -61,6 +98,20 @@ Remarks:
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var pluginNames = make([]string, len(args))
 			copy(pluginNames, args)
+
+			// Downloads manifest file from given URL
+			if *manifestURL != "" {
+				fileName, err := downloadFile(*manifestURL)
+				if err != nil {
+					fmt.Fprintln(os.Stderr, "Error downloading file")
+				}
+
+				// Deletes the temp file after usage
+				defer os.Remove(fileName)
+
+				// Assigns temporary manifest file to manifest variable
+				*manifest = fileName
+			}
 
 			if !isTerminal(os.Stdin) && (len(pluginNames) != 0 || *manifest != "") {
 				fmt.Fprintln(os.Stderr, "WARNING: Detected stdin, but discarding it because of --manifest or args")
@@ -153,6 +204,7 @@ Remarks:
 	}
 
 	manifest = installCmd.Flags().String("manifest", "", "(Development-only) specify plugin manifest directly.")
+	manifestURL = installCmd.Flags().String("manifest-url", "", "(Development-only) specify plugin manifest URL directly.")
 	archiveFileOverride = installCmd.Flags().String("archive", "", "(Development-only) force all downloads to use the specified file")
 	noUpdateIndex = installCmd.Flags().Bool("no-update-index", false, "(Experimental) do not update local copy of plugin index before installing")
 
