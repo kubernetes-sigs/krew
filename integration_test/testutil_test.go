@@ -39,6 +39,7 @@ const (
 	krewBinaryEnv        = "KREW_BINARY"
 	validPlugin          = "konfig" // a plugin in central index with small size
 	validPlugin2         = "mtail"  // a plugin in central index with small size
+	validURLPlugin       = "fields"
 )
 
 var (

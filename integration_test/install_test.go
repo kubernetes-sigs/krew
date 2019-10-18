@@ -105,6 +105,17 @@ func TestKrewInstall_Manifest(t *testing.T) {
 	test.AssertExecutableInPATH("kubectl-" + validPlugin)
 }
 
+func TestKrewInstall_ManifestURL(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	test.Krew("install",
+		"--manifest-url", constants.ManifestURL).RunOrFail()
+	test.AssertExecutableInPATH("kubectl-" + validURLPlugin)
+}
+
 func TestKrewInstall_ManifestAndArchive(t *testing.T) {
 	skipShort(t)
 
