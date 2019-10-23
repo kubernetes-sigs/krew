@@ -15,7 +15,6 @@ require (
 	github.com/sahilm/fuzzy v0.0.5
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/pflag v1.0.3
-	golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2
 	golang.org/x/net v0.0.0-20190628185345-da137c7871d7 // indirect
 	golang.org/x/sys v0.0.0-20190712062909-fae7ac547cb7 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
