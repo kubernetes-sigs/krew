@@ -29,7 +29,7 @@ import (
 )
 
 func init() {
-	var overrideFlag *bool
+	var wideFlag *bool
 
 	// listCmd represents the list command
 	listCmd := &cobra.Command{
@@ -48,7 +48,7 @@ Remarks:
 			}
 
 			// return sorted list of plugin names when piped to other commands or file
-			if !isTerminal(os.Stdout) && !*overrideFlag {
+			if !isTerminal(os.Stdout) && !*wideFlag {
 				var names []string
 				for name := range plugins {
 					names = append(names, name)
@@ -69,7 +69,7 @@ Remarks:
 		PreRunE: checkIndex,
 	}
 
-	overrideFlag = listCmd.Flags().BoolP("override", "o", true, "override standard limited terminal output behavior")
+	wideFlag = listCmd.Flags().BoolP("wide", "w", true, "override standard limited terminal output behavior")
 
 	rootCmd.AddCommand(listCmd)
 }
