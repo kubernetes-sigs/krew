@@ -81,6 +81,6 @@ if [[ $(uname) == "Darwin" ]]; then
     echo >&2 "GNU sed is required for MacOS users to successfully run local tests; it can be found on homebrew as 'gsed'"
   fi
 fi
-$(sed) -i "s/KREW_TAR_CHECKSUM/${tar_checksum}/g" ./out/krew.yaml
-$(sed) -i "s/KREW_TAG/${krew_version}/g" ./out/krew.yaml
+$(${sed} -i "s/KREW_TAR_CHECKSUM/${tar_checksum}/g" ./out/krew.yaml)
+$(${sed} -i "s/KREW_TAG/${krew_version}/g" ./out/krew.yaml)
 echo >&2 "Written out/krew.yaml."
