@@ -50,14 +50,25 @@ func TestKrewList(t *testing.T) {
 	}
 
 	test.Krew("install", validPlugin5, validPlugin4, validPlugin3, validPlugin2, validPlugin).RunOrFail()
-	expected = []byte(validPlugin + "\n")
+	expected = []byte(validPlugin + "\n" + validPlugin2 + "\n" + validPlugin5 + "\n" + validPlugin4 + "\n" + validPlugin3 + "\n")
 
 	sortedList := test.Krew("list").RunOrFailOutput()
 	if diff := cmp.Diff(sortedList, expected); diff != "" {
 		t.Fatalf("'list' output doesn't match:\n%s", diff)
 	}
 
-	expected = []byte("PLUGIN\tVERSION\n" + "v")
+	genSpaces := func(s string) string {
+		spaces := ""
+		for i := len(s); i < longestPluginNameLen+2; i++ {
+			spaces += " "
+		}
+		return spaces
+	}
+	formatW := func(s string) string {
+		return s + genSpaces(s)
+	}
+
+	expected = []byte(formatW("PLUGIN") + "VERSION\n" + formatW(validPlugin) + validPluginV + "\n" + formatW(validPlugin2) + validPlugin2V + "\n" + formatW(validPlugin5) + validPlugin5V + "\n" + formatW(validPlugin4) + validPlugin4V + "\n" + formatW(validPlugin3) + validPlugin3V + "\n")
 	overrideList := test.Krew("list", "-o").RunOrFailOutput()
 	if diff := cmp.Diff(overrideList, expected); diff != "" {
 		t.Fatalf("'list' output doesn't match:\n%s", diff)
