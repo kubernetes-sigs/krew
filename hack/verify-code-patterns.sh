@@ -17,6 +17,7 @@
 set -euo pipefail
 
 # Appropriately set grep
+grep="grep"
 if [[ $(uname) == "Darwin" ]]; then
   out="$(command -v ggrep)"
   if [[ -n $out ]]; then
@@ -24,8 +25,6 @@ if [[ $(uname) == "Darwin" ]]; then
   else
     echo >&2 "GNU grep is required for MacOS users to successfully run local tests; it can be found on homebrew as 'grep'"
   fi
-else
-  grep="grep"
 fi
 
 # Disallow usage of ioutil.TempDir in tests in favor of testutil.

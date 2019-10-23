@@ -69,7 +69,7 @@ Remarks:
 		PreRunE: checkIndex,
 	}
 
-	listCmd.Flags().BoolVarP(overrideFlag, "override", "o", false, "override standard limited terminal output behavior")
+	overrideFlag = listCmd.Flags().BoolP("override", "o", true, "override standard limited terminal output behavior")
 
 	rootCmd.AddCommand(listCmd)
 }
