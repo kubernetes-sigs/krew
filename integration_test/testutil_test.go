@@ -263,7 +263,6 @@ func (it *ITest) TempDir() *testutil.TempDir {
 func (it *ITest) initializeIndex() {
 	initIndexOnce.Do(func() {
 		persistentCacheFile := filepath.Join(os.TempDir(), persistentIndexCache)
-		// fmt.Printf("PCF: %s\nPIC: %s\n", persistentCacheFile, persistentIndexCache)
 		fileInfo, err := os.Stat(persistentCacheFile)
 
 		if err == nil && fileInfo.Mode().IsRegular() {
@@ -297,7 +296,6 @@ func (it *ITest) initializeIndex() {
 		it.t.Fatalf("cannot restore index from cache: %s", err)
 	}
 
-	// fmt.Printf("PIC: %s\nID:  %s\n", persistentIndexCache, indexDir)
 	pluginList := indexDir + "/plugins/"
 
 	getVersion := func(dir, plugin string) string {
