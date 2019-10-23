@@ -305,6 +305,9 @@ func (it *ITest) initializeIndex() {
 			it.t.Fatal(err)
 		}
 		err = yaml.Unmarshal(unparsed, &v)
+		if err != nil {
+			it.t.Fatal(err)
+		}
 		return v.Spec.Version
 	}
 	validPluginV = getVersion(pluginList, validPlugin)
