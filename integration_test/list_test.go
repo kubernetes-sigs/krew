@@ -40,5 +40,30 @@ func TestKrewList(t *testing.T) {
 	if diff := cmp.Diff(eventualList, expected); diff != "" {
 		t.Fatalf("'list' output doesn't match:\n%s", diff)
 	}
-	// TODO(ahmetb): install multiple plugins and see if the output is sorted
+
+	test.Krew("uninstall", validPlugin).RunOrFail()
+	expected = []byte{'\n'}
+
+	uninstallList := test.Krew("list").RunOrFailOutput()
+	if diff := cmp.Diff(uninstallList, expected); diff != "" {
+		t.Fatalf("'list' output doesn't match:\n%s", diff)
+	}
+
+	test.Krew("install", validPlugin5, validPlugin4, validPlugin3, validPlugin2, validPlugin).RunOrFail()
+	expected = []byte(validPlugin + "\n")
+
+	sortedList := test.Krew("list").RunOrFailOutput()
+	if diff := cmp.Diff(sortedList, expected); diff != "" {
+		t.Fatalf("'list' output doesn't match:\n%s", diff)
+	}
+
+	expected = []byte("PLUGIN\tVERSION\n" + "v")
+	overrideList := test.Krew("list", "-o").RunOrFailOutput()
+	if diff := cmp.Diff(overrideList, expected); diff != "" {
+		t.Fatalf("'list' output doesn't match:\n%s", diff)
+	}
+	overrideList = test.Krew("list", "--override").RunOrFailOutput()
+	if diff := cmp.Diff(overrideList, expected); diff != "" {
+		t.Fatalf("'list' output doesn't match:\n%s", diff)
+	}
 }

@@ -37,8 +37,11 @@ import (
 const (
 	persistentIndexCache = "krew-persistent-index-cache"
 	krewBinaryEnv        = "KREW_BINARY"
-	validPlugin          = "konfig" // a plugin in central index with small size
-	validPlugin2         = "mtail"  // a plugin in central index with small size
+	validPlugin          = "konfig"      // a plugin in central index with small size
+	validPlugin2         = "mtail"       // a plugin in central index with small size
+	validPlugin3         = "view-secret" // a plugin in central index with small size
+	validPlugin4         = "restart"     // a plugin in central index with small size
+	validPlugin5         = "pod-logs"    // a plugin in central index with small size
 )
 
 var (
