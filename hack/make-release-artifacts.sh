@@ -72,15 +72,6 @@ if [[ ! "${git_describe}" =~ v.* ]]; then
 fi
 krew_version="${TAG_NAME:-$git_describe}"
 cp ./hack/krew.yaml ./out/krew.yaml
-sed="sed"
-if [[ $(uname) == "Darwin" ]]; then
-  out="$(command -v gsed)"
-  if [[ -n $out ]]; then
-    sed="gsed"
-  else
-    echo >&2 "GNU sed is required for MacOS users to successfully run local tests; it can be found on homebrew as 'gsed'"
-  fi
-fi
-$(${sed} -i "s/KREW_TAR_CHECKSUM/${tar_checksum}/g" ./out/krew.yaml)
-$(${sed} -i "s/KREW_TAG/${krew_version}/g" ./out/krew.yaml)
+sed -i "s/KREW_TAR_CHECKSUM/${tar_checksum}/g" ./out/krew.yaml
+sed -i "s/KREW_TAG/${krew_version}/g" ./out/krew.yaml
 echo >&2 "Written out/krew.yaml."

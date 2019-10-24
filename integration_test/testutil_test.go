@@ -29,7 +29,6 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"gopkg.in/yaml.v2"
 
 	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/testutil"
@@ -38,27 +37,9 @@ import (
 const (
 	persistentIndexCache = "krew-persistent-index-cache"
 	krewBinaryEnv        = "KREW_BINARY"
-	validPlugin          = "konfig"          // a plugin in central index with small size
-	validPlugin2         = "mtail"           // a plugin in central index with small size
-	validPlugin3         = "view-secret"     // a plugin in central index with small size
-	validPlugin4         = "restart"         // a plugin in central index with small size
-	validPlugin5         = "pod-logs"        // a plugin in central index with small size
-	longestPluginNameLen = len(validPlugin3) // view-secret is the longest plugin name
+	validPlugin          = "konfig" // a plugin in central index with small size
+	validPlugin2         = "mtail"  // a plugin in central index with small size
 )
-
-var (
-	validPluginV  = ""
-	validPlugin2V = ""
-	validPlugin3V = ""
-	validPlugin4V = ""
-	validPlugin5V = ""
-)
-
-type Version struct {
-	Spec struct {
-		Version string `yaml:"version"`
-	} `yaml:"spec"`
-}
 
 var (
 	initIndexOnce sync.Once
@@ -295,26 +276,6 @@ func (it *ITest) initializeIndex() {
 	if err := cmd.Run(); err != nil {
 		it.t.Fatalf("cannot restore index from cache: %s", err)
 	}
-
-	pluginList := indexDir + "/plugins/"
-
-	getVersion := func(dir, plugin string) string {
-		var v Version
-		unparsed, err := ioutil.ReadFile(dir + plugin + constants.ManifestExtension)
-		if err != nil {
-			it.t.Fatal(err)
-		}
-		err = yaml.Unmarshal(unparsed, &v)
-		if err != nil {
-			it.t.Fatal(err)
-		}
-		return v.Spec.Version
-	}
-	validPluginV = getVersion(pluginList, validPlugin)
-	validPlugin2V = getVersion(pluginList, validPlugin2)
-	validPlugin3V = getVersion(pluginList, validPlugin3)
-	validPlugin4V = getVersion(pluginList, validPlugin4)
-	validPlugin5V = getVersion(pluginList, validPlugin5)
 }
 
 func initFromGitClone(t *testing.T) ([]byte, error) {
