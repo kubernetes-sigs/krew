@@ -48,9 +48,16 @@ func TestKrewList(t *testing.T) {
 	if diff := cmp.Diff(uninstallList, expected); diff != "" {
 		t.Fatalf("'list' output doesn't match:\n%s", diff)
 	}
+}
+
+func TestKrewListSorted(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
 
 	test.Krew("install", validPlugin5, validPlugin4, validPlugin3, validPlugin2, validPlugin).RunOrFail()
-	expected = []byte(validPlugin + "\n" + validPlugin2 + "\n" + validPlugin5 + "\n" + validPlugin4 + "\n" + validPlugin3 + "\n")
+	expected := []byte(validPlugin + "\n" + validPlugin2 + "\n" + validPlugin5 + "\n" + validPlugin4 + "\n" + validPlugin3 + "\n")
 
 	sortedList := test.Krew("list").RunOrFailOutput()
 	if diff := cmp.Diff(sortedList, expected); diff != "" {

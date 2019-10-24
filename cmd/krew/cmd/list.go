@@ -29,7 +29,7 @@ import (
 )
 
 func init() {
-	var wideFlag *bool
+	var namesOnlyFlag, wideFlag *bool
 
 	// listCmd represents the list command
 	listCmd := &cobra.Command{
@@ -48,7 +48,7 @@ Remarks:
 			}
 
 			// return sorted list of plugin names when piped to other commands or file
-			if !isTerminal(os.Stdout) && !*wideFlag {
+			if !isTerminal(os.Stdout) && (!*wideFlag || *namesOnlyFlag) {
 				var names []string
 				for name := range plugins {
 					names = append(names, name)
@@ -69,7 +69,8 @@ Remarks:
 		PreRunE: checkIndex,
 	}
 
-	wideFlag = listCmd.Flags().BoolP("wide", "w", true, "override standard limited terminal output behavior")
+	namesOnlyFlag = listCmd.Flags().Bool("names-only", true, "print only the names of plugins")
+	wideFlag = listCmd.Flags().BoolP("wide", "w", true, "print all plugins and their version")
 
 	rootCmd.AddCommand(listCmd)
 }

@@ -38,11 +38,18 @@ if [[ ! -e "${KREW_BINARY}" ]]; then
   echo >&2 "Could not find $KREW_BINARY. You need to build krew for ${goos}/${goarch} before running the integration tests."
   exit 1
 fi
-krew_binary_realpath="$(readlink -f "${KREW_BINARY}")"
+
+if [[ $(uname) == "Darwin" ]]; then
+  krew_binary_realpath="$(readlink "${KREW_BINARY}")"
+else
+  krew_binary_realpath="$(readlink -f "${KREW_BINARY}")"
+fi
+
 if [[ ! -x "${krew_binary_realpath}" ]]; then
   echo >&2 "krew binary at ${krew_binary_realpath} is not an executable"
   exit 1
 fi
+
 KREW_BINARY="${krew_binary_realpath}"
 export KREW_BINARY
 
