@@ -90,6 +90,10 @@ func Test_extractTARGZ(t *testing.T) {
 			files: []string{"/foo"},
 		},
 		{
+			in:    "test-with-symlinks.tar.gz",
+			files: []string{"/symlinks/", "/symlinks/message", "/symlinks/msg"},
+		},
+		{
 			in: "test-with-nesting-with-directory-entries.tar.gz",
 			files: []string{
 				"/test/",

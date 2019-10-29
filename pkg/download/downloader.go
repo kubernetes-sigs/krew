@@ -125,6 +125,10 @@ func extractTARGZ(targetDir string, at io.ReaderAt, size int64) error {
 			if err := os.MkdirAll(path, os.FileMode(hdr.Mode)); err != nil {
 				return errors.Wrap(err, "failed to create directory from tar")
 			}
+		case tar.TypeSymlink:
+			if err := os.Symlink(hdr.Linkname, path); err != nil {
+				return errors.Wrap(err, "failed to create symlink from tar")
+			}
 		case tar.TypeReg:
 			dir := filepath.Dir(path)
 			glog.V(4).Infof("tar: ensuring parent dirs exist for regular file, dir=%s", dir)
