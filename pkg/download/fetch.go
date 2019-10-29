@@ -47,7 +47,8 @@ var _ Fetcher = fileFetcher{}
 type fileFetcher struct{ f string }
 
 func (f fileFetcher) Get(_ string) (io.ReadCloser, error) {
-	return os.Open(f.f)
+	file, err := os.Open(f.f)
+	return file, errors.Wrapf(err, "failed to open archive file %q for reading", f.f)
 }
 
 // NewFileFetcher returns a local file reader.
