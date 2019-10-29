@@ -209,7 +209,7 @@ func NewDownloader(v Verifier, f Fetcher) Downloader {
 func (d Downloader) Get(uri, dst string) error {
 	body, size, err := download(uri, d.verifier, d.fetcher)
 	if err != nil {
-		return errors.Wrapf(err, "failed to get the uri %q", uri)
+		return err
 	}
 	return extractArchive(dst, body, size)
 }

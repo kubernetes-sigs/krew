@@ -37,7 +37,7 @@ type HTTPFetcher struct{}
 func (HTTPFetcher) Get(uri string) (io.ReadCloser, error) {
 	resp, err := http.Get(uri)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "failed to get the uri %q", uri)
 	}
 	return resp.Body, nil
 }
