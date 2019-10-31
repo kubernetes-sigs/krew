@@ -165,7 +165,7 @@ func TestDownloader_Get(t *testing.T) {
 		{
 			name: "successful get",
 			fields: fields{
-				verifier: NewInsecureVerifier(),
+				verifier: newTrueVerifier(),
 				fetcher:  NewFileFetcher(filepath.Join(testdataPath(), "test-with-directory.zip")),
 			},
 			uri:     "foo/bar/test-with-directory.zip",
@@ -174,7 +174,7 @@ func TestDownloader_Get(t *testing.T) {
 		{
 			name: "fail get by fetching",
 			fields: fields{
-				verifier: NewInsecureVerifier(),
+				verifier: newTrueVerifier(),
 				fetcher:  errorFetcher{},
 			},
 			uri:     "foo/bar/test-with-directory.zip",
@@ -217,7 +217,7 @@ func Test_download(t *testing.T) {
 			name: "successful fetch",
 			args: args{
 				url:      filePath,
-				verifier: NewInsecureVerifier(),
+				verifier: newTrueVerifier(),
 				fetcher:  NewFileFetcher(filePath),
 			},
 			wantReader: bytes.NewReader(downloadOriginal),
@@ -266,6 +266,14 @@ func Test_download(t *testing.T) {
 		})
 	}
 }
+
+var _ Verifier = trueVerifier{}
+
+type trueVerifier struct{ io.Writer }
+
+// newTrueVerifier returns a Verifier that always verifies to true.
+func newTrueVerifier() Verifier    { return trueVerifier{ioutil.Discard} }
+func (trueVerifier) Verify() error { return nil }
 
 var _ Verifier = falseVerifier{}
 
