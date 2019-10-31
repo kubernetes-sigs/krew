@@ -452,37 +452,3 @@ func Test_extractArchive(t *testing.T) {
 		})
 	}
 }
-
-func TestTrueVerifier(t *testing.T) {
-	tests := []struct {
-		name      string
-		write     []byte
-		wantError bool
-	}{
-		{
-			name:      "test okay hash",
-			write:     []byte("hello world"),
-			wantError: false,
-		},
-		{
-			name:      "test wrong hash",
-			write:     []byte("HELLO WORLD"),
-			wantError: false,
-		},
-		{
-			name:      "test empty hash",
-			write:     []byte{},
-			wantError: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			v := newTrueVerifier()
-			_, _ = io.Copy(v, bytes.NewReader(tt.write))
-			if err := v.Verify(); (err != nil) != tt.wantError {
-				t.Errorf("newTrueVerifier().Write(%x).Verify() = %v, wantReader %v", tt.write, err, tt.wantError)
-				return
-			}
-		})
-	}
-}
