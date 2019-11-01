@@ -75,12 +75,11 @@ func extractZIP(targetDir string, read io.ReaderAt, size int64) error {
 		}
 
 		if f.FileInfo().Mode()&os.ModeSymlink == os.ModeSymlink {
-			buf := new(bytes.Buffer)
-			_, err := io.Copy(buf, src)
+			buf, err := ioutil.ReadAll(src)
 			if err != nil {
 				return errors.Wrap(err, "problem reading symlink target")
 			}
-			oldname := strings.TrimSpace(buf.String())
+			oldname := string(buf)
 			if err := symlinkIfAllowed(targetDir, oldname, path); err != nil {
 				return err
 			}
