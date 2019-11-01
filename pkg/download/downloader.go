@@ -92,6 +92,27 @@ func extractZIP(targetDir string, read io.ReaderAt, size int64) error {
 	return nil
 }
 
+func symlink(targetDir, oldname, newname string) error {
+	// thou shall not pass:
+	top := filepath.FromSlash(targetDir + "/")
+
+	abs, err := filepath.Abs(filepath.Join(filepath.Dir(newname), oldname))
+	if err != nil {
+		return err
+	}
+	if strings.Index(abs, top) != 0 {
+		glog.V(4).Infof("invalid escaping symlink %v %v\n", abs, top)
+		return errors.New("invalid symlink referencing a parent path in tar")
+	}
+	if filepath.IsAbs(oldname) {
+		return errors.New("invalid symlink referencing an absolute path in tar")
+	}
+	if err := os.Symlink(oldname, newname); err != nil {
+		return errors.Wrap(err, "failed to create symlink from tar")
+	}
+	return nil
+}
+
 // extractTARGZ extracts a gzipped tar file into the target directory.
 func extractTARGZ(targetDir string, at io.ReaderAt, size int64) error {
 	glog.V(4).Infof("tar: extracting to %q", targetDir)
@@ -128,14 +149,8 @@ func extractTARGZ(targetDir string, at io.ReaderAt, size int64) error {
 		case tar.TypeSymlink:
 			// the following two guard enforce a very conservative symlink policy:
 			// 1) no ".." references; and 2) no absolute path references
-			if strings.Contains(hdr.Linkname, "..") {
-				return errors.New("invalid symlink referencing a parent path in tar")
-			}
-			if filepath.IsAbs(hdr.Linkname) {
-				return errors.New("invalid symlink referencing an absolute path in tar")
-			}
-			if err := os.Symlink(hdr.Linkname, path); err != nil {
-				return errors.Wrap(err, "failed to create symlink from tar")
+			if err := symlink(targetDir, hdr.Linkname, path); err != nil {
+				return err
 			}
 		case tar.TypeReg:
 			dir := filepath.Dir(path)

@@ -122,7 +122,17 @@ func Test_extractTARGZ(t *testing.T) {
 			expectErr: true,
 		},
 		{
-			in:        "test-with-symlinks-escaping-parent2.tar.gz",
+			in: "test-with-symlinks-escaping-parent2.tar.gz",
+			files: []string{
+				"/escaping-link-test3/",
+				"/escaping-link-test3/baz", // this escapes only to the staging area, so expectErr: false
+				"/escaping-link-test3/foo/",
+				"/escaping-link-test3/foo/bar/",
+			},
+			expectErr: false,
+		},
+		{
+			in:        "test-with-symlinks-escaping-parent3.tar.gz",
 			files:     nil,
 			expectErr: true,
 		},
