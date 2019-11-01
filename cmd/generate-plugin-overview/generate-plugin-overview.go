@@ -118,7 +118,6 @@ func makeGithubShield(homepage string) string {
 		repo = "kudobuilder/kudo"
 	}
 
-
 	if repo == "" {
 		return ""
 	}
