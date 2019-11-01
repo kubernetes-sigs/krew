@@ -95,7 +95,7 @@ func install(op installOperation, opts InstallOpts) error {
 	// Download and extract
 	glog.V(3).Infof("Creating download staging directory %q", op.downloadStagingDir)
 	if err := os.MkdirAll(op.downloadStagingDir, 0755); err != nil {
-		return errors.Wrapf(err, "could not create download path %q", op.downloadStagingDir)
+		return errors.Wrapf(err, "could not create staging dir %q", op.downloadStagingDir)
 	}
 	defer func() {
 		glog.V(3).Infof("Deleting the download staging directory %s", op.downloadStagingDir)
@@ -104,7 +104,7 @@ func install(op installOperation, opts InstallOpts) error {
 		}
 	}()
 	if err := downloadAndExtract(op.downloadStagingDir, op.platform.URI, op.platform.Sha256, opts.ArchiveFileOverride); err != nil {
-		return errors.Wrap(err, "failed to download and extract")
+		return errors.Wrap(err, "failed to unpack into staging dir")
 	}
 
 	applyDefaults(&op.platform)
@@ -146,7 +146,7 @@ func downloadAndExtract(extractDir, uri, sha256sum, overrideFile string) error {
 
 	verifier := download.NewSha256Verifier(sha256sum)
 	err := download.NewDownloader(verifier, fetcher).Get(uri, extractDir)
-	return errors.Wrap(err, "failed to download and verify file")
+	return errors.Wrap(err, "failed to unpack the plugin archive")
 }
 
 // Uninstall will uninstall a plugin.
