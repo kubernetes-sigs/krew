@@ -105,6 +105,10 @@ func extractZIP(targetDir string, read io.ReaderAt, size int64) error {
 	return nil
 }
 
+// make a symlink from oldname to newname within the given enclosing targetDir
+// enforces two symlink policies
+// 1) no symlinks to absolute paths (oldname must not be an absolute path)
+// 2) no symlinks that escape targetDir
 func symlink(targetDir, oldname, newname string) error {
 	// no symlinks to absolute paths
 	if filepath.IsAbs(oldname) {
@@ -112,9 +116,10 @@ func symlink(targetDir, oldname, newname string) error {
 		return errors.New("invalid symlink referencing an absolute path in tar")
 	}
 
-	// thou shall not pass:
+	// now we check the second policy; top is the absolute path of the upper bound
 	top := filepath.FromSlash(targetDir + "/")
 
+	// abs is the absolute path of the path-to-be-linked
 	abs, err := filepath.Abs(filepath.Join(filepath.Dir(newname), oldname))
 	if err != nil {
 		return err
@@ -163,8 +168,6 @@ func extractTARGZ(targetDir string, at io.ReaderAt, size int64) error {
 				return errors.Wrap(err, "failed to create directory from tar")
 			}
 		case tar.TypeSymlink:
-			// the following two guard enforce a very conservative symlink policy:
-			// 1) no ".." references; and 2) no absolute path references
 			if err := symlink(targetDir, hdr.Linkname, path); err != nil {
 				return err
 			}
