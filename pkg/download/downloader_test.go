@@ -37,61 +37,91 @@ func testdataPath() string {
 	return filepath.Join(pwd, "testdata")
 }
 
+type ArchiveTest struct {
+	in      string
+	files   []string
+	wantErr bool
+}
+
+func SymlinkTest1(ext string) ArchiveTest {
+	return ArchiveTest{
+		in: "test-with-symlinks" + ext,
+		files: []string{
+			"/symlinks/",
+			"/symlinks/message",
+			"/symlinks/msg",
+		},
+		wantErr: false,
+	}
+}
+
+func SymlinkTest2(ext string) ArchiveTest {
+	return ArchiveTest{
+		in: "test-with-symlinks-escaping-parent" + ext,
+		files: []string{
+			"/escaping-link-test2/",
+			"/escaping-link-test2/yo/",
+			"/escaping-link-test2/yo/mo/",
+			"/escaping-link-test2/yo/mo/zoo",
+			"/escaping-link-test2/z",
+			"/escaping-link-test2/zz",
+			"/escaping-link-test2/zzz", // this escapes only to the staging area, so wantErr: false
+		},
+		wantErr: false,
+	}
+}
+
+func SymlinkTest3(ext string) ArchiveTest {
+	return ArchiveTest{
+		in: "test-with-symlinks-escaping-parent2" + ext,
+		files: []string{
+			"/escaping-link-test3/",
+			"/escaping-link-test3/baz", // this escapes only to the staging area, so wantErr: false
+			"/escaping-link-test3/foo/",
+			"/escaping-link-test3/foo/bar/",
+		},
+		wantErr: false,
+	}
+}
+
+func SymlinkTest4(ext string) ArchiveTest {
+	return ArchiveTest{
+		in:      "test-with-symlinks-escaping-parent3" + ext,
+		files:   nil,
+		wantErr: true,
+	}
+}
+
+func SymlinkTest5(ext string) ArchiveTest {
+	return ArchiveTest{
+		in:      "test-with-symlinks-escaping-absolute" + ext,
+		files:   nil,
+		wantErr: true,
+	}
+}
+
 func Test_extractZIP(t *testing.T) {
-	tests := []struct {
-		in        string
-		files     []string
-		expectErr bool
-	}{
+	tests := []ArchiveTest{
 		{
 			in: "test-with-directory.zip",
 			files: []string{
 				"/test/",
 				"/test/foo",
 			},
-			expectErr: false,
+			wantErr: false,
 		},
 		{
 			in: "test-without-directory.zip",
 			files: []string{
 				"/foo",
 			},
-			expectErr: false,
+			wantErr: false,
 		},
-		{
-			in: "test-with-symlinks.zip",
-			files: []string{
-				"/symlinks/",
-				"/symlinks/message",
-				"/symlinks/msg",
-			},
-			expectErr: false,
-		},
-		{
-			in:        "test-with-symlinks-escaping-parent.zip",
-			files:     nil,
-			expectErr: true,
-		},
-		{
-			in: "test-with-symlinks-escaping-parent2.zip",
-			files: []string{
-				"/escaping-link-test3/",
-				"/escaping-link-test3/baz", // this escapes only to the staging area, so expectErr: false
-				"/escaping-link-test3/foo/",
-				"/escaping-link-test3/foo/bar/",
-			},
-			expectErr: false,
-		},
-		{
-			in:        "test-with-symlinks-escaping-parent3.tar.gz",
-			files:     nil,
-			expectErr: true,
-		},
-		{
-			in:        "test-with-symlinks-escaping-absolute.zip",
-			files:     nil,
-			expectErr: true,
-		},
+		SymlinkTest1(".zip"),
+		SymlinkTest2(".zip"),
+		SymlinkTest3(".zip"),
+		SymlinkTest4(".zip"),
+		SymlinkTest5(".zip"),
 	}
 
 	for _, tt := range tests {
@@ -107,7 +137,7 @@ func Test_extractZIP(t *testing.T) {
 		defer zipReader.Close()
 		stat, _ := zipReader.Stat()
 		if err := extractZIP(tmpDir.Root(), zipReader, stat.Size()); err != nil {
-			if !tt.expectErr {
+			if !tt.wantErr {
 				t.Fatalf("extractZIP(%s) error = %v", tt.in, err)
 			} else {
 				// error was expected, all is good
@@ -115,7 +145,7 @@ func Test_extractZIP(t *testing.T) {
 			}
 		}
 		outFiles := collectFiles(t, tmpDir.Root())
-		if tt.expectErr {
+		if tt.wantErr {
 			t.Fatalf("expected extraction failure %q %v", tt.in, outFiles)
 		} else if !reflect.DeepEqual(outFiles, tt.files) {
 			t.Fatalf("extractZIP(%s), expected=%v, got=%v", tt.in, tt.files, outFiles)
@@ -124,15 +154,11 @@ func Test_extractZIP(t *testing.T) {
 }
 
 func Test_extractTARGZ(t *testing.T) {
-	tests := []struct {
-		in        string
-		files     []string
-		expectErr bool
-	}{
+	tests := []ArchiveTest{
 		{
-			in:        "test-without-directory.tar.gz",
-			files:     []string{"/foo"},
-			expectErr: false,
+			in:      "test-without-directory.tar.gz",
+			files:   []string{"/foo"},
+			wantErr: false,
 		},
 		{
 			in: "test-with-nesting-with-directory-entries.tar.gz",
@@ -140,7 +166,7 @@ func Test_extractTARGZ(t *testing.T) {
 				"/test/",
 				"/test/foo",
 			},
-			expectErr: false,
+			wantErr: false,
 		},
 		{
 			in: "test-with-nesting-without-directory-entries.tar.gz",
@@ -148,42 +174,13 @@ func Test_extractTARGZ(t *testing.T) {
 				"/test/",
 				"/test/foo",
 			},
-			expectErr: false,
+			wantErr: false,
 		},
-		{
-			in: "test-with-symlinks.tar.gz",
-			files: []string{
-				"/symlinks/",
-				"/symlinks/message",
-				"/symlinks/msg",
-			},
-			expectErr: false,
-		},
-		{
-			in:        "test-with-symlinks-escaping-parent.tar.gz",
-			files:     nil,
-			expectErr: true,
-		},
-		{
-			in: "test-with-symlinks-escaping-parent2.tar.gz",
-			files: []string{
-				"/escaping-link-test3/",
-				"/escaping-link-test3/baz", // this escapes only to the staging area, so expectErr: false
-				"/escaping-link-test3/foo/",
-				"/escaping-link-test3/foo/bar/",
-			},
-			expectErr: false,
-		},
-		{
-			in:        "test-with-symlinks-escaping-parent3.tar.gz",
-			files:     nil,
-			expectErr: true,
-		},
-		{
-			in:        "test-with-symlinks-escaping-absolute.tar.gz",
-			files:     nil,
-			expectErr: true,
-		},
+		SymlinkTest1(".tar.gz"),
+		SymlinkTest2(".tar.gz"),
+		SymlinkTest3(".tar.gz"),
+		SymlinkTest4(".tar.gz"),
+		SymlinkTest5(".tar.gz"),
 	}
 
 	for _, tt := range tests {
@@ -202,7 +199,7 @@ func Test_extractTARGZ(t *testing.T) {
 			return
 		}
 		if err = extractTARGZ(tmpDir.Root(), tf, st.Size()); err != nil {
-			if !tt.expectErr {
+			if !tt.wantErr {
 				t.Fatalf("failed to extract %q. error=%v", tt.in, err)
 			} else {
 				// error was expected, all is good
@@ -210,7 +207,7 @@ func Test_extractTARGZ(t *testing.T) {
 			}
 		}
 		outFiles := collectFiles(t, tmpDir.Root())
-		if tt.expectErr {
+		if tt.wantErr {
 			t.Fatalf("expected extraction failure %q %v", tt.in, outFiles)
 		} else if !reflect.DeepEqual(outFiles, tt.files) {
 			t.Fatalf("for %q, expected=%v, got=%v", tt.in, tt.files, outFiles)

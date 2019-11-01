@@ -28,6 +28,8 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
+
+	"sigs.k8s.io/krew/pkg/pathutil"
 )
 
 // download gets a file from the internet in memory and writes it content
@@ -79,7 +81,7 @@ func extractZIP(targetDir string, read io.ReaderAt, size int64) error {
 				return errors.Wrap(err, "problem reading symlink target")
 			}
 			oldname := strings.TrimSpace(buf.String())
-			if err := symlink(targetDir, oldname, path); err != nil {
+			if err := symlinkIfAllowed(targetDir, oldname, path); err != nil {
 				return err
 			}
 			continue
@@ -109,26 +111,20 @@ func extractZIP(targetDir string, read io.ReaderAt, size int64) error {
 // enforces two symlink policies
 // 1) no symlinks to absolute paths (oldname must not be an absolute path)
 // 2) no symlinks that escape targetDir
-func symlink(targetDir, oldname, newname string) error {
+func symlinkIfAllowed(targetDir, oldname, newpath string) error {
 	// no symlinks to absolute paths
 	if filepath.IsAbs(oldname) {
-		glog.V(4).Infof("invalid absolute symlink %v -> %v\n", oldname, newname)
+		glog.V(4).Infof("invalid absolute symlink %v -> %v\n", oldname, newpath)
 		return errors.New("invalid symlink referencing an absolute path in tar")
 	}
 
-	// now we check the second policy; top is the absolute path of the upper bound
-	top := filepath.FromSlash(targetDir + "/")
+	oldpath := filepath.Join(filepath.Dir(newpath), filepath.Clean(oldname))
 
-	// abs is the absolute path of the path-to-be-linked
-	abs, err := filepath.Abs(filepath.Join(filepath.Dir(newname), oldname))
-	if err != nil {
-		return err
-	}
-	if strings.Index(abs, top) != 0 {
-		glog.V(4).Infof("invalid escaping symlink %v -> %v\n", oldname, newname)
+	if _, isNonEscaping := pathutil.IsSubPath(targetDir, oldpath); !isNonEscaping {
+		glog.V(4).Infof("invalid escaping symlink %v -> %v\n", oldname, newpath)
 		return errors.New("invalid symlink referencing a parent path in tar")
 	}
-	if err := os.Symlink(oldname, newname); err != nil {
+	if err := os.Symlink(oldname, newpath); err != nil {
 		return errors.Wrap(err, "failed to create symlink from tar")
 	}
 	return nil
@@ -168,7 +164,7 @@ func extractTARGZ(targetDir string, at io.ReaderAt, size int64) error {
 				return errors.Wrap(err, "failed to create directory from tar")
 			}
 		case tar.TypeSymlink:
-			if err := symlink(targetDir, hdr.Linkname, path); err != nil {
+			if err := symlinkIfAllowed(targetDir, hdr.Linkname, path); err != nil {
 				return err
 			}
 		case tar.TypeReg:
