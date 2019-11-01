@@ -114,7 +114,10 @@ func makeGithubShield(homepage string) string {
 		repo = "kubernetes-sigs/krew"
 	} else if homepage == `https://kubernetes.github.io/ingress-nginx/kubectl-plugin/` {
 		repo = "kubernetes/ingress-nginx"
+	} else if homepage == `https://kudo.dev/` {
+		repo = "kudobuilder/kudo"
 	}
+
 
 	if repo == "" {
 		return ""
