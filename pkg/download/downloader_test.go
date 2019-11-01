@@ -82,16 +82,14 @@ func Test_extractZIP(t *testing.T) {
 
 func Test_extractTARGZ(t *testing.T) {
 	tests := []struct {
-		in    string
-		files []string
+		in        string
+		files     []string
+		expectErr bool
 	}{
 		{
-			in:    "test-without-directory.tar.gz",
-			files: []string{"/foo"},
-		},
-		{
-			in:    "test-with-symlinks.tar.gz",
-			files: []string{"/symlinks/", "/symlinks/message", "/symlinks/msg"},
+			in:        "test-without-directory.tar.gz",
+			files:     []string{"/foo"},
+			expectErr: false,
 		},
 		{
 			in: "test-with-nesting-with-directory-entries.tar.gz",
@@ -99,6 +97,7 @@ func Test_extractTARGZ(t *testing.T) {
 				"/test/",
 				"/test/foo",
 			},
+			expectErr: false,
 		},
 		{
 			in: "test-with-nesting-without-directory-entries.tar.gz",
@@ -106,6 +105,31 @@ func Test_extractTARGZ(t *testing.T) {
 				"/test/",
 				"/test/foo",
 			},
+			expectErr: false,
+		},
+		{
+			in: "test-with-symlinks.tar.gz",
+			files: []string{
+				"/symlinks/",
+				"/symlinks/message",
+				"/symlinks/msg",
+			},
+			expectErr: false,
+		},
+		{
+			in:        "test-with-symlinks-escaping-parent.tar.gz",
+			files:     nil,
+			expectErr: true,
+		},
+		{
+			in:        "test-with-symlinks-escaping-parent2.tar.gz",
+			files:     nil,
+			expectErr: true,
+		},
+		{
+			in:        "test-with-symlinks-escaping-absolute.tar.gz",
+			files:     nil,
+			expectErr: true,
 		},
 	}
 
@@ -124,13 +148,22 @@ func Test_extractTARGZ(t *testing.T) {
 			t.Fatal(err)
 			return
 		}
-		if err := extractTARGZ(tmpDir.Root(), tf, st.Size()); err != nil {
-			t.Fatalf("failed to extract %q. error=%v", tt.in, err)
+		if err = extractTARGZ(tmpDir.Root(), tf, st.Size()); err != nil {
+			if !tt.expectErr {
+				t.Fatalf("failed to extract %q. error=%v", tt.in, err)
+			} else {
+				// error was expected, all is good
+				continue
+			}
 		}
-
-		outFiles := collectFiles(t, tmpDir.Root())
-		if !reflect.DeepEqual(outFiles, tt.files) {
-			t.Fatalf("for %q, expected=%v, got=%v", tt.in, tt.files, outFiles)
+		if tt.expectErr {
+			outFiles := collectFiles(t, tmpDir.Root())
+			t.Fatalf("expected extraction failure %q %v", tt.in, outFiles)
+		} else {
+			outFiles := collectFiles(t, tmpDir.Root())
+			if !reflect.DeepEqual(outFiles, tt.files) {
+				t.Fatalf("for %q, expected=%v, got=%v", tt.in, tt.files, outFiles)
+			}
 		}
 	}
 }
