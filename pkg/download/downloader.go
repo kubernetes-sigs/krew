@@ -72,6 +72,19 @@ func extractZIP(targetDir string, read io.ReaderAt, size int64) error {
 			return errors.Wrap(err, "could not open inflating zip file")
 		}
 
+		if f.FileInfo().Mode()&os.ModeSymlink == os.ModeSymlink {
+			buf := new(bytes.Buffer)
+			_, err := io.Copy(buf, src)
+			if err != nil {
+				return errors.Wrap(err, "problem reading symlink target")
+			}
+			oldname := strings.TrimSpace(buf.String())
+			if err := symlink(targetDir, oldname, path); err != nil {
+				return err
+			}
+			continue
+		}
+
 		dst, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, f.Mode())
 		if err != nil {
 			src.Close()
@@ -93,6 +106,12 @@ func extractZIP(targetDir string, read io.ReaderAt, size int64) error {
 }
 
 func symlink(targetDir, oldname, newname string) error {
+	// no symlinks to absolute paths
+	if filepath.IsAbs(oldname) {
+		glog.V(4).Infof("invalid absolute symlink %v -> %v\n", oldname, newname)
+		return errors.New("invalid symlink referencing an absolute path in tar")
+	}
+
 	// thou shall not pass:
 	top := filepath.FromSlash(targetDir + "/")
 
@@ -101,11 +120,8 @@ func symlink(targetDir, oldname, newname string) error {
 		return err
 	}
 	if strings.Index(abs, top) != 0 {
-		glog.V(4).Infof("invalid escaping symlink %v %v\n", abs, top)
+		glog.V(4).Infof("invalid escaping symlink %v -> %v\n", oldname, newname)
 		return errors.New("invalid symlink referencing a parent path in tar")
-	}
-	if filepath.IsAbs(oldname) {
-		return errors.New("invalid symlink referencing an absolute path in tar")
 	}
 	if err := os.Symlink(oldname, newname); err != nil {
 		return errors.Wrap(err, "failed to create symlink from tar")

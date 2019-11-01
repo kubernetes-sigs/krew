@@ -39,8 +39,9 @@ func testdataPath() string {
 
 func Test_extractZIP(t *testing.T) {
 	tests := []struct {
-		in    string
-		files []string
+		in        string
+		files     []string
+		expectErr bool
 	}{
 		{
 			in: "test-with-directory.zip",
@@ -48,12 +49,48 @@ func Test_extractZIP(t *testing.T) {
 				"/test/",
 				"/test/foo",
 			},
+			expectErr: false,
 		},
 		{
 			in: "test-without-directory.zip",
 			files: []string{
 				"/foo",
 			},
+			expectErr: false,
+		},
+		{
+			in: "test-with-symlinks.zip",
+			files: []string{
+				"/symlinks/",
+				"/symlinks/message",
+				"/symlinks/msg",
+			},
+			expectErr: false,
+		},
+		{
+			in:        "test-with-symlinks-escaping-parent.zip",
+			files:     nil,
+			expectErr: true,
+		},
+		{
+			in: "test-with-symlinks-escaping-parent2.zip",
+			files: []string{
+				"/escaping-link-test3/",
+				"/escaping-link-test3/baz", // this escapes only to the staging area, so expectErr: false
+				"/escaping-link-test3/foo/",
+				"/escaping-link-test3/foo/bar/",
+			},
+			expectErr: false,
+		},
+		{
+			in:        "test-with-symlinks-escaping-parent3.tar.gz",
+			files:     nil,
+			expectErr: true,
+		},
+		{
+			in:        "test-with-symlinks-escaping-absolute.zip",
+			files:     nil,
+			expectErr: true,
 		},
 	}
 
@@ -70,11 +107,17 @@ func Test_extractZIP(t *testing.T) {
 		defer zipReader.Close()
 		stat, _ := zipReader.Stat()
 		if err := extractZIP(tmpDir.Root(), zipReader, stat.Size()); err != nil {
-			t.Fatalf("extractZIP(%s) error = %v", tt.in, err)
+			if !tt.expectErr {
+				t.Fatalf("extractZIP(%s) error = %v", tt.in, err)
+			} else {
+				// error was expected, all is good
+				continue
+			}
 		}
-
 		outFiles := collectFiles(t, tmpDir.Root())
-		if !reflect.DeepEqual(outFiles, tt.files) {
+		if tt.expectErr {
+			t.Fatalf("expected extraction failure %q %v", tt.in, outFiles)
+		} else if !reflect.DeepEqual(outFiles, tt.files) {
 			t.Fatalf("extractZIP(%s), expected=%v, got=%v", tt.in, tt.files, outFiles)
 		}
 	}
@@ -166,14 +209,11 @@ func Test_extractTARGZ(t *testing.T) {
 				continue
 			}
 		}
+		outFiles := collectFiles(t, tmpDir.Root())
 		if tt.expectErr {
-			outFiles := collectFiles(t, tmpDir.Root())
 			t.Fatalf("expected extraction failure %q %v", tt.in, outFiles)
-		} else {
-			outFiles := collectFiles(t, tmpDir.Root())
-			if !reflect.DeepEqual(outFiles, tt.files) {
-				t.Fatalf("for %q, expected=%v, got=%v", tt.in, tt.files, outFiles)
-			}
+		} else if !reflect.DeepEqual(outFiles, tt.files) {
+			t.Fatalf("for %q, expected=%v, got=%v", tt.in, tt.files, outFiles)
 		}
 	}
 }
