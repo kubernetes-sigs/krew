@@ -38,9 +38,8 @@ func testdataPath() string {
 }
 
 type ArchiveTest struct {
-	in      string
-	files   []string
-	wantErr bool
+	in    string
+	files []string
 }
 
 func SymlinkTest1(ext string) ArchiveTest {
@@ -51,7 +50,6 @@ func SymlinkTest1(ext string) ArchiveTest {
 			"/symlinks/message",
 			"/symlinks/msg",
 		},
-		wantErr: false,
 	}
 }
 
@@ -65,9 +63,8 @@ func SymlinkTest2(ext string) ArchiveTest {
 			"/escaping-link-test2/yo/mo/zoo",
 			"/escaping-link-test2/z",
 			"/escaping-link-test2/zz",
-			"/escaping-link-test2/zzz", // this escapes only to the staging area, so wantErr: false
+			"/escaping-link-test2/zzz", // this escapes only to the staging area, so this is allowed
 		},
-		wantErr: false,
 	}
 }
 
@@ -76,27 +73,10 @@ func SymlinkTest3(ext string) ArchiveTest {
 		in: "test-with-symlinks-escaping-parent2" + ext,
 		files: []string{
 			"/escaping-link-test3/",
-			"/escaping-link-test3/baz", // this escapes only to the staging area, so wantErr: false
+			"/escaping-link-test3/baz", // this escapes only to the staging area, so this is allowed
 			"/escaping-link-test3/foo/",
 			"/escaping-link-test3/foo/bar/",
 		},
-		wantErr: false,
-	}
-}
-
-func SymlinkTest4(ext string) ArchiveTest {
-	return ArchiveTest{
-		in:      "test-with-symlinks-escaping-parent3" + ext,
-		files:   nil,
-		wantErr: true,
-	}
-}
-
-func SymlinkTest5(ext string) ArchiveTest {
-	return ArchiveTest{
-		in:      "test-with-symlinks-escaping-absolute" + ext,
-		files:   nil,
-		wantErr: true,
 	}
 }
 
@@ -108,20 +88,35 @@ func Test_extractZIP(t *testing.T) {
 				"/test/",
 				"/test/foo",
 			},
-			wantErr: false,
 		},
 		{
 			in: "test-without-directory.zip",
 			files: []string{
 				"/foo",
 			},
-			wantErr: false,
 		},
 		SymlinkTest1(".zip"),
 		SymlinkTest2(".zip"),
 		SymlinkTest3(".zip"),
-		SymlinkTest4(".zip"),
-		SymlinkTest5(".zip"),
+	}
+
+	if err := isSymlinkAllowed("foo/bar", "filename", "foo/bar/baz"); err != nil {
+		t.Fatalf("allowed enclosed symlink was disallowed")
+	}
+	if err := isSymlinkAllowed("foo/bar", "..", "foo/bar/baz/bam"); err != nil {
+		t.Fatalf("allowed symlink escape to staging area was disallowed")
+	}
+	if err := isSymlinkAllowed("foo/bar", "../../", "foo/bar/baz/bam"); err == nil {
+		t.Fatalf("disallowed symlink escape was allowed")
+	}
+	if err := isSymlinkAllowed("foo/bar", "gorp/../..", "foo/bar/baz/bam"); err != nil {
+		t.Fatalf("allowed symlink escape was disallowed")
+	}
+	if err := isSymlinkAllowed("foo/bar", "gorp/../../..", "foo/bar/baz/bam"); err == nil {
+		t.Fatalf("disallowed symlink escape was allowed")
+	}
+	if err := isSymlinkAllowed("foo/bar", "/absolute", "foo/bar/baz/bam"); err == nil {
+		t.Fatalf("disallowed symlink absolute path escape was allowed")
 	}
 
 	for _, tt := range tests {
@@ -137,17 +132,10 @@ func Test_extractZIP(t *testing.T) {
 		defer zipReader.Close()
 		stat, _ := zipReader.Stat()
 		if err := extractZIP(tmpDir.Root(), zipReader, stat.Size()); err != nil {
-			if !tt.wantErr {
-				t.Fatalf("extractZIP(%s) error = %v", tt.in, err)
-			} else {
-				// error was expected, all is good
-				continue
-			}
+			t.Fatalf("extractZIP(%s) error = %v", tt.in, err)
 		}
 		outFiles := collectFiles(t, tmpDir.Root())
-		if tt.wantErr {
-			t.Fatalf("expected extraction failure %q %v", tt.in, outFiles)
-		} else if !reflect.DeepEqual(outFiles, tt.files) {
+		if !reflect.DeepEqual(outFiles, tt.files) {
 			t.Fatalf("extractZIP(%s), expected=%v, got=%v", tt.in, tt.files, outFiles)
 		}
 	}
@@ -156,9 +144,8 @@ func Test_extractZIP(t *testing.T) {
 func Test_extractTARGZ(t *testing.T) {
 	tests := []ArchiveTest{
 		{
-			in:      "test-without-directory.tar.gz",
-			files:   []string{"/foo"},
-			wantErr: false,
+			in:    "test-without-directory.tar.gz",
+			files: []string{"/foo"},
 		},
 		{
 			in: "test-with-nesting-with-directory-entries.tar.gz",
@@ -166,7 +153,6 @@ func Test_extractTARGZ(t *testing.T) {
 				"/test/",
 				"/test/foo",
 			},
-			wantErr: false,
 		},
 		{
 			in: "test-with-nesting-without-directory-entries.tar.gz",
@@ -174,13 +160,10 @@ func Test_extractTARGZ(t *testing.T) {
 				"/test/",
 				"/test/foo",
 			},
-			wantErr: false,
 		},
 		SymlinkTest1(".tar.gz"),
 		SymlinkTest2(".tar.gz"),
 		SymlinkTest3(".tar.gz"),
-		SymlinkTest4(".tar.gz"),
-		SymlinkTest5(".tar.gz"),
 	}
 
 	for _, tt := range tests {
@@ -199,17 +182,10 @@ func Test_extractTARGZ(t *testing.T) {
 			return
 		}
 		if err = extractTARGZ(tmpDir.Root(), tf, st.Size()); err != nil {
-			if !tt.wantErr {
-				t.Fatalf("failed to extract %q. error=%v", tt.in, err)
-			} else {
-				// error was expected, all is good
-				continue
-			}
+			t.Fatalf("failed to extract %q. error=%v", tt.in, err)
 		}
 		outFiles := collectFiles(t, tmpDir.Root())
-		if tt.wantErr {
-			t.Fatalf("expected extraction failure %q %v", tt.in, outFiles)
-		} else if !reflect.DeepEqual(outFiles, tt.files) {
+		if !reflect.DeepEqual(outFiles, tt.files) {
 			t.Fatalf("for %q, expected=%v, got=%v", tt.in, tt.files, outFiles)
 		}
 	}

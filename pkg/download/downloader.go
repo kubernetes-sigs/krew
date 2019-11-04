@@ -19,6 +19,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"compress/gzip"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -106,11 +107,7 @@ func extractZIP(targetDir string, read io.ReaderAt, size int64) error {
 	return nil
 }
 
-// make a symlink from oldname to newname within the given enclosing targetDir
-// enforces two symlink policies
-// 1) no symlinks to absolute paths (oldname must not be an absolute path)
-// 2) no symlinks that escape targetDir
-func symlinkIfAllowed(targetDir, oldname, newpath string) error {
+func isSymlinkAllowed(targetDir, oldname, newpath string) error {
 	// no symlinks to absolute paths
 	if filepath.IsAbs(oldname) {
 		glog.V(4).Infof("invalid absolute symlink %v -> %v\n", oldname, newpath)
@@ -118,10 +115,23 @@ func symlinkIfAllowed(targetDir, oldname, newpath string) error {
 	}
 
 	oldpath := filepath.Join(filepath.Dir(newpath), filepath.Clean(oldname))
+	fmt.Printf("LINK %s %s\n", oldpath, newpath)
 
 	if _, isNonEscaping := pathutil.IsSubPath(targetDir, oldpath); !isNonEscaping {
 		glog.V(4).Infof("invalid escaping symlink %v -> %v\n", oldname, newpath)
 		return errors.New("invalid symlink referencing a parent path in tar")
+	}
+
+	return nil
+}
+
+// make a symlink from oldname to newname within the given enclosing targetDir
+// enforces two symlink policies
+// 1) no symlinks to absolute paths (oldname must not be an absolute path)
+// 2) no symlinks that escape targetDir
+func symlinkIfAllowed(targetDir, oldname, newpath string) error {
+	if err := isSymlinkAllowed(targetDir, oldname, newpath); err != nil {
+		return err
 	}
 	if err := os.Symlink(oldname, newpath); err != nil {
 		return errors.Wrap(err, "failed to create symlink from tar")
