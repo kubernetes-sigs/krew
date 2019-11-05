@@ -134,7 +134,7 @@ Remarks:
 				return nil
 			}
 
-			if *output.OutputFormat == "wide" {
+			if *output.OutputFormat == "wide" || (*output.OutputFormat == "" && isTerminal(os.Stdout)) {
 				// print table
 				var rows [][]string
 				for p, version := range plugins {
@@ -163,6 +163,7 @@ Remarks:
 				}
 				return nil
 			}
+
 			return errors.New("unsupported output format specified")
 		},
 		PreRunE: checkIndex,
