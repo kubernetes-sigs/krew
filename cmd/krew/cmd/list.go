@@ -28,7 +28,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/cli-runtime/pkg/printers"
+	"k8s.io/kubectl/pkg/util/slice"
 
+	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/installation"
 )
 
@@ -59,7 +61,7 @@ func (c Consume) GroupVersionKind() schema.GroupVersionKind {
 }
 
 func (e Entry) GetObjectKind() schema.ObjectKind {
-	return Consume{"_", "_"}
+	return Consume{constants.CurrentAPIVersion, constants.PluginKind}
 }
 
 func (e Entry) DeepCopyObject() runtime.Object {
@@ -109,7 +111,7 @@ func init() {
 
 	// listCmd represents the list command
 	listCmd := &cobra.Command{
-		Use:   "list [(-o|--output=)json|yaml|wide]",
+		Use:   "list [(-o|--output=)json|yaml|wide|names]",
 		Short: "List installed kubectl plugins",
 		Long: `Show a list of installed kubectl plugins and their versions.
 
@@ -124,7 +126,7 @@ Remarks:
 			}
 
 			// return sorted list of plugin names when piped to other commands or file
-			if *output.OutputFormat == "" && !isTerminal(os.Stdout) {
+			if *output.OutputFormat == "names" || (*output.OutputFormat == "" && !isTerminal(os.Stdout)) {
 				var names []string
 				for name := range plugins {
 					names = append(names, name)
@@ -144,7 +146,7 @@ Remarks:
 				return printTable(os.Stdout, []string{"PLUGIN", "VERSION"}, rows)
 			}
 
-			if sliceContains(*output.OutputFormat, output.AllowedFormats()) {
+			if slice.ContainsString(output.AllowedFormats(), *output.OutputFormat, nil) {
 				objs := make([]Entry, 0, len(plugins))
 				for plugin, version := range plugins {
 					obj := Entry{plugin, version}
@@ -169,19 +171,10 @@ Remarks:
 		PreRunE: checkIndex,
 	}
 
-	listCmd.Flags().StringVarP(&outputFormat, "output", "o", "", "_")
+	listCmd.Flags().StringVarP(&outputFormat, "output", "o", "", "Output format. One of json, yaml, wide, names")
 
 	output.OutputFormat = &outputFormat
 	rootCmd.AddCommand(listCmd)
-}
-
-func sliceContains(s string, arr []string) bool {
-	for _, a := range arr {
-		if s == a {
-			return true
-		}
-	}
-	return false
 }
 
 func printTable(out io.Writer, columns []string, rows [][]string) error {
