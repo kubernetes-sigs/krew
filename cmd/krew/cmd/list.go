@@ -144,8 +144,8 @@ Remarks:
 				return printTable(os.Stdout, []string{"PLUGIN", "VERSION"}, rows)
 			}
 
-			if inArray(*output.OutputFormat, output.AllowedFormats()) {
-				objs := []Entry{}
+			if sliceContains(*output.OutputFormat, output.AllowedFormats()) {
+				objs := make([]Entry, 0, len(plugins))
 				for plugin, version := range plugins {
 					obj := Entry{plugin, version}
 					objs = append(objs, obj)
@@ -169,13 +169,13 @@ Remarks:
 		PreRunE: checkIndex,
 	}
 
-	listCmd.Flags().StringVarP(&outputFormat, "output", "o", outputFormat, "_")
+	listCmd.Flags().StringVarP(&outputFormat, "output", "o", "", "_")
 
 	output.OutputFormat = &outputFormat
 	rootCmd.AddCommand(listCmd)
 }
 
-func inArray(s string, arr []string) bool {
+func sliceContains(s string, arr []string) bool {
 	for _, a := range arr {
 		if s == a {
 			return true
