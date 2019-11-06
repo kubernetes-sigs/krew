@@ -80,6 +80,32 @@ func SymlinkTest3(ext string) ArchiveTest {
 	}
 }
 
+// Test_symlinkUnit runs unit tests on the symlink validator
+func Test_symlinkUnit(t *testing.T) {
+	targetDir, err := filepath.Abs("foo/bar")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := isSymlinkAllowed(targetDir, "filename", "foo/bar/baz"); err != nil {
+		t.Fatal("allowed enclosed symlink was disallowed")
+	}
+	if err := isSymlinkAllowed(targetDir, "..", "foo/bar/baz/bam"); err != nil {
+		t.Fatal("allowed symlink escape to staging area was disallowed")
+	}
+	if err := isSymlinkAllowed(targetDir, "../../", "foo/bar/baz/bam"); err == nil {
+		t.Fatal("disallowed symlink escape was allowed")
+	}
+	if err := isSymlinkAllowed(targetDir, "gorp/../..", "foo/bar/baz/bam"); err != nil {
+		t.Fatal("allowed symlink escape was disallowed")
+	}
+	if err := isSymlinkAllowed(targetDir, "gorp/../../..", "foo/bar/baz/bam"); err == nil {
+		t.Fatal("disallowed symlink escape was allowed")
+	}
+	if err := isSymlinkAllowed(targetDir, "/absolute", "foo/bar/baz/bam"); err == nil {
+		t.Fatal("disallowed symlink absolute path escape was allowed")
+	}
+}
+
 func Test_extractZIP(t *testing.T) {
 	tests := []ArchiveTest{
 		{
@@ -98,25 +124,6 @@ func Test_extractZIP(t *testing.T) {
 		SymlinkTest1(".zip"),
 		SymlinkTest2(".zip"),
 		SymlinkTest3(".zip"),
-	}
-
-	if err := isSymlinkAllowed("foo/bar", "filename", "foo/bar/baz"); err != nil {
-		t.Fatalf("allowed enclosed symlink was disallowed")
-	}
-	if err := isSymlinkAllowed("foo/bar", "..", "foo/bar/baz/bam"); err != nil {
-		t.Fatalf("allowed symlink escape to staging area was disallowed")
-	}
-	if err := isSymlinkAllowed("foo/bar", "../../", "foo/bar/baz/bam"); err == nil {
-		t.Fatalf("disallowed symlink escape was allowed")
-	}
-	if err := isSymlinkAllowed("foo/bar", "gorp/../..", "foo/bar/baz/bam"); err != nil {
-		t.Fatalf("allowed symlink escape was disallowed")
-	}
-	if err := isSymlinkAllowed("foo/bar", "gorp/../../..", "foo/bar/baz/bam"); err == nil {
-		t.Fatalf("disallowed symlink escape was allowed")
-	}
-	if err := isSymlinkAllowed("foo/bar", "/absolute", "foo/bar/baz/bam"); err == nil {
-		t.Fatalf("disallowed symlink absolute path escape was allowed")
 	}
 
 	for _, tt := range tests {

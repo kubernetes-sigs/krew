@@ -19,7 +19,6 @@ import (
 	"archive/zip"
 	"bytes"
 	"compress/gzip"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -107,34 +106,41 @@ func extractZIP(targetDir string, read io.ReaderAt, size int64) error {
 	return nil
 }
 
+// isSymlinkAllowed checks whether a symlink from oldname to newpath
+// escapes from the confines of targetDir; precondition: targetDir
+// must be an absolute path
 func isSymlinkAllowed(targetDir, oldname, newpath string) error {
-	// no symlinks to absolute paths
+	// 1) disallow symlinks to absolute paths
 	if filepath.IsAbs(oldname) {
-		glog.V(4).Infof("invalid absolute symlink %v -> %v\n", oldname, newpath)
-		return errors.New("invalid symlink referencing an absolute path in tar")
+		glog.V(4).Infof("invalid absolute symlink %v -> %v\n", newpath, oldname)
+		return errors.New("invalid absolute path symlink")
 	}
 
-	oldpath := filepath.Join(filepath.Dir(newpath), filepath.Clean(oldname))
-	fmt.Printf("LINK %s %s\n", oldpath, newpath)
-
+	// 2) disallow relative symlinks that escape targetDir; we
+	// enforce this by first forming oldpath as an absolute path
+	// to oldname, then using IsSubPath to confirm that oldpath is
+	// a subpath of targetDir
+	oldpath, err := filepath.Abs(filepath.Join(filepath.Dir(newpath), filepath.Clean(oldname)))
+	if err != nil {
+		return err
+	}
 	if _, isNonEscaping := pathutil.IsSubPath(targetDir, oldpath); !isNonEscaping {
-		glog.V(4).Infof("invalid escaping symlink %v -> %v\n", oldname, newpath)
-		return errors.New("invalid symlink referencing a parent path in tar")
+		glog.V(4).Infof("invalid escaping symlink %v -> %v\n", newpath, oldname)
+		return errors.New("invalid escaping symlink")
 	}
 
 	return nil
 }
 
-// make a symlink from oldname to newname within the given enclosing targetDir
-// enforces two symlink policies
-// 1) no symlinks to absolute paths (oldname must not be an absolute path)
-// 2) no symlinks that escape targetDir
+// symlinkIfAllowed makes a symlink from oldname to newname within the
+// given enclosing targetDir. An error will be returned if
+// isSymlinkAllowed disallows the link.
 func symlinkIfAllowed(targetDir, oldname, newpath string) error {
 	if err := isSymlinkAllowed(targetDir, oldname, newpath); err != nil {
 		return err
 	}
 	if err := os.Symlink(oldname, newpath); err != nil {
-		return errors.Wrap(err, "failed to create symlink from tar")
+		return errors.Wrap(err, "failed to create symlink")
 	}
 	return nil
 }
