@@ -46,7 +46,7 @@ func sortByName(e []Entry) []Entry {
 	return e
 }
 
-// Consume produces a junk GroupVersionKin for obj.GetObjectKind().GroupVersionKind().Empty() check to eat in PrintObj()
+// Consume produces a junk GroupVersionKind for obj.GetObjectKind().GroupVersionKind().Empty() check to eat in PrintObj()
 type Consume struct {
 	APIVersion string
 	Kind       string
