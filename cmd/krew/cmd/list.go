@@ -153,8 +153,8 @@ Remarks:
 					objs = append(objs, obj)
 				}
 				objs = sortByName(objs)
+				p, err := output.ToPrinter()
 				for _, obj := range objs {
-					p, err := output.ToPrinter()
 					if err != nil {
 						return err
 					}
