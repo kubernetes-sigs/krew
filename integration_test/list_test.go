@@ -108,13 +108,13 @@ func TestKrewListYAML(t *testing.T) {
 	}
 
 	Plugin := struct {
-		Name    string
-		Version string
+		Name    string `yaml:"Name"`
+		Version string `yaml:"Version"`
 	}{"", ""}
 
-	yaml.Unmarshal(expected, &Plugin)
+	yaml.Unmarshal(eventualList, &Plugin)
 	if Plugin.Name != "foo" || Plugin.Version != "v0.1.0" {
-		t.Fatalf("Error unmarshaling.\nExpected: \"%s\"\nOutput: \"%s\"\nPlugin: \"%s\". Version: \"%s\".", expected, eventualList, Plugin.Name, Plugin.Version)
+		t.Fatalf("Error unmarshaling.\nPlugin: \"%s\". Version: \"%s\".", Plugin.Name, Plugin.Version)
 	}
 }
 
