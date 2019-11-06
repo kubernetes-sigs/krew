@@ -112,9 +112,9 @@ func TestKrewListYAML(t *testing.T) {
 		Version string `yaml:"Version"`
 	}{"", ""}
 
-	yaml.Unmarshal(eventualList, &Plugin)
-	if Plugin.Name != "foo" || Plugin.Version != "v0.1.0" {
-		t.Fatalf("Error unmarshaling.\nPlugin: \"%s\". Version: \"%s\".", Plugin.Name, Plugin.Version)
+	err := yaml.Unmarshal(eventualList, &Plugin)
+	if err != nil || Plugin.Name != "foo" || Plugin.Version != "v0.1.0" {
+		t.Fatalf("Error unmarshaling: %s.\nPlugin: \"%s\". Version: \"%s\".", err, Plugin.Name, Plugin.Version)
 	}
 }
 
