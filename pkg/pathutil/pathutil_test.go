@@ -15,6 +15,7 @@
 package pathutil
 
 import (
+	"os"
 	"path/filepath"
 	"reflect"
 	"testing"
@@ -28,7 +29,7 @@ func TestIsSubPathExtending(t *testing.T) {
 	tests := []struct {
 		name            string
 		args            args
-		wantExtending   []string
+		wantExtending   string
 		wantIsExtending bool
 	}{
 		{
@@ -37,7 +38,7 @@ func TestIsSubPathExtending(t *testing.T) {
 				basePath:      filepath.Join("a", "b"),
 				extendingPath: filepath.Join("a", "b", "c"),
 			},
-			wantExtending:   []string{"c"},
+			wantExtending:   "c",
 			wantIsExtending: true,
 		},
 		{
@@ -46,7 +47,7 @@ func TestIsSubPathExtending(t *testing.T) {
 				basePath:      filepath.Join("a", "b", "c"),
 				extendingPath: filepath.Join("a", "b", "c"),
 			},
-			wantExtending:   []string{},
+			wantExtending:   ".",
 			wantIsExtending: true,
 		},
 		{
@@ -55,7 +56,7 @@ func TestIsSubPathExtending(t *testing.T) {
 				basePath:      filepath.Join("a", "b"),
 				extendingPath: filepath.Join("a", "a", "c"),
 			},
-			wantExtending:   nil,
+			wantExtending:   "",
 			wantIsExtending: false,
 		},
 		{
@@ -64,8 +65,53 @@ func TestIsSubPathExtending(t *testing.T) {
 				basePath:      filepath.Join("a", "b"),
 				extendingPath: filepath.Join("a"),
 			},
-			wantExtending:   nil,
+			wantExtending:   "",
 			wantIsExtending: false,
+		},
+		{
+			name: "base path is not clean",
+			args: args{
+				basePath:      filepath.Join("d", "..", "a", "b", "..", "..", "a"),
+				extendingPath: filepath.Join("a", "b"),
+			},
+			wantExtending:   "b",
+			wantIsExtending: true,
+		},
+		{
+			name: "extending path is not clean",
+			args: args{
+				basePath:      filepath.Join("a"),
+				extendingPath: filepath.Join("d", "..", "a", "b", "c", ".."),
+			},
+			wantExtending:   "b",
+			wantIsExtending: true,
+		},
+		{
+			name: "base path is absolute",
+			args: args{
+				basePath:      filepath.Join(string(os.PathSeparator), "a"),
+				extendingPath: filepath.Join("a", "b"),
+			},
+			wantExtending:   "",
+			wantIsExtending: false,
+		},
+		{
+			name: "extending path is absolute",
+			args: args{
+				basePath:      filepath.Join("a"),
+				extendingPath: filepath.Join(string(os.PathSeparator), "a", "b"),
+			},
+			wantExtending:   "",
+			wantIsExtending: false,
+		},
+		{
+			name: "both paths are absolute",
+			args: args{
+				basePath:      filepath.Join(string(os.PathSeparator), "a"),
+				extendingPath: filepath.Join(string(os.PathSeparator), "a", "b"),
+			},
+			wantExtending:   "b",
+			wantIsExtending: true,
 		},
 	}
 	for _, tt := range tests {
