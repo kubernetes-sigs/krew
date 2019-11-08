@@ -59,6 +59,10 @@ func extractZIP(targetDir string, read io.ReaderAt, size int64) error {
 	}
 
 	for _, f := range zipReader.File {
+		if err := suspiciousPath(f.Name); err != nil {
+			return err
+		}
+
 		path := filepath.Join(targetDir, filepath.FromSlash(f.Name))
 		if f.FileInfo().IsDir() {
 			if err := os.MkdirAll(path, f.Mode()); err != nil {
@@ -119,6 +123,10 @@ func extractTARGZ(targetDir string, at io.ReaderAt, size int64) error {
 			continue
 		}
 
+		if err := suspiciousPath(hdr.Name); err != nil {
+			return err
+		}
+
 		path := filepath.Join(targetDir, filepath.FromSlash(hdr.Name))
 		switch hdr.Typeflag {
 		case tar.TypeDir:
@@ -147,6 +155,18 @@ func extractTARGZ(targetDir string, at io.ReaderAt, size int64) error {
 		glog.V(4).Infof("tar: processed %q", hdr.Name)
 	}
 	glog.V(4).Infof("tar extraction to %s complete", targetDir)
+	return nil
+}
+
+func suspiciousPath(path string) error {
+	if strings.Contains(path, "..") {
+		return errors.Errorf("refusing to unpack archive with suspicious entry %q", path)
+	}
+
+	if strings.HasPrefix(path, `/`) || strings.HasPrefix(path, `\`) {
+		return errors.Errorf("refusing to unpack archive with absolute entry %q", path)
+	}
+
 	return nil
 }
 
