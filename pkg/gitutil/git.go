@@ -51,8 +51,11 @@ func update(destinationPath string) error {
 		return errors.Wrapf(err, "fetch index at %q failed", destinationPath)
 	}
 
-	err := exec(destinationPath, "reset", "--hard", "@{upstream}")
-	return errors.Wrapf(err, "reset index at %q failed", destinationPath)
+	if err := exec(destinationPath, "reset", "--hard", "@{upstream}"); err != nil {
+		return errors.Wrapf(err, "reset index at %q failed", destinationPath)
+	}
+	err := exec(destinationPath, "clean", "-xfd")
+	return errors.Wrapf(err, "clean index at %q failed", destinationPath)
 }
 
 // EnsureUpdated will ensure the destination path exists and is up to date.
