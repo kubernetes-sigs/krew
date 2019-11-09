@@ -56,8 +56,6 @@ func TestIsSubPathExtending(t *testing.T) {
 				basePath:      filepath.Join("a", "b"),
 				extendingPath: filepath.Join("a", "a", "c"),
 			},
-			wantExtending:   "",
-			wantIsExtending: false,
 		},
 		{
 			name: "is not smaller extending",
@@ -65,8 +63,6 @@ func TestIsSubPathExtending(t *testing.T) {
 				basePath:      filepath.Join("a", "b"),
 				extendingPath: filepath.Join("a"),
 			},
-			wantExtending:   "",
-			wantIsExtending: false,
 		},
 		{
 			name: "base path is not clean",
@@ -92,8 +88,6 @@ func TestIsSubPathExtending(t *testing.T) {
 				basePath:      filepath.Join(string(os.PathSeparator), "a"),
 				extendingPath: filepath.Join("a", "b"),
 			},
-			wantExtending:   "",
-			wantIsExtending: false,
 		},
 		{
 			name: "extending path is absolute",
@@ -101,8 +95,6 @@ func TestIsSubPathExtending(t *testing.T) {
 				basePath:      filepath.Join("a"),
 				extendingPath: filepath.Join(string(os.PathSeparator), "a", "b"),
 			},
-			wantExtending:   "",
-			wantIsExtending: false,
 		},
 		{
 			name: "both paths are absolute",
