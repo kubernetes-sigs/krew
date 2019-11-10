@@ -58,7 +58,7 @@ Krew tags versions starting with `v`. Example: `v0.2.0-rc.1`.
 
 1. **Push the tag:**
 
-       git push "${TAG:?TAG required}"
+       git push origin "${TAG:?TAG required}"
 
 1. **Verify on Releases tab on GitHub**
 
