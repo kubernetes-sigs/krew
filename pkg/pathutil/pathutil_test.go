@@ -28,44 +28,81 @@ func TestIsSubPathExtending(t *testing.T) {
 	tests := []struct {
 		name            string
 		args            args
-		wantExtending   []string
+		wantExtending   string
 		wantIsExtending bool
 	}{
 		{
 			name: "is extending",
 			args: args{
-				basePath:      filepath.Join("a", "b"),
-				extendingPath: filepath.Join("a", "b", "c"),
+				basePath:      filepath.FromSlash("a/b"),
+				extendingPath: filepath.FromSlash("a/b/c"),
 			},
-			wantExtending:   []string{"c"},
+			wantExtending:   "c",
 			wantIsExtending: true,
 		},
 		{
 			name: "is extending same length",
 			args: args{
-				basePath:      filepath.Join("a", "b", "c"),
-				extendingPath: filepath.Join("a", "b", "c"),
+				basePath:      filepath.FromSlash("a/b/c"),
+				extendingPath: filepath.FromSlash("a/b/c"),
 			},
-			wantExtending:   []string{},
+			wantExtending:   ".",
 			wantIsExtending: true,
 		},
 		{
 			name: "is not extending",
 			args: args{
-				basePath:      filepath.Join("a", "b"),
-				extendingPath: filepath.Join("a", "a", "c"),
+				basePath:      filepath.FromSlash("a/b"),
+				extendingPath: filepath.FromSlash("a/a/c"),
 			},
-			wantExtending:   nil,
-			wantIsExtending: false,
 		},
 		{
 			name: "is not smaller extending",
 			args: args{
-				basePath:      filepath.Join("a", "b"),
-				extendingPath: filepath.Join("a"),
+				basePath:      filepath.FromSlash("a/b"),
+				extendingPath: filepath.FromSlash("a"),
 			},
-			wantExtending:   nil,
-			wantIsExtending: false,
+		},
+		{
+			name: "base path is not clean",
+			args: args{
+				basePath:      filepath.FromSlash("d/../a/b/../../a"),
+				extendingPath: filepath.FromSlash("a/b"),
+			},
+			wantExtending:   "b",
+			wantIsExtending: true,
+		},
+		{
+			name: "extending path is not clean",
+			args: args{
+				basePath:      filepath.FromSlash("a"),
+				extendingPath: filepath.FromSlash("d/../a/b/c/.."),
+			},
+			wantExtending:   "b",
+			wantIsExtending: true,
+		},
+		{
+			name: "base path is absolute",
+			args: args{
+				basePath:      filepath.FromSlash("/a"),
+				extendingPath: filepath.FromSlash("a/b"),
+			},
+		},
+		{
+			name: "extending path is absolute",
+			args: args{
+				basePath:      filepath.FromSlash("a"),
+				extendingPath: filepath.FromSlash("/a/b"),
+			},
+		},
+		{
+			name: "both paths are absolute",
+			args: args{
+				basePath:      filepath.FromSlash("/a"),
+				extendingPath: filepath.FromSlash("/a/b"),
+			},
+			wantExtending:   "b",
+			wantIsExtending: true,
 		},
 	}
 	for _, tt := range tests {
