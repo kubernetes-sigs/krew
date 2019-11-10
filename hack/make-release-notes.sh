@@ -44,7 +44,7 @@ install_release_notes() {
 
   cd "$relnotes_dir"
   go mod init foo
-  GOBIN="${SCRIPTDIR}" go install github.com/corneliusweig/release-notes
+  GOBIN="${SCRIPTDIR}" go get github.com/corneliusweig/release-notes@v0.1.0
   cd -
 }
 
