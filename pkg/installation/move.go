@@ -208,7 +208,7 @@ func renameOrCopy(from, to string) error {
 }
 
 // copyTree copies files or directories, recursively.
-func copyTree(from string, to string) (err error) {
+func copyTree(from, to string) (err error) {
 	return filepath.Walk(from, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -225,7 +225,7 @@ func copyTree(from string, to string) (err error) {
 	})
 }
 
-func copyFile(source string, dst string, mode os.FileMode) (err error) {
+func copyFile(source, dst string, mode os.FileMode) (err error) {
 	sf, err := os.Open(source)
 	if err != nil {
 		return err
