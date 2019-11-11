@@ -201,14 +201,14 @@ func renameOrCopy(from, to string) error {
 	if le, ok := err.(*os.LinkError); err != nil && ok {
 		if errno, ok := le.Err.(syscall.Errno); ok && errno == 18 {
 			glog.V(4).Infof("Cross-device link error (ERRNO=18), fallback to manual copy")
-			return copy(from, to)
+			return copyTree(from, to)
 		}
 	}
 	return err
 }
 
-// copy copies files or directories, recursively.
-func copy(from string, to string) (err error) {
+// copyTree copies files or directories, recursively.
+func copyTree(from string, to string) (err error) {
 	return filepath.Walk(from, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
