@@ -196,7 +196,7 @@ func renameOrCopy(from, to string) error {
 		glog.V(4).Infof("Move target directory %q cleaned up", to)
 	}
 
-	err = copy(from, to)
+	err = os.Rename(from, to)
 	// Fallback for invalid cross-device link (errno:18).
 	if le, ok := err.(*os.LinkError); err != nil && ok {
 		if errno, ok := le.Err.(syscall.Errno); ok && errno == 18 {
