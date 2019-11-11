@@ -51,9 +51,12 @@ func update(destinationPath string) error {
 		return errors.Wrapf(err, "fetch index at %q failed", destinationPath)
 	}
 
-	if err := exec(destinationPath, "reset", "--hard", "@{upstream}"); err != nil {
-		return errors.Wrapf(err, "reset index at %q failed", destinationPath)
-	}
+	err := exec(destinationPath, "reset", "--hard", "@{upstream}")
+	return errors.Wrapf(err, "reset index at %q failed", destinationPath)
+}
+
+// create a pristine working directory by removing untracked files and directories.
+func removeUntracked(destinationPath string) error {
 	err := exec(destinationPath, "clean", "-xfd")
 	return errors.Wrapf(err, "clean index at %q failed", destinationPath)
 }
@@ -63,7 +66,10 @@ func EnsureUpdated(uri, destinationPath string) error {
 	if err := EnsureCloned(uri, destinationPath); err != nil {
 		return err
 	}
-	return update(destinationPath)
+	if err := update(destinationPath); err != nil {
+		return err
+	}
+	return removeUntracked(destinationPath)
 }
 
 func exec(pwd string, args ...string) error {
