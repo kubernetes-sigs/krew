@@ -39,7 +39,7 @@ func TestIsMigrated(t *testing.T) {
 	}{
 		{
 			name:         "One plugin and receipts",
-			filesPresent: []string{"store/konfig/konfig.sh", "receipts/present"},
+			filesPresent: []string{"bin/konfig/konfig.sh", "receipts/present"},
 			expected:     true,
 		},
 		{
@@ -48,7 +48,7 @@ func TestIsMigrated(t *testing.T) {
 		},
 		{
 			name:         "When a plugin is installed but no receipts",
-			filesPresent: []string{"store/konfig/konfig.sh"},
+			filesPresent: []string{"bin/konfig/konfig.sh"},
 			expected:     false,
 		},
 		{
@@ -69,7 +69,7 @@ func TestIsMigrated(t *testing.T) {
 			newPaths := environment.MustGetKrewPaths()
 
 			_ = os.MkdirAll(tmpDir.Path("receipts"), os.ModePerm)
-			_ = os.MkdirAll(tmpDir.Path("store"), os.ModePerm)
+			_ = os.MkdirAll(tmpDir.Path("bin"), os.ModePerm)
 			for _, name := range test.filesPresent {
 				touch(tmpDir, name)
 			}
