@@ -196,7 +196,7 @@ func Test_moveOrCopyDir_canMoveToNonExistingDir(t *testing.T) {
 
 	dst := dstDir.Path("non-existing-dir")
 
-	if err := moveOrCopyDir(srcDir.Root(), dst); err != nil {
+	if err := renameOrCopy(srcDir.Root(), dst); err != nil {
 		t.Fatalf("move failed: %+v", err)
 	}
 
@@ -225,7 +225,7 @@ func Test_moveOrCopyDir_removesExistingTarget(t *testing.T) {
 		dstDir.Write(fmt.Sprintf("file-%d", i), nil)
 	}
 
-	if err := moveOrCopyDir(srcDir.Root(), dstDir.Root()); err != nil {
+	if err := renameOrCopy(srcDir.Root(), dstDir.Root()); err != nil {
 		t.Fatalf("move failed: %+v", err)
 	}
 

@@ -134,7 +134,7 @@ func moveFiles(fromDir, toDir string, fo index.FileOperation) error {
 			return errors.Wrapf(err, "failed to create move path %q", filepath.Dir(m.to))
 		}
 
-		if err = os.Rename(m.from, m.to); err != nil {
+		if err = renameOrCopy(m.from, m.to); err != nil {
 			return errors.Wrapf(err, "could not rename file from %q to %q", m.from, m.to)
 		}
 	}
@@ -170,7 +170,7 @@ func moveToInstallDir(srcDir, installDir string, fos []index.FileOperation) erro
 	}
 
 	glog.V(2).Infof("Move directory %q to %q", tmp, installDir)
-	if err = moveOrCopyDir(tmp, installDir); err != nil {
+	if err = renameOrCopy(tmp, installDir); err != nil {
 		defer func() {
 			glog.V(3).Info("Cleaning up installation directory due to error during copying files")
 			os.Remove(installDir)
@@ -180,9 +180,9 @@ func moveToInstallDir(srcDir, installDir string, fos []index.FileOperation) erro
 	return nil
 }
 
-// moveOrCopyDir will try to rename a dir or file. If rename is not supported, a manual copy will be performed.
+// renameOrCopy will try to rename a dir or file. If rename is not supported, a manual copy will be performed.
 // Existing files at "to" will be deleted.
-func moveOrCopyDir(from, to string) error {
+func renameOrCopy(from, to string) error {
 	// Try atomic rename (does not work cross partition).
 	fi, err := os.Stat(to)
 	if err != nil && !os.IsNotExist(err) {
@@ -196,18 +196,19 @@ func moveOrCopyDir(from, to string) error {
 		glog.V(4).Infof("Move target directory %q cleaned up", to)
 	}
 
-	err = os.Rename(from, to)
+	err = copy(from, to)
 	// Fallback for invalid cross-device link (errno:18).
 	if le, ok := err.(*os.LinkError); err != nil && ok {
 		if errno, ok := le.Err.(syscall.Errno); ok && errno == 18 {
 			glog.V(4).Infof("Cross-device link error (ERRNO=18), fallback to manual copy")
-			return copyDir(from, to)
+			return copy(from, to)
 		}
 	}
 	return err
 }
 
-func copyDir(from string, to string) (err error) {
+// copy copies files or directories, recursively.
+func copy(from string, to string) (err error) {
 	return filepath.Walk(from, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
