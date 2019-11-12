@@ -39,7 +39,7 @@ func TestIsMigrated(t *testing.T) {
 	}{
 		{
 			name:         "One plugin and receipts",
-			filesPresent: []string{"bin/konfig/konfig.sh", "receipts/present"},
+			filesPresent: []string{"bin/foo", "receipts/present"},
 			expected:     true,
 		},
 		{
@@ -48,7 +48,7 @@ func TestIsMigrated(t *testing.T) {
 		},
 		{
 			name:         "When a plugin is installed but no receipts",
-			filesPresent: []string{"bin/konfig/konfig.sh"},
+			filesPresent: []string{"bin/foo"},
 			expected:     false,
 		},
 		{
