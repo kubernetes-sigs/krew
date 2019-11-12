@@ -28,6 +28,9 @@ fi
 krew_tar_archive="krew.tar.gz"
 krew_exe="krew.exe"
 
+# copy license
+cp -- "${SCRIPTDIR}/../LICENSE" "./${bin_dir}"
+
 # create a out/krew.exe convenience copy
 if [[ -x "./${bin_dir}/krew-windows_amd64.exe" ]]; then
   cp -- "./${bin_dir}/krew-windows_amd64.exe" "./out/krew.exe"
