@@ -41,11 +41,11 @@ type Entry struct {
 
 type Entries []Entry
 
-func sortByName(E Entries) Entries {
-	sort.Slice(E, func(a, b int) bool {
-		return E[a].Name < E[b].Name
+func sortByName(e Entries) Entries {
+	sort.Slice(e, func(a, b int) bool {
+		return e[a].Name < e[b].Name
 	})
-	return E
+	return e
 }
 
 // Consume produces a junk GroupVersionKind for obj.GetObjectKind().GroupVersionKind().Empty() check to eat in PrintObj()
