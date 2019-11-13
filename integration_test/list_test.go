@@ -17,12 +17,14 @@ package integrationtest
 import (
 	"encoding/json"
 	"path/filepath"
+	"regexp"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 	"gopkg.in/yaml.v2"
 )
 
+// FIXME: still necessary?
 func TestKrewList(t *testing.T) {
 	skipShort(t)
 
@@ -57,21 +59,44 @@ func TestKrewListJSON(t *testing.T) {
 		"--archive", filepath.Join("testdata", "foo.tar.gz")).
 		RunOrFail()
 
-	expected := []byte("{\n    \"Name\": \"foo\",\n    \"Version\": \"v0.1.0\"\n}\n")
+	expected := []byte("[\n    {\n        \"Name\": \"foo\",\n        \"Version\": \"v0.1.0\"\n    }\n]\n")
 
 	eventualList := test.WithIndex().Krew("list", "-o", "json").RunOrFailOutput()
 	if diff := cmp.Diff(eventualList, expected); diff != "" {
 		t.Fatalf("'list' output doesn't match:\n%s", diff)
 	}
 
-	Plugin := struct {
+	Plugins := []struct {
 		Name    string
 		Version string
-	}{"", ""}
+	}{}
 
-	err := json.Unmarshal(eventualList, &Plugin)
-	if err != nil || Plugin.Name != "foo" || Plugin.Version != "v0.1.0" {
-		t.Fatalf("Error unmarshaling: %s. Plugin: \"%s\". Version: \"%s\".", err, Plugin.Name, Plugin.Version)
+	err := json.Unmarshal(eventualList, &Plugins)
+	if err != nil || Plugins[0].Name != "foo" || Plugins[0].Version != "v0.1.0" {
+		t.Fatalf("Error unmarshaling: %s. Plugin: \"%s\". Version: \"%s\".", err, Plugins[0].Name, Plugins[0].Version)
+	}
+}
+
+func TestKrewListJSONMulti(t *testing.T) {
+	skipShort(t)
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	test.Krew("install", validPlugin).RunOrFail()
+	test.Krew("install",
+		"--manifest", filepath.Join("testdata", "foo.yaml"),
+		"--archive", filepath.Join("testdata", "foo.tar.gz")).
+		RunOrFail()
+
+	eventualList := test.Krew("list", "-o", "json").RunOrFailOutput()
+
+	Plugins := []struct {
+		Name    string
+		Version string
+	}{}
+	err := json.Unmarshal(eventualList, &Plugins)
+	if err != nil || Plugins[0].Name != "foo" || Plugins[0].Version != "v0.1.0" {
+		t.Fatalf("Error unmarshaling: %s. Plugins[0]: \"%s\". Version: \"%s\". Plugins[1]: \"%s\"", err, Plugins[0].Name, Plugins[0].Version, Plugins[1].Name)
 	}
 }
 
@@ -82,10 +107,19 @@ func TestKrewListJSONEmpty(t *testing.T) {
 	defer cleanup()
 
 	initialList := test.WithIndex().Krew("list", "-o", "json").RunOrFailOutput()
-	initialOut := []byte{}
+	initialOut := []byte("[]\n")
 
 	if diff := cmp.Diff(initialList, initialOut); diff != "" {
 		t.Fatalf("expected empty output from 'list':\n%s", diff)
+	}
+
+	Plugins := []struct {
+		Name    string
+		Version string
+	}{}
+	err := json.Unmarshal(initialList, &Plugins)
+	if err != nil || len(Plugins) != 0 {
+		t.Fatalf("Error unmarshaling empty list: %s. Length: %d", err, len(Plugins))
 	}
 }
 
@@ -100,21 +134,46 @@ func TestKrewListYAML(t *testing.T) {
 		"--archive", filepath.Join("testdata", "foo.tar.gz")).
 		RunOrFail()
 
-	expected := []byte("Name: foo\nVersion: v0.1.0\n")
+	expected := []byte("- Name: foo\n  Version: v0.1.0\n")
 
 	eventualList := test.WithIndex().Krew("list", "-o", "yaml").RunOrFailOutput()
 	if diff := cmp.Diff(eventualList, expected); diff != "" {
 		t.Fatalf("'list' output doesn't match:\n%s", diff)
 	}
 
-	Plugin := struct {
+	Plugins := []struct {
 		Name    string `yaml:"Name"`
 		Version string `yaml:"Version"`
-	}{"", ""}
+	}{}
 
-	err := yaml.Unmarshal(eventualList, &Plugin)
-	if err != nil || Plugin.Name != "foo" || Plugin.Version != "v0.1.0" {
-		t.Fatalf("Error unmarshaling: %s.\nPlugin: \"%s\". Version: \"%s\".", err, Plugin.Name, Plugin.Version)
+	err := yaml.Unmarshal(eventualList, &Plugins)
+	if err != nil || Plugins[0].Name != "foo" || Plugins[0].Version != "v0.1.0" {
+		t.Fatalf("Error unmarshaling: %s.\nPlugin: \"%s\". Version: \"%s\".", err, Plugins[0].Name, Plugins[0].Version)
+	}
+}
+
+func TestKrewListYAMLMulti(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	test.Krew("install", validPlugin).RunOrFail()
+	test.Krew("install",
+		"--manifest", filepath.Join("testdata", "foo.yaml"),
+		"--archive", filepath.Join("testdata", "foo.tar.gz")).
+		RunOrFail()
+
+	eventualList := test.WithIndex().Krew("list", "-o", "yaml").RunOrFailOutput()
+
+	Plugins := []struct {
+		Name    string `yaml:"Name"`
+		Version string `yaml:"Version"`
+	}{}
+
+	err := yaml.Unmarshal(eventualList, &Plugins)
+	if err != nil || Plugins[0].Name != "foo" || Plugins[0].Version != "v0.1.0" {
+		t.Fatalf("Error unmarshaling: %s.\nPlugin: \"%s\". Version: \"%s\".", err, Plugins[0].Name, Plugins[0].Version)
 	}
 }
 
@@ -125,10 +184,20 @@ func TestKrewListYAMLEmpty(t *testing.T) {
 	defer cleanup()
 
 	initialList := test.WithIndex().Krew("list", "-o", "yaml").RunOrFailOutput()
-	initialOut := []byte{}
+	initialOut := []byte("[]\n")
 
 	if diff := cmp.Diff(initialList, initialOut); diff != "" {
 		t.Fatalf("expected empty output from 'list':\n%s", diff)
+	}
+
+	Plugins := []struct {
+		Name    string `yaml:"Name"`
+		Version string `yaml:"Version"`
+	}{}
+
+	err := yaml.Unmarshal(initialList, &Plugins)
+	if err != nil || len(Plugins) != 0 {
+		t.Fatalf("Error unmarshaling empty list: %s. Length: %d.", err, len(Plugins))
 	}
 }
 
@@ -148,6 +217,25 @@ func TestKrewListWide(t *testing.T) {
 	eventualList := test.WithIndex().Krew("list", "-o", "wide").RunOrFailOutput()
 	if diff := cmp.Diff(eventualList, expected); diff != "" {
 		t.Fatalf("'list' output doesn't match:\n%s", diff)
+	}
+}
+
+func TestKrewListWideMulti(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	test.Krew("install", validPlugin).RunOrFail()
+	test.Krew("install",
+		"--manifest", filepath.Join("testdata", "foo.yaml"),
+		"--archive", filepath.Join("testdata", "foo.tar.gz")).
+		RunOrFail()
+
+	eventualList := test.WithIndex().Krew("list", "-o", "wide").RunOrFailOutput()
+	ok, err := regexp.Match("PLUGIN  [ ]*VERSION\nfoo     [ ]*v0.1.0\nkonfig  [ ]*v[0-9][.][0-9][.][0-9]\n", eventualList)
+	if !ok || err != nil {
+		t.Fatalf("'list' output doesn't match; err:\n%s", err)
 	}
 }
 

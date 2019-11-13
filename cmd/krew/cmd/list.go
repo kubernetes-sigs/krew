@@ -39,11 +39,13 @@ type Entry struct {
 	Version string
 }
 
-func sortByName(e []Entry) []Entry {
-	sort.Slice(e, func(a, b int) bool {
-		return e[a].Name < e[b].Name
+type Entries []Entry
+
+func sortByName(E Entries) Entries {
+	sort.Slice(E, func(a, b int) bool {
+		return E[a].Name < E[b].Name
 	})
-	return e
+	return E
 }
 
 // Consume produces a junk GroupVersionKind for obj.GetObjectKind().GroupVersionKind().Empty() check to eat in PrintObj()
@@ -60,8 +62,17 @@ func (c Consume) GroupVersionKind() schema.GroupVersionKind {
 	return schema.FromAPIVersionAndKind(c.APIVersion, c.Kind)
 }
 
+func (e Entries) GetObjectKind() schema.ObjectKind {
+	return Consume{constants.CurrentAPIVersion, constants.PluginKind}
+}
+
 func (e Entry) GetObjectKind() schema.ObjectKind {
 	return Consume{constants.CurrentAPIVersion, constants.PluginKind}
+}
+
+func (e Entries) DeepCopyObject() runtime.Object {
+	newObj := append(Entries{}, e...)
+	return newObj
 }
 
 func (e Entry) DeepCopyObject() runtime.Object {
@@ -111,7 +122,7 @@ func init() {
 
 	// listCmd represents the list command
 	listCmd := &cobra.Command{
-		Use:   "list [(-o|--output=)json|yaml|wide|names]",
+		Use:   "list [(-o|--output=)json|yaml|wide|name]",
 		Short: "List installed kubectl plugins",
 		Long: `Show a list of installed kubectl plugins and their versions.
 
@@ -126,7 +137,7 @@ Remarks:
 			}
 
 			// return sorted list of plugin names when piped to other commands or file
-			if *output.OutputFormat == "names" || (*output.OutputFormat == "" && !isTerminal(os.Stdout)) {
+			if *output.OutputFormat == "name" || (*output.OutputFormat == "" && !isTerminal(os.Stdout)) {
 				var names []string
 				for name := range plugins {
 					names = append(names, name)
@@ -147,21 +158,19 @@ Remarks:
 			}
 
 			if slice.ContainsString(output.AllowedFormats(), *output.OutputFormat, nil) {
-				objs := make([]Entry, 0, len(plugins))
+				objs := make(Entries, 0, len(plugins))
 				for plugin, version := range plugins {
 					obj := Entry{plugin, version}
 					objs = append(objs, obj)
 				}
 				objs = sortByName(objs)
 				p, err := output.ToPrinter()
-				for _, obj := range objs {
-					if err != nil {
-						return err
-					}
-					err = p.PrintObj(obj, os.Stdout)
-					if err != nil {
-						return err
-					}
+				if err != nil {
+					return err
+				}
+				err = p.PrintObj(objs, os.Stdout)
+				if err != nil {
+					return err
 				}
 				return nil
 			}
@@ -171,7 +180,7 @@ Remarks:
 		PreRunE: checkIndex,
 	}
 
-	listCmd.Flags().StringVarP(&outputFormat, "output", "o", "", "Output format. One of json, yaml, wide, names")
+	listCmd.Flags().StringVarP(&outputFormat, "output", "o", "", "Output format. One of json, yaml, wide, name")
 
 	output.OutputFormat = &outputFormat
 	rootCmd.AddCommand(listCmd)
