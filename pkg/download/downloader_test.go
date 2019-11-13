@@ -15,7 +15,10 @@
 package download
 
 import (
+	"archive/tar"
+	"archive/zip"
 	"bytes"
+	"compress/gzip"
 	"io"
 	"io/ioutil"
 	"os"
@@ -165,7 +168,7 @@ func TestDownloader_Get(t *testing.T) {
 		{
 			name: "successful get",
 			fields: fields{
-				verifier: NewInsecureVerifier(),
+				verifier: newTrueVerifier(),
 				fetcher:  NewFileFetcher(filepath.Join(testdataPath(), "test-with-directory.zip")),
 			},
 			uri:     "foo/bar/test-with-directory.zip",
@@ -174,7 +177,7 @@ func TestDownloader_Get(t *testing.T) {
 		{
 			name: "fail get by fetching",
 			fields: fields{
-				verifier: NewInsecureVerifier(),
+				verifier: newTrueVerifier(),
 				fetcher:  errorFetcher{},
 			},
 			uri:     "foo/bar/test-with-directory.zip",
@@ -217,7 +220,7 @@ func Test_download(t *testing.T) {
 			name: "successful fetch",
 			args: args{
 				url:      filePath,
-				verifier: NewInsecureVerifier(),
+				verifier: newTrueVerifier(),
 				fetcher:  NewFileFetcher(filePath),
 			},
 			wantReader: bytes.NewReader(downloadOriginal),
@@ -266,6 +269,14 @@ func Test_download(t *testing.T) {
 		})
 	}
 }
+
+var _ Verifier = trueVerifier{}
+
+type trueVerifier struct{ io.Writer }
+
+// newTrueVerifier returns a Verifier that always verifies to true.
+func newTrueVerifier() Verifier    { return trueVerifier{ioutil.Discard} }
+func (trueVerifier) Verify() error { return nil }
 
 var _ Verifier = falseVerifier{}
 
@@ -443,4 +454,183 @@ func Test_extractArchive(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_suspiciousPath(t *testing.T) {
+	tests := []struct {
+		path      string
+		shouldErr bool
+	}{
+		{
+			path:      `/foo`,
+			shouldErr: true,
+		},
+		{
+			path:      `\foo`,
+			shouldErr: true,
+		},
+		{
+			path:      `//foo`,
+			shouldErr: true,
+		},
+		{
+			path:      `/\foo`,
+			shouldErr: true,
+		},
+		{
+			path:      `\\foo`,
+			shouldErr: true,
+		},
+		{
+			path: `./foo`,
+		},
+		{
+			path: `././foo`,
+		},
+		{
+			path: `.//foo`,
+		},
+		{
+			path:      `../foo`,
+			shouldErr: true,
+		},
+		{
+			path:      `a/../foo`,
+			shouldErr: true,
+		},
+		{
+			path: `a/././foo`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.path, func(t *testing.T) {
+			err := suspiciousPath(tt.path)
+			if tt.shouldErr && err == nil {
+				t.Errorf("Expected suspiciousPath to fail")
+			}
+			if !tt.shouldErr && err != nil {
+				t.Errorf("Expected suspiciousPath not to fail, got %s", err)
+			}
+		})
+	}
+}
+
+func Test_extractMaliciousArchive(t *testing.T) {
+	const testContent = "some file content"
+
+	tests := []struct {
+		name string
+		path string
+	}{
+		{
+			name: "absolute file",
+			path: "/foo",
+		},
+		{
+			name: "contains ..",
+			path: "a/../foo",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run("tar.gz  "+tt.name, func(t *testing.T) {
+			tmpDir, cleanup := testutil.NewTempDir(t)
+			defer cleanup()
+
+			// do not use filepath.Join here, because it calls filepath.Clean on the result
+			reader, err := tarGZArchiveForTesting(map[string]string{tt.path: testContent})
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			err = extractTARGZ(tmpDir.Root(), reader, reader.Size())
+			if err == nil {
+				t.Errorf("Expected extractTARGZ to fail")
+			} else if !strings.HasPrefix(err.Error(), "refusing to unpack archive") {
+				t.Errorf("Found the wrong error: %s", err)
+			}
+		})
+	}
+
+	for _, tt := range tests {
+		t.Run("zip  "+tt.name, func(t *testing.T) {
+			tmpDir, cleanup := testutil.NewTempDir(t)
+			defer cleanup()
+
+			// do not use filepath.Join here, because it calls filepath.Clean on the result
+			reader, err := zipArchiveReaderForTesting(map[string]string{tt.path: testContent})
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			err = extractZIP(tmpDir.Root(), reader, reader.Size())
+			if err == nil {
+				t.Errorf("Expected extractZIP to fail")
+			} else if !strings.HasPrefix(err.Error(), "refusing to unpack archive") {
+				t.Errorf("Found the wrong error: %s", err)
+			}
+		})
+	}
+}
+
+// tarGZArchiveForTesting creates an in-memory zip archive with entries from
+// the files map, where keys are the paths and values are the contents.
+// For example, to create an empty file `a` and another file `b/c`:
+//  tarGZArchiveForTesting(map[string]string{
+//     "a": "",
+//     "b/c": "nested content",
+//  })
+func tarGZArchiveForTesting(files map[string]string) (*bytes.Reader, error) {
+	archiveBuffer := &bytes.Buffer{}
+	gzArchiveBuffer := gzip.NewWriter(archiveBuffer)
+	tw := tar.NewWriter(gzArchiveBuffer)
+	for path, content := range files {
+		header := &tar.Header{
+			Name: path,
+			Size: int64(len(content)),
+			Mode: 0600,
+		}
+		if err := tw.WriteHeader(header); err != nil {
+			return nil, err
+		}
+		if _, err := tw.Write([]byte(content)); err != nil {
+			return nil, err
+		}
+
+	}
+	if err := tw.Close(); err != nil {
+		return nil, err
+	}
+	if err := gzArchiveBuffer.Close(); err != nil {
+		return nil, err
+	}
+	return bytes.NewReader(archiveBuffer.Bytes()), nil
+}
+
+// zipArchiveReaderForTesting creates an in-memory zip archive with entries from
+// the files map, where keys are the paths and values are the contents. Note that
+// entries with empty content just create a directory. The zip spec requires that
+// parent directories are explicitly listed in the archive, so this must be done
+// for nested entries. For example, to create a file at `a/b/c`, you must pass:
+//  map[string]string{"a": "", "a/b": "", "a/b/c": "nested content"}
+func zipArchiveReaderForTesting(files map[string]string) (*bytes.Reader, error) {
+	archiveBuffer := &bytes.Buffer{}
+	zw := zip.NewWriter(archiveBuffer)
+	for path, content := range files {
+		f, err := zw.Create(path)
+		if err != nil {
+			return nil, err
+		}
+		if content == "" {
+			continue
+		}
+		if _, err := f.Write([]byte(content)); err != nil {
+			return nil, err
+		}
+	}
+	if err := zw.Close(); err != nil {
+		return nil, err
+	}
+	return bytes.NewReader(archiveBuffer.Bytes()), nil
 }

@@ -18,6 +18,10 @@
 # You can run this script while tagging the release as:
 #     git tag -a v0.1 -m "$(TAG=v0.1 hack/make-release-notes.sh)"
 
+set -euo pipefail
+
+SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 TAG="${TAG:?TAG environment variable must be set for this script}"
 if ! [[ "$TAG" =~ v.* ]]; then
   echo >&2 "TAG must be in format v.*"
@@ -33,6 +37,22 @@ download_assets=(
   krew.exe.sha256
   krew.yaml
 )
+
+install_release_notes() {
+  relnotes_dir="$(mktemp -d)"
+  trap 'rm -rf -- ${relnotes_dir}' EXIT
+
+  cd "$relnotes_dir"
+  go mod init foo
+  GOBIN="${SCRIPTDIR}" go get github.com/corneliusweig/release-notes@v0.1.0
+  cd -
+}
+
+# install release-notes if not present in the hack folder
+if ! [[ -x "${SCRIPTDIR}/release-notes" ]]; then
+  echo >&2 'Installing release-notes'
+  install_release_notes
+fi
 
 echo "Installation"
 echo "------------"
@@ -54,3 +74,11 @@ git log "$(git describe --tags --abbrev=0)..HEAD" --format=%an |
   sed -E 's,^(\s+[0-9]+\s),- ,g'
 echo
 echo "(krew ${TAG} is tagged on $(date -u).)"
+echo
+echo '<details>'
+echo '<summary>Merged pull requests</summary>'
+echo # this empty line is important for correct markdown rendering
+# you can pass your github token with --token here if you run out of requests
+"${SCRIPTDIR}/release-notes" kubernetes-sigs krew
+echo '</details>'
+echo

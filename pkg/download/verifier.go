@@ -20,7 +20,6 @@ import (
 	"encoding/hex"
 	"hash"
 	"io"
-	"io/ioutil"
 
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
@@ -55,11 +54,3 @@ func (v sha256Verifier) Verify() error {
 	}
 	return errors.Errorf("checksum does not match, want: %x, got %x", v.wantedHash, v.Sum(nil))
 }
-
-var _ Verifier = trueVerifier{}
-
-type trueVerifier struct{ io.Writer }
-
-// NewInsecureVerifier returns a Verifier that always verifies to true.
-func NewInsecureVerifier() Verifier { return trueVerifier{ioutil.Discard} }
-func (trueVerifier) Verify() error  { return nil }

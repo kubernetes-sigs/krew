@@ -45,14 +45,20 @@ func IsGitCloned(gitPath string) (bool, error) {
 	return err == nil && f.IsDir(), err
 }
 
-// update will fetch origin and set HEAD to origin/HEAD.
-func update(destinationPath string) error {
+// update will fetch origin and set HEAD to origin/HEAD
+// and also will create a pristine working directory by removing
+// untracked files and directories.
+func updateAndCleanUntracked(destinationPath string) error {
 	if err := exec(destinationPath, "fetch", "-v"); err != nil {
 		return errors.Wrapf(err, "fetch index at %q failed", destinationPath)
 	}
 
-	err := exec(destinationPath, "reset", "--hard", "@{upstream}")
-	return errors.Wrapf(err, "reset index at %q failed", destinationPath)
+	if err := exec(destinationPath, "reset", "--hard", "@{upstream}"); err != nil {
+		return errors.Wrapf(err, "reset index at %q failed", destinationPath)
+	}
+
+	err := exec(destinationPath, "clean", "-xfd")
+	return errors.Wrapf(err, "clean index at %q failed", destinationPath)
 }
 
 // EnsureUpdated will ensure the destination path exists and is up to date.
@@ -60,7 +66,7 @@ func EnsureUpdated(uri, destinationPath string) error {
 	if err := EnsureCloned(uri, destinationPath); err != nil {
 		return err
 	}
-	return update(destinationPath)
+	return updateAndCleanUntracked(destinationPath)
 }
 
 func exec(pwd string, args ...string) error {
