@@ -95,8 +95,6 @@ func (f *ListFlags) AllowedFormats() []string {
 	return f.JSONYamlPrintFlags.AllowedFormats()
 }
 
-func (f *ListFlags) AddFlags(c *cobra.Command) {}
-
 func (f *ListFlags) ToPrinter() (printers.ResourcePrinter, error) {
 	outputFormat := *f.OutputFormat
 	var printer printers.ResourcePrinter
