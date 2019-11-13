@@ -71,13 +71,11 @@ func (e Entry) GetObjectKind() schema.ObjectKind {
 }
 
 func (e Entries) DeepCopyObject() runtime.Object {
-	newObj := append(Entries{}, e...)
-	return newObj
+	return append(Entries{}, e...)
 }
 
 func (e Entry) DeepCopyObject() runtime.Object {
-	newObj := Entry{e.Name, e.Version}
-	return newObj
+	return Entry{e.Name, e.Version}
 }
 
 type ListFlags struct {
@@ -94,8 +92,7 @@ func NewListFlags() *ListFlags {
 }
 
 func (f *ListFlags) AllowedFormats() []string {
-	formats := f.JSONYamlPrintFlags.AllowedFormats()
-	return formats
+	return f.JSONYamlPrintFlags.AllowedFormats()
 }
 
 func (f *ListFlags) AddFlags(c *cobra.Command) {}
@@ -122,7 +119,7 @@ func init() {
 
 	// listCmd represents the list command
 	listCmd := &cobra.Command{
-		Use:   "list [(-o|--output=)json|yaml|wide|name]",
+		Use:   "list",
 		Short: "List installed kubectl plugins",
 		Long: `Show a list of installed kubectl plugins and their versions.
 
