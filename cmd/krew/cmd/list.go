@@ -66,16 +66,8 @@ func (e Entries) GetObjectKind() schema.ObjectKind {
 	return Consume{constants.CurrentAPIVersion, constants.PluginKind}
 }
 
-func (e Entry) GetObjectKind() schema.ObjectKind {
-	return Consume{constants.CurrentAPIVersion, constants.PluginKind}
-}
-
 func (e Entries) DeepCopyObject() runtime.Object {
 	return append(Entries{}, e...)
-}
-
-func (e Entry) DeepCopyObject() runtime.Object {
-	return Entry{e.Name, e.Version}
 }
 
 type ListFlags struct {

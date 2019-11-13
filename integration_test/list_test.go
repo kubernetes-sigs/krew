@@ -66,14 +66,14 @@ func TestKrewListJSON(t *testing.T) {
 		t.Fatalf("'list' output doesn't match:\n%s", diff)
 	}
 
-	Plugins := []struct {
+	var Plugin []struct {
 		Name    string
 		Version string
-	}{}
+	}
 
-	err := json.Unmarshal(eventualList, &Plugins)
-	if err != nil || Plugins[0].Name != "foo" || Plugins[0].Version != "v0.1.0" {
-		t.Fatalf("Error unmarshaling: %s. Plugin: \"%s\". Version: \"%s\".", err, Plugins[0].Name, Plugins[0].Version)
+	err := json.Unmarshal(eventualList, &Plugin)
+	if err != nil || Plugin[0].Name != "foo" || Plugin[0].Version != "v0.1.0" {
+		t.Fatalf("Error unmarshaling: %s. Plugin: \"%s\". Version: \"%s\".", err, Plugin[0].Name, Plugin[0].Version)
 	}
 }
 
@@ -90,13 +90,13 @@ func TestKrewListJSONMulti(t *testing.T) {
 
 	eventualList := test.Krew("list", "-o", "json").RunOrFailOutput()
 
-	Plugins := []struct {
+	var Plugin []struct {
 		Name    string
 		Version string
-	}{}
-	err := json.Unmarshal(eventualList, &Plugins)
-	if err != nil || Plugins[0].Name != "foo" || Plugins[0].Version != "v0.1.0" {
-		t.Fatalf("Error unmarshaling: %s. Plugins[0]: \"%s\". Version: \"%s\". Plugins[1]: \"%s\"", err, Plugins[0].Name, Plugins[0].Version, Plugins[1].Name)
+	}
+	err := json.Unmarshal(eventualList, &Plugin)
+	if err != nil || Plugin[0].Name != "foo" || Plugin[0].Version != "v0.1.0" {
+		t.Fatalf("Error unmarshaling: %s. Plugin[0]: \"%s\". Version: \"%s\". Plugin[1]: \"%s\"", err, Plugin[0].Name, Plugin[0].Version, Plugin[1].Name)
 	}
 }
 
@@ -113,13 +113,13 @@ func TestKrewListJSONEmpty(t *testing.T) {
 		t.Fatalf("expected empty output from 'list':\n%s", diff)
 	}
 
-	Plugins := []struct {
+	var Plugin []struct {
 		Name    string
 		Version string
-	}{}
-	err := json.Unmarshal(initialList, &Plugins)
-	if err != nil || len(Plugins) != 0 {
-		t.Fatalf("Error unmarshaling empty list: %s. Length: %d", err, len(Plugins))
+	}
+	err := json.Unmarshal(initialList, &Plugin)
+	if err != nil || len(Plugin) != 0 {
+		t.Fatalf("Error unmarshaling empty list: %s. Length: %d", err, len(Plugin))
 	}
 }
 
@@ -141,14 +141,14 @@ func TestKrewListYAML(t *testing.T) {
 		t.Fatalf("'list' output doesn't match:\n%s", diff)
 	}
 
-	Plugins := []struct {
+	var Plugin []struct {
 		Name    string `yaml:"Name"`
 		Version string `yaml:"Version"`
-	}{}
+	}
 
-	err := yaml.Unmarshal(eventualList, &Plugins)
-	if err != nil || Plugins[0].Name != "foo" || Plugins[0].Version != "v0.1.0" {
-		t.Fatalf("Error unmarshaling: %s.\nPlugin: \"%s\". Version: \"%s\".", err, Plugins[0].Name, Plugins[0].Version)
+	err := yaml.Unmarshal(eventualList, &Plugin)
+	if err != nil || Plugin[0].Name != "foo" || Plugin[0].Version != "v0.1.0" {
+		t.Fatalf("Error unmarshaling: %s.\nPlugin: \"%s\". Version: \"%s\".", err, Plugin[0].Name, Plugin[0].Version)
 	}
 }
 
@@ -166,14 +166,14 @@ func TestKrewListYAMLMulti(t *testing.T) {
 
 	eventualList := test.WithIndex().Krew("list", "-o", "yaml").RunOrFailOutput()
 
-	Plugins := []struct {
+	var Plugin []struct {
 		Name    string `yaml:"Name"`
 		Version string `yaml:"Version"`
-	}{}
+	}
 
-	err := yaml.Unmarshal(eventualList, &Plugins)
-	if err != nil || Plugins[0].Name != "foo" || Plugins[0].Version != "v0.1.0" {
-		t.Fatalf("Error unmarshaling: %s.\nPlugin: \"%s\". Version: \"%s\".", err, Plugins[0].Name, Plugins[0].Version)
+	err := yaml.Unmarshal(eventualList, &Plugin)
+	if err != nil || Plugin[0].Name != "foo" || Plugin[0].Version != "v0.1.0" {
+		t.Fatalf("Error unmarshaling: %s.\nPlugin: \"%s\". Version: \"%s\".", err, Plugin[0].Name, Plugin[0].Version)
 	}
 }
 
@@ -190,14 +190,14 @@ func TestKrewListYAMLEmpty(t *testing.T) {
 		t.Fatalf("expected empty output from 'list':\n%s", diff)
 	}
 
-	Plugins := []struct {
+	var Plugin []struct {
 		Name    string `yaml:"Name"`
 		Version string `yaml:"Version"`
-	}{}
+	}
 
-	err := yaml.Unmarshal(initialList, &Plugins)
-	if err != nil || len(Plugins) != 0 {
-		t.Fatalf("Error unmarshaling empty list: %s. Length: %d.", err, len(Plugins))
+	err := yaml.Unmarshal(initialList, &Plugin)
+	if err != nil || len(Plugin) != 0 {
+		t.Fatalf("Error unmarshaling empty list: %s. Length: %d.", err, len(Plugin))
 	}
 }
 
@@ -233,7 +233,7 @@ func TestKrewListWideMulti(t *testing.T) {
 		RunOrFail()
 
 	eventualList := test.WithIndex().Krew("list", "-o", "wide").RunOrFailOutput()
-	ok, err := regexp.Match("PLUGIN  [ ]*VERSION\nfoo     [ ]*v0.1.0\nkonfig  [ ]*v[0-9][.][0-9][.][0-9]\n", eventualList)
+	ok, err := regexp.Match("PLUGIN  [ ]*VERSION\nfoo     [ ]*v0.1.0\nkonfig  [ ]*v[0-9]*[.][0-9]*[.][0-9]*\n", eventualList)
 	if !ok || err != nil {
 		t.Fatalf("'list' output doesn't match; err:\n%s", err)
 	}
