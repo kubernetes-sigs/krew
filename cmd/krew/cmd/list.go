@@ -88,19 +88,7 @@ func (f *ListFlags) AllowedFormats() []string {
 }
 
 func (f *ListFlags) ToPrinter() (printers.ResourcePrinter, error) {
-	outputFormat := *f.OutputFormat
-	var printer printers.ResourcePrinter
-
-	switch outputFormat {
-	case "json":
-		printer = &printers.JSONPrinter{}
-	case "yaml":
-		printer = &printers.YAMLPrinter{}
-	default:
-		return nil, genericclioptions.NoCompatiblePrinterError{OutputFormat: f.OutputFormat, AllowedFormats: f.AllowedFormats()}
-	}
-
-	return printer, nil
+	return f.JSONYamlPrintFlags.ToPrinter(*f.OutputFormat)
 }
 
 func init() {
@@ -145,16 +133,16 @@ Remarks:
 			}
 
 			if slice.ContainsString(output.AllowedFormats(), *output.OutputFormat, nil) {
+				p, err := output.ToPrinter()
+				if err != nil {
+					return err
+				}
 				objs := make(Entries, 0, len(plugins))
 				for plugin, version := range plugins {
 					obj := Entry{plugin, version}
 					objs = append(objs, obj)
 				}
 				objs = sortByName(objs)
-				p, err := output.ToPrinter()
-				if err != nil {
-					return err
-				}
 				err = p.PrintObj(objs, os.Stdout)
 				if err != nil {
 					return err
