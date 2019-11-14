@@ -199,7 +199,7 @@ func createOrUpdateLink(binDir string, binary string, plugin string) error {
 	// Create new
 	glog.V(2).Infof("Creating symlink to %q at %q", binary, dst)
 	if err := os.Symlink(binary, dst); err != nil {
-		return errors.Wrapf(err, "failed to create a symlink form %q to %q", binDir, dst)
+		return errors.Wrapf(err, "failed to create a symlink from %q to %q", binary, dst)
 	}
 	glog.V(2).Infof("Created symlink at %q", dst)
 
