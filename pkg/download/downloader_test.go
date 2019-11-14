@@ -154,6 +154,12 @@ func collectFiles(t *testing.T, scanPath string) []string {
 	return outFiles
 }
 
+var _ Fetcher = errorFetcher{}
+
+type errorFetcher struct{}
+
+func (f errorFetcher) Get(_ string) (io.ReadCloser, error) { return nil, errors.New("test fail") }
+
 func TestDownloader_Get(t *testing.T) {
 	type fields struct {
 		verifier Verifier
