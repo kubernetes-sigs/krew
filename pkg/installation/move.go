@@ -135,7 +135,7 @@ func moveFiles(fromDir, toDir string, fo index.FileOperation) error {
 		}
 
 		if err = renameOrCopy(m.from, m.to); err != nil {
-			return errors.Wrapf(err, "could not rename file from %q to %q", m.from, m.to)
+			return errors.Wrapf(err, "could not rename/copy file from %q to %q", m.from, m.to)
 		}
 	}
 	glog.V(4).Infoln("Move operations are complete")
@@ -175,7 +175,7 @@ func moveToInstallDir(srcDir, installDir string, fos []index.FileOperation) erro
 			glog.V(3).Info("Cleaning up installation directory due to error during copying files")
 			os.Remove(installDir)
 		}()
-		return errors.Wrapf(err, "could not rename file from %q to %q", tmp, installDir)
+		return errors.Wrapf(err, "could not rename/copy directory %q to %q", tmp, installDir)
 	}
 	return nil
 }
@@ -198,11 +198,9 @@ func renameOrCopy(from, to string) error {
 
 	err = os.Rename(from, to)
 	// Fallback for invalid cross-device link (errno:18).
-	if le, ok := err.(*os.LinkError); err != nil && ok {
-		if errno, ok := le.Err.(syscall.Errno); ok && errno == 18 {
-			glog.V(4).Infof("Cross-device link error (ERRNO=18), fallback to manual copy")
-			return copyTree(from, to)
-		}
+	if isCrossDeviceRenameErr(err) {
+		glog.V(2).Infof("Cross-device link error while copying, fallback to manual copy")
+		return errors.Wrap(copyTree(from, to), "failed to copy directory tree as a fallback")
 	}
 	return err
 }
@@ -243,4 +241,18 @@ func copyFile(source, dst string, mode os.FileMode) (err error) {
 		return err
 	}
 	return os.Chmod(dst, mode)
+}
+
+// isCrossDeviceRenameErr determines if a os.Rename error is due to cross-fs/drive/volume copying.
+func isCrossDeviceRenameErr(err error) bool {
+	le, ok := err.(*os.LinkError)
+	if !ok {
+		return false
+	}
+	errno, ok := le.Err.(syscall.Errno)
+	if !ok {
+		return false
+	}
+	return (IsWindows() && errno == 17) || // syscall.ERROR_NOT_SAME_DEVICE
+		(!IsWindows() && errno == 18) // syscall.EXDEV
 }
