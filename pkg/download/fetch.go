@@ -53,11 +53,3 @@ func (f fileFetcher) Get(_ string) (io.ReadCloser, error) {
 
 // NewFileFetcher returns a local file reader.
 func NewFileFetcher(path string) Fetcher { return fileFetcher{f: path} }
-
-var _ Fetcher = errorFetcher{}
-
-type errorFetcher struct{}
-
-func (f errorFetcher) Get(_ string) (io.ReadCloser, error) {
-	return nil, errors.New("test fail")
-}
