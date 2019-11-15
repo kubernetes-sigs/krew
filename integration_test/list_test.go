@@ -252,3 +252,55 @@ func TestKrewListWideEmpty(t *testing.T) {
 		t.Fatalf("expected empty output from 'list':\n%s", diff)
 	}
 }
+
+func TestKrewListName(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	test.Krew("install",
+		"--manifest", filepath.Join("testdata", "foo.yaml"),
+		"--archive", filepath.Join("testdata", "foo.tar.gz")).
+		RunOrFail()
+
+	expected := []byte("foo\n")
+
+	eventualList := test.WithIndex().Krew("list", "-o", "name").RunOrFailOutput()
+	if diff := cmp.Diff(eventualList, expected); diff != "" {
+		t.Fatalf("'list' output doesn't match:\n%s", diff)
+	}
+}
+
+func TestKrewListNameMulti(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	test.Krew("install", validPlugin).RunOrFail()
+	test.Krew("install",
+		"--manifest", filepath.Join("testdata", "foo.yaml"),
+		"--archive", filepath.Join("testdata", "foo.tar.gz")).
+		RunOrFail()
+
+	eventualList := test.WithIndex().Krew("list", "-o", "name").RunOrFailOutput()
+	ok, err := regexp.Match("foo\nkonfig\n", eventualList)
+	if !ok || err != nil {
+		t.Fatalf("'list' output doesn't match; err:\n%s", err)
+	}
+}
+
+func TestKrewListNameEmpty(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	initialList := test.WithIndex().Krew("list", "-o", "name").RunOrFailOutput()
+	initialOut := []byte("\n")
+
+	if diff := cmp.Diff(initialList, initialOut); diff != "" {
+		t.Fatalf("expected empty output from 'list':\n%s", diff)
+	}
+}
