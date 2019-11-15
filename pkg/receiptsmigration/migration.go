@@ -44,19 +44,12 @@ func Done(newPaths environment.Paths) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	store, err := ioutil.ReadDir(newPaths.InstallPath())
+	plugins, err := ioutil.ReadDir(newPaths.BinPath())
 	if err != nil {
 		return false, err
 	}
 
-	var hasInstalledPlugins bool
-	for _, entry := range store {
-		if entry.IsDir() {
-			hasInstalledPlugins = true
-			break
-		}
-	}
-
+	hasInstalledPlugins := len(plugins) > 0
 	hasNoReceipts := len(receipts) == 0
 
 	return !(hasInstalledPlugins && hasNoReceipts), nil
