@@ -114,6 +114,7 @@ Remarks:
 			}
 
 			var failed []string
+			var returnErr error
 			for _, plugin := range install {
 				fmt.Fprintf(os.Stderr, "Installing plugin: %s\n", plugin.Name)
 				err := installation.Install(paths, plugin, installation.InstallOpts{
@@ -125,6 +126,9 @@ Remarks:
 				}
 				if err != nil {
 					glog.Warningf("failed to install plugin %q: %v", plugin.Name, err)
+					if returnErr == nil {
+						returnErr = err
+					}
 					failed = append(failed, plugin.Name)
 					continue
 				}
@@ -135,7 +139,7 @@ Remarks:
 				internal.PrintSecurityNotice()
 			}
 			if len(failed) > 0 {
-				return errors.Errorf("failed to install some plugins: %+v", failed)
+				return errors.Wrapf(returnErr, "failed to install some plugins: %+v", failed)
 			}
 			return nil
 		},
