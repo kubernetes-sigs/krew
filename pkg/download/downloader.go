@@ -35,11 +35,11 @@ import (
 func download(url string, verifier Verifier, fetcher Fetcher) (io.ReaderAt, int64, error) {
 	body, err := fetcher.Get(url)
 	if err != nil {
-		return nil, 0, err
+		return nil, 0, errors.Wrapf(err, "failed to obtain plugin archive")
 	}
 	defer body.Close()
 
-	glog.V(3).Infof("Reading archive into memory")
+	glog.V(3).Infof("Reading archive file into memory")
 	data, err := ioutil.ReadAll(io.TeeReader(body, verifier))
 	if err != nil {
 		return nil, 0, errors.Wrap(err, "could not read archive")
