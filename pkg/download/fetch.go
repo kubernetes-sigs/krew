@@ -19,6 +19,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/golang/glog"
 	"github.com/pkg/errors"
 )
 
@@ -35,9 +36,10 @@ type HTTPFetcher struct{}
 
 // Get gets the file and returns an stream to read the file.
 func (HTTPFetcher) Get(uri string) (io.ReadCloser, error) {
+	glog.V(2).Infof("Fetching %q", uri)
 	resp, err := http.Get(uri)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to get the uri %q", uri)
+		return nil, errors.Wrapf(err, "failed to download %q", uri)
 	}
 	return resp.Body, nil
 }
@@ -47,6 +49,7 @@ var _ Fetcher = fileFetcher{}
 type fileFetcher struct{ f string }
 
 func (f fileFetcher) Get(_ string) (io.ReadCloser, error) {
+	glog.V(2).Infof("Reading %q", f.f)
 	file, err := os.Open(f.f)
 	return file, errors.Wrapf(err, "failed to open archive file %q for reading", f.f)
 }

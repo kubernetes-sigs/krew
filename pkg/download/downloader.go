@@ -33,26 +33,25 @@ import (
 // download gets a file from the internet in memory and writes it content
 // to a Verifier.
 func download(url string, verifier Verifier, fetcher Fetcher) (io.ReaderAt, int64, error) {
-	glog.V(2).Infof("Fetching %q", url)
 	body, err := fetcher.Get(url)
 	if err != nil {
-		return nil, 0, errors.Wrapf(err, "could not download %q", url)
+		return nil, 0, errors.Wrapf(err, "failed to obtain plugin archive")
 	}
 	defer body.Close()
 
-	glog.V(3).Infof("Reading download data into memory")
+	glog.V(3).Infof("Reading archive file into memory")
 	data, err := ioutil.ReadAll(io.TeeReader(body, verifier))
 	if err != nil {
-		return nil, 0, errors.Wrap(err, "could not read download content")
+		return nil, 0, errors.Wrap(err, "could not read archive")
 	}
-	glog.V(2).Infof("Read %d bytes of download data into memory", len(data))
+	glog.V(2).Infof("Read %d bytes from archive into memory", len(data))
 
 	return bytes.NewReader(data), int64(len(data)), verifier.Verify()
 }
 
 // extractZIP extracts a zip file into the target directory.
 func extractZIP(targetDir string, read io.ReaderAt, size int64) error {
-	glog.V(4).Infof("Extracting download zip to %q", targetDir)
+	glog.V(4).Infof("Extracting zip archive to %q", targetDir)
 	zipReader, err := zip.NewReader(read, size)
 	if err != nil {
 		return err
@@ -204,7 +203,7 @@ func extractArchive(dst string, at io.ReaderAt, size int64) error {
 	glog.V(4).Infof("detected %q file type", t)
 	exf, ok := defaultExtractors[t]
 	if !ok {
-		return errors.Errorf("mime type %q for downloaded file is not a supported archive format", t)
+		return errors.Errorf("mime type %q for archive file is not a supported archive format", t)
 	}
 	return errors.Wrap(exf(dst, at, size), "failed to extract file")
 
