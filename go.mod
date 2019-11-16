@@ -5,7 +5,6 @@ go 1.12
 require (
 	github.com/fatih/color v1.7.0
 	github.com/gogo/protobuf v1.2.1 // indirect
-	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/google/go-cmp v0.3.0
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
@@ -20,6 +19,6 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	k8s.io/apimachinery v0.0.0-20190717022731-0bb8574e0887
 	k8s.io/client-go v7.0.0+incompatible
-	k8s.io/klog v0.3.3 // indirect
+	k8s.io/klog v1.0.0
 	sigs.k8s.io/yaml v1.1.0
 )

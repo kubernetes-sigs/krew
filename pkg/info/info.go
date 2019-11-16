@@ -17,8 +17,8 @@ package info
 import (
 	"os"
 
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
+	"k8s.io/klog"
 
 	"sigs.k8s.io/krew/pkg/environment"
 	"sigs.k8s.io/krew/pkg/index"
@@ -31,7 +31,7 @@ func LoadManifestFromReceiptOrIndex(p environment.Paths, name string) (index.Plu
 	receipt, err := indexscanner.LoadPluginFileFromFS(p.InstallReceiptsPath(), name)
 
 	if err == nil {
-		glog.V(3).Infof("Found plugin manifest for %q in the receipts dir", name)
+		klog.V(3).Infof("Found plugin manifest for %q in the receipts dir", name)
 		return receipt, nil
 	}
 
@@ -39,6 +39,6 @@ func LoadManifestFromReceiptOrIndex(p environment.Paths, name string) (index.Plu
 		return index.Plugin{}, errors.Wrapf(err, "loading plugin %q from receipts dir", name)
 	}
 
-	glog.V(3).Infof("Plugin manifest for %q not found in the receipts dir", name)
+	klog.V(3).Infof("Plugin manifest for %q not found in the receipts dir", name)
 	return indexscanner.LoadPluginFileFromFS(p.IndexPluginsPath(), name)
 }

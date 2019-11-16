@@ -19,8 +19,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
+	"k8s.io/klog"
 )
 
 // Fetcher is used to get files from a URI.
@@ -36,7 +36,7 @@ type HTTPFetcher struct{}
 
 // Get gets the file and returns an stream to read the file.
 func (HTTPFetcher) Get(uri string) (io.ReadCloser, error) {
-	glog.V(2).Infof("Fetching %q", uri)
+	klog.V(2).Infof("Fetching %q", uri)
 	resp, err := http.Get(uri)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to download %q", uri)
@@ -49,7 +49,7 @@ var _ Fetcher = fileFetcher{}
 type fileFetcher struct{ f string }
 
 func (f fileFetcher) Get(_ string) (io.ReadCloser, error) {
-	glog.V(2).Infof("Reading %q", f.f)
+	klog.V(2).Infof("Reading %q", f.f)
 	file, err := os.Open(f.f)
 	return file, errors.Wrapf(err, "failed to open archive file %q for reading", f.f)
 }

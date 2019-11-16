@@ -18,8 +18,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
+	"k8s.io/klog"
 
 	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/environment"
@@ -56,22 +56,22 @@ func Upgrade(p environment.Paths, plugin index.Plugin) error {
 	if err != nil {
 		return errors.Wrapf(err, "failed to parse candidate version spec (%q)", newVersion)
 	}
-	glog.V(2).Infof("Comparing versions: current=%s target=%s", curv, newv)
+	klog.V(2).Infof("Comparing versions: current=%s target=%s", curv, newv)
 
 	// See if it's a newer version
 	if !semver.Less(curv, newv) {
-		glog.V(3).Infof("Plugin does not need upgrade (%s ≥ %s)", curv, newv)
+		klog.V(3).Infof("Plugin does not need upgrade (%s ≥ %s)", curv, newv)
 		return ErrIsAlreadyUpgraded
 	}
-	glog.V(1).Infof("Plugin needs upgrade (%s < %s)", curv, newv)
+	klog.V(1).Infof("Plugin needs upgrade (%s < %s)", curv, newv)
 
-	glog.V(2).Infof("Upgrading install receipt for plugin %s", plugin.Name)
+	klog.V(2).Infof("Upgrading install receipt for plugin %s", plugin.Name)
 	if err = receipt.Store(plugin, p.PluginInstallReceiptPath(plugin.Name)); err != nil {
 		return errors.Wrap(err, "installation receipt could not be stored, uninstall may fail")
 	}
 
 	// Re-Install
-	glog.V(1).Infof("Installing new version %s", newVersion)
+	klog.V(1).Infof("Installing new version %s", newVersion)
 	if err := install(installOperation{
 		pluginName:         plugin.Name,
 		platform:           candidate,
@@ -83,7 +83,7 @@ func Upgrade(p environment.Paths, plugin index.Plugin) error {
 	}
 
 	// Clean old installations
-	glog.V(2).Infof("Starting old version cleanup")
+	klog.V(2).Infof("Starting old version cleanup")
 	return cleanupInstallation(p, plugin, curVersion)
 }
 
@@ -94,10 +94,10 @@ func Upgrade(p environment.Paths, plugin index.Plugin) error {
 // the directory.
 func cleanupInstallation(p environment.Paths, plugin index.Plugin, oldVersion string) error {
 	if plugin.Name == constants.KrewPluginName && IsWindows() {
-		glog.V(1).Infof("not removing old version of krew during upgrade on windows (should be cleaned up on the next run)")
+		klog.V(1).Infof("not removing old version of krew during upgrade on windows (should be cleaned up on the next run)")
 		return nil
 	}
 
-	glog.V(1).Infof("Remove old plugin installation under %q", p.PluginVersionInstallPath(plugin.Name, oldVersion))
+	klog.V(1).Infof("Remove old plugin installation under %q", p.PluginVersionInstallPath(plugin.Name, oldVersion))
 	return os.RemoveAll(p.PluginVersionInstallPath(plugin.Name, oldVersion))
 }

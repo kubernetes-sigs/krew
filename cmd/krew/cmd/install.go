@@ -19,9 +19,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"k8s.io/klog"
 
 	"sigs.k8s.io/krew/cmd/krew/cmd/internal"
 	"sigs.k8s.io/krew/pkg/index"
@@ -110,7 +110,7 @@ Remarks:
 			}
 
 			for _, plugin := range install {
-				glog.V(2).Infof("Will install plugin: %s\n", plugin.Name)
+				klog.V(2).Infof("Will install plugin: %s\n", plugin.Name)
 			}
 
 			var failed []string
@@ -121,11 +121,11 @@ Remarks:
 					ArchiveFileOverride: *archiveFileOverride,
 				})
 				if err == installation.ErrIsAlreadyInstalled {
-					glog.Warningf("Skipping plugin %q, it is already installed", plugin.Name)
+					klog.Warningf("Skipping plugin %q, it is already installed", plugin.Name)
 					continue
 				}
 				if err != nil {
-					glog.Warningf("failed to install plugin %q: %v", plugin.Name, err)
+					klog.Warningf("failed to install plugin %q: %v", plugin.Name, err)
 					if returnErr == nil {
 						returnErr = err
 					}
@@ -145,11 +145,11 @@ Remarks:
 		},
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			if *manifest != "" {
-				glog.V(4).Infof("--manifest specified, not ensuring plugin index")
+				klog.V(4).Infof("--manifest specified, not ensuring plugin index")
 				return nil
 			}
 			if *noUpdateIndex {
-				glog.V(4).Infof("--no-update-index specified, skipping updating local copy of plugin index")
+				klog.V(4).Infof("--no-update-index specified, skipping updating local copy of plugin index")
 				return nil
 			}
 			return ensureIndexUpdated(cmd, args)

@@ -21,8 +21,8 @@ import (
 	"path/filepath"
 	"syscall"
 
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
+	"k8s.io/klog"
 
 	"sigs.k8s.io/krew/pkg/index"
 	"sigs.k8s.io/krew/pkg/pathutil"
@@ -41,15 +41,15 @@ func findMoveTargets(fromDir, toDir string, fo index.FileOperation) ([]move, err
 		return nil, errors.Wrap(err, "could not get the relative path for the move src")
 	}
 
-	glog.V(4).Infof("Trying to move single file directly from=%q to=%q with file operation=%#v", fromDir, toDir, fo)
+	klog.V(4).Infof("Trying to move single file directly from=%q to=%q with file operation=%#v", fromDir, toDir, fo)
 	if m, ok, err := getDirectMove(fromDir, toDir, fo); err != nil {
 		return nil, errors.Wrap(err, "failed to detect single move operation")
 	} else if ok {
-		glog.V(3).Infof("Detected single move from file operation=%#v", fo)
+		klog.V(3).Infof("Detected single move from file operation=%#v", fo)
 		return []move{m}, nil
 	}
 
-	glog.V(4).Infoln("Wasn't a single file, proceeding with Glob move")
+	klog.V(4).Infoln("Wasn't a single file, proceeding with Glob move")
 	newDir, err := filepath.Abs(filepath.Join(filepath.FromSlash(toDir), filepath.FromSlash(fo.To)))
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get the relative path for the move dst")
@@ -122,14 +122,14 @@ func isMoveAllowed(fromBase, toBase string, m move) bool {
 }
 
 func moveFiles(fromDir, toDir string, fo index.FileOperation) error {
-	glog.V(4).Infof("Finding move targets from %q to %q with file operation=%#v", fromDir, toDir, fo)
+	klog.V(4).Infof("Finding move targets from %q to %q with file operation=%#v", fromDir, toDir, fo)
 	moves, err := findMoveTargets(fromDir, toDir, fo)
 	if err != nil {
 		return errors.Wrap(err, "could not find move targets")
 	}
 
 	for _, m := range moves {
-		glog.V(2).Infof("Move file from %q to %q", m.from, m.to)
+		klog.V(2).Infof("Move file from %q to %q", m.from, m.to)
 		if err := os.MkdirAll(filepath.Dir(m.to), 0755); err != nil {
 			return errors.Wrapf(err, "failed to create move path %q", filepath.Dir(m.to))
 		}
@@ -138,7 +138,7 @@ func moveFiles(fromDir, toDir string, fo index.FileOperation) error {
 			return errors.Wrapf(err, "could not rename/copy file from %q to %q", m.from, m.to)
 		}
 	}
-	glog.V(4).Infoln("Move operations are complete")
+	klog.V(4).Infoln("Move operations are complete")
 	return nil
 }
 
@@ -153,13 +153,13 @@ func moveAllFiles(fromDir, toDir string, fos []index.FileOperation) error {
 
 // moveToInstallDir moves plugins from srcDir to dstDir (created in this method) with given FileOperation.
 func moveToInstallDir(srcDir, installDir string, fos []index.FileOperation) error {
-	glog.V(4).Infof("Creating plugin installation directory %q", installDir)
+	klog.V(4).Infof("Creating plugin installation directory %q", installDir)
 	if err := os.MkdirAll(installDir, 0755); err != nil {
 		return errors.Wrapf(err, "error creating installation directory at %q", installDir)
 	}
 
 	tmp, err := ioutil.TempDir("", "krew-temp-move")
-	glog.V(4).Infof("Creating temp plugin move operations dir %q", tmp)
+	klog.V(4).Infof("Creating temp plugin move operations dir %q", tmp)
 	if err != nil {
 		return errors.Wrap(err, "failed to find a temporary director")
 	}
@@ -169,10 +169,10 @@ func moveToInstallDir(srcDir, installDir string, fos []index.FileOperation) erro
 		return errors.Wrap(err, "failed to move files")
 	}
 
-	glog.V(2).Infof("Move directory %q to %q", tmp, installDir)
+	klog.V(2).Infof("Move directory %q to %q", tmp, installDir)
 	if err = renameOrCopy(tmp, installDir); err != nil {
 		defer func() {
-			glog.V(3).Info("Cleaning up installation directory due to error during copying files")
+			klog.V(3).Info("Cleaning up installation directory due to error during copying files")
 			os.Remove(installDir)
 		}()
 		return errors.Wrapf(err, "could not rename/copy directory %q to %q", tmp, installDir)
@@ -189,17 +189,17 @@ func renameOrCopy(from, to string) error {
 		return errors.Wrapf(err, "error checking move target dir %q", to)
 	}
 	if fi != nil && fi.IsDir() {
-		glog.V(4).Infof("There's already a directory at move target %q. deleting.", to)
+		klog.V(4).Infof("There's already a directory at move target %q. deleting.", to)
 		if err := os.RemoveAll(to); err != nil {
 			return errors.Wrapf(err, "error cleaning up dir %q", to)
 		}
-		glog.V(4).Infof("Move target directory %q cleaned up", to)
+		klog.V(4).Infof("Move target directory %q cleaned up", to)
 	}
 
 	err = os.Rename(from, to)
 	// Fallback for invalid cross-device link (errno:18).
 	if isCrossDeviceRenameErr(err) {
-		glog.V(2).Infof("Cross-device link error while copying, fallback to manual copy")
+		klog.V(2).Infof("Cross-device link error while copying, fallback to manual copy")
 		return errors.Wrap(copyTree(from, to), "failed to copy directory tree as a fallback")
 	}
 	return err
@@ -213,10 +213,10 @@ func copyTree(from, to string) (err error) {
 		}
 		newPath, _ := pathutil.ReplaceBase(path, from, to)
 		if info.IsDir() {
-			glog.V(4).Infof("Creating new dir %q", newPath)
+			klog.V(4).Infof("Creating new dir %q", newPath)
 			err = os.MkdirAll(newPath, info.Mode())
 		} else {
-			glog.V(4).Infof("Copying file %q", newPath)
+			klog.V(4).Infof("Copying file %q", newPath)
 			err = copyFile(path, newPath, info.Mode())
 		}
 		return err

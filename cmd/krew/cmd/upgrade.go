@@ -18,9 +18,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"k8s.io/klog"
 
 	"sigs.k8s.io/krew/cmd/krew/cmd/internal"
 	"sigs.k8s.io/krew/pkg/index/indexscanner"
@@ -62,7 +62,7 @@ kubectl krew upgrade foo bar"`,
 					return errors.Wrapf(err, "failed to load the plugin manifest for plugin %s", name)
 				}
 
-				glog.V(2).Infof("Upgrading plugin: %s\n", plugin.Name)
+				klog.V(2).Infof("Upgrading plugin: %s\n", plugin.Name)
 				err = installation.Upgrade(paths, plugin)
 				if ignoreUpgraded && err == installation.ErrIsAlreadyUpgraded {
 					fmt.Fprintf(os.Stderr, "Skipping plugin %s, it is already on the newest version\n", plugin.Name)
@@ -78,7 +78,7 @@ kubectl krew upgrade foo bar"`,
 		},
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			if *noUpdateIndex {
-				glog.V(4).Infof("--no-update-index specified, skipping updating local copy of plugin index")
+				klog.V(4).Infof("--no-update-index specified, skipping updating local copy of plugin index")
 				return nil
 			}
 			return ensureIndexUpdated(cmd, args)

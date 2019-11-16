@@ -21,8 +21,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
+	"k8s.io/klog"
 	"sigs.k8s.io/yaml"
 
 	"sigs.k8s.io/krew/pkg/constants"
@@ -53,12 +53,12 @@ func LoadPluginListFromFS(indexDir string) ([]index.Plugin, error) {
 		if err != nil {
 			// Index loading shouldn't fail because of one plugin.
 			// Show error instead.
-			glog.Errorf("failed to load file %q, err: %v", pluginName, err)
+			klog.Errorf("failed to load file %q, err: %v", pluginName, err)
 			continue
 		}
 		list = append(list, p)
 	}
-	glog.V(4).Infof("Found %d plugins in dir %s", len(list), indexDir)
+	klog.V(4).Infof("Found %d plugins in dir %s", len(list), indexDir)
 	return list, nil
 }
 
@@ -69,7 +69,7 @@ func LoadPluginFileFromFS(pluginsDir, pluginName string) (index.Plugin, error) {
 		return index.Plugin{}, errors.Errorf("plugin name %q not allowed", pluginName)
 	}
 
-	glog.V(4).Infof("Reading plugin %q", pluginName)
+	klog.V(4).Infof("Reading plugin %q", pluginName)
 	pluginsDir, err := filepath.EvalSymlinks(pluginsDir)
 	if err != nil {
 		return index.Plugin{}, err

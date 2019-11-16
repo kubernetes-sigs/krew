@@ -26,8 +26,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
+	"k8s.io/klog"
 )
 
 // download gets a file from the internet in memory and writes it content
@@ -39,19 +39,19 @@ func download(url string, verifier Verifier, fetcher Fetcher) (io.ReaderAt, int6
 	}
 	defer body.Close()
 
-	glog.V(3).Infof("Reading archive file into memory")
+	klog.V(3).Infof("Reading archive file into memory")
 	data, err := ioutil.ReadAll(io.TeeReader(body, verifier))
 	if err != nil {
 		return nil, 0, errors.Wrap(err, "could not read archive")
 	}
-	glog.V(2).Infof("Read %d bytes from archive into memory", len(data))
+	klog.V(2).Infof("Read %d bytes from archive into memory", len(data))
 
 	return bytes.NewReader(data), int64(len(data)), verifier.Verify()
 }
 
 // extractZIP extracts a zip file into the target directory.
 func extractZIP(targetDir string, read io.ReaderAt, size int64) error {
-	glog.V(4).Infof("Extracting zip archive to %q", targetDir)
+	klog.V(4).Infof("Extracting zip archive to %q", targetDir)
 	zipReader, err := zip.NewReader(read, size)
 	if err != nil {
 		return err
@@ -97,7 +97,7 @@ func extractZIP(targetDir string, read io.ReaderAt, size int64) error {
 
 // extractTARGZ extracts a gzipped tar file into the target directory.
 func extractTARGZ(targetDir string, at io.ReaderAt, size int64) error {
-	glog.V(4).Infof("tar: extracting to %q", targetDir)
+	klog.V(4).Infof("tar: extracting to %q", targetDir)
 	in := io.NewSectionReader(at, 0, size)
 
 	gzr, err := gzip.NewReader(in)
@@ -115,10 +115,10 @@ func extractTARGZ(targetDir string, at io.ReaderAt, size int64) error {
 		if err != nil {
 			return errors.Wrap(err, "tar extraction error")
 		}
-		glog.V(4).Infof("tar: processing %q (type=%d, mode=%s)", hdr.Name, hdr.Typeflag, os.FileMode(hdr.Mode))
+		klog.V(4).Infof("tar: processing %q (type=%d, mode=%s)", hdr.Name, hdr.Typeflag, os.FileMode(hdr.Mode))
 		// see https://golang.org/cl/78355 for handling pax_global_header
 		if hdr.Name == "pax_global_header" {
-			glog.V(4).Infof("tar: skipping pax_global_header file")
+			klog.V(4).Infof("tar: skipping pax_global_header file")
 			continue
 		}
 
@@ -134,7 +134,7 @@ func extractTARGZ(targetDir string, at io.ReaderAt, size int64) error {
 			}
 		case tar.TypeReg:
 			dir := filepath.Dir(path)
-			glog.V(4).Infof("tar: ensuring parent dirs exist for regular file, dir=%s", dir)
+			klog.V(4).Infof("tar: ensuring parent dirs exist for regular file, dir=%s", dir)
 			if err := os.MkdirAll(dir, 0755); err != nil {
 				return errors.Wrap(err, "failed to create directory for tar")
 			}
@@ -151,9 +151,9 @@ func extractTARGZ(targetDir string, at io.ReaderAt, size int64) error {
 		default:
 			return errors.Errorf("unable to handle file type %d for %q in tar", hdr.Typeflag, hdr.Name)
 		}
-		glog.V(4).Infof("tar: processed %q", hdr.Name)
+		klog.V(4).Infof("tar: processed %q", hdr.Name)
 	}
-	glog.V(4).Infof("tar extraction to %s complete", targetDir)
+	klog.V(4).Infof("tar extraction to %s complete", targetDir)
 	return nil
 }
 
@@ -176,7 +176,7 @@ func detectMIMEType(at io.ReaderAt) (string, error) {
 		return "", errors.Wrap(err, "failed to read first 512 bytes")
 	}
 	if n < 512 {
-		glog.V(5).Infof("Did only read %d of 512 bytes to determine the file type", n)
+		klog.V(5).Infof("Did only read %d of 512 bytes to determine the file type", n)
 	}
 
 	// Cut off mime extra info beginning with ';' i.e:
@@ -200,7 +200,7 @@ func extractArchive(dst string, at io.ReaderAt, size int64) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to determine content type")
 	}
-	glog.V(4).Infof("detected %q file type", t)
+	klog.V(4).Infof("detected %q file type", t)
 	exf, ok := defaultExtractors[t]
 	if !ok {
 		return errors.Errorf("mime type %q for archive file is not a supported archive format", t)
