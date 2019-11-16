@@ -18,10 +18,10 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/klog"
 
 	"sigs.k8s.io/krew/pkg/index"
 )
@@ -40,7 +40,7 @@ func matchPlatform(platforms []index.Platform, os, arch string) (index.Platform,
 		"os":   os,
 		"arch": arch,
 	}
-	glog.V(2).Infof("Matching platform for labels(%v)", envLabels)
+	klog.V(2).Infof("Matching platform for labels(%v)", envLabels)
 
 	for i, platform := range platforms {
 		sel, err := metav1.LabelSelectorAsSelector(platform.Selector)
@@ -48,7 +48,7 @@ func matchPlatform(platforms []index.Platform, os, arch string) (index.Platform,
 			return index.Platform{}, false, errors.Wrap(err, "failed to compile label selector")
 		}
 		if sel.Matches(envLabels) {
-			glog.V(2).Infof("Found matching platform with index (%d)", i)
+			klog.V(2).Infof("Found matching platform with index (%d)", i)
 			return platform, true, nil
 		}
 	}

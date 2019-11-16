@@ -19,11 +19,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/golang/glog"
 	"github.com/mattn/go-isatty"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"k8s.io/klog"
 
 	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/environment"
@@ -52,17 +52,20 @@ You can invoke krew through kubectl: "kubectl krew [command]..."`,
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		if glog.V(1) {
-			glog.Fatalf("%+v", err) // with stack trace
+		if klog.V(1) {
+			klog.Fatalf("%+v", err) // with stack trace
 		} else {
-			glog.Fatal(err) // just error message
+			klog.Fatal(err) // just error message
 		}
 	}
 }
 
 func init() {
+	klog.InitFlags(nil)
+
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 	_ = flag.CommandLine.Parse([]string{}) // convince pkg/flag we parsed the flags
+
 	flag.CommandLine.VisitAll(func(f *flag.Flag) {
 		if f.Name != "v" { // hide all glog flags except for -v
 			pflag.Lookup(f.Name).Hidden = true
@@ -79,7 +82,7 @@ func init() {
 		paths.InstallPath(),
 		paths.BinPath(),
 		paths.InstallReceiptsPath()); err != nil {
-		glog.Fatal(err)
+		klog.Fatal(err)
 	}
 }
 
@@ -95,11 +98,11 @@ func preRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if installation.IsWindows() {
-		glog.V(4).Infof("detected windows, will check for old krew installations to clean up")
+		klog.V(4).Infof("detected windows, will check for old krew installations to clean up")
 		err := cleanupStaleKrewInstallations()
 		if err != nil {
-			glog.Warningf("Failed to clean up old installations of krew (on windows).")
-			glog.Warningf("You may need to clean them up manually. Error: %v", err)
+			klog.Warningf("Failed to clean up old installations of krew (on windows).")
+			klog.Warningf("You may need to clean them up manually. Error: %v", err)
 		}
 	}
 	return nil
@@ -108,14 +111,14 @@ func preRun(cmd *cobra.Command, _ []string) error {
 func cleanupStaleKrewInstallations() error {
 	r, err := receipt.Load(paths.PluginInstallReceiptPath(constants.KrewPluginName))
 	if os.IsNotExist(err) {
-		glog.V(1).Infof("could not find krew's own plugin receipt, skipping cleanup of stale krew installations")
+		klog.V(1).Infof("could not find krew's own plugin receipt, skipping cleanup of stale krew installations")
 		return nil
 	} else if err != nil {
 		return errors.Wrap(err, "cannot load krew's own plugin receipt")
 	}
 	v := r.Spec.Version
 
-	glog.V(1).Infof("Clean up krew stale installations, current=%s", v)
+	klog.V(1).Infof("Clean up krew stale installations, current=%s", v)
 	return installation.CleanupStaleKrewInstallations(paths.PluginInstallPath(constants.KrewPluginName), v)
 }
 
@@ -130,7 +133,7 @@ func checkIndex(_ *cobra.Command, _ []string) error {
 
 func ensureDirs(paths ...string) error {
 	for _, p := range paths {
-		glog.V(4).Infof("Ensure creating dir: %q", p)
+		klog.V(4).Infof("Ensure creating dir: %q", p)
 		if err := os.MkdirAll(p, 0755); err != nil {
 			return errors.Wrapf(err, "failed to ensure create directory %q", p)
 		}

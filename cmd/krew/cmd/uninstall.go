@@ -18,9 +18,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"k8s.io/klog"
 
 	"sigs.k8s.io/krew/pkg/installation"
 )
@@ -38,7 +38,7 @@ Remarks:
   Failure to uninstall a plugin will result in an error and exit immediately.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		for _, name := range args {
-			glog.V(4).Infof("Going to uninstall plugin %s\n", name)
+			klog.V(4).Infof("Going to uninstall plugin %s\n", name)
 			if err := installation.Uninstall(paths, name); err != nil {
 				return errors.Wrapf(err, "failed to uninstall plugin %s", name)
 			}

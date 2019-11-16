@@ -22,8 +22,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
+	"k8s.io/klog"
 )
 
 // EnsureCloned will clone into the destination path, otherwise will return no error.
@@ -70,12 +70,12 @@ func EnsureUpdated(uri, destinationPath string) error {
 }
 
 func exec(pwd string, args ...string) error {
-	glog.V(4).Infof("Going to run git %s", strings.Join(args, " "))
+	klog.V(4).Infof("Going to run git %s", strings.Join(args, " "))
 	cmd := osexec.Command("git", args...)
 	cmd.Dir = pwd
 	buf := bytes.Buffer{}
 	var w io.Writer = &buf
-	if glog.V(2) {
+	if klog.V(2) {
 		w = io.MultiWriter(w, os.Stderr)
 	}
 	cmd.Stdout, cmd.Stderr = w, w

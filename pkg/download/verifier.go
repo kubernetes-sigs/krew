@@ -21,8 +21,8 @@ import (
 	"hash"
 	"io"
 
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
+	"k8s.io/klog"
 )
 
 // Verifier can check a reader against it's correctness.
@@ -48,7 +48,7 @@ func NewSha256Verifier(hash string) Verifier {
 }
 
 func (v sha256Verifier) Verify() error {
-	glog.V(1).Infof("Compare sha256 (%s) signed version", hex.EncodeToString(v.wantedHash))
+	klog.V(1).Infof("Compare sha256 (%s) signed version", hex.EncodeToString(v.wantedHash))
 	if bytes.Equal(v.wantedHash, v.Sum(nil)) {
 		return nil
 	}

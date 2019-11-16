@@ -25,10 +25,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/klog"
 
 	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/index"
@@ -40,29 +40,29 @@ var flManifest string
 
 func init() {
 	flag.StringVar(&flManifest, "manifest", "", "path to plugin manifest file")
-	if err := flag.Set("logtostderr", "true"); err != nil {
-		fmt.Printf("can't set log to stderr %+v", err)
-		os.Exit(1)
-	}
 }
 
 func main() {
 	// TODO(ahmetb) iterate over glog flags and hide them (not sure if possible without using pflag)
+	klog.InitFlags(nil)
+	if err := flag.Set("logtostderr", "true"); err != nil {
+		fmt.Printf("can't set log to stderr %+v", err)
+		os.Exit(1)
+	}
 	flag.Parse()
-
-	defer glog.Flush()
+	defer klog.Flush()
 
 	if flManifest == "" {
-		glog.Fatal("-manifest must be specified")
+		klog.Fatal("-manifest must be specified")
 	}
 
 	if err := validateManifestFile(flManifest); err != nil {
-		glog.Fatalf("%v", err) // with stack trace
+		klog.Fatalf("%v", err) // with stack trace
 	}
 }
 
 func validateManifestFile(path string) error {
-	glog.V(4).Infof("reading file %s", path)
+	klog.V(4).Infof("reading file %s", path)
 	p, err := indexscanner.ReadPluginFile(path)
 	if err != nil {
 		return errors.Wrap(err, "failed to read plugin file")
@@ -73,13 +73,13 @@ func validateManifestFile(path string) error {
 		return fmt.Errorf("expected manifest extension %q but found %q", constants.ManifestExtension, manifestExtension)
 	}
 	pluginNameFromFileName := strings.TrimSuffix(filename, manifestExtension)
-	glog.V(4).Infof("inferred plugin name as %s", pluginNameFromFileName)
+	klog.V(4).Infof("inferred plugin name as %s", pluginNameFromFileName)
 
 	// validate plugin manifest
 	if err := validation.ValidatePlugin(pluginNameFromFileName, p); err != nil {
 		return errors.Wrap(err, "plugin validation error")
 	}
-	glog.Infof("structural validation OK")
+	klog.Infof("structural validation OK")
 
 	// make sure each platform matches a supported platform
 	for i, p := range p.Spec.Platforms {
@@ -87,21 +87,21 @@ func validateManifestFile(path string) error {
 			return errors.Errorf("spec.platform[%d]'s selector (%v) doesn't match any supported platforms", i, p.Selector)
 		}
 	}
-	glog.Infof("all spec.platform[] items are used")
+	klog.Infof("all spec.platform[] items are used")
 
 	// validate no supported <os,arch> is matching multiple platform specs
 	if err := isOverlappingPlatformSelectors(p.Spec.Platforms); err != nil {
 		return errors.Wrap(err, "overlapping platform selectors found")
 	}
-	glog.Infof("no overlapping spec.platform[].selector")
+	klog.Infof("no overlapping spec.platform[].selector")
 
 	// exercise "install" for all platforms
 	for i, p := range p.Spec.Platforms {
-		glog.Infof("installing spec.platform[%d]", i)
+		klog.Infof("installing spec.platform[%d]", i)
 		if err := installPlatformSpec(path, p); err != nil {
 			return errors.Wrapf(err, "spec.platforms[%d] failed to install", i)
 		}
-		glog.Infof("installed  spec.platforms[%d]", i)
+		klog.Infof("installed  spec.platforms[%d]", i)
 	}
 	log.Printf("all %d spec.platforms installed fine", len(p.Spec.Platforms))
 	return nil
@@ -141,7 +141,7 @@ func installPlatformSpec(manifestFile string, p index.Platform) error {
 	}
 	defer func() {
 		if err := os.RemoveAll(tmpDir); err != nil {
-			glog.Warningf("failed to remove temp dir: %s", tmpDir)
+			klog.Warningf("failed to remove temp dir: %s", tmpDir)
 		}
 	}()
 
@@ -152,7 +152,7 @@ func installPlatformSpec(manifestFile string, p index.Platform) error {
 		"KREW_OS=" + goos,
 		"KREW_ARCH=" + goarch,
 	}
-	glog.V(2).Infof("installing plugin with: %+v", cmd.Env)
+	klog.V(2).Infof("installing plugin with: %+v", cmd.Env)
 	cmd.Env = append(cmd.Env, "PATH="+os.Getenv("PATH"))
 
 	b, err := cmd.CombinedOutput()
@@ -167,10 +167,10 @@ func installPlatformSpec(manifestFile string, p index.Platform) error {
 func findAnyMatchingPlatform(selector *metav1.LabelSelector) (string, string) {
 	for _, p := range allPlatforms() {
 		if selectorMatchesOSArch(selector, p[0], p[1]) {
-			glog.V(4).Infof("%s MATCHED <%s,%s>", selector, p[0], p[1])
+			klog.V(4).Infof("%s MATCHED <%s,%s>", selector, p[0], p[1])
 			return p[0], p[1]
 		}
-		glog.V(4).Infof("%s didn't match <%s,%s>", selector, p[0], p[1])
+		klog.V(4).Infof("%s didn't match <%s,%s>", selector, p[0], p[1])
 	}
 	return "", ""
 }
@@ -179,7 +179,7 @@ func selectorMatchesOSArch(selector *metav1.LabelSelector, os, arch string) bool
 	sel, err := metav1.LabelSelectorAsSelector(selector)
 	if err != nil {
 		// this should've been caught by validation.ValidatePlatform() earlier
-		glog.Warningf("Failed to convert label selector: %+v", selector)
+		klog.Warningf("Failed to convert label selector: %+v", selector)
 		return false
 	}
 	return sel.Matches(labels.Set{
