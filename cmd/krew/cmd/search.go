@@ -96,6 +96,7 @@ Examples:
 }
 
 func limitString(s string, length int) string {
+	s = strings.TrimSpace(s)
 	if len(s) > length && length > 3 {
 		s = s[:length-3] + "..."
 	}
