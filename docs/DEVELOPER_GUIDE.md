@@ -112,11 +112,11 @@ spec:
     sha256: "208fde0b9f42ef71f79864b1ce594a70832c47dc5426e10ca73bf02e54d499d0"
     # copy the used files out of the zip archive, defaults to `[{from: "*", to: "."}]`
     files:
-    - from: "/foo-*/unix/*.sh" # path to the files extracted from archive
+    - from: "foo-*/unix/*.sh" # path to the files extracted from archive
       to:  "."                 # '.' refers to the root of plugin install directory
-    - from: "/foo-*/LICENSE"   # always install your LICENSE file
+    - from: "foo-*/LICENSE"   # always install your LICENSE file
       to: "."
-    bin: "./kubectl-foo"  # path to the plugin executable after copying files above
+    bin: "kubectl-foo"  # path to the plugin executable after copying files above
   shortDescription: >-    # short description gets truncated at ~50 chars
     Prints the environment variables.
   # (optional) url of the project homepage
