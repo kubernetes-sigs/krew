@@ -108,20 +108,24 @@ spec:
       - {key: os, operator: In, values: [darwin, linux]}
     # url for downloading the package archive:
     uri: https://github.com/example/foo/releases/v1.0.zip
-    # sha256sum of the file downloaded above:
+    # sha256sum of the above archive file:
     sha256: "208fde0b9f42ef71f79864b1ce594a70832c47dc5426e10ca73bf02e54d499d0"
     # copy the used files out of the zip archive, defaults to `[{from: "*", to: "."}]`
     files:
     - from: "/foo-*/unix/*.sh" # path to the files extracted from archive
-      to: "."               # '.' refers to the root of plugin install directory
+      to:  "."                 # '.' refers to the root of plugin install directory
+    - from: "/foo-*/LICENSE"   # always install your LICENSE file
+      to: "."
     bin: "./kubectl-foo"  # path to the plugin executable after copying files above
-  shortDescription: Prints the environment variables.
-  homepage: https://github.com/kubernetes-sigs/krew # optional, url for the project homepage
+  shortDescription: >-    # short description gets truncated at ~50 chars
+    Prints the environment variables.
+  # (optional) url of the project homepage
+  homepage: https://github.com/kubernetes-sigs/krew
   # (optional) use caveats field to show post-installation recommendations
   caveats: |
     This plugin needs the following programs:
     * env(1)
-  description: |
+  description: |     # should print nicely on standard 80 char wide terminals
     This plugin shows all environment variables that get injected when
     launching a program as a plugin. You can use this field for longer
     description and example usages.
