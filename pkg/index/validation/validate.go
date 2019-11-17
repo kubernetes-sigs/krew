@@ -79,6 +79,9 @@ func ValidatePlugin(name string, p index.Plugin) error {
 	if p.Spec.ShortDescription == "" {
 		return errors.New("should have a short description")
 	}
+	if strings.ContainsAny(p.Spec.ShortDescription, "\r\n") {
+		return errors.New("should not have line breaks in short description")
+	}
 	if len(p.Spec.Platforms) == 0 {
 		return errors.New("should have a platform specified")
 	}
