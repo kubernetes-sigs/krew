@@ -18,9 +18,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"k8s.io/klog"
 
 	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/gitutil"
@@ -42,7 +42,7 @@ Remarks:
 }
 
 func ensureIndexUpdated(_ *cobra.Command, _ []string) error {
-	glog.V(1).Infof("Updating the local copy of plugin index (%s)", paths.IndexPath())
+	klog.V(1).Infof("Updating the local copy of plugin index (%s)", paths.IndexPath())
 	if err := gitutil.EnsureUpdated(constants.IndexURI, paths.IndexPath()); err != nil {
 		return errors.Wrap(err, "failed to update the local index")
 	}

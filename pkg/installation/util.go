@@ -17,8 +17,8 @@ package installation
 import (
 	"path/filepath"
 
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
+	"k8s.io/klog"
 
 	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/installation/receipt"
@@ -35,14 +35,14 @@ func ListInstalledPlugins(receiptsDir string) (map[string]string, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to grab receipts directory (%s) for manifests", receiptsDir)
 	}
-	glog.V(4).Infof("Found %d install receipts in %s", len(matches), receiptsDir)
+	klog.V(4).Infof("Found %d install receipts in %s", len(matches), receiptsDir)
 	installed := make(map[string]string)
 	for _, m := range matches {
 		r, err := receipt.Load(m)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to parse plugin install receipt %s", m)
 		}
-		glog.V(4).Infof("parsed receipt for %s: version=%s", r.GetObjectMeta().GetName(), r.Spec.Version)
+		klog.V(4).Infof("parsed receipt for %s: version=%s", r.GetObjectMeta().GetName(), r.Spec.Version)
 		installed[r.GetObjectMeta().GetName()] = r.Spec.Version
 	}
 	return installed, nil

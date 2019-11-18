@@ -24,8 +24,8 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
+	"k8s.io/klog"
 
 	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/environment"
@@ -44,19 +44,12 @@ func Done(newPaths environment.Paths) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	store, err := ioutil.ReadDir(newPaths.InstallPath())
+	plugins, err := ioutil.ReadDir(newPaths.BinPath())
 	if err != nil {
 		return false, err
 	}
 
-	var hasInstalledPlugins bool
-	for _, entry := range store {
-		if entry.IsDir() {
-			hasInstalledPlugins = true
-			break
-		}
-	}
-
+	hasInstalledPlugins := len(plugins) > 0
 	hasNoReceipts := len(receipts) == 0
 
 	return !(hasInstalledPlugins && hasNoReceipts), nil
@@ -70,7 +63,7 @@ func Migrate(newPaths environment.Paths) error {
 		return err
 	}
 	if isMigrated {
-		glog.Infoln("Already migrated")
+		klog.Infoln("Already migrated")
 		return nil
 	}
 
@@ -80,7 +73,7 @@ func Migrate(newPaths environment.Paths) error {
 		return errors.Wrapf(err, "failed to build list of plugins")
 	}
 
-	glog.Infoln("These plugins will be reinstalled: ", installed)
+	klog.Infoln("These plugins will be reinstalled: ", installed)
 
 	// krew must be skipped by the normal migration logic
 	if err := copyKrewManifest(newPaths.IndexPluginsPath(), newPaths.InstallReceiptsPath()); err != nil {
@@ -90,12 +83,12 @@ func Migrate(newPaths environment.Paths) error {
 	// point of no return: keep on going when encountering errors
 	for _, plugin := range installed {
 		if err := uninstall(oldPaths, plugin); err != nil {
-			glog.Infof("Uninstalling of %s failed, skipping reinstall", plugin)
+			klog.Infof("Uninstalling of %s failed, skipping reinstall", plugin)
 			continue
 		}
 
 		if err := reinstall(plugin); err != nil {
-			glog.Infof("Reinstalling %s failed", plugin)
+			klog.Infof("Reinstalling %s failed", plugin)
 		}
 	}
 
@@ -135,7 +128,7 @@ func getPluginsToReinstall(oldPaths oldenvironment.Paths, newPaths environment.P
 			continue
 		}
 		if !isAvailableInIndex(newPaths, plugin) {
-			glog.Infof("Skipping plugin %s, because it is missing in the index", plugin)
+			klog.Infof("Skipping plugin %s, because it is missing in the index", plugin)
 			continue
 		}
 		renewable = append(renewable, plugin)
@@ -155,26 +148,26 @@ func uninstall(p oldenvironment.Paths, name string) error {
 	if name == krewPluginName {
 		return errors.Errorf("removing krew is not allowed through krew. Please run:\n\t rm -r %s", p.BasePath())
 	}
-	glog.Infof("Uninstalling %s", name)
+	klog.Infof("Uninstalling %s", name)
 
 	symlinkPath := filepath.Join(p.BinPath(), pluginNameToBin(name, isWindows()))
-	glog.V(3).Infof("Unlink %q", symlinkPath)
+	klog.V(3).Infof("Unlink %q", symlinkPath)
 	if err := removeLink(symlinkPath); err != nil {
 		return errors.Wrap(err, "could not uninstall symlink of plugin")
 	}
 
 	pluginInstallPath := p.PluginInstallPath(name)
-	glog.V(3).Infof("Deleting path %q", pluginInstallPath)
+	klog.V(3).Infof("Deleting path %q", pluginInstallPath)
 	return errors.Wrapf(os.RemoveAll(pluginInstallPath), "could not remove plugin directory %q", pluginInstallPath)
 }
 
 // reinstall shells out to `krew` to install the given plugin.
 func reinstall(plugin string) error {
-	glog.Infoln("Re-installing", plugin)
+	klog.Infoln("Re-installing", plugin)
 	cmd := exec.Command("kubectl", "krew", "install", plugin)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		glog.Info(string(output))
+		klog.Info(string(output))
 	}
 	return err
 }
@@ -184,7 +177,7 @@ func reinstall(plugin string) error {
 func removeLink(path string) error {
 	fi, err := os.Lstat(path)
 	if os.IsNotExist(err) {
-		glog.V(3).Infof("No file found at %q", path)
+		klog.V(3).Infof("No file found at %q", path)
 		return nil
 	} else if err != nil {
 		return errors.Wrapf(err, "failed to read the symlink in %q", path)
@@ -196,7 +189,7 @@ func removeLink(path string) error {
 	if err := os.Remove(path); err != nil {
 		return errors.Wrapf(err, "failed to remove the symlink in %q", path)
 	}
-	glog.V(3).Infof("Removed symlink from %q", path)
+	klog.V(3).Infof("Removed symlink from %q", path)
 	return nil
 }
 

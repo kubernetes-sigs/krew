@@ -20,9 +20,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	"k8s.io/client-go/util/homedir"
+	"k8s.io/klog"
 )
 
 // Paths contains all important environment paths
@@ -38,7 +38,7 @@ func MustGetKrewPaths() Paths {
 	base := filepath.Join(homedir.HomeDir(), ".krew")
 	if fromEnv := os.Getenv("KREW_ROOT"); fromEnv != "" {
 		base = fromEnv
-		glog.V(4).Infof("using environment override KREW_ROOT=%s", fromEnv)
+		klog.V(4).Infof("using environment override KREW_ROOT=%s", fromEnv)
 	}
 	base, err := filepath.Abs(base)
 	if err != nil {

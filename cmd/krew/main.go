@@ -15,12 +15,12 @@
 package main
 
 import (
-	"github.com/golang/glog"
+	"k8s.io/klog"
 
 	"sigs.k8s.io/krew/cmd/krew/cmd"
 )
 
 func main() {
 	cmd.Execute()
-	defer glog.Flush()
+	defer klog.Flush()
 }

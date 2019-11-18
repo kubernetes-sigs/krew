@@ -20,6 +20,7 @@ import (
 	"os"
 
 	"github.com/pkg/errors"
+	"k8s.io/klog"
 )
 
 // Fetcher is used to get files from a URI.
@@ -35,9 +36,10 @@ type HTTPFetcher struct{}
 
 // Get gets the file and returns an stream to read the file.
 func (HTTPFetcher) Get(uri string) (io.ReadCloser, error) {
+	klog.V(2).Infof("Fetching %q", uri)
 	resp, err := http.Get(uri)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to get the uri %q", uri)
+		return nil, errors.Wrapf(err, "failed to download %q", uri)
 	}
 	return resp.Body, nil
 }
@@ -47,17 +49,10 @@ var _ Fetcher = fileFetcher{}
 type fileFetcher struct{ f string }
 
 func (f fileFetcher) Get(_ string) (io.ReadCloser, error) {
+	klog.V(2).Infof("Reading %q", f.f)
 	file, err := os.Open(f.f)
 	return file, errors.Wrapf(err, "failed to open archive file %q for reading", f.f)
 }
 
 // NewFileFetcher returns a local file reader.
 func NewFileFetcher(path string) Fetcher { return fileFetcher{f: path} }
-
-var _ Fetcher = errorFetcher{}
-
-type errorFetcher struct{}
-
-func (f errorFetcher) Get(_ string) (io.ReadCloser, error) {
-	return nil, errors.New("test fail")
-}

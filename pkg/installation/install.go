@@ -21,8 +21,8 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
+	"k8s.io/klog"
 
 	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/download"
@@ -56,7 +56,7 @@ var (
 // Install will download and install a plugin. The operation tries
 // to not get the plugin dir in a bad state if it fails during the process.
 func Install(p environment.Paths, plugin index.Plugin, opts InstallOpts) error {
-	glog.V(2).Infof("Looking for installed versions")
+	klog.V(2).Infof("Looking for installed versions")
 	_, err := receipt.Load(p.PluginInstallReceiptPath(plugin.Name))
 	if err == nil {
 		return ErrIsAlreadyInstalled
@@ -75,7 +75,7 @@ func Install(p environment.Paths, plugin index.Plugin, opts InstallOpts) error {
 
 	// The actual install should be the last action so that a failure during receipt
 	// saving does not result in an installed plugin without receipt.
-	glog.V(3).Infof("Install plugin %s at version=%s", plugin.Name, plugin.Spec.Version)
+	klog.V(3).Infof("Install plugin %s at version=%s", plugin.Name, plugin.Spec.Version)
 	if err := install(installOperation{
 		pluginName: plugin.Name,
 		platform:   candidate,
@@ -86,21 +86,21 @@ func Install(p environment.Paths, plugin index.Plugin, opts InstallOpts) error {
 	}, opts); err != nil {
 		return errors.Wrap(err, "install failed")
 	}
-	glog.V(3).Infof("Storing install receipt for plugin %s", plugin.Name)
+	klog.V(3).Infof("Storing install receipt for plugin %s", plugin.Name)
 	err = receipt.Store(plugin, p.PluginInstallReceiptPath(plugin.Name))
 	return errors.Wrap(err, "installation receipt could not be stored, uninstall may fail")
 }
 
 func install(op installOperation, opts InstallOpts) error {
 	// Download and extract
-	glog.V(3).Infof("Creating download staging directory %q", op.downloadStagingDir)
+	klog.V(3).Infof("Creating download staging directory %q", op.downloadStagingDir)
 	if err := os.MkdirAll(op.downloadStagingDir, 0755); err != nil {
 		return errors.Wrapf(err, "could not create staging dir %q", op.downloadStagingDir)
 	}
 	defer func() {
-		glog.V(3).Infof("Deleting the download staging directory %s", op.downloadStagingDir)
+		klog.V(3).Infof("Deleting the download staging directory %s", op.downloadStagingDir)
 		if err := os.RemoveAll(op.downloadStagingDir); err != nil {
-			glog.Warningf("failed to clean up download staging directory: %s", err)
+			klog.Warningf("failed to clean up download staging directory: %s", err)
 		}
 	}()
 	if err := downloadAndExtract(op.downloadStagingDir, op.platform.URI, op.platform.Sha256, opts.ArchiveFileOverride); err != nil {
@@ -131,7 +131,7 @@ func install(op installOperation, opts InstallOpts) error {
 func applyDefaults(platform *index.Platform) {
 	if platform.Files == nil {
 		platform.Files = []index.FileOperation{{From: "*", To: "."}}
-		glog.V(4).Infof("file operation not specified, assuming %v", platform.Files)
+		klog.V(4).Infof("file operation not specified, assuming %v", platform.Files)
 	}
 }
 
@@ -152,13 +152,13 @@ func downloadAndExtract(extractDir, uri, sha256sum, overrideFile string) error {
 // Uninstall will uninstall a plugin.
 func Uninstall(p environment.Paths, name string) error {
 	if name == constants.KrewPluginName {
-		glog.Errorf("Removing krew through krew is not supported.")
+		klog.Errorf("Removing krew through krew is not supported.")
 		if !IsWindows() { // assume POSIX-like
-			glog.Errorf("If you’d like to uninstall krew altogether, run:\n\trm -rf -- %q", p.BasePath())
+			klog.Errorf("If you’d like to uninstall krew altogether, run:\n\trm -rf -- %q", p.BasePath())
 		}
 		return errors.New("self-uninstall not allowed")
 	}
-	glog.V(3).Infof("Finding installed version to delete")
+	klog.V(3).Infof("Finding installed version to delete")
 
 	if _, err := receipt.Load(p.PluginInstallReceiptPath(name)); err != nil {
 		if os.IsNotExist(err) {
@@ -167,21 +167,21 @@ func Uninstall(p environment.Paths, name string) error {
 		return errors.Wrapf(err, "failed to look up install receipt for plugin %q", name)
 	}
 
-	glog.V(1).Infof("Deleting plugin %s", name)
+	klog.V(1).Infof("Deleting plugin %s", name)
 
 	symlinkPath := filepath.Join(p.BinPath(), pluginNameToBin(name, IsWindows()))
-	glog.V(3).Infof("Unlink %q", symlinkPath)
+	klog.V(3).Infof("Unlink %q", symlinkPath)
 	if err := removeLink(symlinkPath); err != nil {
 		return errors.Wrap(err, "could not uninstall symlink of plugin")
 	}
 
 	pluginInstallPath := p.PluginInstallPath(name)
-	glog.V(3).Infof("Deleting path %q", pluginInstallPath)
+	klog.V(3).Infof("Deleting path %q", pluginInstallPath)
 	if err := os.RemoveAll(pluginInstallPath); err != nil {
 		return errors.Wrapf(err, "could not remove plugin directory %q", pluginInstallPath)
 	}
 	pluginReceiptPath := p.PluginInstallReceiptPath(name)
-	glog.V(3).Infof("Deleting plugin receipt %q", pluginReceiptPath)
+	klog.V(3).Infof("Deleting plugin receipt %q", pluginReceiptPath)
 	err := os.Remove(pluginReceiptPath)
 	return errors.Wrapf(err, "could not remove plugin receipt %q", pluginReceiptPath)
 }
@@ -197,11 +197,11 @@ func createOrUpdateLink(binDir string, binary string, plugin string) error {
 	}
 
 	// Create new
-	glog.V(2).Infof("Creating symlink to %q at %q", binary, dst)
+	klog.V(2).Infof("Creating symlink to %q at %q", binary, dst)
 	if err := os.Symlink(binary, dst); err != nil {
-		return errors.Wrapf(err, "failed to create a symlink form %q to %q", binDir, dst)
+		return errors.Wrapf(err, "failed to create a symlink from %q to %q", binary, dst)
 	}
-	glog.V(2).Infof("Created symlink at %q", dst)
+	klog.V(2).Infof("Created symlink at %q", dst)
 
 	return nil
 }
@@ -210,7 +210,7 @@ func createOrUpdateLink(binDir string, binary string, plugin string) error {
 func removeLink(path string) error {
 	fi, err := os.Lstat(path)
 	if os.IsNotExist(err) {
-		glog.V(3).Infof("No file found at %q", path)
+		klog.V(3).Infof("No file found at %q", path)
 		return nil
 	} else if err != nil {
 		return errors.Wrapf(err, "failed to read the symlink in %q", path)
@@ -222,7 +222,7 @@ func removeLink(path string) error {
 	if err := os.Remove(path); err != nil {
 		return errors.Wrapf(err, "failed to remove the symlink in %q", path)
 	}
-	glog.V(3).Infof("Removed symlink from %q", path)
+	klog.V(3).Infof("Removed symlink from %q", path)
 	return nil
 }
 
@@ -252,16 +252,16 @@ func CleanupStaleKrewInstallations(dir string, currentVersion string) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to read krew store directory")
 	}
-	glog.V(2).Infof("Found %d entries in krew store directory", len(ls))
+	klog.V(2).Infof("Found %d entries in krew store directory", len(ls))
 	for _, d := range ls {
-		glog.V(2).Infof("Found a krew installation: %s (%s)", d.Name(), d.Mode())
+		klog.V(2).Infof("Found a krew installation: %s (%s)", d.Name(), d.Mode())
 		if d.IsDir() && d.Name() != currentVersion {
-			glog.V(1).Infof("Deleting stale krew install directory: %s", d.Name())
+			klog.V(1).Infof("Deleting stale krew install directory: %s", d.Name())
 			p := filepath.Join(dir, d.Name())
 			if err := os.RemoveAll(p); err != nil {
 				return errors.Wrapf(err, "failed to remove stale krew version at path '%s'", p)
 			}
-			glog.V(1).Infof("Stale installation directory removed")
+			klog.V(1).Infof("Stale installation directory removed")
 		}
 	}
 	return nil

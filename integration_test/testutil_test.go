@@ -84,6 +84,10 @@ func setupKrewBin(t *testing.T, tempDir *testutil.TempDir) string {
 	if err := os.MkdirAll(binPath, 0755); err != nil {
 		t.Fatal(err)
 	}
+
+	// todo(corneliusweig): when the receipts migration logic is removed, this becomes obsolete
+	tempDir.Write("receipts/krew.notyaml", []byte("must be present for receipts migration check"))
+
 	if err := os.Symlink(krewBinary, filepath.Join(binPath, "kubectl-krew")); err != nil {
 		t.Fatalf("cannot link krew binary: %s", err)
 	}

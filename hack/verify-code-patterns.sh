@@ -36,10 +36,10 @@ if [[ -n "$out" ]]; then
   exit 1
 fi
 
-# Do not use glog in test code
+# Do not use glog/klog in test code
 out="$(grep --include '*_test.go' --exclude-dir 'vendor/' -EIrn '[kg]log\.' || true)"
 if [[ -n "$out" ]]; then
-  echo >&2 "You used glog in tests, use 't.Logf' instead:"
+  echo >&2 "You used glog or klog in tests, use 't.Logf' instead:"
   echo >&2 "$out"
   exit 1
 fi
