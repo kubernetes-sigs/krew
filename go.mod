@@ -9,7 +9,6 @@ require (
 	github.com/go-openapi/jsonreference v0.19.3 // indirect
 	github.com/go-openapi/spec v0.19.4 // indirect
 	github.com/gogo/protobuf v1.3.1 // indirect
-	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/google/go-cmp v0.3.1
 	github.com/googleapis/gnostic v0.3.1 // indirect
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
@@ -36,6 +35,7 @@ require (
 	k8s.io/apimachinery v0.0.0-20191104232853-7449f4ff0238
 	k8s.io/cli-runtime v0.0.0-20191102031428-d1199d98239f
 	k8s.io/client-go v0.0.0-20191105030321-52092c3c67fa
+	k8s.io/klog v1.0.0
 	k8s.io/kubectl v0.0.0-20191105034758-385e2fd91f18
 	sigs.k8s.io/yaml v1.1.0
 )
