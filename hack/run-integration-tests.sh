@@ -46,4 +46,4 @@ fi
 KREW_BINARY="${krew_binary_realpath}"
 export KREW_BINARY
 
-GO111MODULE=on go test sigs.k8s.io/krew/integration_test
+go test sigs.k8s.io/krew/integration_test
