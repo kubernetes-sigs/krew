@@ -158,6 +158,24 @@ func TestValidatePlugin(t *testing.T) {
 			plugin:     testutil.NewPlugin().WithName("../foo").V(),
 			wantErr:    true,
 		},
+		{
+			name:       "short description with line break",
+			pluginName: "foo",
+			plugin:     testutil.NewPlugin().WithShortDescription("just foo\n").V(),
+			wantErr:    true,
+		},
+		{
+			name:       "short description with carriage return",
+			pluginName: "foo",
+			plugin:     testutil.NewPlugin().WithShortDescription("just foo\r").V(),
+			wantErr:    true,
+		},
+		{
+			name:       "short description with CRLF",
+			pluginName: "foo",
+			plugin:     testutil.NewPlugin().WithShortDescription("just\r\nfoo").V(),
+			wantErr:    true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
