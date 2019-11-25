@@ -46,7 +46,7 @@ done < <(find "${bin_dir}" -print0)
 echo >&2 "Creating ${krew_tar_archive} archive."
 (
   cd "${bin_dir}"
-  tar -I "gzip --best" -cvf "${SCRIPTDIR}/../out/${krew_tar_archive}" ./*
+  tar --use-compress-program "gzip --no-name" -cvf "${SCRIPTDIR}/../out/${krew_tar_archive}" ./*
 )
 
 checksum_cmd="shasum -a 256"
