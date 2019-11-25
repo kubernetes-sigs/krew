@@ -26,7 +26,7 @@ trap cleanup EXIT
 install_gox() {
   cd "${scratch_dir}"
   go mod init foo
-  go get github.com/mitchellh/gox
+  go get github.com/mitchellh/gox@v1.0.1
   cd -
 }
 

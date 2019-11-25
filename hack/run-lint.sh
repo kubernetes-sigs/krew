@@ -35,7 +35,7 @@ install_impi() {
 
   cd "${impi_dir}"
   go mod init foo
-  go get github.com/pavius/impi/cmd/impi
+  go get github.com/pavius/impi/cmd/impi@c1cbdcb
   cd -
 }
 
@@ -53,7 +53,7 @@ install_shfmt() {
 
   cd "${shfmt_dir}"
   go mod init foo
-  go get mvdan.cc/sh/cmd/shfmt
+  go get mvdan.cc/sh/cmd/shfmt@v2.6.4
   cd -
 }
 
