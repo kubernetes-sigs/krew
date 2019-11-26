@@ -24,12 +24,10 @@ cleanup() {
 trap cleanup EXIT
 
 install_gox() {
-  gobin="$(go env GOPATH)/bin"
   cd "${scratch_dir}"
-  env GOPATH="${scratch_dir}" \
-    GO111MODULE=off \
-    GOBIN="${gobin}" \
-    go get github.com/mitchellh/gox
+  go mod init foo
+  go get github.com/mitchellh/gox@v1.0.1
+  cd -
 }
 
 ensure_gox() {

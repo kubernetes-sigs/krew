@@ -27,16 +27,16 @@ if ! [[ -x "$gopath/bin/golangci-lint" ]]; then
 fi
 
 # configured by .golangci.yml
-GO111MODULE=on "$gopath/bin/golangci-lint" run
+"$gopath/bin/golangci-lint" run
 
 install_impi() {
   impi_dir="$(mktemp -d)"
   trap 'rm -rf -- ${impi_dir}' EXIT
 
-  GOPATH="${impi_dir}" \
-    GO111MODULE=off \
-    GOBIN="${gopath}/bin" \
-    go get github.com/pavius/impi/cmd/impi
+  cd "${impi_dir}"
+  go mod init foo
+  go get github.com/pavius/impi/cmd/impi@c1cbdcb
+  cd -
 }
 
 # install impi that ensures import grouping is done consistently
@@ -51,10 +51,10 @@ install_shfmt() {
   shfmt_dir="$(mktemp -d)"
   trap 'rm -rf -- ${shfmt_dir}' EXIT
 
-  GOPATH="${shfmt_dir}" \
-    GO111MODULE=off \
-    GOBIN="${gopath}/bin" \
-    go get mvdan.cc/sh/cmd/shfmt
+  cd "${shfmt_dir}"
+  go mod init foo
+  go get mvdan.cc/sh/cmd/shfmt@v2.6.4
+  cd -
 }
 
 # install shfmt that ensures consistent format in shell scripts
