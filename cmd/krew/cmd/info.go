@@ -73,24 +73,23 @@ func printPluginInfo(out io.Writer, plugin index.Plugin) {
 		fmt.Fprintf(out, "DESCRIPTION: \n%s\n", plugin.Spec.Description)
 	}
 	if plugin.Spec.Caveats != "" {
-		fmt.Fprintln(out, prepCaveats(plugin.Spec.Caveats))
+		fmt.Fprintf(out, "CAVEATS:\n%s\n", indent(plugin.Spec.Caveats))
 	}
 }
 
-// prepCaveats converts caveats string to an indented format ready for printing.
+// indent converts strings to an indented format ready for printing.
 // Example:
 //
-//     CAVEATS:
 //     \
 //      | This plugin is great, use it with great care.
 //      | Also, plugin will require the following programs to run:
 //      |  * jq
 //      |  * base64
 //     /
-func prepCaveats(s string) string {
-	out := "CAVEATS:\n\\\n"
+func indent(s string) string {
+	out := "\\\n"
 	s = strings.TrimRightFunc(s, unicode.IsSpace)
-	out += regexp.MustCompile("(?m)^").ReplaceAllString(s, " |  ")
+	out += regexp.MustCompile("(?m)^").ReplaceAllString(s, " | ")
 	out += "\n/"
 	return out
 }
