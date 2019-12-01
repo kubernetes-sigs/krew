@@ -51,7 +51,7 @@ Check out the list of [kubectl plugins available on krew][list] or just run
     ```sh
     (
       set -x; cd "$(mktemp -d)" &&
-      curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/download/v0.3.2/krew.{tar.gz,yaml}" &&
+      curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/download/v0.3.3/krew.{tar.gz,yaml}" &&
       tar zxvf krew.tar.gz &&
       ./krew-"$(uname | tr '[:upper:]' '[:lower:]')_amd64" install \
         --manifest=krew.yaml --archive=krew.tar.gz
@@ -74,7 +74,7 @@ Check out the list of [kubectl plugins available on krew][list] or just run
     ```fish
     begin
       set -x; set temp_dir (mktemp -d); cd "$temp_dir" &&
-      curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/download/v0.3.2/krew.{tar.gz,yaml}" &&
+      curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/download/v0.3.3/krew.{tar.gz,yaml}" &&
       tar zxvf krew.tar.gz &&
       set KREWNAME krew-(uname | tr '[:upper:]' '[:lower:]')_amd64 &&
       ./$KREWNAME install \
