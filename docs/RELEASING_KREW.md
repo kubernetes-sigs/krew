@@ -43,6 +43,13 @@ Krew tags versions starting with `v`. Example: `v0.2.0-rc.1`.
    master, so the changes from the previous step need to be pushed and merged
    as a regular PR.
 
+       git push origin master
+
+   (Only repository administrators can directly push to master branch.)
+
+1. **Wait until the build succeeds:** Wait for Travis CI to show green for the
+   build for the commit you just pushed to master branch.
+
 1. **Tag the release:**
 
     ```sh
@@ -60,19 +67,21 @@ Krew tags versions starting with `v`. Example: `v0.2.0-rc.1`.
 
        git push origin "${TAG:?TAG required}"
 
-1. **Verify on Releases tab on GitHub**
+1. **Verify on Releases tab on GitHub:** Make sure `krew.yaml`, `krew.tar.gz`
+   and other release assets show up on "Releases" tab.
 
 1. **Make the new version available on krew index:** Get the latest `krew.yaml` from
 
-       curl -LO https://github.com/kubernetes-sigs/krew/releases/download/v0.3.2-rc.1/krew.yaml
+       curl -LO https://github.com/kubernetes-sigs/krew/releases/download/"${TAG:?TAG required}"/krew.yaml
 
    and make a pull request to
    [krew-index](https://github.com/kubernetes-sigs/krew-index/) repository.
    This will make the plugin available to upgrade for users using older versions
    of krew.
 
-1. **Update krew-index CI**: For validating manifests, the CI should use the latest version
-   (see `.travis.yml` in `krew-index` the repository).
+1. **Update krew-index CI**: The CI tests for `krew-index` repository relies on
+   tools from main `krew` repository, and they should use the latest version.
+   When there's a new version, update the `.travis.yml` in `krew-index` repo.
 
 ## Release artifacts
 
