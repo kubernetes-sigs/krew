@@ -36,9 +36,9 @@ func findPluginManifestFiles(indexDir string) ([]string, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to open index dir")
 	}
-	for _, fi := range files {
-		if fi.Mode().IsRegular() && filepath.Ext(fi.Name()) == constants.ManifestExtension {
-			out = append(out, fi.Name())
+	for _, file := range files {
+		if file.Mode().IsRegular() && filepath.Ext(file.Name()) == constants.ManifestExtension {
+			out = append(out, file.Name())
 		}
 	}
 	return out, nil
@@ -58,8 +58,8 @@ func LoadPluginListFromFS(indexDir string) ([]index.Plugin, error) {
 	klog.V(4).Infof("found %d plugins in dir %s", len(files), indexDir)
 
 	list := make([]index.Plugin, 0, len(files))
-	for _, fn := range files {
-		pluginName := strings.TrimSuffix(fn, filepath.Ext(fn))
+	for _, file := range files {
+		pluginName := strings.TrimSuffix(file, filepath.Ext(file))
 		p, err := LoadPluginFileFromFS(indexDir, pluginName)
 		if err != nil {
 			// Index loading shouldn't fail because of one plugin.
