@@ -22,7 +22,7 @@ import (
 	"os"
 )
 
-// DownloadFile function takes URL as input, stores the contents in temporary file and returns filename, cleanup function to delete temprary files and error
+// DownloadFile function takes URL as input, stores the contents in temporary file and returns filename, cleanup function to delete temporary files and error
 func DownloadFile(url string) (string, func(), error) {
 
 	tmpFile, err := ioutil.TempFile(os.TempDir(), "krew-")
@@ -41,7 +41,7 @@ func DownloadFile(url string) (string, func(), error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fileName, cleanup, fmt.Errorf("Bad status: %s", resp.Status)
+		return fileName, cleanup, fmt.Errorf("bad status: %s", resp.Status)
 	}
 
 	if _, err = io.Copy(tmpFile, resp.Body); err != nil {
