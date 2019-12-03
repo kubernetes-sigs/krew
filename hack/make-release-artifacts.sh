@@ -64,7 +64,7 @@ exe_sumfile="out/krew.exe.sha256"
 exe_checksum="$(eval "${checksum_cmd[@]}" "out/${krew_exe}" | awk '{print $1;}')"
 echo >&2 "${krew_exe} checksum: ${exe_checksum}"
 echo "${exe_checksum}" >"${exe_sumfile}"
-echo >&2 "Written ${tar_sumfile}."
+echo >&2 "Written ${exe_sumfile}."
 
 # Copy and process krew manifest
 git_describe="$(git describe --tags --dirty --always)"
