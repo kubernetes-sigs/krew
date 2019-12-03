@@ -40,6 +40,7 @@ const (
 	validPlugin          = "konfig" // a plugin in central index with small size
 	validPlugin2         = "mtail"  // a plugin in central index with small size
 	validURLPlugin       = "fields"
+	ManifestURL          = "https://github.com/rewanth1997/kubectl-fields/raw/master/deploy/krew/plugin.yaml"
 )
 
 var (

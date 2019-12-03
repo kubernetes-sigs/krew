@@ -112,8 +112,22 @@ func TestKrewInstall_ManifestURL(t *testing.T) {
 	defer cleanup()
 
 	test.Krew("install",
-		"--manifest-url", constants.ManifestURL).RunOrFail()
+		"--manifest-url", ManifestURL).RunOrFail()
 	test.AssertExecutableInPATH("kubectl-" + validURLPlugin)
+}
+
+func TestKrewInstall_ManifestURLAndArchive(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	err := test.Krew("install",
+		"--manifest-url", ManifestURL,
+		"--archive", filepath.Join("testdata", fooPlugin+".tar.gz")).Run()
+	if err == nil {
+		t.Errorf("Expected install to fail but was successful")
+	}
 }
 
 func TestKrewInstall_ManifestAndArchive(t *testing.T) {

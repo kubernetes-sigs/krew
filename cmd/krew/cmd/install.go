@@ -17,8 +17,6 @@ package cmd
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"os"
 
 	"github.com/golang/glog"
@@ -31,41 +29,6 @@ import (
 	"sigs.k8s.io/krew/pkg/index/validation"
 	"sigs.k8s.io/krew/pkg/installation"
 )
-
-// Downloads data from url to a filepath location
-func downloadFile(url string) (string, error) {
-
-	tmpFile, err := ioutil.TempFile(os.TempDir(), "krew-")
-	if err != nil {
-		return "", err
-	}
-
-	resp, err := http.Get(url)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("bad status: %s", resp.Status)
-	}
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-
-	if _, err = tmpFile.Write([]byte(string(body))); err != nil {
-		return "", err
-	}
-
-	// Close the file
-	if err := tmpFile.Close(); err != nil {
-		return "", err
-	}
-
-	return tmpFile.Name(), nil
-}
 
 func init() {
 	var (
@@ -99,15 +62,19 @@ Remarks:
 			var pluginNames = make([]string, len(args))
 			copy(pluginNames, args)
 
+			if *archiveFileOverride != "" && *manifestURL != "" {
+				return errors.New("--archive cannot be specified with --manifest-url")
+			}
+
 			// Downloads manifest file from given URL
 			if *manifestURL != "" {
-				fileName, err := downloadFile(*manifestURL)
+				fileName, cleanup, err := internal.DownloadFile(*manifestURL)
 				if err != nil {
-					fmt.Fprintln(os.Stderr, "Error downloading file")
+					return errors.Wrapf(err, "Error downloading manifest from %q", *manifestURL)
 				}
 
 				// Deletes the temp file after usage
-				defer os.Remove(fileName)
+				defer cleanup()
 
 				// Assigns temporary manifest file to manifest variable
 				*manifest = fileName

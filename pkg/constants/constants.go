@@ -19,7 +19,6 @@ const (
 	PluginKind        = "Plugin"
 	ManifestExtension = ".yaml"
 	KrewPluginName    = "krew" // plugin name of krew itself
-	ManifestURL       = "https://github.com/rewanth1997/kubectl-fields/raw/master/deploy/krew/plugin.yaml"
 
 	// IndexURI points to the upstream index.
 	IndexURI = "https://github.com/kubernetes-sigs/krew-index.git"
