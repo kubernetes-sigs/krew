@@ -23,8 +23,8 @@ import (
 	"k8s.io/klog"
 
 	"sigs.k8s.io/krew/cmd/krew/cmd/internal"
-	"sigs.k8s.io/krew/pkg/index/indexscanner"
-	"sigs.k8s.io/krew/pkg/installation"
+	"sigs.k8s.io/krew/internal/index/indexscanner"
+	"sigs.k8s.io/krew/internal/installation"
 )
 
 func init() {

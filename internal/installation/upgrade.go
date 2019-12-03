@@ -21,11 +21,11 @@ import (
 	"github.com/pkg/errors"
 	"k8s.io/klog"
 
+	"sigs.k8s.io/krew/internal/environment"
+	"sigs.k8s.io/krew/internal/installation/receipt"
+	"sigs.k8s.io/krew/internal/installation/semver"
 	"sigs.k8s.io/krew/pkg/constants"
-	"sigs.k8s.io/krew/pkg/environment"
 	"sigs.k8s.io/krew/pkg/index"
-	"sigs.k8s.io/krew/pkg/installation/receipt"
-	"sigs.k8s.io/krew/pkg/installation/semver"
 )
 
 // Upgrade will reinstall and delete the old plugin. The operation tries

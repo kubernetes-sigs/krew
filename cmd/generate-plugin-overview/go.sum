@@ -122,6 +122,7 @@ sigs.k8s.io/krew v0.2.2-0.20190724210953-8867a94acd6d h1:ftkzey0SeGithDvmwEsUnlD
 sigs.k8s.io/krew v0.2.2-0.20190724210953-8867a94acd6d/go.mod h1:wsheYhp5znrUApov8QcNjBCwXu85fIGjRJvjSkE8pI8=
 sigs.k8s.io/krew v0.3.2 h1:FKBD9xy9GtO5A8FeVk/cbgG6vzPbUg4SwUziZj/TGoU=
 sigs.k8s.io/krew v0.3.2/go.mod h1:G0cvdJtBb0gHBQZtCBumtllvhU6H+ggDr2oLznaLglc=
+sigs.k8s.io/krew v0.3.3 h1:cHv2oReJmFmR0CnT9Fs1c9JCAOC6OBpdq4xKEJis+2E=
 sigs.k8s.io/structured-merge-diff v0.0.0-20190525122527-15d366b2352e/go.mod h1:wWxsB5ozmmv/SG7nM11ayaAW51xMvak/t1r0CSlcokI=
 sigs.k8s.io/yaml v1.1.0 h1:4A07+ZFc2wgJwo8YNlQpr1rVlgUDlxXHhPJciaPY5gs=
 sigs.k8s.io/yaml v1.1.0/go.mod h1:UJmg0vDUVViEyp3mgSv9WPwZCDxu4rQW1olrI1uml+o=

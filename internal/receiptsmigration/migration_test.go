@@ -26,9 +26,9 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"sigs.k8s.io/krew/pkg/environment"
-	"sigs.k8s.io/krew/pkg/receiptsmigration/oldenvironment"
-	"sigs.k8s.io/krew/pkg/testutil"
+	"sigs.k8s.io/krew/internal/environment"
+	"sigs.k8s.io/krew/internal/receiptsmigration/oldenvironment"
+	"sigs.k8s.io/krew/internal/testutil"
 )
 
 func TestIsMigrated(t *testing.T) {

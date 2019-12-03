@@ -30,10 +30,10 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/klog"
 
+	"sigs.k8s.io/krew/internal/index/indexscanner"
+	"sigs.k8s.io/krew/internal/index/validation"
 	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/index"
-	"sigs.k8s.io/krew/pkg/index/indexscanner"
-	"sigs.k8s.io/krew/pkg/index/validation"
 )
 
 var flManifest string

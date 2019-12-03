@@ -20,8 +20,8 @@ import (
 	"github.com/pkg/errors"
 	"sigs.k8s.io/yaml"
 
+	"sigs.k8s.io/krew/internal/index/indexscanner"
 	"sigs.k8s.io/krew/pkg/index"
-	"sigs.k8s.io/krew/pkg/index/indexscanner"
 )
 
 // Store saves the given plugin at the destination.

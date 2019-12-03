@@ -27,9 +27,9 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"sigs.k8s.io/krew/pkg/environment"
+	"sigs.k8s.io/krew/internal/environment"
+	"sigs.k8s.io/krew/internal/testutil"
 	"sigs.k8s.io/krew/pkg/index"
-	"sigs.k8s.io/krew/pkg/testutil"
 )
 
 func Test_moveTargets(t *testing.T) {

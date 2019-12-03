@@ -22,7 +22,7 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/klog"
 
-	"sigs.k8s.io/krew/pkg/installation"
+	"sigs.k8s.io/krew/internal/installation"
 )
 
 // uninstallCmd represents the uninstall command

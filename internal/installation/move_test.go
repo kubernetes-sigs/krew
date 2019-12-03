@@ -21,8 +21,8 @@ import (
 	"reflect"
 	"testing"
 
+	"sigs.k8s.io/krew/internal/testutil"
 	"sigs.k8s.io/krew/pkg/index"
-	"sigs.k8s.io/krew/pkg/testutil"
 )
 
 func Test_findMoveTargets(t *testing.T) {

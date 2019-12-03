@@ -23,9 +23,9 @@ import (
 	"github.com/sahilm/fuzzy"
 	"github.com/spf13/cobra"
 
+	"sigs.k8s.io/krew/internal/index/indexscanner"
+	"sigs.k8s.io/krew/internal/installation"
 	"sigs.k8s.io/krew/pkg/index"
-	"sigs.k8s.io/krew/pkg/index/indexscanner"
-	"sigs.k8s.io/krew/pkg/installation"
 )
 
 // searchCmd represents the search command

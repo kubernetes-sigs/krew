@@ -21,7 +21,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"sigs.k8s.io/krew/pkg/testutil"
+	"sigs.k8s.io/krew/internal/testutil"
 )
 
 func TestKrewSystem(t *testing.T) {

@@ -20,8 +20,8 @@ import (
 	"github.com/pkg/errors"
 	"k8s.io/klog"
 
+	"sigs.k8s.io/krew/internal/installation/receipt"
 	"sigs.k8s.io/krew/pkg/constants"
-	"sigs.k8s.io/krew/pkg/installation/receipt"
 )
 
 // ListInstalledPlugins returns a list of all install plugins in a
