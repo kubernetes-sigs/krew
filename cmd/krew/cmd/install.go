@@ -69,12 +69,13 @@ Remarks:
 			// Downloads manifest file from given URL
 			if *manifestURL != "" {
 				fileName, cleanup, err := internal.DownloadFile(*manifestURL)
-				if err != nil {
-					return errors.Wrapf(err, "Error downloading manifest from %q", *manifestURL)
-				}
 
 				// Deletes the temp file after usage
 				defer cleanup()
+
+				if err != nil {
+					return errors.Wrapf(err, "Error downloading manifest from %q", *manifestURL)
+				}
 
 				// Assigns temporary manifest file to manifest variable
 				*manifest = fileName

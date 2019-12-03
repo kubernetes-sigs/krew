@@ -26,28 +26,32 @@ import (
 func DownloadFile(url string) (string, func(), error) {
 
 	tmpFile, err := ioutil.TempFile(os.TempDir(), "krew-")
+
+	cleanup := func() { os.Remove(tmpFile.Name()) }
+	fileName := tmpFile.Name()
+
 	if err != nil {
-		return "", nil, err
+		return fileName, cleanup, err
 	}
 
 	resp, err := http.Get(url)
 	if err != nil {
-		return "", nil, err
+		return fileName, cleanup, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return "", nil, fmt.Errorf("Bad status: %s", resp.Status)
+		return fileName, cleanup, fmt.Errorf("Bad status: %s", resp.Status)
 	}
 
 	if _, err = io.Copy(tmpFile, resp.Body); err != nil {
-		return "", nil, err
+		return fileName, cleanup, err
 	}
 
 	// Close the file
 	if err := tmpFile.Close(); err != nil {
-		return "", nil, err
+		return fileName, cleanup, err
 	}
 
-	return tmpFile.Name(), func() { os.Remove(tmpFile.Name()) }, nil
+	return fileName, cleanup, nil
 }
