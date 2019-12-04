@@ -113,20 +113,28 @@ func TestKrewInstall_Manifest(t *testing.T) {
 
 func startServer() (*httptest.Server, error) {
 	server := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.RequestURI == "/konfig.yaml" {
+		switch r.RequestURI {
+		case "/konfig_localhost.yaml":
 			file, _ := os.Open("./testdata/konfig_localhost.yaml")
 			defer file.Close()
-			io.Copy(w, file)
-		} else if r.RequestURI == "/bundle.tar.gz" {
+			if _, err := io.Copy(w, file); err != nil {
+				http.Error(w, err.Error()+" - "+http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			}
+		case "/bundle.tar.gz":
 			file, _ := os.Open("./testdata/bundle.tar.gz")
 			defer file.Close()
-			io.Copy(w, file)
-		} else {
-			io.WriteString(w, "Wrong URI")
+			if _, err := io.Copy(w, file); err != nil {
+				http.Error(w, err.Error()+" - "+http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			}
+		default:
+			if _, err := io.WriteString(w, http.StatusText(http.StatusNotFound)); err != nil {
+				http.Error(w, err.Error()+" - "+http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			}
+			w.WriteHeader(404)
 		}
 	}))
 
-	listener, err := net.Listen("tcp", CustomURL)
+	listener, err := net.Listen("tcp", LocalhostURL)
 	if err != nil {
 		return nil, errors.New("Trouble starting local server")
 	}
