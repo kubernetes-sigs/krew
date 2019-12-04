@@ -15,43 +15,16 @@
 package internal
 
 import (
-	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
-	"os"
 )
 
 // DownloadFile function takes URL as input, stores the contents in temporary file and returns filename, cleanup function to delete temporary files and error
-func DownloadFile(url string) (string, func(), error) {
-
-	tmpFile, err := ioutil.TempFile(os.TempDir(), "krew-")
-
-	cleanup := func() { os.Remove(tmpFile.Name()) }
-	fileName := tmpFile.Name()
-
-	if err != nil {
-		return fileName, cleanup, err
-	}
-
+func DownloadFile(url string) (io.ReadCloser, error) {
 	resp, err := http.Get(url)
 	if err != nil {
-		return fileName, cleanup, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return fileName, cleanup, fmt.Errorf("bad status: %s", resp.Status)
+		return nil, err
 	}
 
-	if _, err = io.Copy(tmpFile, resp.Body); err != nil {
-		return fileName, cleanup, err
-	}
-
-	// Close the file
-	if err := tmpFile.Close(); err != nil {
-		return fileName, cleanup, err
-	}
-
-	return fileName, cleanup, nil
+	return resp.Body, nil
 }

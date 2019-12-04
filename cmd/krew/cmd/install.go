@@ -66,19 +66,8 @@ Remarks:
 				return errors.New("--archive cannot be specified with --manifest-url")
 			}
 
-			// Downloads manifest file from given URL
-			if *manifestURL != "" {
-				fileName, cleanup, err := internal.DownloadFile(*manifestURL)
-
-				// Deletes the temp file after usage
-				defer cleanup()
-
-				if err != nil {
-					return errors.Wrapf(err, "Error downloading manifest from %q", *manifestURL)
-				}
-
-				// Assigns temporary manifest file to manifest variable
-				*manifest = fileName
+			if *manifest != "" && *manifestURL != "" {
+				return errors.New("--manifest cannot be specified with --manifest-url")
 			}
 
 			if !isTerminal(os.Stdin) && (len(pluginNames) != 0 || *manifest != "") {
@@ -109,6 +98,21 @@ Remarks:
 				plugin, err := indexscanner.LoadPluginFileFromFS(paths.IndexPluginsPath(), name)
 				if err != nil {
 					return errors.Wrapf(err, "failed to load plugin %q from the index", name)
+				}
+				install = append(install, plugin)
+			}
+
+			if *manifestURL != "" {
+				resp, err := internal.DownloadFile(*manifestURL)
+				if err != nil {
+					return errors.Wrapf(err, "Error downloading manifest from %q", *manifestURL)
+				}
+				plugin, err := indexscanner.DecodePluginFile(resp)
+				if err != nil {
+					return errors.Wrap(err, "failed to load custom manifest file")
+				}
+				if err := validation.ValidatePlugin(plugin.Name, plugin); err != nil {
+					return errors.Wrap(err, "plugin manifest validation error")
 				}
 				install = append(install, plugin)
 			}

@@ -130,6 +130,20 @@ func TestKrewInstall_ManifestURLAndArchive(t *testing.T) {
 	}
 }
 
+func TestKrewInstall_ManifestURLAndManifest(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	err := test.Krew("install",
+		"--manifest-url", ManifestURL,
+		"--manifest", filepath.Join("testdata", fooPlugin+constants.ManifestExtension)).Run()
+	if err == nil {
+		t.Errorf("Expected install to fail but was successful")
+	}
+}
+
 func TestKrewInstall_ManifestAndArchive(t *testing.T) {
 	skipShort(t)
 
