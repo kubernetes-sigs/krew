@@ -24,8 +24,8 @@ import (
 	"github.com/pkg/errors"
 	"k8s.io/klog"
 
+	"sigs.k8s.io/krew/internal/pathutil"
 	"sigs.k8s.io/krew/pkg/index"
-	"sigs.k8s.io/krew/pkg/pathutil"
 )
 
 type move struct {

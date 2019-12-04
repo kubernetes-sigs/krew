@@ -25,12 +25,12 @@ import (
 	"github.com/spf13/pflag"
 	"k8s.io/klog"
 
+	"sigs.k8s.io/krew/internal/environment"
+	"sigs.k8s.io/krew/internal/gitutil"
+	"sigs.k8s.io/krew/internal/installation"
+	"sigs.k8s.io/krew/internal/installation/receipt"
+	"sigs.k8s.io/krew/internal/receiptsmigration"
 	"sigs.k8s.io/krew/pkg/constants"
-	"sigs.k8s.io/krew/pkg/environment"
-	"sigs.k8s.io/krew/pkg/gitutil"
-	"sigs.k8s.io/krew/pkg/installation"
-	"sigs.k8s.io/krew/pkg/installation/receipt"
-	"sigs.k8s.io/krew/pkg/receiptsmigration"
 )
 
 var (

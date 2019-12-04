@@ -22,7 +22,7 @@ import (
 
 	"k8s.io/client-go/util/homedir"
 
-	"sigs.k8s.io/krew/pkg/testutil"
+	"sigs.k8s.io/krew/internal/testutil"
 )
 
 func TestMustGetKrewPaths_resolvesToHomeDir(t *testing.T) {

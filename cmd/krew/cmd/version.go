@@ -19,8 +19,8 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"sigs.k8s.io/krew/internal/version"
 	"sigs.k8s.io/krew/pkg/constants"
-	"sigs.k8s.io/krew/pkg/version"
 )
 
 // versionCmd represents the version command

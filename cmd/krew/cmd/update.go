@@ -22,8 +22,8 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/klog"
 
+	"sigs.k8s.io/krew/internal/gitutil"
 	"sigs.k8s.io/krew/pkg/constants"
-	"sigs.k8s.io/krew/pkg/gitutil"
 )
 
 // updateCmd represents the update command

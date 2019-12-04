@@ -25,9 +25,9 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
+	"sigs.k8s.io/krew/internal/info"
+	"sigs.k8s.io/krew/internal/installation"
 	"sigs.k8s.io/krew/pkg/index"
-	"sigs.k8s.io/krew/pkg/info"
-	"sigs.k8s.io/krew/pkg/installation"
 )
 
 // infoCmd represents the info command

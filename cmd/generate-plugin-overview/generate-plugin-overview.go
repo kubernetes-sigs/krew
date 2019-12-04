@@ -24,8 +24,8 @@ import (
 	"regexp"
 	"strings"
 
+	"sigs.k8s.io/krew/internal/index/indexscanner"
 	"sigs.k8s.io/krew/pkg/index"
-	"sigs.k8s.io/krew/pkg/index/indexscanner"
 )
 
 const (

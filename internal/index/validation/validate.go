@@ -22,9 +22,9 @@ import (
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"sigs.k8s.io/krew/internal/installation/semver"
 	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/index"
-	"sigs.k8s.io/krew/pkg/installation/semver"
 )
 
 const (

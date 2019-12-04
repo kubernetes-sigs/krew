@@ -20,8 +20,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"sigs.k8s.io/krew/pkg/index/indexscanner"
-	"sigs.k8s.io/krew/pkg/testutil"
+	"sigs.k8s.io/krew/internal/index/indexscanner"
+	"sigs.k8s.io/krew/internal/testutil"
 )
 
 func TestStore(t *testing.T) {

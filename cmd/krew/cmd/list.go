@@ -25,7 +25,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
-	"sigs.k8s.io/krew/pkg/installation"
+	"sigs.k8s.io/krew/internal/installation"
 )
 
 func init() {

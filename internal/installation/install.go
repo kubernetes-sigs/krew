@@ -24,12 +24,12 @@ import (
 	"github.com/pkg/errors"
 	"k8s.io/klog"
 
+	"sigs.k8s.io/krew/internal/download"
+	"sigs.k8s.io/krew/internal/environment"
+	"sigs.k8s.io/krew/internal/installation/receipt"
+	"sigs.k8s.io/krew/internal/pathutil"
 	"sigs.k8s.io/krew/pkg/constants"
-	"sigs.k8s.io/krew/pkg/download"
-	"sigs.k8s.io/krew/pkg/environment"
 	"sigs.k8s.io/krew/pkg/index"
-	"sigs.k8s.io/krew/pkg/installation/receipt"
-	"sigs.k8s.io/krew/pkg/pathutil"
 )
 
 // InstallOpts specifies options for plugin installation operation.
