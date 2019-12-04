@@ -105,23 +105,25 @@ func printTableRowForPlugin(out io.Writer, p *index.Plugin) {
 	printRow(out, name, description, shield)
 }
 
-func makeGithubShield(homepage string) string {
-	repo := ""
-
-	if matches := githubRepoPattern.FindStringSubmatch(homepage); matches != nil {
-		repo = matches[1]
-	} else if homepage == `https://sigs.k8s.io/krew` {
-		repo = "kubernetes-sigs/krew"
-	} else if homepage == `https://kubernetes.github.io/ingress-nginx/kubectl-plugin/` {
-		repo = "kubernetes/ingress-nginx"
-	} else if homepage == `https://kudo.dev/` {
-		repo = "kudobuilder/kudo"
-	}
-
+func makeGithubShield(homePage string) string {
+	repo := findRepo(homePage)
 	if repo == "" {
 		return ""
 	}
 	return "![GitHub stars](https://img.shields.io/github/stars/" + repo + ".svg?label=stars&logo=github)"
+}
+
+func findRepo(homePage string) string {
+	if matches := githubRepoPattern.FindStringSubmatch(homePage); matches != nil {
+		return matches[1]
+	}
+
+	knownHomePages := map[string]string{
+		`https://sigs.k8s.io/krew`:                                   "kubernetes-sigs/krew",
+		`https://kubernetes.github.io/ingress-nginx/kubectl-plugin/`: "kubernetes/ingress-nginx",
+		`https://kudo.dev/`:                                          "kudobuilder/kudo",
+	}
+	return knownHomePages[homePage]
 }
 
 func printRow(w io.Writer, cols ...string) {
