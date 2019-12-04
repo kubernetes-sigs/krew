@@ -15,6 +15,12 @@
 package integrationtest
 
 import (
+	"errors"
+	"io"
+	"net"
+	"net/http"
+	"net/http/httptest"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -105,25 +111,61 @@ func TestKrewInstall_Manifest(t *testing.T) {
 	test.AssertExecutableInPATH("kubectl-" + validPlugin)
 }
 
+func startServer() (*httptest.Server, error) {
+	server := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.RequestURI == "/konfig.yaml" {
+			file, _ := os.Open("./testdata/konfig_localhost.yaml")
+			defer file.Close()
+			io.Copy(w, file)
+		} else if r.RequestURI == "/bundle.tar.gz" {
+			file, _ := os.Open("./testdata/bundle.tar.gz")
+			defer file.Close()
+			io.Copy(w, file)
+		} else {
+			io.WriteString(w, "Wrong URI")
+		}
+	}))
+
+	listener, err := net.Listen("tcp", CustomURL)
+	if err != nil {
+		return nil, errors.New("Trouble starting local server")
+	}
+	server.Listener = listener
+	server.Start()
+	return server, nil
+}
+
 func TestKrewInstall_ManifestURL(t *testing.T) {
 	skipShort(t)
+
+	server, err := startServer()
+	if err != nil {
+		t.Errorf("Trouble starting local server")
+	}
+	defer server.Close()
 
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
 	test.Krew("install",
-		"--manifest-url", ManifestURL).RunOrFail()
-	test.AssertExecutableInPATH("kubectl-" + validURLPlugin)
+		"--manifest-url", LocalhostManifestURL).RunOrFail()
+	test.AssertExecutableInPATH("kubectl-" + validPlugin)
 }
 
 func TestKrewInstall_ManifestURLAndArchive(t *testing.T) {
 	skipShort(t)
 
+	server, err := startServer()
+	if err != nil {
+		t.Errorf("Trouble starting local server")
+	}
+	defer server.Close()
+
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	err := test.Krew("install",
-		"--manifest-url", ManifestURL,
+	err = test.Krew("install",
+		"--manifest-url", LocalhostManifestURL,
 		"--archive", filepath.Join("testdata", fooPlugin+".tar.gz")).Run()
 	if err == nil {
 		t.Errorf("Expected install to fail but was successful")
@@ -133,11 +175,17 @@ func TestKrewInstall_ManifestURLAndArchive(t *testing.T) {
 func TestKrewInstall_ManifestURLAndManifest(t *testing.T) {
 	skipShort(t)
 
+	server, err := startServer()
+	if err != nil {
+		t.Errorf("Trouble starting local server")
+	}
+	defer server.Close()
+
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	err := test.Krew("install",
-		"--manifest-url", ManifestURL,
+	err = test.Krew("install",
+		"--manifest-url", LocalhostManifestURL,
 		"--manifest", filepath.Join("testdata", fooPlugin+constants.ManifestExtension)).Run()
 	if err == nil {
 		t.Errorf("Expected install to fail but was successful")

@@ -37,10 +37,10 @@ import (
 const (
 	persistentIndexCache = "krew-persistent-index-cache"
 	krewBinaryEnv        = "KREW_BINARY"
-	validPlugin          = "konfig" // a plugin in central index with small size
-	validPlugin2         = "mtail"  // a plugin in central index with small size
-	validURLPlugin       = "fields"
-	ManifestURL          = "https://github.com/rewanth1997/kubectl-fields/raw/master/deploy/krew/plugin.yaml"
+	validPlugin          = "konfig"          // a plugin in central index with small size
+	validPlugin2         = "mtail"           // a plugin in central index with small size
+	CustomURL            = "127.0.0.1:60564" // make sure this port is open. incase of editing port number, make sure to update the URL in testdata/konfig_localhost.yaml
+	LocalhostManifestURL = "http://" + CustomURL + "/konfig.yaml"
 )
 
 var (
