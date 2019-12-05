@@ -136,7 +136,7 @@ func startServer() (*httptest.Server, error) {
 
 	listener, err := net.Listen("tcp", LocalhostURL)
 	if err != nil {
-		return nil, errors.New("Trouble starting local server")
+		return nil, errors.New("trouble starting local server")
 	}
 	server.Listener = listener
 	server.Start()
@@ -148,7 +148,7 @@ func TestKrewInstall_ManifestURL(t *testing.T) {
 
 	server, err := startServer()
 	if err != nil {
-		t.Errorf("Trouble starting local server")
+		t.Fatalf("trouble starting local server")
 	}
 	defer server.Close()
 
@@ -165,7 +165,7 @@ func TestKrewInstall_ManifestURLAndArchive(t *testing.T) {
 
 	server, err := startServer()
 	if err != nil {
-		t.Errorf("Trouble starting local server")
+		t.Fatalf("trouble starting local server")
 	}
 	defer server.Close()
 
@@ -176,7 +176,7 @@ func TestKrewInstall_ManifestURLAndArchive(t *testing.T) {
 		"--manifest-url", LocalhostManifestURL,
 		"--archive", filepath.Join("testdata", fooPlugin+".tar.gz")).Run()
 	if err == nil {
-		t.Errorf("Expected install to fail but was successful")
+		t.Errorf("expected install to fail but was successful")
 	}
 }
 
@@ -185,7 +185,7 @@ func TestKrewInstall_ManifestURLAndManifest(t *testing.T) {
 
 	server, err := startServer()
 	if err != nil {
-		t.Errorf("Trouble starting local server")
+		t.Fatalf("trouble starting local server")
 	}
 	defer server.Close()
 
@@ -196,7 +196,7 @@ func TestKrewInstall_ManifestURLAndManifest(t *testing.T) {
 		"--manifest-url", LocalhostManifestURL,
 		"--manifest", filepath.Join("testdata", fooPlugin+constants.ManifestExtension)).Run()
 	if err == nil {
-		t.Errorf("Expected install to fail but was successful")
+		t.Errorf("expected install to fail but was successful")
 	}
 }
 
@@ -223,7 +223,7 @@ func TestKrewInstall_OnlyArchive(t *testing.T) {
 		"--archive", filepath.Join("testdata", fooPlugin+".tar.gz")).
 		Run()
 	if err == nil {
-		t.Errorf("Expected install to fail but was successful")
+		t.Errorf("expected install to fail but was successful")
 	}
 }
 
