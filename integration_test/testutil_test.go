@@ -40,7 +40,7 @@ const (
 	validPlugin          = "konfig"          // a plugin in central index with small size
 	validPlugin2         = "mtail"           // a plugin in central index with small size
 	localServerURL       = "127.0.0.1:45076" // change port number incase of bind error
-	localManifestURL = "http://" + localServerURL + "/konfig.yaml"
+	localManifestURL     = "http://" + localServerURL + "/konfig.yaml"
 )
 
 var (

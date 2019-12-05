@@ -15,6 +15,7 @@
 package integrationtest
 
 import (
+	"errors"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -25,7 +26,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"errors"
 	"sigs.k8s.io/krew/pkg/constants"
 )
 
