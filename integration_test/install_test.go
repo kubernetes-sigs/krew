@@ -15,16 +15,17 @@
 package integrationtest
 
 import (
-	"errors"
-	"io"
-	"net"
-	"net/http"
-	"net/http/httptest"
-	"os"
+	"fmt"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
+	"net"
+	"net/http"
+	"net/http/httptest"
+
+	"errors"
 	"sigs.k8s.io/krew/pkg/constants"
 )
 
@@ -111,30 +112,10 @@ func TestKrewInstall_Manifest(t *testing.T) {
 	test.AssertExecutableInPATH("kubectl-" + validPlugin)
 }
 
-func startServer() (*httptest.Server, error) {
-	server := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.RequestURI {
-		case "/konfig_localhost.yaml":
-			file, _ := os.Open("./testdata/konfig_localhost.yaml")
-			defer file.Close()
-			if _, err := io.Copy(w, file); err != nil {
-				http.Error(w, err.Error()+" - "+http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			}
-		case "/bundle.tar.gz":
-			file, _ := os.Open("./testdata/bundle.tar.gz")
-			defer file.Close()
-			if _, err := io.Copy(w, file); err != nil {
-				http.Error(w, err.Error()+" - "+http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			}
-		default:
-			if _, err := io.WriteString(w, http.StatusText(http.StatusNotFound)); err != nil {
-				http.Error(w, err.Error()+" - "+http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			}
-			w.WriteHeader(404)
-		}
-	}))
+func startLocalServer() (*httptest.Server, error) {
+	server := httptest.NewUnstartedServer(http.FileServer(http.Dir("testdata")))
 
-	listener, err := net.Listen("tcp", LocalhostURL)
+	listener, err := net.Listen("tcp", localServerURL)
 	if err != nil {
 		return nil, errors.New("trouble starting local server")
 	}
@@ -146,24 +127,27 @@ func startServer() (*httptest.Server, error) {
 func TestKrewInstall_ManifestURL(t *testing.T) {
 	skipShort(t)
 
-	server, err := startServer()
+	server, err := startLocalServer()
 	if err != nil {
 		t.Fatalf("trouble starting local server")
 	}
 	defer server.Close()
 
+	fmt.Println("Started")
+	time.Sleep(2 * time.Second)
+
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
 	test.Krew("install",
-		"--manifest-url", LocalhostManifestURL).RunOrFail()
+		"--manifest-url", localManifestURL).RunOrFail()
 	test.AssertExecutableInPATH("kubectl-" + validPlugin)
 }
 
 func TestKrewInstall_ManifestURLAndArchive(t *testing.T) {
 	skipShort(t)
 
-	server, err := startServer()
+	server, err := startLocalServer()
 	if err != nil {
 		t.Fatalf("trouble starting local server")
 	}
@@ -173,7 +157,7 @@ func TestKrewInstall_ManifestURLAndArchive(t *testing.T) {
 	defer cleanup()
 
 	err = test.Krew("install",
-		"--manifest-url", LocalhostManifestURL,
+		"--manifest-url", localManifestURL,
 		"--archive", filepath.Join("testdata", fooPlugin+".tar.gz")).Run()
 	if err == nil {
 		t.Errorf("expected install to fail but was successful")
@@ -183,7 +167,7 @@ func TestKrewInstall_ManifestURLAndArchive(t *testing.T) {
 func TestKrewInstall_ManifestURLAndManifest(t *testing.T) {
 	skipShort(t)
 
-	server, err := startServer()
+	server, err := startLocalServer()
 	if err != nil {
 		t.Fatalf("trouble starting local server")
 	}
@@ -193,7 +177,7 @@ func TestKrewInstall_ManifestURLAndManifest(t *testing.T) {
 	defer cleanup()
 
 	err = test.Krew("install",
-		"--manifest-url", LocalhostManifestURL,
+		"--manifest-url", localManifestURL,
 		"--manifest", filepath.Join("testdata", fooPlugin+constants.ManifestExtension)).Run()
 	if err == nil {
 		t.Errorf("expected install to fail but was successful")

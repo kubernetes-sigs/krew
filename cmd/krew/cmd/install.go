@@ -102,26 +102,27 @@ Remarks:
 				install = append(install, plugin)
 			}
 
-			if *manifestURL != "" {
-				resp, err := internal.DownloadFile(*manifestURL)
-				if err != nil {
-					return errors.Wrapf(err, "Error downloading manifest from %q", *manifestURL)
+			var plugin index.Plugin
+			if *manifest != "" || *manifestURL != "" {
+				if *manifest != "" {
+					var err error
+					plugin, err = indexscanner.ReadPluginFile(*manifest)
+					if err != nil {
+						return errors.Wrap(err, "failed to load custom manifest file")
+					}
 				}
-				plugin, err := indexscanner.DecodePluginFile(resp)
-				if err != nil {
-					return errors.Wrap(err, "failed to load custom manifest file")
-				}
-				if err := validation.ValidatePlugin(plugin.Name, plugin); err != nil {
-					return errors.Wrap(err, "plugin manifest validation error")
-				}
-				install = append(install, plugin)
-			}
 
-			if *manifest != "" {
-				plugin, err := indexscanner.ReadPluginFile(*manifest)
-				if err != nil {
-					return errors.Wrap(err, "failed to load custom manifest file")
+				if *manifestURL != "" {
+					resp, err := internal.DownloadFile(*manifestURL)
+					if err != nil {
+						return errors.Wrapf(err, "Error downloading manifest from %q", *manifestURL)
+					}
+					plugin, err = indexscanner.DecodePluginFile(resp)
+					if err != nil {
+						return errors.Wrap(err, "failed to load custom manifest file")
+					}
 				}
+
 				if err := validation.ValidatePlugin(plugin.Name, plugin); err != nil {
 					return errors.Wrap(err, "plugin manifest validation error")
 				}

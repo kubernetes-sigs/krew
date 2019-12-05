@@ -39,8 +39,8 @@ const (
 	krewBinaryEnv        = "KREW_BINARY"
 	validPlugin          = "konfig"          // a plugin in central index with small size
 	validPlugin2         = "mtail"           // a plugin in central index with small size
-	LocalhostURL         = "127.0.0.1:60564" // make sure this port is open. incase of editing port number, make sure to update the URL in testdata/konfig_localhost.yaml
-	LocalhostManifestURL = "http://" + LocalhostURL + "/konfig_localhost.yaml"
+	localServerURL       = "127.0.0.1:45076" // change port number incase of bind error
+	localManifestURL = "http://" + localServerURL + "/konfig.yaml"
 )
 
 var (
