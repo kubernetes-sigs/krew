@@ -48,7 +48,8 @@ func Upgrade(p environment.Paths, plugin index.Plugin) error {
 		return errors.Wrap(err, "failed trying to find a matching platform in plugin spec")
 	}
 	if !ok {
-		return errors.Wrapf(err, "plugin %q does not offer installation for this platform", plugin.Name)
+		os, arch := osArch()
+		return errors.Errorf("plugin %q does not offer installation for this platform (%s/%s)", plugin.Name, os, arch)
 	}
 
 	newVersion := plugin.Spec.Version

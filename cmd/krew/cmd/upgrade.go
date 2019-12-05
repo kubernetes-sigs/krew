@@ -41,9 +41,11 @@ To only upgrade single plugins provide them as arguments:
 kubectl krew upgrade foo bar"`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var ignoreUpgraded bool
+			var skipErrors bool
+
 			var pluginNames []string
-			// Upgrade all plugins.
 			if len(args) == 0 {
+				// Upgrade all plugins.
 				installed, err := installation.ListInstalledPlugins(paths.InstallReceiptsPath())
 				if err != nil {
 					return errors.Wrap(err, "failed to find all installed versions")
@@ -52,10 +54,13 @@ kubectl krew upgrade foo bar"`,
 					pluginNames = append(pluginNames, name)
 				}
 				ignoreUpgraded = true
+				skipErrors = true
 			} else {
+				// Upgrade certain plugins
 				pluginNames = args
 			}
 
+			var nErrors int
 			for _, name := range pluginNames {
 				plugin, err := indexscanner.LoadPluginFileFromFS(paths.IndexPluginsPath(), name)
 				if err != nil {
@@ -69,10 +74,18 @@ kubectl krew upgrade foo bar"`,
 					continue
 				}
 				if err != nil {
+					nErrors++
+					if skipErrors {
+						fmt.Fprintf(os.Stderr, "WARNING: failed to upgrade plugin %q, skipping (error: %v)\n", plugin.Name, err)
+						continue
+					}
 					return errors.Wrapf(err, "failed to upgrade plugin %q", plugin.Name)
 				}
 				fmt.Fprintf(os.Stderr, "Upgraded plugin: %s\n", plugin.Name)
 				internal.PrintSecurityNotice()
+			}
+			if nErrors > 0 {
+				fmt.Fprintf(os.Stderr, "WARNING: Some plugins failed to upgrade, check logs above.\n")
 			}
 			return nil
 		},
