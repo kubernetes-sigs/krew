@@ -16,14 +16,12 @@ package integrationtest
 
 import (
 	"errors"
-	"fmt"
 	"net"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
 	"strings"
 	"testing"
-	"time"
 
 	"sigs.k8s.io/krew/pkg/constants"
 )
@@ -132,9 +130,6 @@ func TestKrewInstall_ManifestURL(t *testing.T) {
 		t.Fatalf("trouble starting local server")
 	}
 	defer server.Close()
-
-	fmt.Println("Started")
-	time.Sleep(2 * time.Second)
 
 	test, cleanup := NewTest(t)
 	defer cleanup()
