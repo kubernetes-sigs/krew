@@ -17,14 +17,13 @@ package integrationtest
 import (
 	"errors"
 	"fmt"
+	"net"
+	"net/http"
+	"net/http/httptest"
 	"path/filepath"
 	"strings"
 	"testing"
 	"time"
-
-	"net"
-	"net/http"
-	"net/http/httptest"
 
 	"sigs.k8s.io/krew/pkg/constants"
 )
@@ -35,6 +34,7 @@ const (
 
 func TestKrewInstall(t *testing.T) {
 	skipShort(t)
+
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
