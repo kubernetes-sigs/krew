@@ -11,7 +11,6 @@ before_install:
 script:
 - hack/verify-code-patterns.sh
 - hack/verify-boilerplate.sh
-- hack/verify-gofmt.sh
 - hack/run-lint.sh
 - go test -short -coverprofile=coverage.txt -covermode=atomic ./...
 - hack/make-all.sh
