@@ -133,7 +133,7 @@ func TestKrewInstall_ManifestURL(t *testing.T) {
 	defer cleanup()
 
 	test.Krew("install",
-		"--manifest-url", baseURL+manifestFileURI).RunOrFail()
+		"--manifest-url", baseURL+manifestURI).RunOrFail()
 	test.AssertExecutableInPATH("kubectl-" + validPlugin)
 }
 
@@ -147,7 +147,7 @@ func TestKrewInstall_ManifestURLAndArchive(t *testing.T) {
 	defer cleanup()
 
 	err := test.Krew("install",
-		"--manifest-url", baseURL+manifestFileURI,
+		"--manifest-url", baseURL+manifestURI,
 		"--archive", filepath.Join("testdata", fooPlugin+".tar.gz")).Run()
 	if err == nil {
 		t.Errorf("expected install to fail but was successful")
@@ -164,8 +164,56 @@ func TestKrewInstall_ManifestURLAndManifest(t *testing.T) {
 	defer cleanup()
 
 	err := test.Krew("install",
-		"--manifest-url", baseURL+manifestFileURI,
+		"--manifest-url", baseURL+manifestURI,
 		"--manifest", filepath.Join("testdata", fooPlugin+constants.ManifestExtension)).Run()
+	if err == nil {
+		t.Errorf("expected install to fail but was successful")
+	}
+}
+
+func TestKrewInstall_EmptyManifestURL(t *testing.T) {
+	skipShort(t)
+
+	server, baseURL := startLocalServer(t)
+	defer server.Close()
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	err := test.Krew("install",
+		"--manifest-url", baseURL+emtpyManifestURI).Run()
+	if err == nil {
+		t.Errorf("expected install to fail but was successful")
+	}
+}
+
+func TestKrewInstall_InvalidManifestURL(t *testing.T) {
+	skipShort(t)
+
+	server, baseURL := startLocalServer(t)
+	defer server.Close()
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	err := test.Krew("install",
+		"--manifest-url", baseURL+invalidManifestURI).Run()
+	if err == nil {
+		t.Errorf("expected install to fail but was successful")
+	}
+}
+
+func TestKrewInstall_NotExistManifestURL(t *testing.T) {
+	skipShort(t)
+
+	server, baseURL := startLocalServer(t)
+	defer server.Close()
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	err := test.Krew("install",
+		"--manifest-url", baseURL+notExistManifestURI).Run()
 	if err == nil {
 		t.Errorf("expected install to fail but was successful")
 	}
