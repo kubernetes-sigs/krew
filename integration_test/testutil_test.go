@@ -43,6 +43,7 @@ const (
 	emtpyManifestURI     = "/empty.yaml"
 	invalidManifestURI   = "/invalid.yaml"
 	notExistManifestURI  = "/doesnotexist.yaml"
+	archiveManifestURI   = "/foo.yaml"
 )
 
 var (

@@ -62,10 +62,6 @@ Remarks:
 			var pluginNames = make([]string, len(args))
 			copy(pluginNames, args)
 
-			if *archiveFileOverride != "" && *manifestURL != "" {
-				return errors.New("--archive cannot be specified with --manifest-url")
-			}
-
 			if *manifest != "" && *manifestURL != "" {
 				return errors.New("--manifest cannot be specified with --manifest-url")
 			}
@@ -89,8 +85,8 @@ Remarks:
 				return errors.New("must specify either specify either plugin names (via positional arguments or STDIN), or --manifest; not both")
 			}
 
-			if *archiveFileOverride != "" && *manifest == "" {
-				return errors.New("--archive can be specified only with --manifest")
+			if *archiveFileOverride != "" && *manifest == "" && *manifestURL == "" {
+				return errors.New("--archive can be specified only with --manifest or --manifest-url")
 			}
 
 			var install []index.Plugin

@@ -146,12 +146,11 @@ func TestKrewInstall_ManifestURLAndArchive(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	err := test.Krew("install",
-		"--manifest-url", baseURL+manifestURI,
-		"--archive", filepath.Join("testdata", fooPlugin+".tar.gz")).Run()
-	if err == nil {
-		t.Errorf("expected install to fail but was successful")
-	}
+	test.Krew("install",
+		"--manifest-url", baseURL+archiveManifestURI,
+		"--archive", filepath.Join("testdata", fooPlugin+".tar.gz")).
+		RunOrFail()
+	test.AssertExecutableInPATH("kubectl-" + fooPlugin)
 }
 
 func TestKrewInstall_ManifestURLAndManifest(t *testing.T) {
