@@ -112,7 +112,7 @@ When you don't need a plugin anymore you can uninstall it with:
 
 ## Uninstalling Krew
 
-Installing `krew` is as easy as deleting its installation directory.
+Uninstalling `krew` is as easy as deleting its installation directory.
 
 To find `krew`'s installation directory, run:
 
