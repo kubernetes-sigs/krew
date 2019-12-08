@@ -17,7 +17,6 @@ package internal
 import (
 	"net/http"
 
-	"github.com/pkg/errors"
 	"sigs.k8s.io/krew/pkg/index"
 	"sigs.k8s.io/krew/pkg/index/indexscanner"
 )
@@ -26,13 +25,13 @@ import (
 func readRemotePluginManifest(url string) (index.Plugin, error) {
 	resp, err := http.Get(url)
 	if err != nil {
-		return index.Plugin{}, errors.Wrapf(err, "Error downloading manifest from %q", url)
+		return index.Plugin{}, err
 	}
 	defer resp.Body.Close()
 
 	plugin, err := indexscanner.DecodePluginFile(resp.Body)
 	if err != nil {
-		return index.Plugin{}, errors.Wrapf(err, "Error decoding manifest from %q", url)
+		return index.Plugin{}, err
 	}
 
 	return plugin, nil
@@ -46,14 +45,14 @@ func GetPlugin(manifest string, manifestURL string) (index.Plugin, error) {
 	if manifest != "" {
 		plugin, err = indexscanner.ReadPluginFile(manifest)
 		if err != nil {
-			return index.Plugin{}, errors.Wrap(err, "failed to load custom manifest file")
+			return index.Plugin{}, err
 		}
 	}
 
 	if manifestURL != "" {
 		plugin, err = readRemotePluginManifest(manifestURL)
 		if err != nil {
-			return index.Plugin{}, errors.Wrap(err, "failed to load custom manifest file")
+			return index.Plugin{}, err
 		}
 	}
 

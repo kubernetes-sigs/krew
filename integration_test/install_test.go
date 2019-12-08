@@ -109,28 +109,24 @@ func TestKrewInstall_Manifest(t *testing.T) {
 	test.AssertExecutableInPATH("kubectl-" + validPlugin)
 }
 
-func startLocalServer(t *testing.T) (*httptest.Server, string, error) {
+func startLocalServer(t *testing.T) (*httptest.Server, string) {
 	t.Helper()
 
 	server := httptest.NewUnstartedServer(http.FileServer(http.Dir("testdata")))
 
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
-		// return nil, "", errors.New("trouble starting local server")
 		t.Fatalf("trouble starting local server")
 	}
 	server.Listener = listener
 	server.Start()
-	return server, server.URL, nil
+	return server, server.URL
 }
 
 func TestKrewInstall_ManifestURL(t *testing.T) {
 	skipShort(t)
 
-	server, baseURL, err := startLocalServer(t)
-	if err != nil {
-		t.Fatalf("trouble starting local server")
-	}
+	server, baseURL := startLocalServer(t)
 	defer server.Close()
 
 	test, cleanup := NewTest(t)
@@ -144,16 +140,13 @@ func TestKrewInstall_ManifestURL(t *testing.T) {
 func TestKrewInstall_ManifestURLAndArchive(t *testing.T) {
 	skipShort(t)
 
-	server, baseURL, err := startLocalServer(t)
-	if err != nil {
-		t.Fatalf("trouble starting local server")
-	}
+	server, baseURL := startLocalServer(t)
 	defer server.Close()
 
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	err = test.Krew("install",
+	err := test.Krew("install",
 		"--manifest-url", baseURL+manifestFileURI,
 		"--archive", filepath.Join("testdata", fooPlugin+".tar.gz")).Run()
 	if err == nil {
@@ -164,16 +157,13 @@ func TestKrewInstall_ManifestURLAndArchive(t *testing.T) {
 func TestKrewInstall_ManifestURLAndManifest(t *testing.T) {
 	skipShort(t)
 
-	server, baseURL, err := startLocalServer(t)
-	if err != nil {
-		t.Fatalf("trouble starting local server")
-	}
+	server, baseURL := startLocalServer(t)
 	defer server.Close()
 
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	err = test.Krew("install",
+	err := test.Krew("install",
 		"--manifest-url", baseURL+manifestFileURI,
 		"--manifest", filepath.Join("testdata", fooPlugin+constants.ManifestExtension)).Run()
 	if err == nil {
