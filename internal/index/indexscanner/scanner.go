@@ -60,7 +60,7 @@ func LoadPluginListFromFS(indexDir string) ([]index.Plugin, error) {
 	list := make([]index.Plugin, 0, len(files))
 	for _, file := range files {
 		pluginName := strings.TrimSuffix(file, filepath.Ext(file))
-		p, err := LoadPluginFileFromFS(indexDir, pluginName)
+		p, err := LoadPluginByName(indexDir, pluginName)
 		if err != nil {
 			// Index loading shouldn't fail because of one plugin.
 			// Show error instead.
@@ -72,38 +72,37 @@ func LoadPluginListFromFS(indexDir string) ([]index.Plugin, error) {
 	return list, nil
 }
 
-// LoadPluginFileFromFS loads a plugins index file by its name. When plugin
+// LoadPluginByName loads a plugins index file by its name. When plugin
 // file not found, it returns an error that can be checked with os.IsNotExist.
-func LoadPluginFileFromFS(pluginsDir, pluginName string) (index.Plugin, error) {
+func LoadPluginByName(pluginsDir, pluginName string) (index.Plugin, error) {
 	if !validation.IsSafePluginName(pluginName) {
 		return index.Plugin{}, errors.Errorf("plugin name %q not allowed", pluginName)
 	}
 
 	klog.V(4).Infof("Reading plugin %q", pluginName)
-	pluginsDir, err := filepath.EvalSymlinks(pluginsDir)
-	if err != nil {
-		return index.Plugin{}, err
-	}
-	p, err := ReadPluginFile(filepath.Join(pluginsDir, pluginName+constants.ManifestExtension))
-	if os.IsNotExist(err) {
-		return index.Plugin{}, err
-	} else if err != nil {
-		return index.Plugin{}, errors.Wrap(err, "failed to read the plugin manifest")
-	}
-	return p, validation.ValidatePlugin(pluginName, p)
+	return ReadPluginFromFile(filepath.Join(pluginsDir, pluginName+constants.ManifestExtension))
 }
 
-// ReadPluginFile loads a file from the FS. When plugin file not found, it
+// ReadPluginFromFile loads a file from the FS. When plugin file not found, it
 // returns an error that can be checked with os.IsNotExist.
-func ReadPluginFile(indexFilePath string) (index.Plugin, error) {
-	f, err := os.Open(indexFilePath)
+func ReadPluginFromFile(path string) (index.Plugin, error) {
+	f, err := os.Open(path)
 	if os.IsNotExist(err) {
+		// TODO(ahmetb): we should use go1.13+ errors.Is construct at call sites to evaluate if an error is os.IsNotExist
 		return index.Plugin{}, err
 	} else if err != nil {
 		return index.Plugin{}, errors.Wrap(err, "failed to open index file")
 	}
+	return ReadPlugin(f)
+}
+
+func ReadPlugin(f io.ReadCloser) (index.Plugin, error) {
 	defer f.Close()
-	return DecodePluginFile(f)
+	p, err := DecodePluginFile(f)
+	if err != nil {
+		return p, errors.Wrap(err, "failed to decode plugin manifest")
+	}
+	return p, errors.Wrap(validation.ValidatePlugin(p.Name, p), "plugin manifest validation error")
 }
 
 // DecodePluginFile tries to decodes a plugin manifest from r.

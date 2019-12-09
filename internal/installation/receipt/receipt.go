@@ -39,5 +39,5 @@ func Store(plugin index.Plugin, dest string) error {
 // Load reads the plugin receipt at the specified destination.
 // If not found, it returns os.IsNotExist error.
 func Load(path string) (index.Plugin, error) {
-	return indexscanner.ReadPluginFile(path)
+	return indexscanner.ReadPluginFromFile(path)
 }

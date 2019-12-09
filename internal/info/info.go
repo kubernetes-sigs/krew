@@ -28,7 +28,7 @@ import (
 // LoadManifestFromReceiptOrIndex tries to load a plugin manifest from the
 // receipts directory or from the index directory if the former fails.
 func LoadManifestFromReceiptOrIndex(p environment.Paths, name string) (index.Plugin, error) {
-	receipt, err := indexscanner.LoadPluginFileFromFS(p.InstallReceiptsPath(), name)
+	receipt, err := indexscanner.LoadPluginByName(p.InstallReceiptsPath(), name)
 
 	if err == nil {
 		klog.V(3).Infof("Found plugin manifest for %q in the receipts dir", name)
@@ -40,5 +40,5 @@ func LoadManifestFromReceiptOrIndex(p environment.Paths, name string) (index.Plu
 	}
 
 	klog.V(3).Infof("Plugin manifest for %q not found in the receipts dir", name)
-	return indexscanner.LoadPluginFileFromFS(p.IndexPluginsPath(), name)
+	return indexscanner.LoadPluginByName(p.IndexPluginsPath(), name)
 }
