@@ -64,6 +64,9 @@ kubectl krew upgrade foo bar"`,
 			for _, name := range pluginNames {
 				plugin, err := indexscanner.LoadPluginFileFromFS(paths.IndexPluginsPath(), name)
 				if err != nil {
+					if os.IsNotExist(err) {
+						return errors.Errorf("plugin %q does not exist in the plugin index", name)
+					}
 					return errors.Wrapf(err, "failed to load the plugin manifest for plugin %s", name)
 				}
 

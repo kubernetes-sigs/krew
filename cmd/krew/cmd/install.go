@@ -89,6 +89,9 @@ Remarks:
 			for _, name := range pluginNames {
 				plugin, err := indexscanner.LoadPluginFileFromFS(paths.IndexPluginsPath(), name)
 				if err != nil {
+					if os.IsNotExist(err) {
+						return errors.Errorf("plugin %q does not exist in the plugin index", name)
+					}
 					return errors.Wrapf(err, "failed to load plugin %q from the index", name)
 				}
 				install = append(install, plugin)
