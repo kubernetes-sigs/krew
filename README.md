@@ -53,8 +53,9 @@ Check out the list of [kubectl plugins available on krew][list] or just run
       set -x; cd "$(mktemp -d)" &&
       curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/download/v0.3.3/krew.{tar.gz,yaml}" &&
       tar zxvf krew.tar.gz &&
-      ./krew-"$(uname | tr '[:upper:]' '[:lower:]')_amd64" install \
-        --manifest=krew.yaml --archive=krew.tar.gz
+      KREW=./krew-"$(uname | tr '[:upper:]' '[:lower:]')_amd64" &&
+      "$KREW" install --manifest=krew.yaml --archive=krew.tar.gz &&
+      "$KREW" update
     )
     ```
 3. Add `$HOME/.krew/bin` directory to your PATH environment variable. To do
