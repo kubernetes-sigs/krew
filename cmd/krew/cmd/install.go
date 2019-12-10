@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"bufio"
+	errs "errors"
 	"fmt"
 	"os"
 
@@ -89,6 +90,9 @@ Remarks:
 			for _, name := range pluginNames {
 				plugin, err := indexscanner.LoadPluginFileFromFS(paths.IndexPluginsPath(), name)
 				if err != nil {
+					if errs.Is(err, os.ErrNotExist) {
+						return errors.New(fmt.Sprintf("plugin \"%s\" does not exist in the plugin index", name))
+					}
 					return errors.Wrapf(err, "failed to load plugin %q from the index", name)
 				}
 				install = append(install, plugin)
