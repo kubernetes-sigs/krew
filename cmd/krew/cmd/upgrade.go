@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	errs "errors"
 	"fmt"
 	"os"
 
@@ -64,6 +65,9 @@ kubectl krew upgrade foo bar"`,
 			for _, name := range pluginNames {
 				plugin, err := indexscanner.LoadPluginFileFromFS(paths.IndexPluginsPath(), name)
 				if err != nil {
+					if errs.Is(err, os.ErrNotExist) {
+						return errors.New(fmt.Sprintf("plugin \"%s\" does not exist in the plugin index", name))
+					}
 					return errors.Wrapf(err, "failed to load the plugin manifest for plugin %s", name)
 				}
 
