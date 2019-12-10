@@ -85,22 +85,12 @@ Remarks:
 				return errors.New("--archive can be specified only with --manifest")
 			}
 
-			installed, err := installation.ListInstalledPlugins(paths.InstallReceiptsPath())
-			if err != nil {
-				return errors.Wrap(err, "failed to find all installed versions")
-			}
-			skipped := false
 			var install []index.Plugin
 			for _, name := range pluginNames {
-				if _, ok := installed[name]; ok {
-					fmt.Fprintf(os.Stderr, "plugin \"%s\" is already installed\n", name)
-					skipped = true
-					continue
-				}
 				plugin, err := indexscanner.LoadPluginFileFromFS(paths.IndexPluginsPath(), name)
 				if err != nil {
 					if os.IsNotExist(err) {
-						return fmt.Errorf("plugin \"%s\" does not exist in the plugin index", name)
+						return errors.New(fmt.Sprintf("plugin %q does not exist in the plugin index", name))
 					}
 					return errors.Wrapf(err, "failed to load plugin %q from the index", name)
 				}
@@ -119,9 +109,6 @@ Remarks:
 			}
 
 			if len(install) == 0 {
-				if skipped {
-					return nil
-				}
 				return cmd.Help()
 			}
 
