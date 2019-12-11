@@ -70,7 +70,7 @@ func validateManifestFile(path string) error {
 	filename := filepath.Base(path)
 	manifestExtension := filepath.Ext(filename)
 	if manifestExtension != constants.ManifestExtension {
-		return fmt.Errorf("expected manifest extension %q but found %q", constants.ManifestExtension, manifestExtension)
+		return errors.Errorf("expected manifest extension %q but found %q", constants.ManifestExtension, manifestExtension)
 	}
 	pluginNameFromFileName := strings.TrimSuffix(filename, manifestExtension)
 	klog.V(4).Infof("inferred plugin name as %s", pluginNameFromFileName)

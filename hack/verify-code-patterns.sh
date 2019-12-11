@@ -44,6 +44,14 @@ if [[ -n "$out" ]]; then
   exit 1
 fi
 
+# Do not use fmt.Errorf as it does not start a stacktrace at error site
+out="$(grep --include '*.go' -EIrn 'fmt\.Errorf?' || true)"
+if [[ -n "$out" ]]; then
+  echo >&2 "You used fmt.Errorf; use pkg/errors.Errorf instead to preserve stack traces:"
+  echo >&2 "$out"
+  exit 1
+fi
+
 # Do not initialize index.{Plugin,Platform} structs in test code.
 out="$(grep --include '*_test.go' --exclude-dir 'vendor/' -EIrn '[^]](index\.)(Plugin|Platform){' || true)"
 if [[ -n "$out" ]]; then

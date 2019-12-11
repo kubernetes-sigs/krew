@@ -94,7 +94,7 @@ func preRun(cmd *cobra.Command, _ []string) error {
 	}
 	if !isMigrated && cmd.Use != "receipts-upgrade" {
 		fmt.Fprintln(os.Stderr, "You need to perform a migration to continue using krew.\nPlease run `kubectl krew system receipts-upgrade`")
-		return fmt.Errorf("krew home outdated")
+		return errors.New("krew home outdated")
 	}
 
 	if installation.IsWindows() {
