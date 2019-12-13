@@ -69,11 +69,12 @@ To package a plugin via krew, you need to:
 2. Write a [plugin manifest file](#writing-a-plugin-manifest).
 3. Test installation locally with the archive and the manifest file.
 
-To make a plugin available to everyone via krew, you need to:
+To publish a plugin in `krew-index` to make it available via krew, you need to:
 
+1. Make the plugin source code publicly available.
 1. Make the archive file (`.zip` or `.tar.gz`) **publicly downloadable** on a
    URL (you can host it yourself or use GitHub releases feature).
-2. Submit the plugin manifest file to the [krew index][index] repository.
+1. Submit the plugin manifest file to the [krew index][index] repository.
 
 Plugin packages need to be available to download from the public Internet.
 A service like
