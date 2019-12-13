@@ -186,7 +186,7 @@ func Uninstall(p environment.Paths, name string) error {
 	return errors.Wrapf(err, "could not remove plugin receipt %q", pluginReceiptPath)
 }
 
-func createOrUpdateLink(binDir string, binary string, plugin string) error {
+func createOrUpdateLink(binDir, binary, plugin string) error {
 	dst := filepath.Join(binDir, pluginNameToBin(plugin, IsWindows()))
 
 	if err := removeLink(dst); err != nil {
@@ -238,7 +238,7 @@ func IsWindows() bool {
 // pluginNameToBin creates the name of the symlink file for the plugin name.
 // It converts dashes to underscores.
 func pluginNameToBin(name string, isWindows bool) string {
-	name = strings.Replace(name, "-", "_", -1)
+	name = strings.ReplaceAll(name, "-", "_")
 	name = "kubectl-" + name
 	if isWindows {
 		name += ".exe"
@@ -247,7 +247,7 @@ func pluginNameToBin(name string, isWindows bool) string {
 }
 
 // CleanupStaleKrewInstallations removes the versions that aren't the current version.
-func CleanupStaleKrewInstallations(dir string, currentVersion string) error {
+func CleanupStaleKrewInstallations(dir, currentVersion string) error {
 	ls, err := ioutil.ReadDir(dir)
 	if err != nil {
 		return errors.Wrap(err, "failed to read krew store directory")

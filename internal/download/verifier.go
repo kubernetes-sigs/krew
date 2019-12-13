@@ -39,8 +39,8 @@ type sha256Verifier struct {
 }
 
 // NewSha256Verifier creates a Verifier that tests against the given hash.
-func NewSha256Verifier(hash string) Verifier {
-	raw, _ := hex.DecodeString(hash)
+func NewSha256Verifier(hashed string) Verifier {
+	raw, _ := hex.DecodeString(hashed)
 	return sha256Verifier{
 		Hash:       sha256.New(),
 		wantedHash: raw,

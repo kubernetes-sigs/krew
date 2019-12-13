@@ -80,16 +80,16 @@ func extractZIP(targetDir string, read io.ReaderAt, size int64) error {
 			src.Close()
 			return errors.Wrap(err, "can't create file in zip destination dir")
 		}
-		close := func() {
+		closeAll := func() {
 			src.Close()
 			dst.Close()
 		}
 
 		if _, err := io.Copy(dst, src); err != nil {
-			close()
+			closeAll()
 			return errors.Wrap(err, "can't copy content to zip destination file")
 		}
-		close()
+		closeAll()
 	}
 
 	return nil
@@ -142,12 +142,12 @@ func extractTARGZ(targetDir string, at io.ReaderAt, size int64) error {
 			if err != nil {
 				return errors.Wrapf(err, "failed to create file %q", path)
 			}
-			close := func() { f.Close() }
+
 			if _, err := io.Copy(f, tr); err != nil {
-				close()
+				f.Close()
 				return errors.Wrapf(err, "failed to copy %q from tar into file", hdr.Name)
 			}
-			close()
+			f.Close()
 		default:
 			return errors.Errorf("unable to handle file type %d for %q in tar", hdr.Typeflag, hdr.Name)
 		}

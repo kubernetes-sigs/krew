@@ -27,12 +27,12 @@ import (
 
 func Test_osArch(t *testing.T) {
 	inOS, inArch := runtime.GOOS, runtime.GOARCH
-	outOS, outArch := osArch()
-	if inOS != outOS {
-		t.Errorf("returned OS=%q; expected=%q", outOS, inOS)
+	out := osArch()
+	if inOS != out.os {
+		t.Errorf("returned OS=%q; expected=%q", out.os, inOS)
 	}
-	if inArch != outArch {
-		t.Errorf("returned Arch=%q; expected=%q", outArch, inArch)
+	if inArch != out.arch {
+		t.Errorf("returned Arch=%q; expected=%q", out.arch, inArch)
 	}
 }
 
@@ -45,22 +45,22 @@ func Test_osArch_override(t *testing.T) {
 		os.Unsetenv("KREW_OS")
 	}()
 
-	outOS, outArch := osArch()
-	if customOS != outOS {
-		t.Errorf("returned OS=%q; expected=%q", outOS, customOS)
+	out := osArch()
+	if customOS != out.os {
+		t.Errorf("returned OS=%q; expected=%q", out.os, customOS)
 	}
-	if customArch != outArch {
-		t.Errorf("returned Arch=%q; expected=%q", outArch, customArch)
+	if customArch != out.arch {
+		t.Errorf("returned Arch=%q; expected=%q", out.arch, customArch)
 	}
 }
 
 func Test_matchPlatform(t *testing.T) {
-	const targetOS, targetArch = "foo", "amd64"
-	matchingPlatform := testutil.NewPlatform().WithOSArch(targetOS, targetArch).V()
-	differentOS := testutil.NewPlatform().WithOSArch("other", targetArch).V()
-	differentArch := testutil.NewPlatform().WithOSArch(targetOS, "other").V()
+	target := goOSArch{os: "foo", arch: "amd64"}
+	matchingPlatform := testutil.NewPlatform().WithOSArch(target.os, target.arch).V()
+	differentOS := testutil.NewPlatform().WithOSArch("other", target.arch).V()
+	differentArch := testutil.NewPlatform().WithOSArch(target.os, "other").V()
 
-	p, ok, err := matchPlatform([]index.Platform{differentOS, differentArch, matchingPlatform}, targetOS, targetArch)
+	p, ok, err := matchPlatform([]index.Platform{differentOS, differentArch, matchingPlatform}, target)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -71,7 +71,7 @@ func Test_matchPlatform(t *testing.T) {
 		t.Fatalf("got a different object from the matching platform:\n%s", diff)
 	}
 
-	_, ok, err = matchPlatform([]index.Platform{differentOS, differentArch}, targetOS, targetArch)
+	_, ok, err = matchPlatform([]index.Platform{differentOS, differentArch}, target)
 	if err != nil {
 		t.Fatal(err)
 	}
