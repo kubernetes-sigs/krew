@@ -31,14 +31,14 @@ import (
 // matches the os/arch of the current machine (can be overridden via KREW_OS
 // and/or KREW_ARCH).
 func GetMatchingPlatform(platforms []index.Platform) (index.Platform, bool, error) {
-	return matchPlatform(platforms, osArch())
+	return matchPlatform(platforms, OSArch())
 }
 
 // matchPlatform returns the first matching platform to given os/arch.
-func matchPlatform(platforms []index.Platform, env goOSArch) (index.Platform, bool, error) {
+func matchPlatform(platforms []index.Platform, env GoOSArch) (index.Platform, bool, error) {
 	envLabels := labels.Set{
-		"os":   env.os,
-		"arch": env.arch,
+		"os":   env.OS,
+		"arch": env.Arch,
 	}
 	klog.V(2).Infof("Matching platform for labels(%v)", envLabels)
 
@@ -55,21 +55,22 @@ func matchPlatform(platforms []index.Platform, env goOSArch) (index.Platform, bo
 	return index.Platform{}, false, nil
 }
 
-type goOSArch struct {
-	os, arch string
+// GoOSArch is wrapper around operating system and architecture
+type GoOSArch struct {
+	OS, Arch string
 }
 
 // String converts environment into a string
-func (env goOSArch) String() string {
-	return fmt.Sprintf("(%s/%s)", env.os, env.arch)
+func (env GoOSArch) String() string {
+	return fmt.Sprintf("%s/%s", env.OS, env.Arch)
 }
 
-// osArch returns the OS/arch combination to be used on the current system. It
+// OSArch returns the OS/arch combination to be used on the current system. It
 // can be overridden by setting KREW_OS and/or KREW_ARCH environment variables.
-func osArch() goOSArch {
-	return goOSArch{
-		os:   getEnvOrDefault("KREW_OS", runtime.GOOS),
-		arch: getEnvOrDefault("KREW_ARCH", runtime.GOARCH),
+func OSArch() GoOSArch {
+	return GoOSArch{
+		OS:   getEnvOrDefault("KREW_OS", runtime.GOOS),
+		Arch: getEnvOrDefault("KREW_ARCH", runtime.GOARCH),
 	}
 }
 

@@ -1,5 +1,16 @@
 # all available settings of specific linters
 linters-settings:
+  gocritic:
+    enabled-tags:
+      - performance
+      - diagnostic
+      - style
+      - experimental
+      - opinionated
+    disabled-checks:
+      - hugeParam
+      - rangeValCopy
+      - unnamedResult
   gofmt:
     simplify: true
   goimports:

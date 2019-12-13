@@ -55,7 +55,7 @@ tool._
 )
 
 var (
-	githubRepoPattern = regexp.MustCompile(`.*github.com/([^/]+/[^/#]+)`)
+	githubRepoPattern = regexp.MustCompile(`.*github\.com/([^/]+/[^/#]+)`)
 )
 
 func main() {

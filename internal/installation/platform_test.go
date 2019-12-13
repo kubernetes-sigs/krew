@@ -27,12 +27,12 @@ import (
 
 func Test_osArch(t *testing.T) {
 	inOS, inArch := runtime.GOOS, runtime.GOARCH
-	out := osArch()
-	if inOS != out.os {
-		t.Errorf("returned OS=%q; expected=%q", out.os, inOS)
+	out := OSArch()
+	if inOS != out.OS {
+		t.Errorf("returned OS=%q; expected=%q", out.OS, inOS)
 	}
-	if inArch != out.arch {
-		t.Errorf("returned Arch=%q; expected=%q", out.arch, inArch)
+	if inArch != out.Arch {
+		t.Errorf("returned Arch=%q; expected=%q", out.Arch, inArch)
 	}
 }
 
@@ -45,20 +45,20 @@ func Test_osArch_override(t *testing.T) {
 		os.Unsetenv("KREW_OS")
 	}()
 
-	out := osArch()
-	if customOS != out.os {
-		t.Errorf("returned OS=%q; expected=%q", out.os, customOS)
+	out := OSArch()
+	if customOS != out.OS {
+		t.Errorf("returned OS=%q; expected=%q", out.OS, customOS)
 	}
-	if customArch != out.arch {
-		t.Errorf("returned Arch=%q; expected=%q", out.arch, customArch)
+	if customArch != out.Arch {
+		t.Errorf("returned Arch=%q; expected=%q", out.Arch, customArch)
 	}
 }
 
 func Test_matchPlatform(t *testing.T) {
-	target := goOSArch{os: "foo", arch: "amd64"}
-	matchingPlatform := testutil.NewPlatform().WithOSArch(target.os, target.arch).V()
-	differentOS := testutil.NewPlatform().WithOSArch("other", target.arch).V()
-	differentArch := testutil.NewPlatform().WithOSArch(target.os, "other").V()
+	target := GoOSArch{OS: "foo", Arch: "amd64"}
+	matchingPlatform := testutil.NewPlatform().WithOSArch(target.OS, target.Arch).V()
+	differentOS := testutil.NewPlatform().WithOSArch("other", target.Arch).V()
+	differentArch := testutil.NewPlatform().WithOSArch(target.OS, "other").V()
 
 	p, ok, err := matchPlatform([]index.Platform{differentOS, differentArch, matchingPlatform}, target)
 	if err != nil {
