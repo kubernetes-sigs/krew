@@ -26,31 +26,24 @@ import (
 )
 
 func Test_osArch(t *testing.T) {
-	inOS, inArch := runtime.GOOS, runtime.GOARCH
-	out := OSArch()
-	if inOS != out.OS {
-		t.Errorf("returned OS=%q; expected=%q", out.OS, inOS)
-	}
-	if inArch != out.Arch {
-		t.Errorf("returned Arch=%q; expected=%q", out.Arch, inArch)
+	in := GoOSArch{OS: runtime.GOOS, Arch: runtime.GOARCH}
+
+	if diff := cmp.Diff(in, OSArch()); diff != "" {
+		t.Errorf("os/arch got a different result:\n%s", diff)
 	}
 }
 
 func Test_osArch_override(t *testing.T) {
-	customOS, customArch := "dragons", "metav1"
-	os.Setenv("KREW_OS", customOS)
-	os.Setenv("KREW_ARCH", customArch)
+	customGoOSArch := GoOSArch{OS: "dragons", Arch: "metav1"}
+	os.Setenv("KREW_OS", customGoOSArch.OS)
+	os.Setenv("KREW_ARCH", customGoOSArch.Arch)
 	defer func() {
 		os.Unsetenv("KREW_ARCH")
 		os.Unsetenv("KREW_OS")
 	}()
 
-	out := OSArch()
-	if customOS != out.OS {
-		t.Errorf("returned OS=%q; expected=%q", out.OS, customOS)
-	}
-	if customArch != out.Arch {
-		t.Errorf("returned Arch=%q; expected=%q", out.Arch, customArch)
+	if diff := cmp.Diff(customGoOSArch, OSArch()); diff != "" {
+		t.Errorf("os/arch override got a different result:\n%s", diff)
 	}
 }
 
