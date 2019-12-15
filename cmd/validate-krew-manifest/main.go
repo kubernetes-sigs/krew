@@ -163,7 +163,7 @@ func installPlatformSpec(manifestFile string, p index.Platform) error {
 }
 
 // findAnyMatchingPlatform finds an <os,arch> pair matches to given selector
-func findAnyMatchingPlatform(selector *metav1.LabelSelector) installation.GoOSArch {
+func findAnyMatchingPlatform(selector *metav1.LabelSelector) installation.OSArchPair {
 	for _, p := range allPlatforms() {
 		if selectorMatchesOSArch(selector, p) {
 			klog.V(4).Infof("%s MATCHED <%s>", selector, p)
@@ -171,10 +171,10 @@ func findAnyMatchingPlatform(selector *metav1.LabelSelector) installation.GoOSAr
 		}
 		klog.V(4).Infof("%s didn't match <%s>", selector, p)
 	}
-	return installation.GoOSArch{}
+	return installation.OSArchPair{}
 }
 
-func selectorMatchesOSArch(selector *metav1.LabelSelector, env installation.GoOSArch) bool {
+func selectorMatchesOSArch(selector *metav1.LabelSelector, env installation.OSArchPair) bool {
 	sel, err := metav1.LabelSelectorAsSelector(selector)
 	if err != nil {
 		// this should've been caught by validation.ValidatePlatform() earlier
@@ -188,9 +188,9 @@ func selectorMatchesOSArch(selector *metav1.LabelSelector, env installation.GoOS
 }
 
 // allPlatforms returns all <os,arch> pairs krew is supported on.
-func allPlatforms() []installation.GoOSArch {
+func allPlatforms() []installation.OSArchPair {
 	// TODO(ahmetb) find a more authoritative source for this list
-	return []installation.GoOSArch{
+	return []installation.OSArchPair{
 		{OS: "windows", Arch: "386"},
 		{OS: "windows", Arch: "amd64"},
 		{OS: "linux", Arch: "386"},

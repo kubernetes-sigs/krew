@@ -26,7 +26,7 @@ import (
 )
 
 func Test_osArch(t *testing.T) {
-	in := GoOSArch{OS: runtime.GOOS, Arch: runtime.GOARCH}
+	in := OSArchPair{OS: runtime.GOOS, Arch: runtime.GOARCH}
 
 	if diff := cmp.Diff(in, OSArch()); diff != "" {
 		t.Errorf("os/arch got a different result:\n%s", diff)
@@ -34,7 +34,7 @@ func Test_osArch(t *testing.T) {
 }
 
 func Test_osArch_override(t *testing.T) {
-	customGoOSArch := GoOSArch{OS: "dragons", Arch: "metav1"}
+	customGoOSArch := OSArchPair{OS: "dragons", Arch: "metav1"}
 	os.Setenv("KREW_OS", customGoOSArch.OS)
 	os.Setenv("KREW_ARCH", customGoOSArch.Arch)
 	defer func() {
@@ -48,7 +48,7 @@ func Test_osArch_override(t *testing.T) {
 }
 
 func Test_matchPlatform(t *testing.T) {
-	target := GoOSArch{OS: "foo", Arch: "amd64"}
+	target := OSArchPair{OS: "foo", Arch: "amd64"}
 	matchingPlatform := testutil.NewPlatform().WithOSArch(target.OS, target.Arch).V()
 	differentOS := testutil.NewPlatform().WithOSArch("other", target.Arch).V()
 	differentArch := testutil.NewPlatform().WithOSArch(target.OS, "other").V()

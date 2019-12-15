@@ -112,7 +112,7 @@ func TestValidateManifestFile(t *testing.T) {
 func Test_selectorMatchesOSArch(t *testing.T) {
 	type args struct {
 		selector *metav1.LabelSelector
-		env      installation.GoOSArch
+		env      installation.OSArchPair
 	}
 	tests := []struct {
 		name string
@@ -123,7 +123,7 @@ func Test_selectorMatchesOSArch(t *testing.T) {
 			name: "label - no match",
 			args: args{
 				selector: &metav1.LabelSelector{MatchLabels: map[string]string{"os": "darwin"}},
-				env:      installation.GoOSArch{OS: "windows", Arch: "amd64"},
+				env:      installation.OSArchPair{OS: "windows", Arch: "amd64"},
 			},
 			want: false,
 		},
@@ -131,7 +131,7 @@ func Test_selectorMatchesOSArch(t *testing.T) {
 			name: "label - match",
 			args: args{
 				selector: &metav1.LabelSelector{MatchLabels: map[string]string{"os": "darwin"}},
-				env:      installation.GoOSArch{OS: "darwin", Arch: "amd64"},
+				env:      installation.OSArchPair{OS: "darwin", Arch: "amd64"},
 			},
 			want: true,
 		},
@@ -143,7 +143,7 @@ func Test_selectorMatchesOSArch(t *testing.T) {
 					Operator: metav1.LabelSelectorOpIn,
 					Values:   []string{"darwin", "linux"},
 				}}},
-				env: installation.GoOSArch{OS: "windows", Arch: "amd64"},
+				env: installation.OSArchPair{OS: "windows", Arch: "amd64"},
 			},
 			want: false,
 		},
@@ -155,7 +155,7 @@ func Test_selectorMatchesOSArch(t *testing.T) {
 					Operator: metav1.LabelSelectorOpIn,
 					Values:   []string{"darwin", "linux"},
 				}}},
-				env: installation.GoOSArch{OS: "darwin", Arch: "amd64"},
+				env: installation.OSArchPair{OS: "darwin", Arch: "amd64"},
 			},
 			want: true,
 		},
