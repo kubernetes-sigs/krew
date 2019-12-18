@@ -15,6 +15,7 @@
 package installation
 
 import (
+	"fmt"
 	"os"
 	"runtime"
 
@@ -27,18 +28,17 @@ import (
 )
 
 // GetMatchingPlatform finds the platform spec in the specified plugin that
-// matches the OS/arch of the current machine (can be overridden via KREW_OS
+// matches the os/arch of the current machine (can be overridden via KREW_OS
 // and/or KREW_ARCH).
 func GetMatchingPlatform(platforms []index.Platform) (index.Platform, bool, error) {
-	os, arch := osArch()
-	return matchPlatform(platforms, os, arch)
+	return matchPlatform(platforms, OSArch())
 }
 
 // matchPlatform returns the first matching platform to given os/arch.
-func matchPlatform(platforms []index.Platform, os, arch string) (index.Platform, bool, error) {
+func matchPlatform(platforms []index.Platform, env OSArchPair) (index.Platform, bool, error) {
 	envLabels := labels.Set{
-		"os":   os,
-		"arch": arch,
+		"os":   env.OS,
+		"arch": env.Arch,
 	}
 	klog.V(2).Infof("Matching platform for labels(%v)", envLabels)
 
@@ -55,16 +55,29 @@ func matchPlatform(platforms []index.Platform, os, arch string) (index.Platform,
 	return index.Platform{}, false, nil
 }
 
-// osArch returns the OS/arch combination to be used on the current system. It
+// OSArchPair is wrapper around operating system and architecture
+type OSArchPair struct {
+	OS, Arch string
+}
+
+// String converts environment into a string
+func (p OSArchPair) String() string {
+	return fmt.Sprintf("%s/%s", p.OS, p.Arch)
+}
+
+// OSArch returns the OS/arch combination to be used on the current system. It
 // can be overridden by setting KREW_OS and/or KREW_ARCH environment variables.
-func osArch() (string, string) {
-	goos, goarch := runtime.GOOS, runtime.GOARCH
-	envOS, envArch := os.Getenv("KREW_OS"), os.Getenv("KREW_ARCH")
-	if envOS != "" {
-		goos = envOS
+func OSArch() OSArchPair {
+	return OSArchPair{
+		OS:   getEnvOrDefault("KREW_OS", runtime.GOOS),
+		Arch: getEnvOrDefault("KREW_ARCH", runtime.GOARCH),
 	}
-	if envArch != "" {
-		goarch = envArch
+}
+
+func getEnvOrDefault(env, absent string) string {
+	v := os.Getenv(env)
+	if v != "" {
+		return v
 	}
-	return goos, goarch
+	return absent
 }

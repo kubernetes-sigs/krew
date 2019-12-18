@@ -193,7 +193,7 @@ func removeLink(path string) error {
 	return nil
 }
 
-/// same as pkg/installation/install.go:186
+// same as pkg/installation/install.go:186
 func isWindows() bool {
 	goos := runtime.GOOS
 	if env := os.Getenv("KREW_OS"); env != "" {
@@ -206,7 +206,7 @@ func isWindows() bool {
 // It converts dashes to underscores.
 // same as pkg/installation/install.go:196
 func pluginNameToBin(name string, isWindows bool) string {
-	name = strings.Replace(name, "-", "_", -1)
+	name = strings.ReplaceAll(name, "-", "_")
 	name = "kubectl-" + name
 	if isWindows {
 		name += ".exe"

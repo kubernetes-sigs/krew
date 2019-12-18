@@ -20,9 +20,9 @@ import (
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/yaml"
 
+	"sigs.k8s.io/krew/internal/installation"
 	"sigs.k8s.io/krew/internal/testutil"
 	"sigs.k8s.io/krew/pkg/index"
 )
@@ -112,30 +112,57 @@ func TestValidateManifestFile(t *testing.T) {
 func Test_selectorMatchesOSArch(t *testing.T) {
 	type args struct {
 		selector *metav1.LabelSelector
-		os       string
-		arch     string
+		env      installation.OSArchPair
 	}
 	tests := []struct {
 		name string
 		args args
 		want bool
 	}{
-		{"label - no match", args{&metav1.LabelSelector{MatchLabels: map[string]string{"os": "darwin"}}, "windows", "amd64"}, false},
-		{"label - match", args{&metav1.LabelSelector{MatchLabels: map[string]string{"os": "darwin"}}, "darwin", "amd64"}, true},
-		{"expression - no match", args{&metav1.LabelSelector{MatchExpressions: []v1.LabelSelectorRequirement{{
-			Key:      "os",
-			Operator: v1.LabelSelectorOpIn,
-			Values:   []string{"darwin", "linux"},
-		}}}, "windows", "amd64"}, false},
-		{"expression - match", args{&metav1.LabelSelector{MatchExpressions: []v1.LabelSelectorRequirement{{
-			Key:      "os",
-			Operator: v1.LabelSelectorOpIn,
-			Values:   []string{"darwin", "linux"},
-		}}}, "darwin", "amd64"}, true},
+		{
+			name: "label - no match",
+			args: args{
+				selector: &metav1.LabelSelector{MatchLabels: map[string]string{"os": "darwin"}},
+				env:      installation.OSArchPair{OS: "windows", Arch: "amd64"},
+			},
+			want: false,
+		},
+		{
+			name: "label - match",
+			args: args{
+				selector: &metav1.LabelSelector{MatchLabels: map[string]string{"os": "darwin"}},
+				env:      installation.OSArchPair{OS: "darwin", Arch: "amd64"},
+			},
+			want: true,
+		},
+		{
+			name: "expression - no match",
+			args: args{
+				selector: &metav1.LabelSelector{MatchExpressions: []metav1.LabelSelectorRequirement{{
+					Key:      "os",
+					Operator: metav1.LabelSelectorOpIn,
+					Values:   []string{"darwin", "linux"},
+				}}},
+				env: installation.OSArchPair{OS: "windows", Arch: "amd64"},
+			},
+			want: false,
+		},
+		{
+			name: "expression - match",
+			args: args{
+				selector: &metav1.LabelSelector{MatchExpressions: []metav1.LabelSelectorRequirement{{
+					Key:      "os",
+					Operator: metav1.LabelSelectorOpIn,
+					Values:   []string{"darwin", "linux"},
+				}}},
+				env: installation.OSArchPair{OS: "darwin", Arch: "amd64"},
+			},
+			want: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := selectorMatchesOSArch(tt.args.selector, tt.args.os, tt.args.arch); got != tt.want {
+			if got := selectorMatchesOSArch(tt.args.selector, tt.args.env); got != tt.want {
 				t.Errorf("selectorMatchesOSArch() = %v, want %v", got, tt.want)
 			}
 		})
@@ -143,24 +170,24 @@ func Test_selectorMatchesOSArch(t *testing.T) {
 }
 
 func Test_findAnyMatchingPlatform(t *testing.T) {
-	s1 := &v1.LabelSelector{MatchLabels: map[string]string{"os": "darwin"}}
-	o1, a1 := findAnyMatchingPlatform(s1)
-	if o1 == "" || a1 == "" {
+	s1 := &metav1.LabelSelector{MatchLabels: map[string]string{"os": "darwin"}}
+	env := findAnyMatchingPlatform(s1)
+	if env.OS == "" || env.Arch == "" {
 		t.Fatalf("with selector %v, expected os/arch", s1)
 	}
 
-	s2 := &v1.LabelSelector{MatchLabels: map[string]string{"os": "non-existing"}}
-	o2, a2 := findAnyMatchingPlatform(s1)
-	if o2 == "" && a2 == "" {
+	s2 := &metav1.LabelSelector{MatchLabels: map[string]string{"os": "non-existing"}}
+	env2 := findAnyMatchingPlatform(s1)
+	if env2.OS == "" && env2.Arch == "" {
 		t.Fatalf("with selector %v, expected os/arch", s2)
 	}
 
-	s3 := &v1.LabelSelector{MatchExpressions: []v1.LabelSelectorRequirement{{
+	s3 := &metav1.LabelSelector{MatchExpressions: []metav1.LabelSelectorRequirement{{
 		Key:      "os",
-		Operator: v1.LabelSelectorOpIn,
+		Operator: metav1.LabelSelectorOpIn,
 		Values:   []string{"darwin", "linux"}}}}
-	o3, a3 := findAnyMatchingPlatform(s3)
-	if o3 == "" || a3 == "" {
+	env3 := findAnyMatchingPlatform(s3)
+	if env3.OS == "" || env3.Arch == "" {
 		t.Fatalf("with selector %v, expected os/arch", s2)
 	}
 }

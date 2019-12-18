@@ -26,41 +26,34 @@ import (
 )
 
 func Test_osArch(t *testing.T) {
-	inOS, inArch := runtime.GOOS, runtime.GOARCH
-	outOS, outArch := osArch()
-	if inOS != outOS {
-		t.Errorf("returned OS=%q; expected=%q", outOS, inOS)
-	}
-	if inArch != outArch {
-		t.Errorf("returned Arch=%q; expected=%q", outArch, inArch)
+	in := OSArchPair{OS: runtime.GOOS, Arch: runtime.GOARCH}
+
+	if diff := cmp.Diff(in, OSArch()); diff != "" {
+		t.Errorf("os/arch got a different result:\n%s", diff)
 	}
 }
 
 func Test_osArch_override(t *testing.T) {
-	customOS, customArch := "dragons", "metav1"
-	os.Setenv("KREW_OS", customOS)
-	os.Setenv("KREW_ARCH", customArch)
+	customGoOSArch := OSArchPair{OS: "dragons", Arch: "metav1"}
+	os.Setenv("KREW_OS", customGoOSArch.OS)
+	os.Setenv("KREW_ARCH", customGoOSArch.Arch)
 	defer func() {
 		os.Unsetenv("KREW_ARCH")
 		os.Unsetenv("KREW_OS")
 	}()
 
-	outOS, outArch := osArch()
-	if customOS != outOS {
-		t.Errorf("returned OS=%q; expected=%q", outOS, customOS)
-	}
-	if customArch != outArch {
-		t.Errorf("returned Arch=%q; expected=%q", outArch, customArch)
+	if diff := cmp.Diff(customGoOSArch, OSArch()); diff != "" {
+		t.Errorf("os/arch override got a different result:\n%s", diff)
 	}
 }
 
 func Test_matchPlatform(t *testing.T) {
-	const targetOS, targetArch = "foo", "amd64"
-	matchingPlatform := testutil.NewPlatform().WithOSArch(targetOS, targetArch).V()
-	differentOS := testutil.NewPlatform().WithOSArch("other", targetArch).V()
-	differentArch := testutil.NewPlatform().WithOSArch(targetOS, "other").V()
+	target := OSArchPair{OS: "foo", Arch: "amd64"}
+	matchingPlatform := testutil.NewPlatform().WithOSArch(target.OS, target.Arch).V()
+	differentOS := testutil.NewPlatform().WithOSArch("other", target.Arch).V()
+	differentArch := testutil.NewPlatform().WithOSArch(target.OS, "other").V()
 
-	p, ok, err := matchPlatform([]index.Platform{differentOS, differentArch, matchingPlatform}, targetOS, targetArch)
+	p, ok, err := matchPlatform([]index.Platform{differentOS, differentArch, matchingPlatform}, target)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -71,7 +64,7 @@ func Test_matchPlatform(t *testing.T) {
 		t.Fatalf("got a different object from the matching platform:\n%s", diff)
 	}
 
-	_, ok, err = matchPlatform([]index.Platform{differentOS, differentArch}, targetOS, targetArch)
+	_, ok, err = matchPlatform([]index.Platform{differentOS, differentArch}, target)
 	if err != nil {
 		t.Fatal(err)
 	}

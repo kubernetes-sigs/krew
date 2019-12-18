@@ -299,8 +299,8 @@ func Test_applyDefaults(t *testing.T) {
 }
 
 func TestCleanupStaleKrewInstallations(t *testing.T) {
-	dir, close := testutil.NewTempDir(t)
-	defer close()
+	dir, cleanup := testutil.NewTempDir(t)
+	defer cleanup()
 
 	testFiles := []string{
 		"dir1/f1.txt",

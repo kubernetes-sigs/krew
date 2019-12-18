@@ -32,6 +32,7 @@ import (
 
 	"sigs.k8s.io/krew/internal/index/indexscanner"
 	"sigs.k8s.io/krew/internal/index/validation"
+	"sigs.k8s.io/krew/internal/installation"
 	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/index"
 )
@@ -83,7 +84,7 @@ func validateManifestFile(path string) error {
 
 	// make sure each platform matches a supported platform
 	for i, p := range p.Spec.Platforms {
-		if os, arch := findAnyMatchingPlatform(p.Selector); os == "" || arch == "" {
+		if env := findAnyMatchingPlatform(p.Selector); env.OS == "" || env.Arch == "" {
 			return errors.Errorf("spec.platform[%d]'s selector (%v) doesn't match any supported platforms", i, p.Selector)
 		}
 	}
@@ -110,18 +111,16 @@ func validateManifestFile(path string) error {
 // isOverlappingPlatformSelectors validates if multiple platforms have selectors
 // that match to a supported <os,arch> pair.
 func isOverlappingPlatformSelectors(platforms []index.Platform) error {
-	for _, v := range allPlatforms() {
-		os, arch := v[0], v[1]
-
+	for _, env := range allPlatforms() {
 		var matchIndex []int
 		for i, p := range platforms {
-			if selectorMatchesOSArch(p.Selector, os, arch) {
+			if selectorMatchesOSArch(p.Selector, env) {
 				matchIndex = append(matchIndex, i)
 			}
 		}
 
 		if len(matchIndex) > 1 {
-			return errors.Errorf("multiple spec.platforms (at indexes %v) have overlapping selectors that select os=%s/arch=%s", matchIndex, os, arch)
+			return errors.Errorf("multiple spec.platforms (at indexes %v) have overlapping selectors that select %s", matchIndex, env)
 		}
 	}
 	return nil
@@ -130,8 +129,8 @@ func isOverlappingPlatformSelectors(platforms []index.Platform) error {
 // installPlatformSpec installs the p to a temporary location on disk to verify
 // by shelling out to external command.
 func installPlatformSpec(manifestFile string, p index.Platform) error {
-	goos, goarch := findAnyMatchingPlatform(p.Selector)
-	if goos == "" || goarch == "" {
+	env := findAnyMatchingPlatform(p.Selector)
+	if env.OS == "" || env.Arch == "" {
 		return errors.Errorf("no supported platform matched platform selector: %+v", p.Selector)
 	}
 
@@ -149,33 +148,33 @@ func installPlatformSpec(manifestFile string, p index.Platform) error {
 	cmd.Stdin = nil
 	cmd.Env = []string{
 		"KREW_ROOT=" + tmpDir,
-		"KREW_OS=" + goos,
-		"KREW_ARCH=" + goarch,
+		"KREW_OS=" + env.OS,
+		"KREW_ARCH=" + env.Arch,
 	}
 	klog.V(2).Infof("installing plugin with: %+v", cmd.Env)
 	cmd.Env = append(cmd.Env, "PATH="+os.Getenv("PATH"))
 
 	b, err := cmd.CombinedOutput()
 	if err != nil {
-		output := strings.Replace(string(b), "\n", "\n\t", -1)
+		output := strings.ReplaceAll(string(b), "\n", "\n\t")
 		return errors.Wrapf(err, "plugin install command failed: %s", output)
 	}
 	return nil
 }
 
 // findAnyMatchingPlatform finds an <os,arch> pair matches to given selector
-func findAnyMatchingPlatform(selector *metav1.LabelSelector) (string, string) {
+func findAnyMatchingPlatform(selector *metav1.LabelSelector) installation.OSArchPair {
 	for _, p := range allPlatforms() {
-		if selectorMatchesOSArch(selector, p[0], p[1]) {
-			klog.V(4).Infof("%s MATCHED <%s,%s>", selector, p[0], p[1])
-			return p[0], p[1]
+		if selectorMatchesOSArch(selector, p) {
+			klog.V(4).Infof("%s MATCHED <%s>", selector, p)
+			return p
 		}
-		klog.V(4).Infof("%s didn't match <%s,%s>", selector, p[0], p[1])
+		klog.V(4).Infof("%s didn't match <%s>", selector, p)
 	}
-	return "", ""
+	return installation.OSArchPair{}
 }
 
-func selectorMatchesOSArch(selector *metav1.LabelSelector, os, arch string) bool {
+func selectorMatchesOSArch(selector *metav1.LabelSelector, env installation.OSArchPair) bool {
 	sel, err := metav1.LabelSelectorAsSelector(selector)
 	if err != nil {
 		// this should've been caught by validation.ValidatePlatform() earlier
@@ -183,21 +182,21 @@ func selectorMatchesOSArch(selector *metav1.LabelSelector, os, arch string) bool
 		return false
 	}
 	return sel.Matches(labels.Set{
-		"os":   os,
-		"arch": arch,
+		"os":   env.OS,
+		"arch": env.Arch,
 	})
 }
 
 // allPlatforms returns all <os,arch> pairs krew is supported on.
-func allPlatforms() [][2]string {
+func allPlatforms() []installation.OSArchPair {
 	// TODO(ahmetb) find a more authoritative source for this list
-	return [][2]string{
-		{"windows", "386"},
-		{"windows", "amd64"},
-		{"linux", "386"},
-		{"linux", "amd64"},
-		{"linux", "arm"},
-		{"darwin", "386"},
-		{"darwin", "amd64"},
+	return []installation.OSArchPair{
+		{OS: "windows", Arch: "386"},
+		{OS: "windows", Arch: "amd64"},
+		{OS: "linux", Arch: "386"},
+		{OS: "linux", Arch: "amd64"},
+		{OS: "linux", Arch: "arm"},
+		{OS: "darwin", Arch: "386"},
+		{OS: "darwin", Arch: "amd64"},
 	}
 }
