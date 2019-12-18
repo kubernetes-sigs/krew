@@ -67,7 +67,7 @@ kubectl krew upgrade foo bar"`,
 					return errors.Wrapf(err, "failed to load the plugin manifest for plugin %s", name)
 				}
 
-				fmt.Fprintf(os.Stderr, 	"Upgrading plugin: %s\n", plugin.Name)
+				fmt.Fprintf(os.Stderr, "Upgrading plugin: %s\n", plugin.Name)
 				err = installation.Upgrade(paths, plugin)
 				if ignoreUpgraded && err == installation.ErrIsAlreadyUpgraded {
 					fmt.Fprintf(os.Stderr, "Skipping plugin %s, it is already on the newest version\n", plugin.Name)
