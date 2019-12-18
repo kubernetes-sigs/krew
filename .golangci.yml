@@ -36,21 +36,22 @@ run:
   tests: true
 
 linters:
+  disable-all: true
   enable:
-    - gofmt
+    - deadcode
+    - errcheck
     - gocritic
+    - gofmt
     - goimports
     - golint
     - gosimple
     - interfacer
     - maligned
     - misspell
-    - unconvert
-    - unparam
-    - stylecheck
+    - prealloc
     - staticcheck
     - structcheck
-    - prealloc
-    - deadcode
+    - stylecheck
+    - unconvert
+    - unparam
     - varcheck
-    - errcheck
