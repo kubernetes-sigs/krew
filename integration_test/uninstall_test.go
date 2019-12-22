@@ -19,6 +19,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"sigs.k8s.io/krew/internal/environment"
 	"sigs.k8s.io/krew/pkg/constants"
 )
 
@@ -63,7 +64,8 @@ func TestKrewRemove_ManifestRemovedFromIndex(t *testing.T) {
 	defer cleanup()
 
 	test = test.WithIndex()
-	localManifest := filepath.Join(test.Root(), "index", "plugins", validPlugin+constants.ManifestExtension)
+	manifestDir := environment.NewPaths(test.Root()).IndexPluginsPath()
+	localManifest := filepath.Join(manifestDir, validPlugin+constants.ManifestExtension)
 	if _, err := os.Stat(localManifest); err != nil {
 		t.Fatalf("could not read local manifest file at %s: %v", localManifest, err)
 	}

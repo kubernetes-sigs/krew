@@ -143,7 +143,9 @@ func Test_removeLink_notExists(t *testing.T) {
 }
 
 func TestUninstall_cantUninstallItself(t *testing.T) {
-	envPath := environment.MustGetKrewPaths()
+	tempDir, cleanup := testutil.NewTempDir(t)
+	defer cleanup()
+	envPath := environment.NewPaths(tempDir.Root())
 	expectedErrorMessagePart := "not allowed"
 	if err := Uninstall(envPath, "krew"); !strings.Contains(err.Error(), expectedErrorMessagePart) {
 		t.Fatalf("wrong error message for 'uninstall krew' action, expected message contains %q; got %q",
