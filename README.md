@@ -73,6 +73,7 @@ Check out the list of [kubectl plugins available on krew][list] or just run
 2. Run this command in your terminal to download and install `krew`:
 
     ```fish
+    #!/usr/bin/env fish
     begin
       set -x; set temp_dir (mktemp -d); cd "$temp_dir" &&
       curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/download/v0.3.3/krew.{tar.gz,yaml}" &&
