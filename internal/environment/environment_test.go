@@ -47,7 +47,7 @@ func TestMustGetKrewPaths_envOverride(t *testing.T) {
 
 func TestPaths(t *testing.T) {
 	base := filepath.FromSlash("/foo")
-	p := newPaths(base)
+	p := NewPaths(base)
 	if got := p.BasePath(); got != base {
 		t.Fatalf("BasePath()=%s; expected=%s", got, base)
 	}

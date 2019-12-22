@@ -76,12 +76,9 @@ func TestLoadManifestFromReceiptOrIndex(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			tmpDir, cleanup := testutil.NewTempDir(t)
-			defer cleanupEnvAndTempdir(t, os.Getenv("KREW_ROOT"), cleanup)
-			if err := os.Setenv("KREW_ROOT", tmpDir.Root()); err != nil {
-				t.Fatal(err)
-			}
+			defer cleanup()
 
-			paths := environment.MustGetKrewPaths()
+			paths := environment.NewPaths(tmpDir.Root())
 			test.prepare(paths, tmpDir)
 			actual, err := LoadManifestFromReceiptOrIndex(paths, pluginName)
 
@@ -104,12 +101,9 @@ func TestLoadManifestFromReceiptOrIndex(t *testing.T) {
 
 func TestLoadManifestFromReceiptOrIndex_ReturnsIsNotExist(t *testing.T) {
 	tmpDir, cleanup := testutil.NewTempDir(t)
-	defer cleanupEnvAndTempdir(t, os.Getenv("KREW_ROOT"), cleanup)
-	if err := os.Setenv("KREW_ROOT", tmpDir.Root()); err != nil {
-		t.Fatal(err)
-	}
+	defer cleanup()
 
-	paths := environment.MustGetKrewPaths()
+	paths := environment.NewPaths(tmpDir.Root())
 	_, err := LoadManifestFromReceiptOrIndex(paths, "non-existing-plugin")
 
 	if err == nil {
@@ -117,18 +111,5 @@ func TestLoadManifestFromReceiptOrIndex_ReturnsIsNotExist(t *testing.T) {
 	}
 	if !os.IsNotExist(err) {
 		t.Fatalf("Expected error to be ENOENT but was %q", err)
-	}
-}
-
-func cleanupEnvAndTempdir(t *testing.T, originalKrewRoot string, cleanupTempdir func()) {
-	cleanupTempdir()
-	var err error
-	if originalKrewRoot == "" {
-		err = os.Unsetenv("KREW_ROOT")
-	} else {
-		err = os.Setenv("KREW_ROOT", originalKrewRoot)
-	}
-	if err != nil {
-		t.Log(err)
 	}
 }

@@ -63,10 +63,7 @@ func TestIsMigrated(t *testing.T) {
 			tmpDir, cleanup := testutil.NewTempDir(t)
 			defer cleanup()
 
-			os.Setenv("KREW_ROOT", tmpDir.Root())
-			defer os.Unsetenv("KREW_ROOT")
-
-			newPaths := environment.MustGetKrewPaths()
+			newPaths := environment.NewPaths(tmpDir.Root())
 
 			_ = os.MkdirAll(tmpDir.Path("receipts"), os.ModePerm)
 			_ = os.MkdirAll(tmpDir.Path("bin"), os.ModePerm)
@@ -143,11 +140,8 @@ func Test_getPluginsToReinstall(t *testing.T) {
 			tmpDir, cleanup := testutil.NewTempDir(t)
 			defer cleanup()
 
-			os.Setenv("KREW_ROOT", tmpDir.Root())
-			defer os.Unsetenv("KREW_ROOT")
-
-			oldPaths := oldenvironment.MustGetKrewPaths()
-			newPaths := environment.MustGetKrewPaths()
+			oldPaths := oldenvironment.NewPaths(tmpDir.Root())
+			newPaths := environment.NewPaths(tmpDir.Root())
 
 			for _, name := range test.filesPresent {
 				touch(tmpDir, name)
