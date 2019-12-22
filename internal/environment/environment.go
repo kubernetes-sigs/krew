@@ -44,10 +44,10 @@ func MustGetKrewPaths() Paths {
 	if err != nil {
 		panic(errors.Wrap(err, "cannot get absolute path"))
 	}
-	return newPaths(base)
+	return NewPaths(base)
 }
 
-func newPaths(base string) Paths {
+func NewPaths(base string) Paths {
 	return Paths{base: base, tmp: os.TempDir()}
 }
 
