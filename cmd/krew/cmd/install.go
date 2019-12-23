@@ -77,6 +77,10 @@ Remarks:
 				}
 			}
 
+			if *manifest != "" && *manifestURL != "" {
+				return errors.New("cannot specify --manifest and --manifest-url at the same time")
+			}
+
 			if len(pluginNames) != 0 && (*manifest != "" || *manifestURL != "") {
 				return errors.New("must specify either specify either plugin names (via positional arguments or STDIN), or --manifest/--manifest-url; not both")
 			}

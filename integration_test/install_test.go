@@ -156,7 +156,7 @@ func TestKrewInstall_ManifestArgsAreMutuallyExclusive(t *testing.T) {
 	srv, close := localTestServer()
 	defer close()
 
-	if err := test.Krew("install", validPlugin,
+	if err := test.Krew("install",
 		"--manifest", filepath.Join("testdata", fooPlugin+constants.ManifestExtension),
 		"--manifest-url", srv+"/"+validPlugin+constants.ManifestExtension).
 		Run(); err == nil {
