@@ -153,9 +153,9 @@ func moveAllFiles(fromDir, toDir string, fos []index.FileOperation) error {
 
 // moveToInstallDir moves plugins from srcDir to dstDir (created in this method) with given FileOperation.
 func moveToInstallDir(srcDir, pluginDir, installDir string, fos []index.FileOperation) error {
-	klog.V(4).Infof("Creating plugin installation directory %q", installDir)
+	klog.V(4).Infof("Creating plugin directory %q", pluginDir)
 	if err := os.MkdirAll(pluginDir, 0755); err != nil {
-		return errors.Wrapf(err, "error creating installation directory at %q", installDir)
+		return errors.Wrapf(err, "error creating plugin directory at %q", pluginDir)
 	}
 
 	tmp, err := ioutil.TempDir("", "krew-temp-move")
