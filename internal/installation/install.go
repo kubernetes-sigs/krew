@@ -43,6 +43,7 @@ type installOperation struct {
 
 	downloadStagingDir string
 	installDir         string
+	pluginDir          string
 	binDir             string
 }
 
@@ -83,6 +84,7 @@ func Install(p environment.Paths, plugin index.Plugin, opts InstallOpts) error {
 		downloadStagingDir: filepath.Join(p.DownloadPath(), plugin.Name),
 		binDir:             p.BinPath(),
 		installDir:         p.PluginVersionInstallPath(plugin.Name, plugin.Spec.Version),
+		pluginDir:          p.PluginInstallPath(plugin.Name),
 	}, opts); err != nil {
 		return errors.Wrap(err, "install failed")
 	}
@@ -108,7 +110,7 @@ func install(op installOperation, opts InstallOpts) error {
 	}
 
 	applyDefaults(&op.platform)
-	if err := moveToInstallDir(op.downloadStagingDir, op.installDir, op.platform.Files); err != nil {
+	if err := moveToInstallDir(op.downloadStagingDir, op.pluginDir, op.installDir, op.platform.Files); err != nil {
 		return errors.Wrap(err, "failed while moving files to the installation directory")
 	}
 
