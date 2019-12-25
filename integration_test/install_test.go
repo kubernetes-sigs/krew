@@ -112,8 +112,8 @@ func TestKrewInstall_ManifestURL(t *testing.T) {
 
 	test, cleanup := NewTest(t)
 	defer cleanup()
-	srv, close := localTestServer()
-	defer close()
+	srv, shutdown := localTestServer()
+	defer shutdown()
 
 	test.Krew("install",
 		"--manifest-url", srv+"/"+validPlugin+constants.ManifestExtension).
@@ -153,8 +153,8 @@ func TestKrewInstall_ManifestArgsAreMutuallyExclusive(t *testing.T) {
 
 	test, cleanup := NewTest(t)
 	defer cleanup()
-	srv, close := localTestServer()
-	defer close()
+	srv, shutdown := localTestServer()
+	defer shutdown()
 
 	if err := test.Krew("install",
 		"--manifest", filepath.Join("testdata", fooPlugin+constants.ManifestExtension),
