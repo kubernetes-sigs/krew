@@ -79,7 +79,6 @@ func Upgrade(p environment.Paths, plugin index.Plugin) error {
 		downloadStagingDir: filepath.Join(p.DownloadPath(), plugin.Name),
 		installDir:         p.PluginVersionInstallPath(plugin.Name, newVersion),
 		binDir:             p.BinPath(),
-		pluginDir:          p.PluginInstallPath(plugin.Name),
 	}, InstallOpts{}); err != nil {
 		return errors.Wrap(err, "failed to install new version")
 	}
