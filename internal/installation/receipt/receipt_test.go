@@ -35,7 +35,7 @@ func TestStore(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	actual, err := indexscanner.LoadPluginFileFromFS(tmpDir.Root(), "some-plugin")
+	actual, err := indexscanner.LoadPluginByName(tmpDir.Root(), "some-plugin")
 	if err != nil {
 		t.Fatal(err)
 	}

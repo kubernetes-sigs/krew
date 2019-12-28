@@ -23,7 +23,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 )
 
-func Test_readIndexFile(t *testing.T) {
+func TestReadPluginFile(t *testing.T) {
 	type args struct {
 		indexFilePath string
 	}
@@ -64,29 +64,39 @@ func Test_readIndexFile(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ReadPluginFile(tt.args.indexFilePath)
+			got, err := ReadPluginFromFile(tt.args.indexFilePath)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("readIndexFile() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("ReadPluginFromFile() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if err != nil {
 				return
 			}
 			if got.Name != "foo" && got.Kind != "Plugin" {
-				t.Errorf("readIndexFile() has not parsed the metainformations %v", got)
+				t.Errorf("ReadPluginFromFile() has not parsed the metainformations %v", got)
 				return
 			}
 
 			sel, err := metav1.LabelSelectorAsSelector(got.Spec.Platforms[0].Selector)
 			if err != nil {
-				t.Errorf("readIndexFile() error parsing label err: %v", err)
+				t.Errorf("ReadPluginFromFile() error parsing label err: %v", err)
 				return
 			}
 			if !sel.Matches(tt.matchFirst) || sel.Matches(neverMatch) {
-				t.Errorf("readIndexFile() didn't parse label selector properly: %##v", sel)
+				t.Errorf("ReadPluginFromFile() didn't parse label selector properly: %##v", sel)
 				return
 			}
 		})
+	}
+}
+
+func TestReadPluginFile_preservesNotFoundErr(t *testing.T) {
+	_, err := ReadPluginFromFile(filepath.Join(testdataPath(t), "does-not-exist.yaml"))
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !os.IsNotExist(err) {
+		t.Fatalf("returned error is not IsNotExist type: %v", err)
 	}
 }
 
@@ -161,7 +171,7 @@ func TestLoadIndexFileFromFS(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := LoadPluginFileFromFS(tt.args.indexDir, tt.args.pluginName)
+			got, err := LoadPluginByName(tt.args.indexDir, tt.args.pluginName)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("LoadIndexFileFromFS() got = %##v,error = %v, wantErr %v", got, err, tt.wantErr)
 				return

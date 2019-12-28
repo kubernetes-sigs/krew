@@ -15,6 +15,8 @@
 package integrationtest
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -105,6 +107,20 @@ func TestKrewInstall_Manifest(t *testing.T) {
 	test.AssertExecutableInPATH("kubectl-" + validPlugin)
 }
 
+func TestKrewInstall_ManifestURL(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+	srv, shutdown := localTestServer()
+	defer shutdown()
+
+	test.Krew("install",
+		"--manifest-url", srv+"/"+validPlugin+constants.ManifestExtension).
+		RunOrFail()
+	test.AssertExecutableInPATH("kubectl-" + validPlugin)
+}
+
 func TestKrewInstall_ManifestAndArchive(t *testing.T) {
 	skipShort(t)
 
@@ -132,7 +148,23 @@ func TestKrewInstall_OnlyArchive(t *testing.T) {
 	}
 }
 
-func TestKrewInstall_PositionalArgumentsAndManifest(t *testing.T) {
+func TestKrewInstall_ManifestArgsAreMutuallyExclusive(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+	srv, shutdown := localTestServer()
+	defer shutdown()
+
+	if err := test.Krew("install",
+		"--manifest", filepath.Join("testdata", fooPlugin+constants.ManifestExtension),
+		"--manifest-url", srv+"/"+validPlugin+constants.ManifestExtension).
+		Run(); err == nil {
+		t.Fatal("expected mutually exclusive arguments to cause failure")
+	}
+}
+
+func TestKrewInstall_NoManifestArgsWhenPositionalArgsSpecified(t *testing.T) {
 	skipShort(t)
 
 	test, cleanup := NewTest(t)
@@ -143,6 +175,17 @@ func TestKrewInstall_PositionalArgumentsAndManifest(t *testing.T) {
 		"--archive", filepath.Join("testdata", fooPlugin+".tar.gz")).
 		Run()
 	if err == nil {
-		t.Fatal("expected failure")
+		t.Fatal("expected failure when positional args and --manifest specified")
 	}
+
+	err = test.Krew("install", validPlugin,
+		"--manifest-url", filepath.Join("testdata", fooPlugin+constants.ManifestExtension)).Run()
+	if err == nil {
+		t.Fatal("expected failure when positional args and --manifest-url specified")
+	}
+}
+
+func localTestServer() (string, func()) {
+	s := httptest.NewServer(http.FileServer(http.Dir("testdata")))
+	return s.URL, s.Close
 }

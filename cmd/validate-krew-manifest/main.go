@@ -64,7 +64,7 @@ func main() {
 
 func validateManifestFile(path string) error {
 	klog.V(4).Infof("reading file %s", path)
-	p, err := indexscanner.ReadPluginFile(path)
+	p, err := indexscanner.ReadPluginFromFile(path)
 	if err != nil {
 		return errors.Wrap(err, "failed to read plugin file")
 	}
