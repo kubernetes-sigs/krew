@@ -72,7 +72,7 @@ Krew tags versions starting with `v`. Example: `v0.2.0-rc.1`.
 
 1. **Make the new version available on krew index:** Get the latest `krew.yaml` from
 
-       curl -LO https://github.com/kubernetes-sigs/krew/releases/"${TAG:?TAG required}"/krew.yaml
+       curl -LO https://github.com/kubernetes-sigs/krew/releases/tag/v0.3.3/"${TAG:?TAG required}"/krew.yaml
 
    and make a pull request to
    [krew-index](https://github.com/kubernetes-sigs/krew-index/) repository.
