@@ -53,7 +53,7 @@ install_shfmt() {
 
   cd "${shfmt_dir}"
   go mod init foo
-  go get mvdan.cc/sh/cmd/shfmt@v2.6.4
+  go get mvdan.cc/sh/v3/cmd/shfmt@v3.0.0
   cd -
 }
 
