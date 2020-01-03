@@ -43,6 +43,21 @@ Check out the list of [kubectl plugins available on krew][list] or just run
 
 **macOS and Linux:**
 
+#### Simple install
+
+1. Make sure that `git` is installed
+2. Run the `install-krew` script found in the top level of this repository.
+3. Add `$HOME/.krew/bin` directory to your PATH environment variable. To do
+   this, update your `.bashrc` or `.zshrc` file and append the following line:
+
+     ```sh
+     if [[ -d "${KREW_ROOT:-$HOME/.krew}/bin" ]]; then
+       export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
+     fi
+     ```
+
+   and restart your shell.
+
 #### Bash and ZSH
 
 1. Make sure that `git` is installed.
@@ -58,11 +73,14 @@ Check out the list of [kubectl plugins available on krew][list] or just run
       "$KREW" update
     )
     ```
+
 3. Add `$HOME/.krew/bin` directory to your PATH environment variable. To do
    this, update your `.bashrc` or `.zshrc` file and append the following line:
 
      ```sh
-     export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
+     if [[ -d "${KREW_ROOT:-$HOME/.krew}/bin" ]]; then
+       export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
+     fi
      ```
 
    and restart your shell.
