@@ -75,6 +75,29 @@ func TestKrewUpgradeWhenPlatformNoLongerMatches(t *testing.T) {
 	}
 }
 
+func TestKrewUpgrade_ValidPluginInstalledFromManifest(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	test.WithIndex().
+		Krew("install", "--manifest", filepath.Join("testdata", validNonIndexPlugin+constants.ManifestExtension)).
+		RunOrFail()
+
+	// if upgrading 'all' plugins, must succeed
+	out := string(test.Krew("upgrade", "--no-update-index").RunOrFailOutput())
+	if !strings.Contains(out, "WARNING: Some plugins failed to upgrade") {
+		t.Fatalf("upgrade all plugins output doesn't contain warnings about failed plugins:\n%s", out)
+	}
+
+	// if upgrading a specific plugin, it must fail, because it's not included into index
+	err := test.Krew("upgrade", validNonIndexPlugin, "--no-update-index").Run()
+	if err == nil {
+		t.Fatal("expected failure when upgraded a specific plugin that is not included in index")
+	}
+}
+
 func resolvePluginSymlink(test *ITest, plugin string) string {
 	test.t.Helper()
 	linkToPlugin, err := test.LookupExecutable("kubectl-" + plugin)

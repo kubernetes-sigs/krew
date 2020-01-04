@@ -64,27 +64,30 @@ kubectl krew upgrade foo bar"`,
 			for _, name := range pluginNames {
 				plugin, err := indexscanner.LoadPluginByName(paths.IndexPluginsPath(), name)
 				if err != nil {
-					if os.IsNotExist(err) {
+					if !os.IsNotExist(err) {
+						return errors.Wrapf(err, "failed to load the plugin manifest for plugin %s", name)
+					} else if !skipErrors {
 						return errors.Errorf("plugin %q does not exist in the plugin index", name)
 					}
-					return errors.Wrapf(err, "failed to load the plugin manifest for plugin %s", name)
 				}
 
-				fmt.Fprintf(os.Stderr, "Upgrading plugin: %s\n", plugin.Name)
-				err = installation.Upgrade(paths, plugin)
-				if ignoreUpgraded && err == installation.ErrIsAlreadyUpgraded {
-					fmt.Fprintf(os.Stderr, "Skipping plugin %s, it is already on the newest version\n", plugin.Name)
-					continue
+				if err == nil {
+					fmt.Fprintf(os.Stderr, "Upgrading plugin: %s\n", name)
+					err = installation.Upgrade(paths, plugin)
+					if ignoreUpgraded && err == installation.ErrIsAlreadyUpgraded {
+						fmt.Fprintf(os.Stderr, "Skipping plugin %s, it is already on the newest version\n", name)
+						continue
+					}
 				}
 				if err != nil {
 					nErrors++
 					if skipErrors {
-						fmt.Fprintf(os.Stderr, "WARNING: failed to upgrade plugin %q, skipping (error: %v)\n", plugin.Name, err)
+						fmt.Fprintf(os.Stderr, "WARNING: failed to upgrade plugin %q, skipping (error: %v)\n", name, err)
 						continue
 					}
-					return errors.Wrapf(err, "failed to upgrade plugin %q", plugin.Name)
+					return errors.Wrapf(err, "failed to upgrade plugin %q", name)
 				}
-				fmt.Fprintf(os.Stderr, "Upgraded plugin: %s\n", plugin.Name)
+				fmt.Fprintf(os.Stderr, "Upgraded plugin: %s\n", name)
 				internal.PrintSecurityNotice()
 			}
 			if nErrors > 0 {
