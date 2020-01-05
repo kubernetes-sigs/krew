@@ -16,13 +16,23 @@ jobs:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v1
 
-    - name: Get dependencies
+    - name: Prepare environment
       run: |
-        go get -v -t -d ./...
-        if [ -f Gopkg.toml ]; then
-            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-            dep ensure
-        fi
+        go mod download
+        hack/install-gox.sh
+
+    - name: Install dependencies
+      run: |
+        go mod tidy && git diff --no-patch --exit-code
+        hack/verify-code-patterns.sh
+        hack/verify-boilerplate.sh
+        hack/run-lint.sh
+        go test -short -coverprofile=coverage.txt -covermode=atomic ./...
+        hack/make-all.sh
+        hack/verify-installation.sh
+        hack/ensure-kubectl-installed.sh
+        hack/run-integration-tests.sh
+        hack/verify-receipts-upgrade-migration.sh
 
     - name: Build
       run: go build -v .
