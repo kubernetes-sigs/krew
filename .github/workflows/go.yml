@@ -23,8 +23,6 @@ jobs:
       run: |
         go mod download
         hack/install-gox.sh\
-      with:
-        path: ./src/github.com/${{ github.repository }}
 
     - name: Install dependencies
       run: |
