@@ -5,6 +5,9 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+    env:
+      GOPATH: ${{ runner.workspace }}
+      GO111MODULE: off
     steps:
 
     - name: Set up Go 1.13
@@ -19,7 +22,9 @@ jobs:
     - name: Prepare environment
       run: |
         go mod download
-        hack/install-gox.sh
+        hack/install-gox.sh\
+      with:
+        path: ./src/github.com/${{ github.repository }}
 
     - name: Install dependencies
       run: |
