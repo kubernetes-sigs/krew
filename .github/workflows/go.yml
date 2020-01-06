@@ -18,7 +18,9 @@ jobs:
 
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
-
+      with:
+        path: ./src/github.com/${{ github.repository }}
+    
     - name: Prepare environment
       run: |
         go mod download
