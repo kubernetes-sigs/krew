@@ -20,7 +20,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Prepare environment
-    - run: |
+      run: |
         go mod download
         hack/install-gox.sh\
       env:
