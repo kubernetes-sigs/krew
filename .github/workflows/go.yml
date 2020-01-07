@@ -1,5 +1,5 @@
 name: Go
-on: [push]
+on: [push, pull_request]
 jobs:
 
   build:
@@ -45,6 +45,3 @@ jobs:
         hack/ensure-kubectl-installed.sh
         hack/run-integration-tests.sh
         hack/verify-receipts-upgrade-migration.sh
-
-    - name: Build
-      run: go build -v .
