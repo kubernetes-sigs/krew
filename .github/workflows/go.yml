@@ -21,8 +21,8 @@ jobs:
         go mod download
         hack/install-gox.sh\
       env:
-        GOPATH: $HOME/go
-        GOBIN: $HOME/go/bin
+        GOPATH: /home/runner/work/krew/go
+        GOBIN: /home/runner/work/krew/go/bin
         PATH: $PATH:$GOBIN
 
     - name: Install dependencies
