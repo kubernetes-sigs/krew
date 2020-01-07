@@ -16,6 +16,14 @@ jobs:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v1
     
+    - name: Set GOPATH
+      # temporary fix
+      # see https://github.com/actions/setup-go/issues/14
+      run: |
+        echo "##[set-env name=GOPATH;]$(dirname $GITHUB_WORKSPACE)"
+        echo "##[add-path]$(dirname $GITHUB_WORKSPACE)/bin"
+      shell: bash
+    
     - name: Prepare environment
       run: |
         pwd
@@ -24,10 +32,6 @@ jobs:
         go env
         go mod download
         hack/install-gox.sh\
-      env:
-        GOPATH: /home/runner/work/krew/go
-        GOBIN: /home/runner/work/krew/go/bin
-        PATH: /home/runner/work/krew/go/bin
 
     - name: Install dependencies
       run: |
