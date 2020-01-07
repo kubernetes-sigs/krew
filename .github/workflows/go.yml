@@ -5,9 +5,6 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    env:
-      GOPATH: '$GITHUB_WORKSPACE'
-      GO111MODULE: off
     steps:
 
     - name: Set up Go 1.13
@@ -23,7 +20,7 @@ jobs:
     
     - name: Prepare environment
       run: |
-        export PATH=$PATH:$(go env GOPATH)/bin # temporary fix. See https://github.com/actions/setup-go/issues/14
+        pwd
         go mod download
         hack/install-gox.sh\
 
