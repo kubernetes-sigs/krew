@@ -20,9 +20,10 @@ jobs:
     
     - name: Prepare environment
       run: |
-        pwd
         go mod download
         hack/install-gox.sh\
+      env:
+        GOPATH: /home/runner/work/krew/go
 
     - name: Install dependencies
       run: |
