@@ -23,7 +23,6 @@ jobs:
       env:
         GOPATH: /home/runner/work/krew/go
         GOBIN: /home/runner/work/krew/go/bin
-        PATH: $PATH:$GOBIN
 
     - name: Install dependencies
       run: |
