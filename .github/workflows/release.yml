@@ -1,4 +1,3 @@
-name: Release Tag
 on:
   release:
     types: [created]
