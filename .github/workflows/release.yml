@@ -3,17 +3,30 @@ on:
     types: [created]
 name: Handle Release
 jobs:
-  generate:
-    name: Create release-artifacts
+  build:
+    name: Upload Release Asset
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout the repository
+      - name: Checkout code
         uses: actions/checkout@master
-      - name: Generate the artifacts
-        uses: skx/github-action-build@master
-      - name: Upload the artifacts
-        uses: skx/github-action-publish-binaries@master
+      - name: Build project # This would actually build your project, using zip for an example artifact
+        run: |
+          zip --junk-paths my-artifact README.md
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          args: 'example-*'
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: out/krew.*
+          asset_name: krew artifacts
+          tag: ${{ github.ref }}
+          overwrite: true
