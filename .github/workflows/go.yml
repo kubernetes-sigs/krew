@@ -18,11 +18,15 @@ jobs:
     
     - name: Prepare environment
       run: |
+        pwd
+        echo $GOPATH
+        ls
         go mod download
         hack/install-gox.sh\
       env:
         GOPATH: /home/runner/work/krew/go
         GOBIN: /home/runner/work/krew/go/bin
+        PATH: $PATH:/home/runner/work/krew/go/bin
 
     - name: Install dependencies
       run: |
