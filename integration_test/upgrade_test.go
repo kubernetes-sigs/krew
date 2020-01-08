@@ -82,8 +82,13 @@ func TestKrewUpgrade_ValidPluginInstalledFromManifest(t *testing.T) {
 	defer cleanup()
 
 	test.WithIndex().
-		Krew("install", "--manifest", filepath.Join("testdata", validNonIndexPlugin+constants.ManifestExtension)).
+		Krew("install", validPlugin).
 		RunOrFail()
+
+	validPluginPath := filepath.Join(test.Root(), "index", "plugins", validPlugin+constants.ManifestExtension)
+	if err := os.Remove(validPluginPath); err != nil {
+		t.Fatalf("can't remove valid plugin from index: %q", validPluginPath)
+	}
 
 	// if upgrading 'all' plugins, must succeed
 	out := string(test.Krew("upgrade", "--no-update-index").RunOrFailOutput())
@@ -92,7 +97,7 @@ func TestKrewUpgrade_ValidPluginInstalledFromManifest(t *testing.T) {
 	}
 
 	// if upgrading a specific plugin, it must fail, because it's not included into index
-	err := test.Krew("upgrade", validNonIndexPlugin, "--no-update-index").Run()
+	err := test.Krew("upgrade", validPlugin, "--no-update-index").Run()
 	if err == nil {
 		t.Fatal("expected failure when upgraded a specific plugin that is not included in index")
 	}
