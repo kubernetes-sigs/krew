@@ -26,7 +26,6 @@ jobs:
     
     - name: Prepare environment
       run: |
-        go env
         go mod download
         hack/install-gox.sh\
 
