@@ -26,9 +26,6 @@ jobs:
     
     - name: Prepare environment
       run: |
-        pwd
-        echo $GOPATH
-        echo $PATH
         go env
         go mod download
         hack/install-gox.sh\
