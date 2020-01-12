@@ -53,7 +53,7 @@ jobs:
       run: hack/run-integration-tests.sh
     
     - name: Receipts upgrade migrations
-        hack/verify-receipts-upgrade-migration.sh
+      run: hack/verify-receipts-upgrade-migration.sh
         
   release:
     name: Release a tag
