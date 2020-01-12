@@ -1,5 +1,13 @@
 name: Push or PR
-on: [push, pull_request]
+on: 
+  push:
+    branches: '*'
+    tags: '*'
+  pull_request:
+    branches: '*'
+  release:
+    types: [published, created, edited]
+
 jobs:
 
   build:
