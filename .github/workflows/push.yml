@@ -58,7 +58,6 @@ jobs:
   release:
     name: Release a tag
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'v\d+\.\d+\.\d+.*'
     steps:
     - name: Create release
       id: create_release
