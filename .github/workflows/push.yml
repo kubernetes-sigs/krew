@@ -58,6 +58,7 @@ jobs:
   release:
     name: Release a tag
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/tags/*'
     steps:
     - name: Create release
       id: create_release
