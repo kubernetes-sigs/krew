@@ -67,7 +67,7 @@ jobs:
       run: hack/verify-receipts-upgrade-migration.sh
         
   release:
-    needs: [build]
+    needs: build
     name: Release a tag
     runs-on: ubuntu-latest
     if: contains(github.ref, 'tags')
