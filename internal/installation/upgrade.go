@@ -16,7 +16,6 @@ package installation
 
 import (
 	"os"
-	"path/filepath"
 
 	"github.com/pkg/errors"
 	"k8s.io/klog"
@@ -74,11 +73,11 @@ func Upgrade(p environment.Paths, plugin index.Plugin) error {
 	// Re-Install
 	klog.V(1).Infof("Installing new version %s", newVersion)
 	if err := install(installOperation{
-		pluginName:         plugin.Name,
-		platform:           candidate,
-		downloadStagingDir: filepath.Join(p.DownloadPath(), plugin.Name),
-		installDir:         p.PluginVersionInstallPath(plugin.Name, newVersion),
-		binDir:             p.BinPath(),
+		pluginName: plugin.Name,
+		platform:   candidate,
+
+		installDir: p.PluginVersionInstallPath(plugin.Name, newVersion),
+		binDir:     p.BinPath(),
 	}, InstallOpts{}); err != nil {
 		return errors.Wrap(err, "failed to install new version")
 	}

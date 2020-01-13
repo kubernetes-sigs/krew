@@ -78,7 +78,6 @@ func init() {
 
 	paths = environment.MustGetKrewPaths()
 	if err := ensureDirs(paths.BasePath(),
-		paths.DownloadPath(),
 		paths.InstallPath(),
 		paths.BinPath(),
 		paths.InstallReceiptsPath()); err != nil {

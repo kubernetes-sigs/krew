@@ -36,7 +36,6 @@ Remarks:
   - BasePath is the root directory for krew installation.
   - IndexPath is the directory that stores the local copy of the index git repository.
   - InstallPath is the directory for plugin installations.
-  - DownloadPath is the directory for temporarily downloading plugins.
   - BinPath is the directory for the symbolic links to the installed plugin executables.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		conf := [][]string{
@@ -46,7 +45,6 @@ Remarks:
 			{"BasePath", paths.BasePath()},
 			{"IndexPath", paths.IndexPath()},
 			{"InstallPath", paths.InstallPath()},
-			{"DownloadPath", paths.DownloadPath()},
 			{"BinPath", paths.BinPath()},
 		}
 		return printTable(os.Stdout, []string{"OPTION", "VALUE"}, conf)

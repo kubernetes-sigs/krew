@@ -75,10 +75,6 @@ func (p Paths) InstallReceiptsPath() string { return filepath.Join(p.base, "rece
 // e.g. {BasePath}/bin
 func (p Paths) BinPath() string { return filepath.Join(p.base, "bin") }
 
-// DownloadPath returns a temporary directory for downloading plugins. It does
-// not create a new directory on each call.
-func (p Paths) DownloadPath() string { return filepath.Join(p.tmp, "krew-downloads") }
-
 // InstallPath returns the base directory for plugin installations.
 //
 // e.g. {BasePath}/store

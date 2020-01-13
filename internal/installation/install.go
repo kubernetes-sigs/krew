@@ -41,9 +41,8 @@ type installOperation struct {
 	pluginName string
 	platform   index.Platform
 
-	downloadStagingDir string
-	installDir         string
-	binDir             string
+	installDir string
+	binDir     string
 }
 
 // Plugin lifecycle errors
@@ -80,9 +79,8 @@ func Install(p environment.Paths, plugin index.Plugin, opts InstallOpts) error {
 		pluginName: plugin.Name,
 		platform:   candidate,
 
-		downloadStagingDir: filepath.Join(p.DownloadPath(), plugin.Name),
-		binDir:             p.BinPath(),
-		installDir:         p.PluginVersionInstallPath(plugin.Name, plugin.Spec.Version),
+		binDir:     p.BinPath(),
+		installDir: p.PluginVersionInstallPath(plugin.Name, plugin.Spec.Version),
 	}, opts); err != nil {
 		return errors.Wrap(err, "install failed")
 	}
@@ -93,22 +91,24 @@ func Install(p environment.Paths, plugin index.Plugin, opts InstallOpts) error {
 
 func install(op installOperation, opts InstallOpts) error {
 	// Download and extract
-	klog.V(3).Infof("Creating download staging directory %q", op.downloadStagingDir)
-	if err := os.MkdirAll(op.downloadStagingDir, 0755); err != nil {
-		return errors.Wrapf(err, "could not create staging dir %q", op.downloadStagingDir)
+	klog.V(3).Infof("Creating download staging directory")
+	downloadStagingDir, err := ioutil.TempDir("", "krew-downloads")
+	if err != nil {
+		return errors.Wrapf(err, "could not create staging dir %q", downloadStagingDir)
 	}
+	klog.V(3).Infof("Successfully created download staging directory %q", downloadStagingDir)
 	defer func() {
-		klog.V(3).Infof("Deleting the download staging directory %s", op.downloadStagingDir)
-		if err := os.RemoveAll(op.downloadStagingDir); err != nil {
+		klog.V(3).Infof("Deleting the download staging directory %s", downloadStagingDir)
+		if err := os.RemoveAll(downloadStagingDir); err != nil {
 			klog.Warningf("failed to clean up download staging directory: %s", err)
 		}
 	}()
-	if err := downloadAndExtract(op.downloadStagingDir, op.platform.URI, op.platform.Sha256, opts.ArchiveFileOverride); err != nil {
+	if err := downloadAndExtract(downloadStagingDir, op.platform.URI, op.platform.Sha256, opts.ArchiveFileOverride); err != nil {
 		return errors.Wrap(err, "failed to unpack into staging dir")
 	}
 
 	applyDefaults(&op.platform)
-	if err := moveToInstallDir(op.downloadStagingDir, op.installDir, op.platform.Files); err != nil {
+	if err := moveToInstallDir(downloadStagingDir, op.installDir, op.platform.Files); err != nil {
 		return errors.Wrap(err, "failed while moving files to the installation directory")
 	}
 
