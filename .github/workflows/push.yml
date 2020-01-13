@@ -1,10 +1,13 @@
 name: Push or PR
 on: 
   push:
-    branches: '*'
-    tags: '*'
+    branches: 
+      - '*'
+    tags: 
+      - 'v*.*.*'
   pull_request:
-    branches: '*'
+    branches: 
+      - '*'
   release:
     types: [published, created, edited]
 
@@ -66,7 +69,7 @@ jobs:
   release:
     name: Release a tag
     runs-on: ubuntu-latest
-    if: contains(github.ref, 'release')
+    if: contains(github.ref, 'tags')
     steps:
     - name: Create release
       id: create_release
