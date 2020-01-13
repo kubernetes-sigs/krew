@@ -52,10 +52,8 @@ jobs:
     - name: Unittest and coverage
       run: go test -short -coverprofile=coverage.txt -covermode=atomic ./...
         
-    - name: Make & verify artifacts
-      run: |
-        hack/make-all.sh
-        hack/verify-installation.sh
+    - name: Verify krew installation
+      run: hack/verify-installation.sh
         
     - name: Ensure kubectl installed
       run: hack/ensure-kubectl-installed.sh
@@ -82,6 +80,9 @@ jobs:
         release_name: Release ${{ github.ref }}
         draft: false
         prerelease: false
+        
+    - name: Make binaries to upload
+      run: hack/make-all.sh
 
     - name: Upload binaries to release
       uses: svenstaro/upload-release-action@v1-release
