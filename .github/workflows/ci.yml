@@ -82,6 +82,9 @@ jobs:
         release_name: Release ${{ github.ref }}
         draft: false
         prerelease: false
+    
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
         
     - name: Make binaries to upload
       run: |
