@@ -1,4 +1,4 @@
-name: Push or PR
+name: Kubernetes-sigs/krew CI
 on: 
   push:
     branches: 
@@ -14,7 +14,7 @@ on:
 jobs:
 
   build:
-    name: Build
+    name: Build and Tags
     runs-on: ubuntu-latest
     steps:
 
@@ -65,14 +65,9 @@ jobs:
     
     - name: Receipts upgrade migrations
       run: hack/verify-receipts-upgrade-migration.sh
-        
-  release:
-    needs: build
-    name: Release a tag
-    runs-on: ubuntu-latest
-    if: contains(github.ref, 'tags')
-    steps:
+
     - name: Create release
+      if: contains(github.ref, 'tags')
       id: create_release
       uses: actions/create-release@v1.0.0
       env:
@@ -82,15 +77,9 @@ jobs:
         release_name: Release ${{ github.ref }}
         draft: false
         prerelease: false
-    
-    - name: Check out code into the Go module directory
-      uses: actions/checkout@v2
-        
-    - name: Make binaries to upload
-      run: |
-        hack/make-all.sh
 
     - name: Upload binaries to release
+      if: contains(github.ref, 'tags')
       uses: svenstaro/upload-release-action@v1-release
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
