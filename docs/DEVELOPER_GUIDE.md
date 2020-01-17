@@ -327,7 +327,7 @@ needed to run the plugin in the `caveats:` field.
 ### Updating existing plugins
 
 When you have a newer version of your plugin, create a new pull request that
-updates thew `version`, `uri` and `sha256` fields of the plugin manifest file.
+updates the `version`, `uri` and `sha256` fields of the plugin manifest file.
 
 Ideally, the `version` specified should match the release tag of the plugin.
 This helps users and maintainers to easily identify which version of the plugin
