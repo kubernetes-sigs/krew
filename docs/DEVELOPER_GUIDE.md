@@ -333,5 +333,12 @@ Ideally, the `version` specified should match the release tag of the plugin.
 This helps users and maintainers to easily identify which version of the plugin
 they have installed.
 
+### Automating the releasing of new version
+
+You can use `github actions` to automate the release process. e.g. You can use
+`go-releaser` (or equivalent for other languages) for creation of new release and 
+[`krew-release-bot`](https://github.com/rajatjindal/krew-release-bot) to bump the 
+version in `krew-index` repo. Refer to the [documentation here](https://github.com/rajatjindal/krew-release-bot#basic-setup) for an example.
+
 [index]: https://github.com/kubernetes-sigs/krew-index
 [plugins]: https://kubernetes.io/docs/tasks/extend-kubectl/kubectl-plugins/
