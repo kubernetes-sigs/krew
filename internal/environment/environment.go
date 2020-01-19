@@ -87,6 +87,11 @@ func (p Paths) PluginInstallPath(plugin string) string {
 	return filepath.Join(p.InstallPath(), plugin)
 }
 
+// IndexConfigPath returns the path to the directory where the configuration for indices is.
+func (p Paths) IndexConfigPath() string {
+	return p.base
+}
+
 // PluginInstallReceiptPath returns the path to the install receipt for plugin.
 //
 // e.g. {InstallReceiptsPath}/{plugin}.yaml
