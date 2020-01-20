@@ -333,12 +333,12 @@ Ideally, the `version` specified should match the release tag of the plugin.
 This helps users and maintainers to easily identify which version of the plugin
 they have installed.
 
-### Automating the releasing of new version
+### Automate releasing new versions on krew-index
 
 You can use Github Actions to publish new release of your Krew plugin. 
-`krew-release-bot` is a github action to automatically bump the version in 
+`krew-release-bot` is a Github Action to automatically bump the version in 
 `krew-index` repo. 
-Refer to the [documentation here](https://github.com/rajatjindal/krew-release-bot) for details.
+Refer to the [krew-release-bot](https://github.com/rajatjindal/krew-release-bot) for details.
 
 [index]: https://github.com/kubernetes-sigs/krew-index
 [plugins]: https://kubernetes.io/docs/tasks/extend-kubectl/kubectl-plugins/
