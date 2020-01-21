@@ -32,6 +32,11 @@ func (i IndexConfig) WriteIndexConfig(alias, uri string) error {
 	return createIndexConfigFile(&i)
 }
 
+func (i *IndexConfig) RemoveIndex(key string) error {
+	delete(i.Indices, key)
+	return createIndexConfigFile(i)
+}
+
 func GetIndexConfig() (*IndexConfig, error) {
 	config, err := ioutil.ReadFile(environment.MustGetKrewPaths().IndexConfigPath() + "/indexconfig.yaml")
 	if os.IsNotExist(err) {

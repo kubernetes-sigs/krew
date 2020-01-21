@@ -46,6 +46,19 @@ var indexAddCmd = &cobra.Command{
 	},
 }
 
+var indexRemoveCmd = &cobra.Command{
+	Use:   "remove",
+	Short: "Remove a custom index that you've added",
+	Long:  "Remove a custom index that you've added",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		indexConfig, err := indexoperations.GetIndexConfig()
+		if err != nil {
+			return err
+		}
+		return indexConfig.RemoveIndex(args[0])
+	},
+}
+
 var indexListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List configured indices",
@@ -63,6 +76,7 @@ var indexListCmd = &cobra.Command{
 
 func init() {
 	indexCmd.AddCommand(indexAddCmd)
+	indexCmd.AddCommand(indexRemoveCmd)
 	indexCmd.AddCommand(indexListCmd)
 	rootCmd.AddCommand(indexCmd)
 }
