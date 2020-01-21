@@ -27,7 +27,7 @@ type IndexConfig struct {
 	Indices map[string]string `yaml:"indices"`
 }
 
-func (i IndexConfig) WriteIndexConfig(alias, uri string) error {
+func (i IndexConfig) AddIndex(alias, uri string) error {
 	i.Indices[alias] = uri
 	return createIndexConfigFile(&i)
 }

@@ -16,11 +16,14 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 
 	"sigs.k8s.io/krew/internal/index/indexoperations"
 )
+
+var indexConfig *indexoperations.IndexConfig
 
 // indexCmd represents the index command
 var indexCmd = &cobra.Command{
@@ -37,12 +40,7 @@ var indexAddCmd = &cobra.Command{
 	Short: "Add a custom index to download plugins from",
 	Long:  "Add a custom index to download plugins from",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Printf("index add: %+v\n", args)
-		indexConfig, err := indexoperations.GetIndexConfig()
-		if err != nil {
-			return err
-		}
-		return indexConfig.WriteIndexConfig(args[0], args[1])
+		return indexConfig.AddIndex(args[0], args[1])
 	},
 }
 
@@ -51,10 +49,6 @@ var indexRemoveCmd = &cobra.Command{
 	Short: "Remove a custom index that you've added",
 	Long:  "Remove a custom index that you've added",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		indexConfig, err := indexoperations.GetIndexConfig()
-		if err != nil {
-			return err
-		}
 		return indexConfig.RemoveIndex(args[0])
 	},
 }
@@ -65,16 +59,18 @@ var indexListCmd = &cobra.Command{
 	Long:  "List configured indices",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		indexConfig, err := indexoperations.GetIndexConfig()
-		if err != nil {
-			return err
-		}
 		fmt.Printf("%+v\n", indexConfig.Indices)
 		return nil
 	},
 }
 
 func init() {
+	ic, err := indexoperations.GetIndexConfig()
+	if err != nil {
+		fmt.Println("AHHHHHHHHH!")
+		os.Exit(1)
+	}
+	indexConfig = ic
 	indexCmd.AddCommand(indexAddCmd)
 	indexCmd.AddCommand(indexRemoveCmd)
 	indexCmd.AddCommand(indexListCmd)
