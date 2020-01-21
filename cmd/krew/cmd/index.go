@@ -49,6 +49,10 @@ var indexRemoveCmd = &cobra.Command{
 	Short: "Remove a custom index that you've added",
 	Long:  "Remove a custom index that you've added",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) == 0 {
+			fmt.Printf("Must provide an index name that you want to remove")
+			os.Exit(1)
+		}
 		return indexConfig.RemoveIndex(args[0])
 	},
 }

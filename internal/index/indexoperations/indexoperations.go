@@ -15,6 +15,7 @@
 package indexoperations
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 
@@ -33,6 +34,9 @@ func (i IndexConfig) AddIndex(alias, uri string) error {
 }
 
 func (i *IndexConfig) RemoveIndex(key string) error {
+	if _, ok := i.Indices[key]; !ok {
+		return fmt.Errorf("Must provide a valid index name to remove")
+	}
 	delete(i.Indices, key)
 	return createIndexConfigFile(i)
 }
