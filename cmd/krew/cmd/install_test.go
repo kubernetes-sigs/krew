@@ -33,8 +33,8 @@ func Test_readPluginFromURL(t *testing.T) {
 	}{
 		{
 			name:     "successful request",
-			url:      server.URL + "/konfig.yaml",
-			wantName: "konfig",
+			url:      server.URL + "/ctx.yaml",
+			wantName: "ctx",
 		},
 		{
 			name:    "invalid server",
