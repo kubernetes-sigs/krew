@@ -14,7 +14,6 @@ on:
 jobs:
 
   build:
-    name: Build and Tags
     runs-on: ubuntu-latest
     steps:
 
@@ -27,7 +26,7 @@ jobs:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
     
-    - name: Set GOPATH
+    - name: Add GOPATH/bin to PATH
       # temporary fix
       # see https://github.com/actions/setup-go/issues/14
       run: |
@@ -42,15 +41,18 @@ jobs:
       run: hack/install-gox.sh
       
     - name: Verify code quality
-      run: |
-        set -euo pipefail
-        go mod tidy 
-        git diff --no-patch --exit-code
-        hack/verify-code-patterns.sh
-        hack/verify-boilerplate.sh
-        hack/run-lint.sh
+      run: go mod tidy && git diff --no-patch --exit-code
         
-    - name: Unittest and coverage
+    - name: Verify code patterns
+      run: hack/verify-code-patterns.sh
+      
+    - name: Verify boilerplate
+      run: hack/verify-boilerplate.sh
+    
+    - name: Run code lint
+      run: hack/run-lint.sh
+        
+    - name: Run unit tests
       run: go test -short -coverprofile=coverage.txt -covermode=atomic ./...
         
     - name: Make binaries && verify krew installation
@@ -59,11 +61,11 @@ jobs:
     - name: Ensure kubectl installed
       run: hack/ensure-kubectl-installed.sh
         
-    - name: Integration tests
-      run: |
-        set -euo pipefail
-        hack/verify-installation.sh
-        hack/run-integration-tests.sh
+    - name: Verify installation
+      run: hack/verify-installation.sh
+    
+    - name: Run integration tests
+      run: hack/run-integration-tests.sh
     
     - name: Receipts upgrade migrations
       run: hack/verify-receipts-upgrade-migration.sh
