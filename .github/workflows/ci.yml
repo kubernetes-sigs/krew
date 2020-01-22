@@ -8,8 +8,6 @@ on:
   pull_request:
     branches: 
       - '*'
-  release:
-    types: [published, created, edited]
 
 jobs:
 
