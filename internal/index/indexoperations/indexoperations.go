@@ -30,17 +30,21 @@ type IndexConfig struct {
 }
 
 func (i IndexConfig) AddIndex(alias, uri string) error {
-	i.Indices[alias] = uri
 	err := gitutil.EnsureUpdated(uri, environment.MustGetKrewPaths().CustomIndicesPath(alias))
 	if err != nil {
 		return err
 	}
+	i.Indices[alias] = uri
 	return createIndexConfigFile(&i)
 }
 
 func (i *IndexConfig) RemoveIndex(key string) error {
 	if _, ok := i.Indices[key]; !ok {
 		return fmt.Errorf("Must provide a valid index name to remove")
+	}
+	err := os.RemoveAll(environment.MustGetKrewPaths().CustomIndicesPath(key))
+	if err != nil {
+		return err
 	}
 	delete(i.Indices, key)
 	return createIndexConfigFile(i)
