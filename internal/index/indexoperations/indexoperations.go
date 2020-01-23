@@ -22,6 +22,7 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"sigs.k8s.io/krew/internal/environment"
+	"sigs.k8s.io/krew/internal/gitutil"
 )
 
 type IndexConfig struct {
@@ -30,6 +31,10 @@ type IndexConfig struct {
 
 func (i IndexConfig) AddIndex(alias, uri string) error {
 	i.Indices[alias] = uri
+	err := gitutil.EnsureUpdated(uri, environment.MustGetKrewPaths().CustomIndicesPath(alias))
+	if err != nil {
+		return err
+	}
 	return createIndexConfigFile(&i)
 }
 
