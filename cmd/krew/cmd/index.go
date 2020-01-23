@@ -27,11 +27,13 @@ var indexConfig *indexoperations.IndexConfig
 
 // indexCmd represents the index command
 var indexCmd = &cobra.Command{
-	Use:    "index",
-	Short:  "Perform krew index commands",
-	Long:   "Perform krew index commands such as adding and removing indices.",
-	Args:   cobra.NoArgs,
-	Hidden: true,
+	Use:   "index",
+	Short: "Perform krew index commands",
+	Long:  "Perform krew index commands such as adding and removing indices.",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		fmt.Printf("%+v\n", indexConfig.Indices)
+		return nil
+	},
 }
 
 // indexAddCmd represents the index add command
@@ -57,17 +59,6 @@ var indexRemoveCmd = &cobra.Command{
 	},
 }
 
-var indexListCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List configured indices",
-	Long:  "List configured indices",
-	Args:  cobra.NoArgs,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Printf("%+v\n", indexConfig.Indices)
-		return nil
-	},
-}
-
 func init() {
 	ic, err := indexoperations.GetIndexConfig()
 	if err != nil {
@@ -77,6 +68,5 @@ func init() {
 	indexConfig = ic
 	indexCmd.AddCommand(indexAddCmd)
 	indexCmd.AddCommand(indexRemoveCmd)
-	indexCmd.AddCommand(indexListCmd)
 	rootCmd.AddCommand(indexCmd)
 }
