@@ -26,6 +26,7 @@ import (
 
 	"sigs.k8s.io/krew/internal/download"
 	"sigs.k8s.io/krew/internal/environment"
+	"sigs.k8s.io/krew/internal/index/indexoperations"
 	"sigs.k8s.io/krew/internal/installation/receipt"
 	"sigs.k8s.io/krew/internal/pathutil"
 	"sigs.k8s.io/krew/pkg/constants"
@@ -56,11 +57,23 @@ var (
 // to not get the plugin dir in a bad state if it fails during the process.
 func Install(p environment.Paths, plugin index.Plugin, indexName string, opts InstallOpts) error {
 	klog.V(2).Infof("Looking for installed versions")
-	_, err := receipt.Load(p.PluginInstallReceiptPath(plugin.Name, indexName))
+	_, err := receipt.Load(p.PluginInstallReceiptPath(plugin.Name, ""))
 	if err == nil {
 		return ErrIsAlreadyInstalled
 	} else if !os.IsNotExist(err) {
 		return errors.Wrap(err, "failed to look up plugin receipt")
+	}
+	indexConfig, err := indexoperations.GetIndexConfig()
+	if err != nil {
+		return errors.Wrap(err, "failed loading index config")
+	}
+	for index := range indexConfig.Indices {
+		_, err = receipt.Load(p.PluginInstallReceiptPath(plugin.Name, index))
+		if err == nil {
+			return ErrIsAlreadyInstalled
+		} else if !os.IsNotExist(err) {
+			return errors.Wrap(err, "failed to look up plugin receipt")
+		}
 	}
 
 	// Find available installation candidate
