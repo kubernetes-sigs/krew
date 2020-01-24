@@ -17,14 +17,17 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"k8s.io/klog"
 
 	"sigs.k8s.io/krew/cmd/krew/cmd/internal"
+	"sigs.k8s.io/krew/internal/index/indexoperations"
 	"sigs.k8s.io/krew/internal/index/indexscanner"
 	"sigs.k8s.io/krew/internal/installation"
+	"sigs.k8s.io/krew/pkg/index"
 )
 
 func init() {
@@ -43,7 +46,7 @@ kubectl krew upgrade foo bar"`,
 			var ignoreUpgraded bool
 			var skipErrors bool
 
-			var pluginNames []string
+			var pluginNames []map[string]string
 			if len(args) == 0 {
 				// Upgrade all plugins.
 				installed, err := installation.ListInstalledPlugins(paths.InstallReceiptsPath())
@@ -51,43 +54,70 @@ kubectl krew upgrade foo bar"`,
 					return errors.Wrap(err, "failed to find all installed versions")
 				}
 				for name := range installed {
-					pluginNames = append(pluginNames, name)
+					pluginNames = append(pluginNames, map[string]string{"name": name, "index": ""})
+				}
+				indexConfig, err := indexoperations.GetIndexConfig()
+				if err != nil {
+					return errors.Wrap(err, "failed to load index config")
+				}
+				for index := range indexConfig.Indices {
+					installed, err = installation.ListInstalledPlugins(paths.PluginInstallReceipts(index))
+					if err != nil {
+						return errors.Wrapf(err, "failed to find all installed versions for index %q", index)
+					}
+					for name := range installed {
+						pluginNames = append(pluginNames, map[string]string{"name": name, "index": index})
+					}
 				}
 				ignoreUpgraded = true
 				skipErrors = true
 			} else {
 				// Upgrade certain plugins
-				pluginNames = args
+				for _, arg := range args {
+					if strings.Contains(arg, "/") {
+						p := strings.Split(arg, "/")
+						pluginNames = append(pluginNames, map[string]string{"name": p[1], "index": p[0]})
+					} else {
+						pluginNames = append(pluginNames, map[string]string{"name": arg, "index": ""})
+					}
+				}
 			}
 
 			var nErrors int
 			for _, name := range pluginNames {
-				plugin, err := indexscanner.LoadPluginByName(paths.IndexPluginsPath(), name)
+				pluginName := name["name"]
+				var plugin index.Plugin
+				var err error
+				if name["index"] != "" {
+					plugin, err = indexscanner.LoadPluginByName(paths.CustomIndexPluginsPath(name["index"]), pluginName)
+				} else {
+					plugin, err = indexscanner.LoadPluginByName(paths.IndexPluginsPath(), pluginName)
+				}
 				if err != nil {
 					if !os.IsNotExist(err) {
-						return errors.Wrapf(err, "failed to load the plugin manifest for plugin %s", name)
+						return errors.Wrapf(err, "failed to load the plugin manifest for plugin %s", pluginName)
 					} else if !skipErrors {
-						return errors.Errorf("plugin %q does not exist in the plugin index", name)
+						return errors.Errorf("plugin %q does not exist in the plugin index", pluginName)
 					}
 				}
 
 				if err == nil {
-					fmt.Fprintf(os.Stderr, "Upgrading plugin: %s\n", name)
-					err = installation.Upgrade(paths, plugin)
+					fmt.Fprintf(os.Stderr, "Upgrading plugin: %s\n", pluginName)
+					err = installation.Upgrade(paths, plugin, name["index"])
 					if ignoreUpgraded && err == installation.ErrIsAlreadyUpgraded {
-						fmt.Fprintf(os.Stderr, "Skipping plugin %s, it is already on the newest version\n", name)
+						fmt.Fprintf(os.Stderr, "Skipping plugin %s, it is already on the newest version\n", pluginName)
 						continue
 					}
 				}
 				if err != nil {
 					nErrors++
 					if skipErrors {
-						fmt.Fprintf(os.Stderr, "WARNING: failed to upgrade plugin %q, skipping (error: %v)\n", name, err)
+						fmt.Fprintf(os.Stderr, "WARNING: failed to upgrade plugin %q, skipping (error: %v)\n", pluginName, err)
 						continue
 					}
-					return errors.Wrapf(err, "failed to upgrade plugin %q", name)
+					return errors.Wrapf(err, "failed to upgrade plugin %q", pluginName)
 				}
-				fmt.Fprintf(os.Stderr, "Upgraded plugin: %s\n", name)
+				fmt.Fprintf(os.Stderr, "Upgraded plugin: %s\n", pluginName)
 				internal.PrintSecurityNotice()
 			}
 			if nErrors > 0 {

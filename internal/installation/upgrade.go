@@ -29,8 +29,8 @@ import (
 
 // Upgrade will reinstall and delete the old plugin. The operation tries
 // to not get the plugin dir in a bad state if it fails during the process.
-func Upgrade(p environment.Paths, plugin index.Plugin) error {
-	installReceipt, err := receipt.Load(p.PluginInstallReceiptPath(plugin.Name, ""))
+func Upgrade(p environment.Paths, plugin index.Plugin, indexName string) error {
+	installReceipt, err := receipt.Load(p.PluginInstallReceiptPath(plugin.Name, indexName))
 	if err != nil {
 		return errors.Wrapf(err, "failed to load install receipt for plugin %q", plugin.Name)
 	}
@@ -66,7 +66,7 @@ func Upgrade(p environment.Paths, plugin index.Plugin) error {
 	klog.V(1).Infof("Plugin needs upgrade (%s < %s)", curv, newv)
 
 	klog.V(2).Infof("Upgrading install receipt for plugin %s", plugin.Name)
-	if err = receipt.Store(plugin, p.PluginInstallReceiptPath(plugin.Name, "")); err != nil {
+	if err = receipt.Store(plugin, p.PluginInstallReceiptPath(plugin.Name, indexName)); err != nil {
 		return errors.Wrap(err, "installation receipt could not be stored, uninstall may fail")
 	}
 
@@ -75,7 +75,7 @@ func Upgrade(p environment.Paths, plugin index.Plugin) error {
 	if err := install(installOperation{
 		pluginName: plugin.Name,
 		platform:   candidate,
-		installDir: p.PluginVersionInstallPath("", plugin.Name, newVersion),
+		installDir: p.PluginVersionInstallPath(indexName, plugin.Name, newVersion),
 		binDir:     p.BinPath(),
 	}, InstallOpts{}); err != nil {
 		return errors.Wrap(err, "failed to install new version")
@@ -83,7 +83,7 @@ func Upgrade(p environment.Paths, plugin index.Plugin) error {
 
 	// Clean old installations
 	klog.V(2).Infof("Starting old version cleanup")
-	return cleanupInstallation(p, plugin, curVersion)
+	return cleanupInstallation(p, plugin, indexName, curVersion)
 }
 
 // cleanupInstallation will remove a plugin directly if it not krew.
@@ -91,12 +91,12 @@ func Upgrade(p environment.Paths, plugin index.Plugin) error {
 // Krew on Windows needs special care because active directories can't be
 // deleted. This method will mark old krew versions and during next run clean
 // the directory.
-func cleanupInstallation(p environment.Paths, plugin index.Plugin, oldVersion string) error {
+func cleanupInstallation(p environment.Paths, plugin index.Plugin, indexName, oldVersion string) error {
 	if plugin.Name == constants.KrewPluginName && IsWindows() {
 		klog.V(1).Infof("not removing old version of krew during upgrade on windows (should be cleaned up on the next run)")
 		return nil
 	}
 
-	klog.V(1).Infof("Remove old plugin installation under %q", p.PluginVersionInstallPath("", plugin.Name, oldVersion))
-	return os.RemoveAll(p.PluginVersionInstallPath("", plugin.Name, oldVersion))
+	klog.V(1).Infof("Remove old plugin installation under %q", p.PluginVersionInstallPath(indexName, plugin.Name, oldVersion))
+	return os.RemoveAll(p.PluginVersionInstallPath(indexName, plugin.Name, oldVersion))
 }
