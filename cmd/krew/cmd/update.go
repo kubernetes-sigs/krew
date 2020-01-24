@@ -25,6 +25,7 @@ import (
 	"k8s.io/klog"
 
 	"sigs.k8s.io/krew/internal/gitutil"
+	"sigs.k8s.io/krew/internal/index/indexoperations"
 	"sigs.k8s.io/krew/internal/index/indexscanner"
 	"sigs.k8s.io/krew/internal/installation"
 	"sigs.k8s.io/krew/pkg/constants"
@@ -108,6 +109,15 @@ func ensureIndexUpdated(_ *cobra.Command, _ []string) error {
 	klog.V(1).Infof("Updating the local copy of plugin index (%s)", paths.IndexPath())
 	if err := gitutil.EnsureUpdated(constants.IndexURI, paths.IndexPath()); err != nil {
 		return errors.Wrap(err, "failed to update the local index")
+	}
+	indexConfig, err := indexoperations.GetIndexConfig()
+	if err != nil {
+		return errors.Wrap(err, "failed getting custom index config")
+	}
+	for index, uri := range indexConfig.Indices {
+		if err := gitutil.EnsureUpdated(uri, paths.CustomIndexPath(index)); err != nil {
+			return errors.Wrapf(err, "failed to update the local custom index %q", index)
+		}
 	}
 	fmt.Fprintln(os.Stderr, "Updated the local copy of plugin index.")
 
