@@ -25,6 +25,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
+	"sigs.k8s.io/krew/internal/index/indexoperations"
 	"sigs.k8s.io/krew/internal/installation"
 )
 
@@ -44,6 +45,20 @@ Remarks:
 			if err != nil {
 				return errors.Wrap(err, "failed to find all installed versions")
 			}
+			indexConfig, err := indexoperations.GetIndexConfig()
+			if err != nil {
+				return errors.Wrap(err, "error getting index config")
+			}
+			customIndexPlugins := make(map[string]string)
+			for index := range indexConfig.Indices {
+				p, err := installation.ListInstalledPlugins(paths.PluginInstallReceipts(index))
+				if err != nil {
+					return errors.Wrapf(err, "failed to find all installed versions for index %q", index)
+				}
+				for k, v := range p {
+					customIndexPlugins[index+"/"+k] = v
+				}
+			}
 
 			// return sorted list of plugin names when piped to other commands or file
 			if !isTerminal(os.Stdout) {
@@ -53,6 +68,14 @@ Remarks:
 				}
 				sort.Strings(names)
 				fmt.Fprintln(os.Stdout, strings.Join(names, "\n"))
+				if len(customIndexPlugins) != 0 {
+					var customNames []string
+					for name := range customIndexPlugins {
+						customNames = append(customNames, name)
+					}
+					sort.Strings(customNames)
+					fmt.Fprintln(os.Stdout, strings.Join(customNames, "\n"))
+				}
 				return nil
 			}
 
@@ -62,6 +85,14 @@ Remarks:
 				rows = append(rows, []string{p, version})
 			}
 			rows = sortByFirstColumn(rows)
+			if len(customIndexPlugins) != 0 {
+				var customRows [][]string
+				for p, version := range customIndexPlugins {
+					customRows = append(customRows, []string{p, version})
+				}
+				customRows = sortByFirstColumn(customRows)
+				rows = append(rows, customRows...)
+			}
 			return printTable(os.Stdout, []string{"PLUGIN", "VERSION"}, rows)
 		},
 		PreRunE: checkIndex,
