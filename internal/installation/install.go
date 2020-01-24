@@ -54,9 +54,9 @@ var (
 
 // Install will download and install a plugin. The operation tries
 // to not get the plugin dir in a bad state if it fails during the process.
-func Install(p environment.Paths, plugin index.Plugin, opts InstallOpts) error {
+func Install(p environment.Paths, plugin index.Plugin, indexName string, opts InstallOpts) error {
 	klog.V(2).Infof("Looking for installed versions")
-	_, err := receipt.Load(p.PluginInstallReceiptPath(plugin.Name))
+	_, err := receipt.Load(p.PluginInstallReceiptPath(plugin.Name, indexName))
 	if err == nil {
 		return ErrIsAlreadyInstalled
 	} else if !os.IsNotExist(err) {
@@ -78,14 +78,20 @@ func Install(p environment.Paths, plugin index.Plugin, opts InstallOpts) error {
 	if err := install(installOperation{
 		pluginName: plugin.Name,
 		platform:   candidate,
-
 		binDir:     p.BinPath(),
-		installDir: p.PluginVersionInstallPath(plugin.Name, plugin.Spec.Version),
+		installDir: p.PluginVersionInstallPath(indexName, plugin.Name, plugin.Spec.Version),
 	}, opts); err != nil {
 		return errors.Wrap(err, "install failed")
 	}
 	klog.V(3).Infof("Storing install receipt for plugin %s", plugin.Name)
-	err = receipt.Store(plugin, p.PluginInstallReceiptPath(plugin.Name))
+
+	// Ensure if custom index directory exists
+	if indexName != "" {
+		if err = os.MkdirAll(p.InstallReceiptsPath()+"/"+indexName, 0755); err != nil {
+			return errors.Wrapf(err, "could not create custom index receipt dir %q", p.InstallReceiptsPath()+"/"+indexName)
+		}
+	}
+	err = receipt.Store(plugin, p.PluginInstallReceiptPath(plugin.Name, indexName))
 	return errors.Wrap(err, "installation receipt could not be stored, uninstall may fail")
 }
 
@@ -160,7 +166,14 @@ func Uninstall(p environment.Paths, name string) error {
 	}
 	klog.V(3).Infof("Finding installed version to delete")
 
-	if _, err := receipt.Load(p.PluginInstallReceiptPath(name)); err != nil {
+	pluginName := name
+	indexName := ""
+	if strings.Contains(name, "/") {
+		p := strings.Split(name, "/")
+		indexName = p[0]
+		pluginName = p[1]
+	}
+	if _, err := receipt.Load(p.PluginInstallReceiptPath(pluginName, indexName)); err != nil {
 		if os.IsNotExist(err) {
 			return ErrIsNotInstalled
 		}
@@ -169,18 +182,18 @@ func Uninstall(p environment.Paths, name string) error {
 
 	klog.V(1).Infof("Deleting plugin %s", name)
 
-	symlinkPath := filepath.Join(p.BinPath(), pluginNameToBin(name, IsWindows()))
+	symlinkPath := filepath.Join(p.BinPath(), pluginNameToBin(pluginName, IsWindows()))
 	klog.V(3).Infof("Unlink %q", symlinkPath)
 	if err := removeLink(symlinkPath); err != nil {
 		return errors.Wrap(err, "could not uninstall symlink of plugin")
 	}
 
-	pluginInstallPath := p.PluginInstallPath(name)
+	pluginInstallPath := p.PluginInstallPath(pluginName, indexName)
 	klog.V(3).Infof("Deleting path %q", pluginInstallPath)
 	if err := os.RemoveAll(pluginInstallPath); err != nil {
 		return errors.Wrapf(err, "could not remove plugin directory %q", pluginInstallPath)
 	}
-	pluginReceiptPath := p.PluginInstallReceiptPath(name)
+	pluginReceiptPath := p.PluginInstallReceiptPath(pluginName, indexName)
 	klog.V(3).Infof("Deleting plugin receipt %q", pluginReceiptPath)
 	err := os.Remove(pluginReceiptPath)
 	return errors.Wrapf(err, "could not remove plugin receipt %q", pluginReceiptPath)

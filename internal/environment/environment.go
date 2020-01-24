@@ -91,8 +91,8 @@ func (p Paths) InstallPath() string { return filepath.Join(p.base, "store") }
 // PluginInstallPath returns the path to install the plugin.
 //
 // e.g. {InstallPath}/{version}/{..files..}
-func (p Paths) PluginInstallPath(plugin string) string {
-	return filepath.Join(p.InstallPath(), plugin)
+func (p Paths) PluginInstallPath(plugin, index string) string {
+	return filepath.Join(p.InstallPath(), index, plugin)
 }
 
 // IndexConfigPath returns the path to the directory where the configuration for indices is.
@@ -103,16 +103,16 @@ func (p Paths) IndexConfigPath() string {
 // PluginInstallReceiptPath returns the path to the install receipt for plugin.
 //
 // e.g. {InstallReceiptsPath}/{plugin}.yaml
-func (p Paths) PluginInstallReceiptPath(plugin string) string {
-	return filepath.Join(p.InstallReceiptsPath(), plugin+constants.ManifestExtension)
+func (p Paths) PluginInstallReceiptPath(plugin, index string) string {
+	return filepath.Join(p.InstallReceiptsPath(), index, plugin+constants.ManifestExtension)
 }
 
 // PluginVersionInstallPath returns the path to the specified version of specified
 // plugin.
 //
 // e.g. {PluginInstallPath}/{plugin}/{version}
-func (p Paths) PluginVersionInstallPath(plugin, version string) string {
-	return filepath.Join(p.InstallPath(), plugin, version)
+func (p Paths) PluginVersionInstallPath(index, plugin, version string) string {
+	return filepath.Join(p.InstallPath(), index, plugin, version)
 }
 
 // Realpath evaluates symbolic links. If the path is not a symbolic link, it

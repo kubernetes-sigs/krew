@@ -90,13 +90,15 @@ Remarks:
 				return errors.New("--archive can be specified only with --manifest or --manifest-url")
 			}
 
-			var install []index.Plugin
+			var install []pluginInfo
 			for _, name := range pluginNames {
+				p := pluginInfo{}
 				var pluginPath, pluginName string
 				if strings.Contains(name, "/") {
-					p := strings.Split(name, "/")
-					pluginPath = paths.CustomIndexPluginsPath(p[0])
-					pluginName = p[1]
+					pluginDesciptor := strings.Split(name, "/")
+					pluginPath = paths.CustomIndexPluginsPath(pluginDesciptor[0])
+					pluginName = pluginDesciptor[1]
+					p.index = pluginDesciptor[0]
 				} else {
 					pluginPath = paths.IndexPluginsPath()
 					pluginName = name
@@ -108,7 +110,8 @@ Remarks:
 					}
 					return errors.Wrapf(err, "failed to load plugin %q from the index", name)
 				}
-				install = append(install, plugin)
+				p.plugin = plugin
+				install = append(install, p)
 			}
 
 			if *manifest != "" {
@@ -116,13 +119,13 @@ Remarks:
 				if err != nil {
 					return errors.Wrap(err, "failed to load plugin manifest from file")
 				}
-				install = append(install, plugin)
+				install = append(install, pluginInfo{plugin: plugin})
 			} else if *manifestURL != "" {
 				plugin, err := readPluginFromURL(*manifestURL)
 				if err != nil {
 					return errors.Wrap(err, "failed to read plugin manifest file from url")
 				}
-				install = append(install, plugin)
+				install = append(install, pluginInfo{plugin: plugin})
 			}
 
 			if len(install) == 0 {
@@ -130,35 +133,35 @@ Remarks:
 			}
 
 			for _, plugin := range install {
-				klog.V(2).Infof("Will install plugin: %s\n", plugin.Name)
+				klog.V(2).Infof("Will install plugin: %s\n", plugin.plugin.Name)
 			}
 
 			var failed []string
 			var returnErr error
 			for _, plugin := range install {
-				fmt.Fprintf(os.Stderr, "Installing plugin: %s\n", plugin.Name)
-				err := installation.Install(paths, plugin, installation.InstallOpts{
+				fmt.Fprintf(os.Stderr, "Installing plugin: %s\n", plugin.plugin.Name)
+				err := installation.Install(paths, plugin.plugin, plugin.index, installation.InstallOpts{
 					ArchiveFileOverride: *archiveFileOverride,
 				})
 				if err == installation.ErrIsAlreadyInstalled {
-					klog.Warningf("Skipping plugin %q, it is already installed", plugin.Name)
+					klog.Warningf("Skipping plugin %q, it is already installed", plugin.plugin.Name)
 					continue
 				}
 				if err != nil {
-					klog.Warningf("failed to install plugin %q: %v", plugin.Name, err)
+					klog.Warningf("failed to install plugin %q: %v", plugin.plugin.Name, err)
 					if returnErr == nil {
 						returnErr = err
 					}
-					failed = append(failed, plugin.Name)
+					failed = append(failed, plugin.plugin.Name)
 					continue
 				}
-				fmt.Fprintf(os.Stderr, "Installed plugin: %s\n", plugin.Name)
-				output := fmt.Sprintf("Use this plugin:\n\tkubectl %s\n", plugin.Name)
-				if plugin.Spec.Homepage != "" {
-					output += fmt.Sprintf("Documentation:\n\t%s\n", plugin.Spec.Homepage)
+				fmt.Fprintf(os.Stderr, "Installed plugin: %s\n", plugin.plugin.Name)
+				output := fmt.Sprintf("Use this plugin:\n\tkubectl %s\n", plugin.plugin.Name)
+				if plugin.plugin.Spec.Homepage != "" {
+					output += fmt.Sprintf("Documentation:\n\t%s\n", plugin.plugin.Spec.Homepage)
 				}
-				if plugin.Spec.Caveats != "" {
-					output += fmt.Sprintf("Caveats:\n%s\n", indent(plugin.Spec.Caveats))
+				if plugin.plugin.Spec.Caveats != "" {
+					output += fmt.Sprintf("Caveats:\n%s\n", indent(plugin.plugin.Spec.Caveats))
 				}
 				fmt.Fprintln(os.Stderr, indent(output))
 				internal.PrintSecurityNotice()
@@ -200,4 +203,9 @@ func readPluginFromURL(url string) (index.Plugin, error) {
 		return index.Plugin{}, errors.Errorf("unexpected status code (http %d) from url", resp.StatusCode)
 	}
 	return indexscanner.ReadPlugin(resp.Body)
+}
+
+type pluginInfo struct {
+	plugin index.Plugin
+	index  string
 }

@@ -30,7 +30,7 @@ import (
 // Upgrade will reinstall and delete the old plugin. The operation tries
 // to not get the plugin dir in a bad state if it fails during the process.
 func Upgrade(p environment.Paths, plugin index.Plugin) error {
-	installReceipt, err := receipt.Load(p.PluginInstallReceiptPath(plugin.Name))
+	installReceipt, err := receipt.Load(p.PluginInstallReceiptPath(plugin.Name, ""))
 	if err != nil {
 		return errors.Wrapf(err, "failed to load install receipt for plugin %q", plugin.Name)
 	}
@@ -66,7 +66,7 @@ func Upgrade(p environment.Paths, plugin index.Plugin) error {
 	klog.V(1).Infof("Plugin needs upgrade (%s < %s)", curv, newv)
 
 	klog.V(2).Infof("Upgrading install receipt for plugin %s", plugin.Name)
-	if err = receipt.Store(plugin, p.PluginInstallReceiptPath(plugin.Name)); err != nil {
+	if err = receipt.Store(plugin, p.PluginInstallReceiptPath(plugin.Name, "")); err != nil {
 		return errors.Wrap(err, "installation receipt could not be stored, uninstall may fail")
 	}
 
@@ -75,8 +75,7 @@ func Upgrade(p environment.Paths, plugin index.Plugin) error {
 	if err := install(installOperation{
 		pluginName: plugin.Name,
 		platform:   candidate,
-
-		installDir: p.PluginVersionInstallPath(plugin.Name, newVersion),
+		installDir: p.PluginVersionInstallPath("", plugin.Name, newVersion),
 		binDir:     p.BinPath(),
 	}, InstallOpts{}); err != nil {
 		return errors.Wrap(err, "failed to install new version")
@@ -98,6 +97,6 @@ func cleanupInstallation(p environment.Paths, plugin index.Plugin, oldVersion st
 		return nil
 	}
 
-	klog.V(1).Infof("Remove old plugin installation under %q", p.PluginVersionInstallPath(plugin.Name, oldVersion))
-	return os.RemoveAll(p.PluginVersionInstallPath(plugin.Name, oldVersion))
+	klog.V(1).Infof("Remove old plugin installation under %q", p.PluginVersionInstallPath("", plugin.Name, oldVersion))
+	return os.RemoveAll(p.PluginVersionInstallPath("", plugin.Name, oldVersion))
 }

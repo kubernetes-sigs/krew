@@ -15,14 +15,15 @@
 package indexoperations
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 
+	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 
 	"sigs.k8s.io/krew/internal/environment"
 	"sigs.k8s.io/krew/internal/gitutil"
+	"sigs.k8s.io/krew/pkg/constants"
 )
 
 type IndexConfig struct {
@@ -40,7 +41,7 @@ func (i IndexConfig) AddIndex(alias, uri string) error {
 
 func (i *IndexConfig) RemoveIndex(key string) error {
 	if _, ok := i.Indices[key]; !ok {
-		return fmt.Errorf("Must provide a valid index name to remove")
+		return errors.Errorf("must provide a valid index name to remove")
 	}
 	err := os.RemoveAll(environment.MustGetKrewPaths().CustomIndexPath(key))
 	if err != nil {
@@ -51,15 +52,15 @@ func (i *IndexConfig) RemoveIndex(key string) error {
 }
 
 func GetIndexConfig() (*IndexConfig, error) {
-	config, err := ioutil.ReadFile(environment.MustGetKrewPaths().IndexConfigPath() + "/indexconfig.yaml")
+	config, err := ioutil.ReadFile(environment.MustGetKrewPaths().IndexConfigPath() + "/indexconfig" + constants.ManifestExtension)
 	if os.IsNotExist(err) {
-		indexConfig := &IndexConfig{Indices: make(map[string]string, 0)}
+		indexConfig := &IndexConfig{Indices: make(map[string]string)}
 		err = createIndexConfigFile(indexConfig)
 		return indexConfig, err
 	} else if err != nil {
 		return nil, err
 	}
-	indexConfig := &IndexConfig{Indices: make(map[string]string, 0)}
+	indexConfig := &IndexConfig{Indices: make(map[string]string)}
 	err = yaml.Unmarshal(config, indexConfig)
 	if err != nil {
 		return nil, err
@@ -72,5 +73,5 @@ func createIndexConfigFile(indexConfig *IndexConfig) error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(environment.MustGetKrewPaths().IndexConfigPath()+"/indexconfig.yaml", out, 0644)
+	return ioutil.WriteFile(environment.MustGetKrewPaths().IndexConfigPath()+"/indexconfig"+constants.ManifestExtension, out, 0644)
 }

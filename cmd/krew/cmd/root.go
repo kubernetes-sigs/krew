@@ -108,7 +108,7 @@ func preRun(cmd *cobra.Command, _ []string) error {
 }
 
 func cleanupStaleKrewInstallations() error {
-	r, err := receipt.Load(paths.PluginInstallReceiptPath(constants.KrewPluginName))
+	r, err := receipt.Load(paths.PluginInstallReceiptPath(constants.KrewPluginName, ""))
 	if os.IsNotExist(err) {
 		klog.V(1).Infof("could not find krew's own plugin receipt, skipping cleanup of stale krew installations")
 		return nil
@@ -118,7 +118,7 @@ func cleanupStaleKrewInstallations() error {
 	v := r.Spec.Version
 
 	klog.V(1).Infof("Clean up krew stale installations, current=%s", v)
-	return installation.CleanupStaleKrewInstallations(paths.PluginInstallPath(constants.KrewPluginName), v)
+	return installation.CleanupStaleKrewInstallations(paths.PluginInstallPath(constants.KrewPluginName, ""), v)
 }
 
 func checkIndex(_ *cobra.Command, _ []string) error {
