@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -91,7 +92,16 @@ Remarks:
 
 			var install []index.Plugin
 			for _, name := range pluginNames {
-				plugin, err := indexscanner.LoadPluginByName(paths.IndexPluginsPath(), name)
+				var pluginPath, pluginName string
+				if strings.Contains(name, "/") {
+					p := strings.Split(name, "/")
+					pluginPath = paths.CustomIndexPluginsPath(p[0])
+					pluginName = p[1]
+				} else {
+					pluginPath = paths.IndexPluginsPath()
+					pluginName = name
+				}
+				plugin, err := indexscanner.LoadPluginByName(pluginPath, pluginName)
 				if err != nil {
 					if os.IsNotExist(err) {
 						return errors.Errorf("plugin %q does not exist in the plugin index", name)

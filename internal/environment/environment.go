@@ -59,8 +59,13 @@ func (p Paths) BasePath() string { return p.base }
 // e.g. {BasePath}/index/
 func (p Paths) IndexPath() string { return filepath.Join(p.base, "index") }
 
-// CustomIndicesPath returns the directory to the custom indices that have been added
-func (p Paths) CustomIndicesPath(dir string) string { return filepath.Join(p.base, "custom", dir) }
+// CustomIndexPath returns the directory to the custom indices that have been added
+func (p Paths) CustomIndexPath(dir string) string { return filepath.Join(p.base, "custom", dir) }
+
+// CustomIndexPluginsPath returns the plugins directory of the specified custom index
+func (p Paths) CustomIndexPluginsPath(index string) string {
+	return filepath.Join(p.base, "custom", index, "plugins")
+}
 
 // IndexPluginsPath returns the plugins directory of the index repository.
 //
