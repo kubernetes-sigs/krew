@@ -1,0 +1,94 @@
+name: Kubernetes-sigs/krew CI
+on: 
+  push:
+    branches: 
+      - '*'
+    tags: 
+      - 'v*.*.*'
+  pull_request:
+    branches: 
+      - '*'
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Set up Go 1.13
+      uses: actions/setup-go@v1
+      with:
+        go-version: 1.13
+      id: go
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
+    
+    - name: Add GOPATH/bin to PATH
+      # temporary fix
+      # see https://github.com/actions/setup-go/issues/14
+      run: |
+        set -euo pipefail
+        echo "##[set-env name=GOPATH;]$(dirname $GITHUB_WORKSPACE)"
+        echo "##[add-path]$(dirname $GITHUB_WORKSPACE)/bin"
+    
+    - name: Install dependencies
+      run: go mod download
+    
+    - name: Install gox
+      run: hack/install-gox.sh
+      
+    - name: Verify code quality
+      run: go mod tidy && git diff --no-patch --exit-code
+        
+    - name: Verify code patterns
+      run: hack/verify-code-patterns.sh
+      
+    - name: Verify boilerplate
+      run: hack/verify-boilerplate.sh
+    
+    - name: Run code lint
+      run: hack/run-lint.sh
+        
+    - name: Run unit tests
+      run: go test -short -coverprofile=coverage.txt -covermode=atomic ./...
+        
+    - name: Make binaries && verify krew installation
+      run: hack/make-all.sh
+        
+    - name: Ensure kubectl installed
+      run: hack/ensure-kubectl-installed.sh
+        
+    - name: Verify installation
+      run: hack/verify-installation.sh
+    
+    - name: Run integration tests
+      run: hack/run-integration-tests.sh
+    
+    - name: Receipts upgrade migrations
+      run: hack/verify-receipts-upgrade-migration.sh
+
+    - name: Create release
+      if: contains(github.ref, 'tags')
+      id: create_release
+      uses: actions/create-release@v1.0.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+
+    - name: Upload binaries to release
+      if: contains(github.ref, 'tags')
+      uses: svenstaro/upload-release-action@v1-release
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: out/krew.*
+        tag: ${{ github.ref }}
+        overwrite: true
+        file_glob: true
+
+      
+
