@@ -338,7 +338,7 @@ they have installed.
 You can use Github Actions to publish new release of your Krew plugin. 
 `krew-release-bot` is a Github Action to automatically bump the version in 
 `krew-index` repo. 
-Refer to the [krew-release-bot](https://github.com/rajatjindal/krew-release-bot) for details.
+Refer to the [krew-release-bot](https://github.com/rajatjindal/krew-release-bot) documentation for details.
 
 [index]: https://github.com/kubernetes-sigs/krew-index
 [plugins]: https://kubernetes.io/docs/tasks/extend-kubectl/kubectl-plugins/
