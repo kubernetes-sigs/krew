@@ -19,11 +19,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-
-	"sigs.k8s.io/krew/internal/index/indexoperations"
 )
-
-var indexConfig *indexoperations.IndexConfig
 
 // indexCmd represents the index command
 var indexCmd = &cobra.Command{
@@ -60,12 +56,6 @@ var indexRemoveCmd = &cobra.Command{
 }
 
 func init() {
-	ic, err := indexoperations.GetIndexConfig()
-	if err != nil {
-		fmt.Println("AHHHHHHHHH!")
-		os.Exit(1)
-	}
-	indexConfig = ic
 	indexCmd.AddCommand(indexAddCmd)
 	indexCmd.AddCommand(indexRemoveCmd)
 	rootCmd.AddCommand(indexCmd)

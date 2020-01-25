@@ -25,7 +25,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
-	"sigs.k8s.io/krew/internal/index/indexoperations"
 	"sigs.k8s.io/krew/internal/installation"
 )
 
@@ -44,10 +43,6 @@ Remarks:
 			plugins, err := installation.ListInstalledPlugins(paths.InstallReceiptsPath())
 			if err != nil {
 				return errors.Wrap(err, "failed to find all installed versions")
-			}
-			indexConfig, err := indexoperations.GetIndexConfig()
-			if err != nil {
-				return errors.Wrap(err, "error getting index config")
 			}
 			customIndexPlugins := make(map[string]string)
 			for index := range indexConfig.Indices {

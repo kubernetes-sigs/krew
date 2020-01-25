@@ -24,7 +24,6 @@ import (
 	"k8s.io/klog"
 
 	"sigs.k8s.io/krew/cmd/krew/cmd/internal"
-	"sigs.k8s.io/krew/internal/index/indexoperations"
 	"sigs.k8s.io/krew/internal/index/indexscanner"
 	"sigs.k8s.io/krew/internal/installation"
 	"sigs.k8s.io/krew/pkg/index"
@@ -55,10 +54,6 @@ kubectl krew upgrade foo bar"`,
 				}
 				for name := range installed {
 					pluginNames = append(pluginNames, map[string]string{"name": name, "index": ""})
-				}
-				indexConfig, err := indexoperations.GetIndexConfig()
-				if err != nil {
-					return errors.Wrap(err, "failed to load index config")
 				}
 				for index := range indexConfig.Indices {
 					installed, err = installation.ListInstalledPlugins(paths.PluginInstallReceipts(index))

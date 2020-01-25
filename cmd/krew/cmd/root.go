@@ -27,6 +27,7 @@ import (
 
 	"sigs.k8s.io/krew/internal/environment"
 	"sigs.k8s.io/krew/internal/gitutil"
+	"sigs.k8s.io/krew/internal/index/indexoperations"
 	"sigs.k8s.io/krew/internal/installation"
 	"sigs.k8s.io/krew/internal/installation/receipt"
 	"sigs.k8s.io/krew/internal/receiptsmigration"
@@ -34,7 +35,8 @@ import (
 )
 
 var (
-	paths environment.Paths // krew paths used by the process
+	paths       environment.Paths // krew paths used by the process
+	indexConfig indexoperations.IndexConfig
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -83,6 +85,11 @@ func init() {
 		paths.InstallReceiptsPath()); err != nil {
 		klog.Fatal(err)
 	}
+	ic, err := indexoperations.GetIndexConfig()
+	if err != nil {
+		klog.Fatal(err)
+	}
+	indexConfig = *ic
 }
 
 func preRun(cmd *cobra.Command, _ []string) error {
