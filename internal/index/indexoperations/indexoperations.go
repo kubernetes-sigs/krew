@@ -19,7 +19,7 @@ import (
 	"os"
 
 	"github.com/pkg/errors"
-	"gopkg.in/yaml.v2"
+	"sigs.k8s.io/yaml"
 
 	"sigs.k8s.io/krew/internal/environment"
 	"sigs.k8s.io/krew/internal/gitutil"
