@@ -41,6 +41,12 @@ Check out the list of [kubectl plugins available on krew][list] or just run
 
 > :warning: **Warning:** krew is only compatible with kubectl v1.12 or higher.
 
+**Homebrew:**
+
+You can install krew using [brew](https://brew.sh/):
+
+    brew install krew
+
 **macOS and Linux:**
 
 #### Bash and ZSH
