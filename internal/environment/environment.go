@@ -92,7 +92,11 @@ func (p Paths) InstallPath() string { return filepath.Join(p.base, "store") }
 //
 // e.g. {InstallPath}/{version}/{..files..}
 func (p Paths) PluginInstallPath(plugin, index string) string {
-	return filepath.Join(p.InstallPath(), index, plugin)
+	indexSubdir := ""
+	if index != "" {
+		indexSubdir = "krew-indices"
+	}
+	return filepath.Join(p.InstallPath(), indexSubdir, index, plugin)
 }
 
 // IndexConfigPath returns the path to the directory where the configuration for indices is.
@@ -116,7 +120,11 @@ func (p Paths) PluginInstallReceiptPath(plugin, index string) string {
 //
 // e.g. {PluginInstallPath}/{plugin}/{version}
 func (p Paths) PluginVersionInstallPath(index, plugin, version string) string {
-	return filepath.Join(p.InstallPath(), index, plugin, version)
+	indexSubdir := ""
+	if index != "" {
+		indexSubdir = "krew-indices"
+	}
+	return filepath.Join(p.InstallPath(), indexSubdir, index, plugin, version)
 }
 
 // Realpath evaluates symbolic links. If the path is not a symbolic link, it
