@@ -29,7 +29,8 @@ Before creating a plugin, read the [Kubernetes Plugins documentation][plugins].
 **If you are writing a plugin in Go:** Consider using the
 [cli-runtime](https://github.com/kubernetes/cli-runtime/) project which is
 designed to provide the same command-line arguments, kubeconfig parser,
-Kubernetes API REST client, and printing logic.
+Kubernetes API REST client, and printing logic. Look at [sample-cli-plugin](https://github.com/kubernetes/sample-cli-plugin)
+for an example of a kubectl plugin.
 
 **Unofficial Quickstart for Go:** For Go plugins, there's a
 [GitHub template repo](https://github.com/replicatedhq/krew-plugin-template)
@@ -332,6 +333,13 @@ updates the `version`, `uri` and `sha256` fields of the plugin manifest file.
 Ideally, the `version` specified should match the release tag of the plugin.
 This helps users and maintainers to easily identify which version of the plugin
 they have installed.
+
+### Automate releasing new versions on krew-index
+
+You can use Github Actions to publish new release of your Krew plugin. 
+`krew-release-bot` is a Github Action to automatically bump the version in 
+`krew-index` repo. 
+Refer to the [krew-release-bot](https://github.com/rajatjindal/krew-release-bot) documentation for details.
 
 [index]: https://github.com/kubernetes-sigs/krew-index
 [plugins]: https://kubernetes.io/docs/tasks/extend-kubectl/kubectl-plugins/
