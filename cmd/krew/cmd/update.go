@@ -47,7 +47,25 @@ Remarks:
 	RunE: ensureIndexUpdated,
 }
 
-func showUpdatedPlugins(out io.Writer, preUpdate []index.Plugin, posUpdate []index.Plugin, installedPlugins map[string]string) {
+func showFormattedPluginsInfo(out io.Writer, header string, plugins []string) {
+	var b bytes.Buffer
+	b.WriteString(fmt.Sprintf("  %s: ", header))
+
+	chunkSize := 5
+	var s []string
+	for i := 0; i < len(plugins); i += chunkSize {
+		end := i + chunkSize
+		if end > len(plugins) {
+			end = len(plugins)
+		}
+		s = append(s, strings.Join(plugins[i:end], ", "))
+	}
+
+	b.WriteString(strings.Join(s, "\n\t"))
+	fmt.Fprintln(out, b.String())
+}
+
+func showUpdatedPlugins(out io.Writer, preUpdate, posUpdate []index.Plugin, installedPlugins map[string]string) {
 	var newPlugins []index.Plugin
 	var updatedPlugins []index.Plugin
 
@@ -73,45 +91,37 @@ func showUpdatedPlugins(out io.Writer, preUpdate []index.Plugin, posUpdate []ind
 	}
 
 	if len(newPlugins) > 0 {
-		var b bytes.Buffer
-		b.WriteString("  New plugins available: ")
-
 		var s []string
 		for _, p := range newPlugins {
 			s = append(s, fmt.Sprintf("%s %s", p.Name, p.Spec.Version))
 		}
-		b.WriteString(strings.Join(s, ", "))
 
-		fmt.Fprintln(out, b.String())
-
+		showFormattedPluginsInfo(out, "New plugins available", s)
 	}
 
 	if len(updatedPlugins) > 0 {
-		var b bytes.Buffer
-		b.WriteString("  Upgrades available: ")
-
 		var s []string
 		for _, p := range updatedPlugins {
 			old := oldIndex[p.Name]
 			s = append(s, fmt.Sprintf("%s %s -> %s", p.Name, old.Spec.Version, p.Spec.Version))
 		}
-		b.WriteString(strings.Join(s, ", "))
 
-		fmt.Fprintln(out, b.String())
+		showFormattedPluginsInfo(out, "Upgrades available", s)
 	}
 }
 
 func ensureIndexUpdated(_ *cobra.Command, _ []string) error {
-	preUpdateIndex, err := indexscanner.LoadPluginListFromFS(paths.IndexPluginsPath())
-	if err != nil {
-		return errors.Wrap(err, "failed to load plugin index before update")
-	}
+	preUpdateIndex, _ := indexscanner.LoadPluginListFromFS(paths.IndexPluginsPath())
 
 	klog.V(1).Infof("Updating the local copy of plugin index (%s)", paths.IndexPath())
 	if err := gitutil.EnsureUpdated(constants.IndexURI, paths.IndexPath()); err != nil {
 		return errors.Wrap(err, "failed to update the local index")
 	}
 	fmt.Fprintln(os.Stderr, "Updated the local copy of plugin index.")
+
+	if len(preUpdateIndex) == 0 {
+		return nil
+	}
 
 	posUpdateIndex, err := indexscanner.LoadPluginListFromFS(paths.IndexPluginsPath())
 	if err != nil {
