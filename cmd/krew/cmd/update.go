@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -49,20 +48,13 @@ Remarks:
 
 func showFormattedPluginsInfo(out io.Writer, header string, plugins []string) {
 	var b bytes.Buffer
-	b.WriteString(fmt.Sprintf("  %s: ", header))
+	b.WriteString(fmt.Sprintf("  %s:\n", header))
 
-	chunkSize := 5
-	var s []string
-	for i := 0; i < len(plugins); i += chunkSize {
-		end := i + chunkSize
-		if end > len(plugins) {
-			end = len(plugins)
-		}
-		s = append(s, strings.Join(plugins[i:end], ", "))
+	for _, p := range plugins {
+		b.WriteString(fmt.Sprintf("    * %s\n", p))
 	}
 
-	b.WriteString(strings.Join(s, "\n\t"))
-	fmt.Fprintln(out, b.String())
+	fmt.Fprintf(out, "%s", b.String())
 }
 
 func showUpdatedPlugins(out io.Writer, preUpdate, posUpdate []index.Plugin, installedPlugins map[string]string) {
@@ -93,7 +85,7 @@ func showUpdatedPlugins(out io.Writer, preUpdate, posUpdate []index.Plugin, inst
 	if len(newPlugins) > 0 {
 		var s []string
 		for _, p := range newPlugins {
-			s = append(s, fmt.Sprintf("%s %s", p.Name, p.Spec.Version))
+			s = append(s, p.Name)
 		}
 
 		showFormattedPluginsInfo(out, "New plugins available", s)
@@ -106,7 +98,7 @@ func showUpdatedPlugins(out io.Writer, preUpdate, posUpdate []index.Plugin, inst
 			s = append(s, fmt.Sprintf("%s %s -> %s", p.Name, old.Spec.Version, p.Spec.Version))
 		}
 
-		showFormattedPluginsInfo(out, "Upgrades available", s)
+		showFormattedPluginsInfo(out, "Upgrades available for installed plugins", s)
 	}
 }
 
