@@ -27,7 +27,9 @@ var indexCmd = &cobra.Command{
 	Short: "Perform krew index commands",
 	Long:  "Perform krew index commands such as adding and removing indices.",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Printf("%+v\n", indexConfig.Indices)
+		if len(indexConfig.Indices) != 0 {
+			fmt.Printf("%+v\n", indexConfig.Indices)
+		}
 		return nil
 	},
 }
