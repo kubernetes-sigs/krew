@@ -58,18 +58,51 @@ Examples:
 			return errors.Wrap(err, "failed to load installed plugins")
 		}
 
+		customInstalled := make(map[string]string)
+		customPlugins := make([]pluginInfo, 0)
+		for name, index := range indexConfig.Indices {
+			plugins, err = indexscanner.LoadPluginListFromFS(paths.CustomIndexPluginsPath(name))
+			if err != nil {
+				return errors.Wrapf(err, "failed to load the list of plugins from the custom index: %s", index)
+			}
+			for _, plugin := range plugins {
+				customPlugins = append(customPlugins, pluginInfo{plugin: plugin, index: name})
+			}
+			i, err := installation.ListInstalledPlugins(paths.PluginInstallReceipts(name))
+			if err != nil {
+				return errors.Wrapf(err, "failed to load installed plugins from custom index: %s", index)
+			}
+			for k, v := range i {
+				customInstalled[name+"/"+k] = v
+			}
+		}
+		customNames := make(map[string][]string)
+		customPluginMap := make(map[string]index.Plugin, len(plugins))
+		for _, p := range customPlugins {
+			customNames[p.index] = append(customNames[p.index], p.plugin.Name)
+			customPluginMap[p.index+"/"+p.plugin.Name] = p.plugin
+		}
+
+		customMatchNames := make(map[string][]string)
 		var matchNames []string
 		if len(args) > 0 {
 			matches := fuzzy.Find(strings.Join(args, ""), names)
 			for _, m := range matches {
 				matchNames = append(matchNames, m.Str)
 			}
+			for k, v := range customNames {
+				matches = fuzzy.Find(strings.Join(args, ""), v)
+				for _, m := range matches {
+					customMatchNames[k] = append(matchNames, m.Str)
+				}
+			}
 		} else {
 			matchNames = names
+			customMatchNames = customNames
 		}
 
 		// No plugins found
-		if len(matchNames) == 0 {
+		if len(matchNames) == 0 && len(customMatchNames) == 0 {
 			return nil
 		}
 
@@ -90,6 +123,30 @@ Examples:
 			rows = append(rows, []string{name, limitString(plugin.Spec.ShortDescription, 50), status})
 		}
 		rows = sortByFirstColumn(rows)
+
+		if len(customMatchNames) != 0 {
+			var customRows [][]string
+			for index, vals := range customMatchNames {
+				for _, name := range vals {
+					fullName := index + "/" + name
+					plugin := customPluginMap[fullName]
+					var status string
+					if _, ok := customInstalled[fullName]; ok {
+						status = "yes"
+					} else if _, ok, err := installation.GetMatchingPlatform(plugin.Spec.Platforms); err != nil {
+						return errors.Wrapf(err, "failed to get the matching platform for plugin %s", fullName)
+					} else if ok {
+						status = "no"
+					} else {
+						status = "unavailable on " + runtime.GOOS
+					}
+					customRows = append(customRows, []string{fullName, limitString(plugin.Spec.ShortDescription, 50), status})
+				}
+			}
+			customRows = sortByFirstColumn(customRows)
+			rows = append(rows, customRows...)
+		}
+
 		return printTable(os.Stdout, cols, rows)
 	},
 	PreRunE: checkIndex,
