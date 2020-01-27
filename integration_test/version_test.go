@@ -35,7 +35,6 @@ func TestKrewVersion(t *testing.T) {
 		`IndexURI\s+https://github.com/kubernetes-sigs/krew-index.git`,
 		"IndexPath",
 		"InstallPath",
-		"DownloadPath",
 		"BinPath",
 	}
 
