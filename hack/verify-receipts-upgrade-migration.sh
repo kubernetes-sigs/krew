@@ -25,6 +25,7 @@ set -euo pipefail
 [[ -n "${DEBUG:-}" ]] && set -x
 
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source '${SCRIPTDIR}/resolve-link.sh'
 BINDIR="${SCRIPTDIR}/../out/bin"
 goos="$(go env GOOS)"
 goarch="$(go env GOARCH)"
@@ -56,7 +57,7 @@ patch_krew_bin() {
   new_binary="${2}"
 
   local old_binary
-  old_binary="$(readlink -f "${krew_root}/bin/kubectl-krew")"
+  old_binary="$(resolvelink "${krew_root}/bin/kubectl-krew")"
   cp -f "${new_binary}" "${old_binary}"
 }
 

@@ -64,3 +64,13 @@ if [[ -n "$out" ]]; then
   echo >&2 "$out"
   exit 1
 fi
+
+# Do not use readlink/stat/grep
+out="$(resolvegrep --include '*.sh' --exclude 'resolve-*.sh' -EIrn '((\$\{|\$\()(readlink|stat|grep))|(^(readlink|stat|grep))' || true)"
+if [[ -n "$out" ]]; then
+  echo >&2 "Do not use readlink, stat or grep in scripts,"
+  echo >&2 "use resolvelink or resolvegrep instead:"
+  echo >&2 "-----"
+  echo >&2 "$out"
+  exit 1
+fi
