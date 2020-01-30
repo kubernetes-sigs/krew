@@ -19,13 +19,19 @@ import (
 	"os"
 
 	"github.com/fatih/color"
+
+	"sigs.k8s.io/krew/pkg/constants"
 )
 
-const securityNotice = `You installed a plugin from the krew-index plugin repository.
+const securityNotice = `You installed plugin %q from the krew-index plugin repository.
    These plugins are not audited for security by the Krew maintainers.
    Run them at your own risk.`
 
-func PrintSecurityNotice() {
+func PrintSecurityNotice(plugin string) {
+	if plugin == constants.KrewPluginName {
+		return // do not warn for krew itself
+	}
 	boldRed := color.New(color.FgRed, color.Bold).SprintfFunc()
-	fmt.Fprintf(os.Stderr, "%s: %s\n", boldRed("WARNING"), securityNotice)
+	msg := fmt.Sprintf(securityNotice, plugin)
+	fmt.Fprintf(os.Stderr, "%s: %s\n", boldRed("WARNING"), msg)
 }
