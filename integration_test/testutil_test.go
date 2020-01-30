@@ -68,6 +68,8 @@ func NewTest(t *testing.T) (*ITest, func()) {
 		env: []string{
 			fmt.Sprintf("KREW_ROOT=%s", tempDir.Root()),
 			fmt.Sprintf("PATH=%s", augmentPATH(t, binDir)),
+			"KREW_OS=linux",
+			"KREW_ARCH=amd64",
 		},
 		tempDir: tempDir,
 	}, cleanup

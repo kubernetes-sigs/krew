@@ -19,6 +19,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"sigs.k8s.io/krew/internal/installation"
 	"sigs.k8s.io/krew/internal/version"
 	"sigs.k8s.io/krew/pkg/constants"
 )
@@ -46,6 +47,7 @@ Remarks:
 			{"IndexPath", paths.IndexPath()},
 			{"InstallPath", paths.InstallPath()},
 			{"BinPath", paths.BinPath()},
+			{"DetectedPlatform", installation.OSArch().String()},
 		}
 		return printTable(os.Stdout, []string{"OPTION", "VALUE"}, conf)
 	},
