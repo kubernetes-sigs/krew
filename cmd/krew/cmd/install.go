@@ -151,7 +151,7 @@ Remarks:
 					output += fmt.Sprintf("Caveats:\n%s\n", indent(plugin.Spec.Caveats))
 				}
 				fmt.Fprintln(os.Stderr, indent(output))
-				internal.PrintSecurityNotice()
+				internal.PrintSecurityNotice(plugin.Name)
 			}
 			if len(failed) > 0 {
 				return errors.Wrapf(returnErr, "failed to install some plugins: %+v", failed)

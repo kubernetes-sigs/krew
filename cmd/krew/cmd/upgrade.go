@@ -88,7 +88,7 @@ kubectl krew upgrade foo bar"`,
 					return errors.Wrapf(err, "failed to upgrade plugin %q", name)
 				}
 				fmt.Fprintf(os.Stderr, "Upgraded plugin: %s\n", name)
-				internal.PrintSecurityNotice()
+				internal.PrintSecurityNotice(plugin.Name)
 			}
 			if nErrors > 0 {
 				fmt.Fprintf(os.Stderr, "WARNING: Some plugins failed to upgrade, check logs above.\n")
