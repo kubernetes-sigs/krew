@@ -27,10 +27,6 @@ import (
 // ListInstalledPlugins returns a list of all install plugins in a
 // name:version format based on the install receipts at the specified dir.
 func ListInstalledPlugins(receiptsDir string) (map[string]string, error) {
-	// TODO(ahmetb): Write unit tests for this method. Currently blocked by
-	// lack of an in-memory recipt object (issue#270) that we can use to save
-	// receipts to a tempdir that can be read from unit tests.
-
 	matches, err := filepath.Glob(filepath.Join(receiptsDir, "*"+constants.ManifestExtension))
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to grab receipts directory (%s) for manifests", receiptsDir)
