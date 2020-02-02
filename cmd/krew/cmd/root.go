@@ -25,6 +25,7 @@ import (
 	"github.com/spf13/pflag"
 	"k8s.io/klog"
 
+	"sigs.k8s.io/krew/internal/assertion"
 	"sigs.k8s.io/krew/internal/environment"
 	"sigs.k8s.io/krew/internal/gitutil"
 	"sigs.k8s.io/krew/internal/installation"
@@ -34,7 +35,8 @@ import (
 )
 
 var (
-	paths environment.Paths // krew paths used by the process
+	paths         environment.Paths // krew paths used by the process
+	notifications = make(chan string)
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -46,6 +48,7 @@ You can invoke krew through kubectl: "kubectl krew [command]..."`,
 	SilenceUsage:      true,
 	SilenceErrors:     true,
 	PersistentPreRunE: preRun,
+	PersistentPostRun: postRun,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -104,7 +107,26 @@ func preRun(cmd *cobra.Command, _ []string) error {
 			klog.Warningf("You may need to clean them up manually. Error: %v", err)
 		}
 	}
+
+	go func() {
+		if msg := assertion.CheckVersion(paths.BasePath()); msg != "" {
+			notifications <- msg
+		}
+	}()
+
 	return nil
+}
+
+func postRun(*cobra.Command, []string) {
+	for {
+		select {
+		case msg := <-notifications:
+			fmt.Println(msg)
+		default:
+			close(notifications)
+			return
+		}
+	}
 }
 
 func cleanupStaleKrewInstallations() error {
