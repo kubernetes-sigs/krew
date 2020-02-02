@@ -57,7 +57,9 @@ jobs:
       run: hack/ensure-kubectl-installed.sh
         
     - name: Verify installation
-      run: hack/verify-installation.sh
+      run: |
+        export PATH=${PATH}:`go env GOPATH`/bin
+        hack/verify-installation.sh
     
     - name: Run integration tests
       run: hack/run-integration-tests.sh
