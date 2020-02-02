@@ -107,10 +107,11 @@ command may also upgrade your `krew` version.
 ### Krew upgrade check
 
 When using krew, it will check if a new version of krew is available once a day
-by calling the GitHub API. If you want to opt out of this feature, set the
-`KREW_NO_UPGRADE_CHECK` environment variable, for example:
+by calling the GitHub API. If you want to opt out of this feature, you can set
+the `KREW_NO_UPGRADE_CHECK` environment variable. To permanently disable this,
+add the following to your `~/.bashrc`, `~/.bash_profile`, or `~/.zshrc`:
 
-    KREW_NO_UPGRADE_CHECK=yes kubectl krew version
+    export KREW_NO_UPGRADE_CHECK=1
 
 ## Uninstalling Plugins
 
