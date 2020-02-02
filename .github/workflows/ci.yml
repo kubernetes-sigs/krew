@@ -51,15 +51,15 @@ jobs:
       run: go test -short -coverprofile=coverage.txt -covermode=atomic ./...
         
     - name: Make binaries && verify krew installation
-      run: hack/make-all.sh
+      run: |
+        export PATH=${PATH}:`go env GOPATH`/bin
+        hack/make-all.sh
         
     - name: Ensure kubectl installed
       run: hack/ensure-kubectl-installed.sh
         
     - name: Verify installation
-      run: |
-        export PATH=${PATH}:`go env GOPATH`/bin
-        hack/verify-installation.sh
+      run: hack/verify-installation.sh
     
     - name: Run integration tests
       run: hack/run-integration-tests.sh
