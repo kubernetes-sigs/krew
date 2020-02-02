@@ -35,8 +35,8 @@ import (
 )
 
 var (
-	paths         environment.Paths // krew paths used by the process
-	notifications = make(chan string)
+	paths               environment.Paths // krew paths used by the process
+	upgradeNotification = ""
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -112,23 +112,15 @@ func preRun(cmd *cobra.Command, _ []string) error {
 		if _, ok := os.LookupEnv("KREW_NO_UPGRADE_CHECK"); ok {
 			return
 		}
-		if msg := assertion.CheckVersion(paths.BasePath()); msg != "" {
-			notifications <- msg
-		}
+		upgradeNotification = assertion.CheckVersion(paths.BasePath())
 	}()
 
 	return nil
 }
 
 func postRun(*cobra.Command, []string) {
-	for {
-		select {
-		case msg := <-notifications:
-			fmt.Println(msg)
-		default:
-			close(notifications)
-			return
-		}
+	if upgradeNotification != "" {
+		fmt.Println(upgradeNotification)
 	}
 }
 
