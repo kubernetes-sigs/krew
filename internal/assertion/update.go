@@ -27,14 +27,14 @@ import (
 	"sigs.k8s.io/krew/internal/version"
 )
 
-const githubVersionURL = "https://api.github.com/repos/kubernetes-sigs/krew/releases/latest"
+const (
+	githubVersionURL = "https://api.github.com/repos/kubernetes-sigs/krew/releases/latest"
+
+	upgradeNotification = "You are using an old version of krew (%s). Please upgrade to the latest version (%s)"
+)
 
 // for testing
 var versionURL = githubVersionURL
-
-type githubResponse struct {
-	Tag string `json:"tag_name"`
-}
 
 // CheckVersion returns a notification message to inform the user
 // about a new version of krew, or an empty string. The notification
@@ -47,9 +47,7 @@ func CheckVersion(basePath string) string {
 		return ""
 	}
 	saveTimestamp(f)
-
-	bold := color.New(color.Bold)
-	return bold.Sprintf("You are using an old version of krew (%s). Please upgrade to the latest version (%s)", version.GitTag(), tag)
+	return color.New(color.Bold).Sprintf(upgradeNotification, version.GitTag(), tag)
 }
 
 // fetchTag tries to return the tag name of the most recent krew
@@ -62,13 +60,14 @@ func fetchTag(lastCheck time.Time) string {
 		return version.GitTag()
 	}
 
-	currentVersion, err := fetchLatestTagFromGithub()
-	if err != nil || currentVersion == "" {
+	latestTag, err := fetchLatestTagFromGithub()
+	if err != nil || latestTag == "" {
 		klog.V(3).Infof("Could not fetch most recent tag name: %s", err)
 		return version.GitTag()
 	}
 
-	return currentVersion
+	klog.V(4).Infof("Found latest tag %q", latestTag)
+	return latestTag
 }
 
 // fetchLatestTagFromGithub fetches the tag name of the latest release from github.
@@ -79,7 +78,10 @@ func fetchLatestTagFromGithub() (string, error) {
 		return "", err
 	}
 	defer response.Body.Close()
-	var res githubResponse
+
+	var res struct {
+		Tag string `json:"tag_name"`
+	}
 	if err := json.NewDecoder(response.Body).Decode(&res); err != nil {
 		klog.V(4).Infof("Could not parse the response from GitHub: %s", err)
 		return "", err
