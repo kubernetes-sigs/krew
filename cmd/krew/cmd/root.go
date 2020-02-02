@@ -25,12 +25,12 @@ import (
 	"github.com/spf13/pflag"
 	"k8s.io/klog"
 
-	"sigs.k8s.io/krew/internal/assertion"
 	"sigs.k8s.io/krew/internal/environment"
 	"sigs.k8s.io/krew/internal/gitutil"
 	"sigs.k8s.io/krew/internal/installation"
 	"sigs.k8s.io/krew/internal/installation/receipt"
 	"sigs.k8s.io/krew/internal/receiptsmigration"
+	"sigs.k8s.io/krew/internal/updatecheck"
 	"sigs.k8s.io/krew/pkg/constants"
 )
 
@@ -112,7 +112,7 @@ func preRun(cmd *cobra.Command, _ []string) error {
 		if _, ok := os.LookupEnv("KREW_NO_UPGRADE_CHECK"); ok {
 			return
 		}
-		upgradeNotification = assertion.CheckVersion(paths.BasePath())
+		upgradeNotification = updatecheck.CheckVersion(paths.BasePath())
 	}()
 
 	return nil
