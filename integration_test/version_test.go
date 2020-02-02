@@ -15,9 +15,12 @@
 package integrationtest
 
 import (
-	"fmt"
+	"path"
 	"regexp"
+	"strings"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 func TestKrewVersion(t *testing.T) {
@@ -26,21 +29,34 @@ func TestKrewVersion(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	output := test.Krew("version").RunOrFailOutput()
+	stdOut := string(test.Krew("version").RunOrFailOutput())
 
-	requiredSubstrings := []string{
-		fmt.Sprintf(`BasePath\s+%s`, test.Root()),
-		"GitTag",
-		"GitCommit",
-		`IndexURI\s+https://github.com/kubernetes-sigs/krew-index.git`,
-		"IndexPath",
-		"InstallPath",
-		"BinPath",
+	lineSplit := regexp.MustCompile(`\s+`)
+	actual := make(map[string]string)
+	for _, line := range strings.Split(stdOut, "\n") {
+		if line == "" {
+			continue
+		}
+		optionValue := lineSplit.Split(line, 2)
+		if len(optionValue) < 2 {
+			t.Errorf("Expect `krew version` to output `OPTION VALUE` pair separated by spaces, got: %v", optionValue)
+		}
+		actual[optionValue[0]] = optionValue[1]
 	}
 
-	for _, p := range requiredSubstrings {
-		if regexp.MustCompile(p).FindSubmatchIndex(output) == nil {
-			t.Errorf("Expected to find %q in output of `krew version`", p)
-		}
+	requiredSubstrings := map[string]string{
+		"OPTION":           "VALUE",
+		"BasePath":         test.Root(),
+		"GitTag":           "unknown",
+		"GitCommit":        "unknown",
+		"IndexURI":         "https://github.com/kubernetes-sigs/krew-index.git",
+		"IndexPath":        path.Join(test.Root(), "index"),
+		"InstallPath":      path.Join(test.Root(), "store"),
+		"BinPath":          path.Join(test.Root(), "bin"),
+		"DetectedPlatform": "linux/amd64",
+	}
+
+	if diff := cmp.Diff(actual, requiredSubstrings); diff != "" {
+		t.Errorf("`krew version` output mismatch (-got, +want):\n%s", diff)
 	}
 }
