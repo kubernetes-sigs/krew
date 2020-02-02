@@ -31,7 +31,9 @@ jobs:
       run: go mod download
     
     - name: Install gox
-      run: hack/install-gox.sh
+      run: | 
+        export PATH=${PATH}:`go env GOPATH`/bin
+        hack/install-gox.sh
       
     - name: Verify code quality
       run: go mod tidy && git diff --no-patch --exit-code
