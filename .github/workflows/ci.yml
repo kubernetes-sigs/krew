@@ -25,12 +25,7 @@ jobs:
       uses: actions/checkout@v2
     
     - name: Add GOPATH/bin to PATH
-      # temporary fix
-      # see https://github.com/actions/setup-go/issues/14
-      run: |
-        set -euo pipefail
-        echo "##[set-env name=GOPATH;]$(dirname $GITHUB_WORKSPACE)"
-        echo "##[add-path]$(dirname $GITHUB_WORKSPACE)/bin"
+      run: export PATH=${PATH}:`go env GOPATH`/bin
     
     - name: Install dependencies
       run: go mod download
