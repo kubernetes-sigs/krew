@@ -112,7 +112,11 @@ func preRun(cmd *cobra.Command, _ []string) error {
 		if _, ok := os.LookupEnv("KREW_NO_UPGRADE_CHECK"); ok {
 			return
 		}
-		upgradeNotification = updatecheck.CheckVersion(paths.BasePath())
+		msg, err := updatecheck.CheckVersion(paths.BasePath())
+		if err != nil {
+			klog.Warning(err)
+		}
+		upgradeNotification = msg
 	}()
 
 	return nil

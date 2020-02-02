@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/fatih/color"
+	"github.com/pkg/errors"
 	"k8s.io/klog"
 
 	"sigs.k8s.io/krew/internal/version"
@@ -30,7 +31,8 @@ import (
 const (
 	githubVersionURL = "https://api.github.com/repos/kubernetes-sigs/krew/releases/latest"
 
-	upgradeNotification = "You are using an old version of krew (%s). Please upgrade to the latest version (%s)"
+	upgradeNotification = `A newer version of krew is available (%s -> %s). 
+Run "kubectl krew upgrade" to get the newest version!`
 )
 
 // for testing
@@ -39,43 +41,31 @@ var versionURL = githubVersionURL
 // CheckVersion returns a notification message to inform the user
 // about a new version of krew, or an empty string. The notification
 // will only be emitted once a day.
-func CheckVersion(basePath string) string {
+func CheckVersion(basePath string) (string, error) {
 	f := filepath.Join(basePath, "last_update_check")
-	lastCheck := loadTimestamp(f)
-	tag := fetchTag(lastCheck)
-	if version.GitTag() == tag {
-		return ""
+	if lastCheck := loadTimestamp(f); time.Since(lastCheck).Hours() <= 24 {
+		klog.V(3).Info("Last check was recently, skipping update check")
+		return "", nil
+	}
+
+	latestTag, err := fetchLatestTag()
+	if err != nil {
+		return "", errors.Wrapf(err, "could not determine latest tag")
 	}
 	saveTimestamp(f)
-	return color.New(color.Bold).Sprintf(upgradeNotification, version.GitTag(), tag)
+
+	if version.GitTag() == latestTag {
+		klog.V(3).Info("Latest tag is same as ours.")
+		return "", nil
+	}
+	return color.New(color.Bold).Sprintf(upgradeNotification, version.GitTag(), latestTag), nil
 }
 
-// fetchTag tries to return the tag name of the most recent krew
-// release. If the last check happened recently, or an error occurs
-// the hardcoded tag of the executing krew binary will be returned.
-// This effectively disables the update notification message.
-func fetchTag(lastCheck time.Time) string {
-	if time.Since(lastCheck).Hours() <= 24 {
-		klog.V(3).Info("Last check was recently, skipping update check")
-		return version.GitTag()
-	}
-
-	latestTag, err := fetchLatestTagFromGithub()
-	if err != nil || latestTag == "" {
-		klog.V(3).Infof("Could not fetch most recent tag name: %s", err)
-		return version.GitTag()
-	}
-
-	klog.V(4).Infof("Found latest tag %q", latestTag)
-	return latestTag
-}
-
-// fetchLatestTagFromGithub fetches the tag name of the latest release from github.
-func fetchLatestTagFromGithub() (string, error) {
+// fetchLatestTag fetches the tag name of the latest release from GitHub.
+func fetchLatestTag() (string, error) {
 	response, err := http.Get(versionURL)
 	if err != nil {
-		klog.V(4).Infof("Could not GET the latest release: %s", err)
-		return "", err
+		return "", errors.Wrapf(err, "could not GET the latest release")
 	}
 	defer response.Body.Close()
 
@@ -83,9 +73,9 @@ func fetchLatestTagFromGithub() (string, error) {
 		Tag string `json:"tag_name"`
 	}
 	if err := json.NewDecoder(response.Body).Decode(&res); err != nil {
-		klog.V(4).Infof("Could not parse the response from GitHub: %s", err)
-		return "", err
+		return "", errors.Wrapf(err, "could not parse the response from GitHub")
 	}
+	klog.V(4).Infof("Fetched latest tag name (%s) from GitHub", res.Tag)
 	return res.Tag, nil
 }
 
@@ -112,6 +102,6 @@ func loadTimestamp(file string) time.Time {
 		return time.Unix(0, 0)
 	}
 
-	klog.V(4).Infof("Last version check on %s", timestamp)
+	klog.V(4).Infof("Last version check was on %s", timestamp)
 	return timestamp
 }

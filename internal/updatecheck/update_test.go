@@ -19,10 +19,8 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
-	"time"
 
 	"sigs.k8s.io/krew/internal/testutil"
-	"sigs.k8s.io/krew/internal/version"
 )
 
 type ConstantHandler string
@@ -38,62 +36,66 @@ func TestCheckVersion(t *testing.T) {
 	server := httptest.NewServer(ConstantHandler(`{"tag_name": "some_tag"}`))
 	defer server.Close()
 
-	firstMessage := CheckVersion(tempDir.Root())
-	if !strings.Contains(firstMessage, "You are using an old version of krew") {
+	versionURL = server.URL
+	defer func() { versionURL = githubVersionURL }()
+
+	firstMessage, err := CheckVersion(tempDir.Root())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(firstMessage, `Run "kubectl krew upgrade" to get the newest version!`) {
 		t.Error("The initial version check should notify about the new version")
 	}
 
-	secondMessage := CheckVersion(tempDir.Root())
+	secondMessage, err := CheckVersion(tempDir.Root())
+	if err != nil {
+		t.Fatal(err)
+	}
 	if secondMessage != "" {
 		t.Error("An immediately following check should return an empty message")
 	}
 }
 
 func Test_fetchTag(t *testing.T) {
-	var dawnOfTime = time.Unix(0, 0)
 	tests := []struct {
 		name      string
 		expected  string
 		response  string
-		lastCheck time.Time
+		shouldErr bool
 	}{
 		{
 			name:      "broken json",
 			response:  `{"tag_name"::]`,
-			expected:  version.GitTag(),
-			lastCheck: dawnOfTime,
+			shouldErr: true,
 		},
 		{
-			name:      "field missing",
-			response:  `{}`,
-			expected:  version.GitTag(),
-			lastCheck: dawnOfTime,
+			name:     "field missing",
+			response: `{}`,
 		},
 		{
-			name:      "should get the correct tag",
-			response:  `{"tag_name": "some_tag"}`,
-			expected:  "some_tag",
-			lastCheck: dawnOfTime,
-		},
-		{
-			name:      "should not fetch the tag when done so recently",
-			response:  `{"tag_name": "some_tag"}`,
-			expected:  version.GitTag(),
-			lastCheck: time.Now(),
+			name:     "should get the correct tag",
+			response: `{"tag_name": "some_tag"}`,
+			expected: "some_tag",
 		},
 	}
 
 	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
+		t.Run(test.name, func(tt *testing.T) {
 			server := httptest.NewServer(ConstantHandler(test.response))
 			defer server.Close()
 
 			versionURL = server.URL
 			defer func() { versionURL = githubVersionURL }()
 
-			tag := fetchTag(test.lastCheck)
+			tag, err := fetchLatestTag()
+			if test.shouldErr && err == nil {
+				tt.Error("Expected an error but found none")
+			}
+			if !test.shouldErr && err != nil {
+				tt.Errorf("Expected no error but found: %s", err)
+			}
 			if tag != test.expected {
-				t.Errorf("Expected %s, got %s", test.expected, tag)
+				tt.Errorf("Expected %s, got %s", test.expected, tag)
 			}
 		})
 	}
