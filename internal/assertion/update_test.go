@@ -28,7 +28,7 @@ import (
 type ConstantHandler string
 
 func (c ConstantHandler) ServeHTTP(w http.ResponseWriter, _ *http.Request) {
-	w.Write([]byte(c))
+	_, _ = w.Write([]byte(c))
 }
 
 func TestCheckVersion(t *testing.T) {
