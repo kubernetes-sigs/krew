@@ -104,6 +104,14 @@ without any arguments:
 Since `krew` itself is a plugin also managed through `krew`, running the upgrade
 command may also upgrade your `krew` version.
 
+### Krew upgrade check
+
+When using krew, it will check if a new version of krew is available once a day
+by calling the GitHub API. If you want to opt out of this feature, set the
+`KREW_NO_UPGRADE_CHECK` environment variable, for example:
+
+    KREW_NO_UPGRADE_CHECK=yes kubectl krew version
+
 ## Uninstalling Plugins
 
 When you don't need a plugin anymore you can uninstall it with:

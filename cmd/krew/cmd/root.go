@@ -109,6 +109,9 @@ func preRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	go func() {
+		if _, ok := os.LookupEnv("KREW_NO_UPGRADE_CHECK"); ok {
+			return
+		}
 		if msg := assertion.CheckVersion(paths.BasePath()); msg != "" {
 			notifications <- msg
 		}
