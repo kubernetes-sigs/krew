@@ -81,7 +81,7 @@ func fetchLatestTag() (string, error) {
 
 func saveTimestamp(file string) {
 	klog.V(4).Info("Saving timestamp for last version check")
-	timestamp := time.Now().Format(time.RFC1123)
+	timestamp := time.Now().Format(time.RFC3339)
 	if err := ioutil.WriteFile(file, []byte(timestamp), 0666); err != nil {
 		klog.V(4).Info("Could not write version information")
 	}
@@ -96,7 +96,7 @@ func loadTimestamp(file string) time.Time {
 		return time.Unix(0, 0)
 	}
 
-	timestamp, err := time.Parse(time.RFC1123, string(content))
+	timestamp, err := time.Parse(time.RFC3339, string(content))
 	if err != nil {
 		klog.V(4).Infof("Could not parse timestamp %q", string(content))
 		return time.Unix(0, 0)
