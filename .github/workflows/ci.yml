@@ -24,13 +24,14 @@ jobs:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
     
+    - name: Add GOPATH
+      run: echo "::add-path::$(go env GOPATH)/bin"
+    
     - name: Install dependencies
       run: go mod download
     
     - name: Install gox
-      run: | 
-        export PATH=${PATH}:"$(go env GOPATH)/bin"
-        hack/install-gox.sh
+      run: hack/install-gox.sh
       
     - name: Verify code quality
       run: go mod tidy && git diff --no-patch --exit-code
@@ -48,9 +49,7 @@ jobs:
       run: go test -short -coverprofile=coverage.txt -covermode=atomic ./...
         
     - name: Make binaries && verify krew installation
-      run: |
-        export PATH=${PATH}:"$(go env GOPATH)/bin"
-        hack/make-all.sh
+      run: hack/make-all.sh
         
     - name: Ensure kubectl installed
       run: hack/ensure-kubectl-installed.sh
