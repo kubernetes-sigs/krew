@@ -78,6 +78,7 @@ func (td *TempDir) Write(file string, content []byte) *TempDir {
 }
 
 func (td *TempDir) WritePlugin(file string, plugin index.Plugin) *TempDir {
+	td.t.Helper()
 	content, err := yaml.Marshal(plugin)
 	if err != nil {
 		td.t.Fatalf("cannot marshal plugin: %s", err)
