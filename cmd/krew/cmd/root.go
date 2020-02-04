@@ -40,9 +40,7 @@ import (
 )
 
 const (
-	upgradeNotification = `A newer version of krew is available (%s -> %s). 
-Run "kubectl krew upgrade" to get the newest version!
-`
+	upgradeNotification = "A newer version of krew is available (%s -> %s).\nRun \"kubectl krew upgrade\" to get the newest version!\n"
 )
 
 var (
@@ -63,7 +61,7 @@ You can invoke krew through kubectl: "kubectl krew [command]..."`,
 	SilenceUsage:      true,
 	SilenceErrors:     true,
 	PersistentPreRunE: preRun,
-	PersistentPostRun: postRun,
+	PersistentPostRun: showUpgradeNotification,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -119,7 +117,7 @@ func preRun(cmd *cobra.Command, _ []string) error {
 		var err error
 		latestTag, err = updatecheck.LatestTag()
 		if err != nil {
-			klog.Warning(err)
+			klog.V(1).Infoln("WARNING:", err)
 		}
 	}()
 
@@ -145,7 +143,7 @@ func preRun(cmd *cobra.Command, _ []string) error {
 	return nil
 }
 
-func postRun(*cobra.Command, []string) {
+func showUpgradeNotification(*cobra.Command, []string) {
 	if latestTag == "" || latestTag == version.GitTag() {
 		klog.V(4).Infof("Skipping upgrade notification (latest=%s, current=%s)", latestTag, version.GitTag())
 		return

@@ -126,7 +126,7 @@ deleting the installation location can be done by executing:
 
 ## Disabling update checks
 
-When using krew, it will randomly check if a new version of krew is available
+When using krew, it will occasionally check if a new version of krew is available
 by calling the GitHub API. If you want to opt out of this feature, you can set
 the `KREW_NO_UPGRADE_CHECK` environment variable. To permanently disable this,
 add the following to your `~/.bashrc`, `~/.bash_profile`, or `~/.zshrc`:

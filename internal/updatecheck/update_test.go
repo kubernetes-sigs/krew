@@ -20,12 +20,6 @@ import (
 	"testing"
 )
 
-type ConstantHandler string
-
-func (c ConstantHandler) ServeHTTP(w http.ResponseWriter, _ *http.Request) {
-	_, _ = w.Write([]byte(c))
-}
-
 func Test_fetchLatestTag_GitHubAPI(t *testing.T) {
 	tag, err := fetchLatestTag()
 	if err != nil {
@@ -61,7 +55,12 @@ func Test_fetchLatestTag(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			server := httptest.NewServer(ConstantHandler(test.response))
+			server := httptest.NewServer(http.HandlerFunc(
+				func(w http.ResponseWriter, _ *http.Request) {
+					_, _ = w.Write([]byte(test.response))
+				},
+			))
+
 			defer server.Close()
 
 			versionURL = server.URL
@@ -85,11 +84,8 @@ func Test_fetchLatestTagFailure(t *testing.T) {
 	versionURL = "http://localhost/nirvana"
 	defer func() { versionURL = githubVersionURL }()
 
-	tag, err := fetchLatestTag()
+	_, err := fetchLatestTag()
 	if err == nil {
 		t.Error("Expected an error but found none")
-	}
-	if tag != "" {
-		t.Errorf("Expected %s, got %s", "", tag)
 	}
 }

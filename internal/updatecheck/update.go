@@ -28,6 +28,9 @@ import (
 
 const (
 	githubVersionURL = "https://api.github.com/repos/kubernetes-sigs/krew/releases/latest"
+
+	// showRate is the percentage of krew runs for which the upgrade check is performed.
+	showRate = 0.4
 )
 
 // for testing
@@ -38,7 +41,7 @@ var versionURL = githubVersionURL
 func LatestTag() (string, error) {
 	ourTag := version.GitTag()
 	if !isSemver(ourTag) || // no upgrade check for dev builds
-		rand.Float64() > 0.4 { // only do the upgrade check randomly
+		showRate < rand.Float64() { // only do the upgrade check randomly
 		return "", nil
 	}
 	return fetchLatestTag()
