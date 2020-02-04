@@ -30,20 +30,17 @@ func TestIsBinDirInPATH_firstRun(t *testing.T) {
 	paths := environment.NewPaths(tempDir.Path("does-not-exist"))
 	res := IsBinDirInPATH(paths)
 	if res == false {
-		t.Errorf("Expected positive result on first run")
+		t.Errorf("expected positive result on first run")
 	}
 }
 
 func TestIsBinDirInPATH_secondRun(t *testing.T) {
 	tempDir, cleanup := testutil.NewTempDir(t)
 	defer cleanup()
-	if err := os.Mkdir(tempDir.Path("exists"), os.ModePerm); err != nil {
-		t.Fatal(err)
-	}
-	paths := environment.NewPaths(tempDir.Path("exists"))
+	paths := environment.NewPaths(tempDir.Root())
 	res := IsBinDirInPATH(paths)
 	if res == true {
-		t.Errorf("Expected negative result on second run")
+		t.Errorf("expected negative result on second run")
 	}
 }
 
