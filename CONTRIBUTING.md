@@ -22,8 +22,10 @@ If your repo has certain guidelines for contribution, put them here ahead of the
 
 ## Contact Information
 
-To discuss about this project, you can use the following channels, or attend
-[SIG CLI meetings](https://github.com/kubernetes/community/tree/master/sig-cli).
+To discuss about this project, you can use the following channels. You can find
+Krew maintainers at:
 
-- [SIG CLI Slack channel](https://kubernetes.slack.com/messages/sig-cli)
+- Kubernetes Slack channel:
+  [**#krew**](https://kubernetes.slack.com/messages/krew) or
+  [#sig-cli](https://kubernetes.slack.com/messages/sig-cli)
 - [SIG CLI Mailing list](https://groups.google.com/forum/#!forum/kubernetes-sig-cli)
