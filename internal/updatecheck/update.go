@@ -16,39 +16,21 @@ package updatecheck
 
 import (
 	"encoding/json"
-	"math/rand"
 	"net/http"
 
 	"github.com/pkg/errors"
 	"k8s.io/klog"
-
-	"sigs.k8s.io/krew/internal/installation/semver"
-	"sigs.k8s.io/krew/internal/version"
 )
 
 const (
 	githubVersionURL = "https://api.github.com/repos/kubernetes-sigs/krew/releases/latest"
-
-	// showRate is the percentage of krew runs for which the upgrade check is performed.
-	showRate = 0.4
 )
 
 // for testing
 var versionURL = githubVersionURL
 
-// LatestTag returns the tag name of the latest release on GitHub or "" at random.
-// For development builds, it always returns "".
-func LatestTag() (string, error) {
-	ourTag := version.GitTag()
-	if !isSemver(ourTag) || // no upgrade check for dev builds
-		showRate < rand.Float64() { // only do the upgrade check randomly
-		return "", nil
-	}
-	return fetchLatestTag()
-}
-
-// fetchLatestTag fetches the tag name of the latest release from GitHub.
-func fetchLatestTag() (string, error) {
+// FetchLatestTag fetches the tag name of the latest release from GitHub.
+func FetchLatestTag() (string, error) {
 	klog.V(4).Infof("Fetching latest tag from GitHub")
 	response, err := http.Get(versionURL)
 	if err != nil {
@@ -65,11 +47,4 @@ func fetchLatestTag() (string, error) {
 	}
 	klog.V(4).Infof("Fetched latest tag name (%s) from GitHub", res.Tag)
 	return res.Tag, nil
-}
-
-// isSemver tries to parse s as semver. If it fails, it assumes that s is not a semver.
-// For development builds, this usually returns false.
-func isSemver(s string) bool {
-	_, err := semver.Parse(s)
-	return err == nil
 }

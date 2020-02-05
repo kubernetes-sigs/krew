@@ -21,7 +21,7 @@ import (
 )
 
 func Test_fetchLatestTag_GitHubAPI(t *testing.T) {
-	tag, err := fetchLatestTag()
+	tag, err := FetchLatestTag()
 	if err != nil {
 		t.Error(err)
 	}
@@ -66,7 +66,7 @@ func Test_fetchLatestTag(t *testing.T) {
 			versionURL = server.URL
 			defer func() { versionURL = githubVersionURL }()
 
-			tag, err := fetchLatestTag()
+			tag, err := FetchLatestTag()
 			if test.shouldErr && err == nil {
 				tt.Error("Expected an error but found none")
 			}
@@ -84,7 +84,7 @@ func Test_fetchLatestTagFailure(t *testing.T) {
 	versionURL = "http://localhost/nirvana"
 	defer func() { versionURL = githubVersionURL }()
 
-	_, err := fetchLatestTag()
+	_, err := FetchLatestTag()
 	if err == nil {
 		t.Error("Expected an error but found none")
 	}

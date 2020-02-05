@@ -33,6 +33,7 @@ import (
 	"sigs.k8s.io/krew/internal/gitutil"
 	"sigs.k8s.io/krew/internal/installation"
 	"sigs.k8s.io/krew/internal/installation/receipt"
+	"sigs.k8s.io/krew/internal/installation/semver"
 	"sigs.k8s.io/krew/internal/receiptsmigration"
 	"sigs.k8s.io/krew/internal/updatecheck"
 	"sigs.k8s.io/krew/internal/version"
@@ -41,6 +42,9 @@ import (
 
 const (
 	upgradeNotification = "A newer version of krew is available (%s -> %s).\nRun \"kubectl krew upgrade\" to get the newest version!\n"
+
+	// showRate is the percentage of krew runs for which the upgrade check is performed.
+	showRate = 0.4
 )
 
 var (
@@ -111,11 +115,13 @@ func preRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	go func() {
-		if _, ok := os.LookupEnv("KREW_NO_UPGRADE_CHECK"); ok {
+		if _, disabled := os.LookupEnv("KREW_NO_UPGRADE_CHECK"); disabled ||
+			isDevelopmentBuild() || // no upgrade check for dev builds
+			showRate < rand.Float64() { // only do the upgrade check randomly
 			return
 		}
 		var err error
-		latestTag, err = updatecheck.LatestTag()
+		latestTag, err = updatecheck.FetchLatestTag()
 		if err != nil {
 			klog.V(1).Infoln("WARNING:", err)
 		}
@@ -145,7 +151,7 @@ func preRun(cmd *cobra.Command, _ []string) error {
 
 func showUpgradeNotification(*cobra.Command, []string) {
 	if latestTag == "" || latestTag == version.GitTag() {
-		klog.V(4).Infof("Skipping upgrade notification (latest=%s, current=%s)", latestTag, version.GitTag())
+		klog.V(4).Infof("Skipping upgrade notification (latest=%q, current=%q)", latestTag, version.GitTag())
 		return
 	}
 	color.New(color.Bold).Fprintf(os.Stderr, upgradeNotification, version.GitTag(), latestTag)
@@ -186,4 +192,11 @@ func ensureDirs(paths ...string) error {
 
 func isTerminal(f *os.File) bool {
 	return isatty.IsTerminal(f.Fd()) || isatty.IsCygwinTerminal(f.Fd())
+}
+
+// isDevelopmentBuild tries to parse this builds tag as semver.
+// If it fails, this usually means that this is a development build.
+func isDevelopmentBuild() bool {
+	_, err := semver.Parse(version.GitTag())
+	return err != nil
 }
