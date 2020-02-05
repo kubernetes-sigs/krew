@@ -19,12 +19,14 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/fatih/color"
 	"github.com/mattn/go-isatty"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"k8s.io/klog"
 
+	"sigs.k8s.io/krew/cmd/krew/cmd/internal"
 	"sigs.k8s.io/krew/internal/environment"
 	"sigs.k8s.io/krew/internal/gitutil"
 	"sigs.k8s.io/krew/internal/installation"
@@ -77,15 +79,22 @@ func init() {
 	}
 
 	paths = environment.MustGetKrewPaths()
+}
+
+func preRun(cmd *cobra.Command, _ []string) error {
+	// check must be done before ensureDirs, to detect krew's self-installation
+	if !internal.IsBinDirInPATH(paths) {
+		boldRed := color.New(color.FgRed, color.Bold).SprintfFunc()
+		fmt.Fprintf(os.Stderr, "%s: %s\n\n", boldRed("WARNING"), internal.SetupInstructions())
+	}
+
 	if err := ensureDirs(paths.BasePath(),
 		paths.InstallPath(),
 		paths.BinPath(),
 		paths.InstallReceiptsPath()); err != nil {
 		klog.Fatal(err)
 	}
-}
 
-func preRun(cmd *cobra.Command, _ []string) error {
 	// detect if receipts migration (v0.2.x->v0.3.x) is complete
 	isMigrated, err := receiptsmigration.Done(paths)
 	if err != nil {
