@@ -33,7 +33,7 @@ jobs:
     - name: Install gox
       run: hack/install-gox.sh
 
-    - name: Ensure go modul is tidy
+    - name: Ensure go.mod is already tidied
       run: go mod tidy && git diff --no-patch --exit-code
 
     - name: Verify code patterns
