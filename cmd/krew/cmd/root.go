@@ -42,8 +42,8 @@ import (
 const (
 	upgradeNotification = "A newer version of krew is available (%s -> %s).\nRun \"kubectl krew upgrade\" to get the newest version!\n"
 
-	// showRate is the percentage of krew runs for which the upgrade check is performed.
-	showRate = 0.4
+	// upgradeCheckRate is the percentage of krew runs for which the upgrade check is performed.
+	upgradeCheckRate = 0.4
 )
 
 var (
@@ -116,7 +116,7 @@ func preRun(cmd *cobra.Command, _ []string) error {
 	go func() {
 		if _, disabled := os.LookupEnv("KREW_NO_UPGRADE_CHECK"); disabled ||
 			isDevelopmentBuild() || // no upgrade check for dev builds
-			showRate < rand.Float64() { // only do the upgrade check randomly
+			upgradeCheckRate < rand.Float64() { // only do the upgrade check randomly
 			return
 		}
 		var err error
@@ -149,11 +149,23 @@ func preRun(cmd *cobra.Command, _ []string) error {
 }
 
 func showUpgradeNotification(*cobra.Command, []string) {
-	if latestTag == "" || latestTag == version.GitTag() {
-		klog.V(4).Infof("Skipping upgrade notification (latest=%q, current=%q)", latestTag, version.GitTag())
+	if latestTag == "" {
+		klog.V(4).Infof("Upgrade check was skipped or has not finished")
 		return
 	}
-	color.New(color.Bold).Fprintf(os.Stderr, upgradeNotification, version.GitTag(), latestTag)
+	latestVer, err := semver.Parse(latestTag)
+	if err != nil {
+		klog.V(4).Infof("Could not parse remote tag as semver: %s", err)
+		return
+	}
+	currentVer, err := semver.Parse(version.GitTag())
+	if err != nil {
+		klog.V(4).Infof("Could not parse current tag as semver: %s", err)
+		return
+	}
+	if semver.Less(currentVer, latestVer) {
+		color.New(color.Bold).Fprintf(os.Stderr, upgradeNotification, version.GitTag(), latestTag)
+	}
 }
 
 func cleanupStaleKrewInstallations() error {
