@@ -35,7 +35,6 @@ import (
 	"sigs.k8s.io/krew/internal/installation/receipt"
 	"sigs.k8s.io/krew/internal/installation/semver"
 	"sigs.k8s.io/krew/internal/receiptsmigration"
-	"sigs.k8s.io/krew/internal/updatecheck"
 	"sigs.k8s.io/krew/internal/version"
 	"sigs.k8s.io/krew/pkg/constants"
 )
@@ -121,7 +120,7 @@ func preRun(cmd *cobra.Command, _ []string) error {
 			return
 		}
 		var err error
-		latestTag, err = updatecheck.FetchLatestTag()
+		latestTag, err = internal.FetchLatestTag()
 		if err != nil {
 			klog.V(1).Infoln("WARNING:", err)
 		}
