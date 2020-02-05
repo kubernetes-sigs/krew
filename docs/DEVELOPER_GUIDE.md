@@ -1,4 +1,4 @@
-# Developer Guide
+# Developer Guide 
 
 This guide is intended for plugin developers. If you are not developing kubectl
 plugins, read the [User Guide](./USER_GUIDE.md) to learn how to use krew.
@@ -21,6 +21,10 @@ available on the krew index.
     - [Updating existing plugins](#updating-existing-plugins)
 
 <!-- /TOC -->
+
+Find Krew maintainers on [#krew](https://kubernetes.slack.com/messages/krew)
+room on Kubernetes Slack channel to ask questions, or simply open an issue if
+something is missing.
 
 ## Developing a Plugin
 
@@ -336,8 +340,8 @@ they have installed.
 
 ### Automate releasing new versions on krew-index
 
-You can use Github Actions to publish new release of your Krew plugin. 
-`krew-release-bot` is a Github Action to automatically bump the version in 
+You can use Github Actions to publish new release of your Krew plugin.
+`krew-release-bot` is a Github Action to automatically bump the version in
 `krew-index` repo. 
 Refer to the [krew-release-bot](https://github.com/rajatjindal/krew-release-bot) documentation for details.
 

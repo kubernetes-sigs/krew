@@ -157,14 +157,15 @@ new features and changes.
 
 ### Communication channels
 
-* [Slack](https://kubernetes.slack.com/messages/sig-cli) #sig-cli
+* Slack: [#krew](https://kubernetes.slack.com/messages/krew) or
+  [#sig-cli](https://kubernetes.slack.com/messages/sig-cli)
 * [Mailing List](https://groups.google.com/forum/#!forum/kubernetes-sig-cli)
 * [Kubernetes Community site](http://kubernetes.io/community/)
 
 ### Contributing
 
 Interested in contributing to Krew? Please refer to our
-[Contributing Guidelines](./docs/CONTRIBUTOR_GUIDE.md) for more details
+[Contributing Guidelines](./docs/CONTRIBUTOR_GUIDE.md) for more details.
 
 ### Code of Conduct
 
