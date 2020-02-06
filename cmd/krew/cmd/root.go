@@ -117,9 +117,11 @@ func preRun(cmd *cobra.Command, _ []string) error {
 		if _, disabled := os.LookupEnv("KREW_NO_UPGRADE_CHECK"); disabled ||
 			isDevelopmentBuild() || // no upgrade check for dev builds
 			upgradeCheckRate < rand.Float64() { // only do the upgrade check randomly
+			klog.V(1).Infof("skipping upgrade check")
 			return
 		}
 		var err error
+		klog.V(1).Infof("starting upgrade check")
 		latestTag, err = internal.FetchLatestTag()
 		if err != nil {
 			klog.V(1).Infoln("WARNING:", err)
@@ -165,6 +167,8 @@ func showUpgradeNotification(*cobra.Command, []string) {
 	}
 	if semver.Less(currentVer, latestVer) {
 		color.New(color.Bold).Fprintf(os.Stderr, upgradeNotification, version.GitTag(), latestTag)
+	} else {
+		klog.V(4).Infof("upgrade check found no new versions (%s>=%s",currentVer,latestVer)
 	}
 }
 
