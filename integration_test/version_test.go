@@ -19,8 +19,6 @@ import (
 	"regexp"
 	"strings"
 	"testing"
-
-	"github.com/google/go-cmp/cmp"
 )
 
 func TestKrewVersion(t *testing.T) {
@@ -47,16 +45,21 @@ func TestKrewVersion(t *testing.T) {
 	requiredSubstrings := map[string]string{
 		"OPTION":           "VALUE",
 		"BasePath":         test.Root(),
-		"GitTag":           "unknown",
-		"GitCommit":        "unknown",
+		"GitTag":           "",
+		"GitCommit":        "",
 		"IndexURI":         "https://github.com/kubernetes-sigs/krew-index.git",
 		"IndexPath":        path.Join(test.Root(), "index"),
 		"InstallPath":      path.Join(test.Root(), "store"),
 		"BinPath":          path.Join(test.Root(), "bin"),
-		"DetectedPlatform": "linux/amd64",
+		"DetectedPlatform": "/",
 	}
 
-	if diff := cmp.Diff(actual, requiredSubstrings); diff != "" {
-		t.Errorf("`krew version` output mismatch (-got, +want):\n%s", diff)
+	for k, v := range requiredSubstrings {
+		got, ok := actual[k]
+		if !ok {
+			t.Errorf("`krew version` output doesn't contain field %q", k)
+		} else if !strings.Contains(got, v) {
+			t.Errorf("`krew version` %q field doesn't contain string %q (got: %q)", k, v, got)
+		}
 	}
 }
