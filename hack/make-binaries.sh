@@ -26,7 +26,7 @@ if ! command -v "gox" &>/dev/null; then
 fi
 
 supported_platforms="darwin/amd64 windows/amd64 linux/amd64 linux/arm"
-version_pkg="sigs.k8s.io/krew/pkg/version"
+version_pkg="sigs.k8s.io/krew/internal/version"
 
 cd "${SCRIPTDIR}/.."
 rm -rf -- "out/"
