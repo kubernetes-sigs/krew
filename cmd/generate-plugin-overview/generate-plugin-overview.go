@@ -122,6 +122,7 @@ func findRepo(homePage string) string {
 		`https://sigs.k8s.io/krew`:                                   "kubernetes-sigs/krew",
 		`https://kubernetes.github.io/ingress-nginx/kubectl-plugin/`: "kubernetes/ingress-nginx",
 		`https://kudo.dev/`:                                          "kudobuilder/kudo",
+		`https://kubevirt.io`:                                        "kubevirt/kubectl-virt-plugin",
 	}
 	return knownHomePages[homePage]
 }
