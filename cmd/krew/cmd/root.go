@@ -17,7 +17,9 @@ package cmd
 import (
 	"flag"
 	"fmt"
+	"math/rand"
 	"os"
+	"time"
 
 	"github.com/fatih/color"
 	"github.com/mattn/go-isatty"
@@ -31,12 +33,26 @@ import (
 	"sigs.k8s.io/krew/internal/gitutil"
 	"sigs.k8s.io/krew/internal/installation"
 	"sigs.k8s.io/krew/internal/installation/receipt"
+	"sigs.k8s.io/krew/internal/installation/semver"
 	"sigs.k8s.io/krew/internal/receiptsmigration"
+	"sigs.k8s.io/krew/internal/version"
 	"sigs.k8s.io/krew/pkg/constants"
+)
+
+const (
+	upgradeNotification = "A newer version of krew is available (%s -> %s).\nRun \"kubectl krew upgrade\" to get the newest version!\n"
+
+	// upgradeCheckRate is the percentage of krew runs for which the upgrade check is performed.
+	upgradeCheckRate = 0.4
 )
 
 var (
 	paths environment.Paths // krew paths used by the process
+
+	// latestTag is updated by a go-routine with the latest tag from GitHub.
+	// An empty string indicates that the API request was skipped or
+	// has not completed.
+	latestTag = ""
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -48,6 +64,7 @@ You can invoke krew through kubectl: "kubectl krew [command]..."`,
 	SilenceUsage:      true,
 	SilenceErrors:     true,
 	PersistentPreRunE: preRun,
+	PersistentPostRun: showUpgradeNotification,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -64,6 +81,7 @@ func Execute() {
 
 func init() {
 	klog.InitFlags(nil)
+	rand.Seed(time.Now().UnixNano())
 
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 	_ = flag.CommandLine.Parse([]string{}) // convince pkg/flag we parsed the flags
@@ -95,6 +113,21 @@ func preRun(cmd *cobra.Command, _ []string) error {
 		klog.Fatal(err)
 	}
 
+	go func() {
+		if _, disabled := os.LookupEnv("KREW_NO_UPGRADE_CHECK"); disabled ||
+			isDevelopmentBuild() || // no upgrade check for dev builds
+			upgradeCheckRate < rand.Float64() { // only do the upgrade check randomly
+			klog.V(1).Infof("skipping upgrade check")
+			return
+		}
+		var err error
+		klog.V(1).Infof("starting upgrade check")
+		latestTag, err = internal.FetchLatestTag()
+		if err != nil {
+			klog.V(1).Infoln("WARNING:", err)
+		}
+	}()
+
 	// detect if receipts migration (v0.2.x->v0.3.x) is complete
 	isMigrated, err := receiptsmigration.Done(paths)
 	if err != nil {
@@ -113,7 +146,30 @@ func preRun(cmd *cobra.Command, _ []string) error {
 			klog.Warningf("You may need to clean them up manually. Error: %v", err)
 		}
 	}
+
 	return nil
+}
+
+func showUpgradeNotification(*cobra.Command, []string) {
+	if latestTag == "" {
+		klog.V(4).Infof("Upgrade check was skipped or has not finished")
+		return
+	}
+	latestVer, err := semver.Parse(latestTag)
+	if err != nil {
+		klog.V(4).Infof("Could not parse remote tag as semver: %s", err)
+		return
+	}
+	currentVer, err := semver.Parse(version.GitTag())
+	if err != nil {
+		klog.V(4).Infof("Could not parse current tag as semver: %s", err)
+		return
+	}
+	if semver.Less(currentVer, latestVer) {
+		color.New(color.Bold).Fprintf(os.Stderr, upgradeNotification, version.GitTag(), latestTag)
+	} else {
+		klog.V(4).Infof("upgrade check found no new versions (%s>=%s", currentVer, latestVer)
+	}
 }
 
 func cleanupStaleKrewInstallations() error {
@@ -151,4 +207,11 @@ func ensureDirs(paths ...string) error {
 
 func isTerminal(f *os.File) bool {
 	return isatty.IsTerminal(f.Fd()) || isatty.IsCygwinTerminal(f.Fd())
+}
+
+// isDevelopmentBuild tries to parse this builds tag as semver.
+// If it fails, this usually means that this is a development build.
+func isDevelopmentBuild() bool {
+	_, err := semver.Parse(version.GitTag())
+	return err != nil
 }
