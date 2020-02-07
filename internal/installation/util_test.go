@@ -1,4 +1,4 @@
-// Copyright 2019 The Kubernetes Authors.
+// Copyright 2020 The Kubernetes Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,6 +17,12 @@ package installation
 import (
 	"path/filepath"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
+
+	"sigs.k8s.io/krew/internal/testutil"
+	"sigs.k8s.io/krew/pkg/constants"
+	"sigs.k8s.io/krew/pkg/index"
 )
 
 func testdataPath(t *testing.T) string {
@@ -25,4 +31,50 @@ func testdataPath(t *testing.T) string {
 		t.Fatal(err)
 	}
 	return filepath.Join(pwd, "testdata")
+}
+
+func TestListInstalledPlugins(t *testing.T) {
+	tests := []struct {
+		name     string
+		plugins  []index.Plugin
+		expected map[string]string
+	}{
+		{
+			name:     "single plugin",
+			plugins:  []index.Plugin{testutil.NewPlugin().WithName("test").WithVersion("v0.0.1").V()},
+			expected: map[string]string{"test": "v0.0.1"},
+		},
+		{
+			name: "multiple plugins",
+			plugins: []index.Plugin{
+				testutil.NewPlugin().WithName("plugin-a").WithVersion("v0.0.1").V(),
+				testutil.NewPlugin().WithName("plugin-b").WithVersion("v0.1.0").V(),
+				testutil.NewPlugin().WithName("plugin-c").WithVersion("v1.0.0").V(),
+			},
+			expected: map[string]string{
+				"plugin-a": "v0.0.1",
+				"plugin-b": "v0.1.0",
+				"plugin-c": "v1.0.0",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			tempDir, cleanup := testutil.NewTempDir(t)
+			defer cleanup()
+
+			for _, plugin := range test.plugins {
+				tempDir.WritePlugin(plugin.Name+constants.ManifestExtension, plugin)
+			}
+
+			actual, err := ListInstalledPlugins(tempDir.Root())
+			if err != nil {
+				t.Fatal(err)
+			}
+			if diff := cmp.Diff(test.expected, actual); diff != "" {
+				t.Error(diff)
+			}
+		})
+	}
 }
