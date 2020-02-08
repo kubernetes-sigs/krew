@@ -1,3 +1,6 @@
+<img src="assets/logo/horizontal/color/krew-horizontal-color.png" width="480"
+  alt="Krew logo"/>
+
 # krew
 
 [![Build Status](https://travis-ci.org/kubernetes-sigs/krew.svg?branch=master)](https://travis-ci.org/kubernetes-sigs/krew)
