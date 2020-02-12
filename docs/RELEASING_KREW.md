@@ -13,11 +13,11 @@
     ```sh
     krew=out/bin/krew-darwin_amd64 # assuming macOS
 
-    KREW_ROOT="$(mktemp -d)" KREW_OS=darwin \
+    KREW_ROOT="$(mktemp -d --tmpdir krew-XXXXXXXXXX)" KREW_OS=darwin \
         $krew install --manifest=out/krew.yaml --archive=out/krew.tar.gz && \
-    KREW_ROOT="$(mktemp -d)" KREW_OS=linux \
+    KREW_ROOT="$(mktemp -d --tmpdir krew-XXXXXXXXXX)" KREW_OS=linux \
         $krew install --manifest=out/krew.yaml --archive=out/krew.tar.gz && \
-    KREW_ROOT="$(mktemp -d)" KREW_OS=windows \
+    KREW_ROOT="$(mktemp -d --tmpdir krew-XXXXXXXXXX)" KREW_OS=windows \
         $krew install --manifest=out/krew.yaml --archive=out/krew.tar.gz
     ```
 
