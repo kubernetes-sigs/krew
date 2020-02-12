@@ -65,11 +65,6 @@ func Upgrade(p environment.Paths, plugin index.Plugin) error {
 	}
 	klog.V(1).Infof("Plugin needs upgrade (%s < %s)", curv, newv)
 
-	klog.V(2).Infof("Upgrading install receipt for plugin %s", plugin.Name)
-	if err = receipt.Store(plugin, p.PluginInstallReceiptPath(plugin.Name)); err != nil {
-		return errors.Wrap(err, "installation receipt could not be stored, uninstall may fail")
-	}
-
 	// Re-Install
 	klog.V(1).Infof("Installing new version %s", newVersion)
 	if err := install(installOperation{
@@ -80,6 +75,11 @@ func Upgrade(p environment.Paths, plugin index.Plugin) error {
 		binDir:     p.BinPath(),
 	}, InstallOpts{}); err != nil {
 		return errors.Wrap(err, "failed to install new version")
+	}
+
+	klog.V(2).Infof("Upgrading install receipt for plugin %s", plugin.Name)
+	if err = receipt.Store(plugin, p.PluginInstallReceiptPath(plugin.Name)); err != nil {
+		return errors.Wrap(err, "installation receipt could not be stored, uninstall may fail")
 	}
 
 	// Clean old installations
