@@ -34,7 +34,7 @@ func TestIsMigrated(t *testing.T) {
 	}{
 		{
 			name:     "Already migrated",
-			dirPath:  "index",
+			dirPath:  "index/default/.git",
 			expected: true,
 		},
 		{
