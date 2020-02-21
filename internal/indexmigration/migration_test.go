@@ -34,12 +34,12 @@ func TestIsMigrated(t *testing.T) {
 	}{
 		{
 			name:     "Already migrated",
-			dirPath:  "index/default",
+			dirPath:  "index",
 			expected: true,
 		},
 		{
 			name:     "Not migrated",
-			dirPath:  "index",
+			dirPath:  "index/.git",
 			expected: false,
 		},
 	}
@@ -49,7 +49,10 @@ func TestIsMigrated(t *testing.T) {
 			tmpDir, cleanup := testutil.NewTempDir(t)
 			defer cleanup()
 
-			_ = os.MkdirAll(tmpDir.Path(test.dirPath), os.ModePerm)
+			err := os.MkdirAll(tmpDir.Path(test.dirPath), os.ModePerm)
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			newPaths := environment.NewPaths(tmpDir.Root())
 			actual, err := Done(newPaths)

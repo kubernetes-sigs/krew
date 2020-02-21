@@ -16,7 +16,9 @@ package indexmigration
 
 import (
 	"os"
+	"path/filepath"
 
+	"github.com/pkg/errors"
 	"k8s.io/klog"
 
 	"sigs.k8s.io/krew/internal/environment"
@@ -25,13 +27,13 @@ import (
 )
 
 // Done checks if the krew installation requires a migration to support multiple indexes.
-// A migration is necessary when the index directory doesn't contain a "default" directory.
+// A migration is necessary when the index directory contains a ".git" directory.
 func Done(paths environment.Paths) (bool, error) {
-	f, err := os.Stat(paths.DefaultIndexPath())
+	_, err := os.Stat(filepath.Join(paths.IndexPath(), ".git"))
 	if err == nil {
-		return f.IsDir(), nil
-	} else if os.IsNotExist(err) {
 		return false, nil
+	} else if os.IsNotExist(err) {
+		return true, nil
 	}
 	return false, err
 }
@@ -40,20 +42,20 @@ func Done(paths environment.Paths) (bool, error) {
 func Migrate(paths environment.Paths) error {
 	isMigrated, err := Done(paths)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to check if index migration is complete")
 	}
 	if isMigrated {
-		klog.Infoln("Already migrated")
+		klog.V(2).Infoln("Already migrated")
 		return nil
 	}
 
 	err = os.RemoveAll(paths.IndexPath())
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "could not remove index directory %q", paths.IndexPath())
 	}
-	err = gitutil.EnsureCloned(constants.IndexURI, paths.DefaultIndexPath())
+	err = gitutil.EnsureCloned(constants.IndexURI, filepath.Join(paths.IndexPath(), "default"))
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to clone index")
 	}
 	return nil
 }
