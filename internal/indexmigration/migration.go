@@ -18,6 +18,7 @@ import (
 	"os"
 
 	"k8s.io/klog"
+
 	"sigs.k8s.io/krew/internal/environment"
 	"sigs.k8s.io/krew/internal/gitutil"
 	"sigs.k8s.io/krew/pkg/constants"
@@ -46,7 +47,7 @@ func Migrate(paths environment.Paths) error {
 		return nil
 	}
 
-	err := os.RemoveAll(paths.IndexPath())
+	err = os.RemoveAll(paths.IndexPath())
 	if err != nil {
 		return err
 	}
