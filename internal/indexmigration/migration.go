@@ -17,6 +17,7 @@ package indexmigration
 import (
 	"os"
 
+	"k8s.io/klog"
 	"sigs.k8s.io/krew/internal/environment"
 	"sigs.k8s.io/krew/internal/gitutil"
 	"sigs.k8s.io/krew/pkg/constants"
@@ -36,6 +37,15 @@ func Done(paths environment.Paths) (bool, error) {
 
 // Migrate removes the index directory and then clones krew-index to the new default index path.
 func Migrate(paths environment.Paths) error {
+	isMigrated, err := Done(paths)
+	if err != nil {
+		return err
+	}
+	if isMigrated {
+		klog.Infoln("Already migrated")
+		return nil
+	}
+
 	err := os.RemoveAll(paths.IndexPath())
 	if err != nil {
 		return err
