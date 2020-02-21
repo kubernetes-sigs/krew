@@ -31,6 +31,7 @@ import (
 	"sigs.k8s.io/krew/cmd/krew/cmd/internal"
 	"sigs.k8s.io/krew/internal/environment"
 	"sigs.k8s.io/krew/internal/gitutil"
+	"sigs.k8s.io/krew/internal/indexmigration"
 	"sigs.k8s.io/krew/internal/installation"
 	"sigs.k8s.io/krew/internal/installation/receipt"
 	"sigs.k8s.io/krew/internal/installation/semver"
@@ -136,6 +137,17 @@ func preRun(cmd *cobra.Command, _ []string) error {
 	if !isMigrated && cmd.Use != "receipts-upgrade" {
 		fmt.Fprintln(os.Stderr, "You need to perform a migration to continue using krew.\nPlease run `kubectl krew system receipts-upgrade`")
 		return errors.New("krew home outdated")
+	}
+
+	if _, ok := os.LookupEnv("X_KREW_ENABLE_MULTI_INDEX"); ok {
+		isMigrated, err = indexmigration.Done(paths)
+		if err != nil {
+			return errors.Wrap(err, "error getting file info")
+		}
+		if !isMigrated && cmd.Use != "index-upgrade" {
+			fmt.Fprintln(os.Stderr, "You need to perform a migration to continue using krew.\nPlease run `kubectl krew system index-upgrade`")
+			return errors.New("krew home outdated")
+		}
 	}
 
 	if installation.IsWindows() {
