@@ -15,8 +15,11 @@
 package cmd
 
 import (
+	"os"
+
 	"github.com/spf13/cobra"
 
+	"sigs.k8s.io/krew/internal/indexmigration"
 	"sigs.k8s.io/krew/internal/receiptsmigration"
 )
 
@@ -50,7 +53,24 @@ This command will be removed without further notice from future versions of krew
 	PreRunE: ensureIndexUpdated,
 }
 
+var indexUpgradeCmd = &cobra.Command{
+	Use:   "index-upgrade",
+	Short: "Perform a migration of the krew index",
+	Long: `Krew became more awesome! To use the new features, you need to run this
+one-time migration, which will enable installing plugins from custom indexes.
+
+This command will be removed without further notice from future versions of krew.
+`,
+	Args: cobra.NoArgs,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return indexmigration.Migrate(paths)
+	},
+}
+
 func init() {
+	if _, ok := os.LookupEnv("X_KREW_ENABLE_MULTI_INDEX"); ok {
+		systemCmd.AddCommand(indexUpgradeCmd)
+	}
 	systemCmd.AddCommand(receiptsUpgradeCmd)
 	rootCmd.AddCommand(systemCmd)
 }

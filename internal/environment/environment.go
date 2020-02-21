@@ -59,6 +59,9 @@ func (p Paths) BasePath() string { return p.base }
 // e.g. {BasePath}/index/
 func (p Paths) IndexPath() string { return filepath.Join(p.base, "index") }
 
+// DefaultIndexPath returns the base directory where the default plugin index repository is cloned.
+func (p Paths) DefaultIndexPath() string { return filepath.Join(p.base, "index", "default") }
+
 // IndexPluginsPath returns the plugins directory of the index repository.
 //
 // e.g. {BasePath}/index/plugins/
