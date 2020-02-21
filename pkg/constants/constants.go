@@ -22,4 +22,6 @@ const (
 
 	// IndexURI points to the upstream index.
 	IndexURI = "https://github.com/kubernetes-sigs/krew-index.git"
+	// DefaultIndexName is a magic string that's used for a plugin name specified without an index.
+	DefaultIndexName = "default"
 )

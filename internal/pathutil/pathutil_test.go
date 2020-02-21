@@ -184,3 +184,27 @@ func TestReplaceBase(t *testing.T) {
 		})
 	}
 }
+
+func TestCanonicalPluginName(t *testing.T) {
+	tests := []struct {
+		in        string
+		wantIndex string
+		wantName  string
+	}{
+		{"foo", "default", "foo"},
+		{"", "default", ""}, // despite unsupported
+		{"a/b", "a", "b"},
+		{"a/b/c", "a", "b/c"}, // despite unsupported
+	}
+	for _, tt := range tests {
+		t.Run(tt.in, func(t *testing.T) {
+			gotIndex, gotName := CanonicalPluginName(tt.in)
+			if gotIndex != tt.wantIndex {
+				t.Errorf("CanonicalPluginName(%q) gotIndex = %q, want = %q", tt.in, gotIndex, tt.wantIndex)
+			}
+			if gotName != tt.wantName {
+				t.Errorf("CanonicalPluginName(%q) gotName = %q, want = %q", tt.in, gotName, tt.wantName)
+			}
+		})
+	}
+}
