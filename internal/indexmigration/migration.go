@@ -57,6 +57,6 @@ func Migrate(paths environment.Paths) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to clone index")
 	}
-	klog.Infof("Migration completed succesfully.")
+	klog.Infof("Migration completed successfully.")
 	return nil
 }
