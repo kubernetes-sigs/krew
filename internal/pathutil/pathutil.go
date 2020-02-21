@@ -19,6 +19,8 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
+
+	"sigs.k8s.io/krew/pkg/constants"
 )
 
 // IsSubPath checks if the extending path is an extension of the basePath, it will return the extending path
@@ -41,4 +43,14 @@ func ReplaceBase(path, old, replacement string) (string, error) {
 		return "", errors.Errorf("can't replace %q in %q, it is not a subpath", old, path)
 	}
 	return filepath.Join(replacement, extendingPath), nil
+}
+
+// CanonicalPluginName resolves a plugin's index and name from input string.
+// If an index is not specified, the default index name is assumed.
+func CanonicalPluginName(in string) (string, string) {
+	if strings.Count(in, "/") == 0 {
+		return constants.DefaultIndexName, in
+	}
+	p := strings.SplitN(in, "/", 2)
+	return p[0], p[1]
 }
