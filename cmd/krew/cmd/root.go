@@ -146,7 +146,7 @@ func preRun(cmd *cobra.Command, _ []string) error {
 		}
 		if !isMigrated && cmd.Use != "index-upgrade" {
 			fmt.Fprintln(os.Stderr, "You need to perform a migration to continue using krew.\nPlease run `kubectl krew system index-upgrade`")
-			return errors.New("krew home outdated")
+			return errors.New("krew index outdated")
 		}
 	}
 
