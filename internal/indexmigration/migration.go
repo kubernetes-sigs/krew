@@ -30,9 +30,7 @@ import (
 // A migration is necessary when the index directory contains a ".git" directory.
 func Done(paths environment.Paths) (bool, error) {
 	_, err := os.Stat(filepath.Join(paths.IndexPath(), ".git"))
-	if err == nil {
-		return false, nil
-	} else if os.IsNotExist(err) {
+	if err != nil && os.IsNotExist(err) {
 		return true, nil
 	}
 	return false, err
