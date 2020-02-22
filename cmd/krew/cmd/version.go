@@ -44,7 +44,7 @@ Remarks:
 			{"GitCommit", version.GitCommit()},
 			{"IndexURI", constants.IndexURI},
 			{"BasePath", paths.BasePath()},
-			{"IndexPath", paths.IndexPath()},
+			{"IndexPath", paths.IndexPath("")},
 			{"InstallPath", paths.InstallPath()},
 			{"BinPath", paths.BinPath()},
 			{"DetectedPlatform", installation.OSArch().String()},

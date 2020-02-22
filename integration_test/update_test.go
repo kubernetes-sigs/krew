@@ -56,7 +56,7 @@ func TestKrewUpdateListsNewPlugins(t *testing.T) {
 
 	test = test.WithIndex()
 
-	pluginManifest := filepath.Join(environment.NewPaths(test.Root()).IndexPluginsPath(), validPlugin+constants.ManifestExtension)
+	pluginManifest := filepath.Join(environment.NewPaths(test.Root()).IndexPluginsPath(""), validPlugin+constants.ManifestExtension)
 	if err := os.Remove(pluginManifest); err != nil {
 		t.Fatalf("failed to delete manifest of an existing plugin: %v", err)
 	}
@@ -78,7 +78,7 @@ func TestKrewUpdateListsUpgradesAvailable(t *testing.T) {
 	test = test.WithIndex()
 
 	// set version of some manifests to v0.0.0
-	pluginManifest := filepath.Join(environment.NewPaths(test.Root()).IndexPluginsPath(), validPlugin+constants.ManifestExtension)
+	pluginManifest := filepath.Join(environment.NewPaths(test.Root()).IndexPluginsPath(""), validPlugin+constants.ManifestExtension)
 	modifyManifestVersion(t, pluginManifest, "v0.0.0")
 
 	test.Krew("install", validPlugin, "--no-update-index").RunOrFail()  // has updates available

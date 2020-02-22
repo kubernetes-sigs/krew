@@ -27,7 +27,7 @@ import (
 // Done checks if the krew installation requires a migration to support multiple indexes.
 // A migration is necessary when the index directory contains a ".git" directory.
 func Done(paths environment.Paths) (bool, error) {
-	_, err := os.Stat(filepath.Join(paths.IndexPath(), ".git"))
+	_, err := os.Stat(filepath.Join(paths.IndexBase(), ".git"))
 	if err != nil && os.IsNotExist(err) {
 		return true, nil
 	}

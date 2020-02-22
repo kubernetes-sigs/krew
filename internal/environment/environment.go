@@ -57,12 +57,22 @@ func (p Paths) BasePath() string { return p.base }
 // IndexPath returns the base directory where plugin index repository is cloned.
 //
 // e.g. {BasePath}/index/
-func (p Paths) IndexPath() string { return filepath.Join(p.base, "index") }
+func (p Paths) IndexPath(name string) string {
+	if _, ok := os.LookupEnv("X_KREW_ENABLE_MULTI_INDEX"); ok {
+		if name == "" {
+			return filepath.Join(p.base, "index", constants.DefaultIndexName)
+		}
+		return filepath.Join(p.base, "index", name)
+	}
+	return filepath.Join(p.base, "index")
+}
 
 // IndexPluginsPath returns the plugins directory of the index repository.
 //
 // e.g. {BasePath}/index/plugins/
-func (p Paths) IndexPluginsPath() string { return filepath.Join(p.base, "index", "plugins") }
+func (p Paths) IndexPluginsPath(name string) string {
+	return filepath.Join(p.IndexPath(name), "plugins")
+}
 
 // InstallReceiptsPath returns the base directory where plugin receipts are stored.
 //

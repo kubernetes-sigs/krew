@@ -199,7 +199,7 @@ func cleanupStaleKrewInstallations() error {
 }
 
 func checkIndex(_ *cobra.Command, _ []string) error {
-	if ok, err := gitutil.IsGitCloned(paths.IndexPath()); err != nil {
+	if ok, err := gitutil.IsGitCloned(paths.IndexPath("")); err != nil {
 		return errors.Wrap(err, "failed to check local index git repository")
 	} else if !ok {
 		return errors.New(`krew local plugin index is not initialized (run "kubectl krew update")`)

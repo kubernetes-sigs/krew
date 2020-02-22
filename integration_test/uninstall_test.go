@@ -64,7 +64,7 @@ func TestKrewRemove_ManifestRemovedFromIndex(t *testing.T) {
 	defer cleanup()
 
 	test = test.WithIndex()
-	manifestDir := environment.NewPaths(test.Root()).IndexPluginsPath()
+	manifestDir := environment.NewPaths(test.Root()).IndexPluginsPath("")
 	localManifest := filepath.Join(manifestDir, validPlugin+constants.ManifestExtension)
 	if _, err := os.Stat(localManifest); err != nil {
 		t.Fatalf("could not read local manifest file at %s: %v", localManifest, err)
