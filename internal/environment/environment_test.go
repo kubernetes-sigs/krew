@@ -23,6 +23,7 @@ import (
 	"k8s.io/client-go/util/homedir"
 
 	"sigs.k8s.io/krew/internal/testutil"
+	"sigs.k8s.io/krew/pkg/constants"
 )
 
 func TestMustGetKrewPaths_resolvesToHomeDir(t *testing.T) {
@@ -54,27 +55,36 @@ func TestPaths(t *testing.T) {
 	if got, expected := p.BinPath(), filepath.FromSlash("/foo/bin"); got != expected {
 		t.Fatalf("BinPath()=%s; expected=%s", got, expected)
 	}
-	if _, ok := os.LookupEnv("X_KREW_ENABLE_MULTI_INDEX"); ok {
-		if got, expected := p.IndexPath(""), filepath.FromSlash("/foo/index/default"); got != expected {
-			t.Fatalf("IndexPath()=%s; expected=%s", got, expected)
-		}
-		if got, expected := p.IndexPluginsPath(""), filepath.FromSlash("/foo/index/default/plugins"); got != expected {
-			t.Fatalf("IndexPluginsPath(\"\")=%s; expected=%s", got, expected)
-		}
-		if got, expected := p.IndexPath("test"), filepath.FromSlash("/foo/index/test"); got != expected {
-			t.Fatalf("IndexPath()=%s; expected=%s", got, expected)
-		}
-		if got, expected := p.IndexPluginsPath("test"), filepath.FromSlash("/foo/index/test/plugins"); got != expected {
-			t.Fatalf("IndexPluginsPath(\"\")=%s; expected=%s", got, expected)
-		}
-	} else {
-		if got, expected := p.IndexPath(""), filepath.FromSlash("/foo/index"); got != expected {
-			t.Fatalf("IndexPath()=%s; expected=%s", got, expected)
-		}
-		if got, expected := p.IndexPluginsPath(""), filepath.FromSlash("/foo/index/plugins"); got != expected {
-			t.Fatalf("IndexPluginsPath(\"\")=%s; expected=%s", got, expected)
-		}
+
+	// Test index path functions with EnableMultiIndexFlag
+	os.Setenv(constants.EnableMultiIndexFlag, "1")
+	if got, expected := p.IndexPath(""), filepath.FromSlash("/foo/index/default"); got != expected {
+		t.Fatalf("IndexPath()=%s; expected=%s", got, expected)
 	}
+	if got, expected := p.IndexPluginsPath(""), filepath.FromSlash("/foo/index/default/plugins"); got != expected {
+		t.Fatalf("IndexPluginsPath(\"\")=%s; expected=%s", got, expected)
+	}
+	if got, expected := p.IndexPath("test"), filepath.FromSlash("/foo/index/test"); got != expected {
+		t.Fatalf("IndexPath()=%s; expected=%s", got, expected)
+	}
+	if got, expected := p.IndexPluginsPath("test"), filepath.FromSlash("/foo/index/test/plugins"); got != expected {
+		t.Fatalf("IndexPluginsPath(\"\")=%s; expected=%s", got, expected)
+	}
+	// Test index path functions without EnableMultiIndexFlag
+	os.Unsetenv(constants.EnableMultiIndexFlag)
+	if got, expected := p.IndexPath(""), filepath.FromSlash("/foo/index"); got != expected {
+		t.Fatalf("IndexPath()=%s; expected=%s", got, expected)
+	}
+	if got, expected := p.IndexPath("test"), filepath.FromSlash("/foo/index"); got != expected {
+		t.Fatalf("IndexPath()=%s; expected=%s", got, expected)
+	}
+	if got, expected := p.IndexPluginsPath(""), filepath.FromSlash("/foo/index/plugins"); got != expected {
+		t.Fatalf("IndexPluginsPath(\"\")=%s; expected=%s", got, expected)
+	}
+	if got, expected := p.IndexPluginsPath("test"), filepath.FromSlash("/foo/index/plugins"); got != expected {
+		t.Fatalf("IndexPluginsPath(\"\")=%s; expected=%s", got, expected)
+	}
+
 	if got, expected := p.InstallPath(), filepath.FromSlash("/foo/store"); got != expected {
 		t.Fatalf("InstallPath()=%s; expected=%s", got, expected)
 	}

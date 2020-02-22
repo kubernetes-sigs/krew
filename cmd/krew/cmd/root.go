@@ -139,7 +139,7 @@ func preRun(cmd *cobra.Command, _ []string) error {
 		return errors.New("krew home outdated")
 	}
 
-	if _, ok := os.LookupEnv("X_KREW_ENABLE_MULTI_INDEX"); ok {
+	if _, ok := os.LookupEnv(constants.EnableMultiIndexFlag); ok {
 		isMigrated, err = indexmigration.Done(paths)
 		if err != nil {
 			return errors.Wrap(err, "error getting file info")

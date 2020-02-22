@@ -54,17 +54,22 @@ func NewPaths(base string) Paths {
 // BasePath returns krew base directory.
 func (p Paths) BasePath() string { return p.base }
 
+// IndexBase returns the krew index directory.
+func (p Paths) IndexBase() string {
+	return filepath.Join(p.base, "index")
+}
+
 // IndexPath returns the base directory where plugin index repository is cloned.
 //
 // e.g. {BasePath}/index/
 func (p Paths) IndexPath(name string) string {
-	if _, ok := os.LookupEnv("X_KREW_ENABLE_MULTI_INDEX"); ok {
+	if _, ok := os.LookupEnv(constants.EnableMultiIndexFlag); ok {
 		if name == "" {
 			return filepath.Join(p.base, "index", constants.DefaultIndexName)
 		}
 		return filepath.Join(p.base, "index", name)
 	}
-	return filepath.Join(p.base, "index")
+	return p.IndexBase()
 }
 
 // IndexPluginsPath returns the plugins directory of the index repository.

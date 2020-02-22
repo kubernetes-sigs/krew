@@ -21,6 +21,7 @@ import (
 
 	"sigs.k8s.io/krew/internal/indexmigration"
 	"sigs.k8s.io/krew/internal/receiptsmigration"
+	"sigs.k8s.io/krew/pkg/constants"
 )
 
 // todo(corneliusweig) remove migration code with v0.4
@@ -68,7 +69,7 @@ This command will be removed without further notice from future versions of krew
 }
 
 func init() {
-	if _, ok := os.LookupEnv("X_KREW_ENABLE_MULTI_INDEX"); ok {
+	if _, ok := os.LookupEnv(constants.EnableMultiIndexFlag); ok {
 		systemCmd.AddCommand(indexUpgradeCmd)
 	}
 	systemCmd.AddCommand(receiptsUpgradeCmd)
