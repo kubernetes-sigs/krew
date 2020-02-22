@@ -54,7 +54,8 @@ func NewPaths(base string) Paths {
 // BasePath returns krew base directory.
 func (p Paths) BasePath() string { return p.base }
 
-// IndexBase returns the krew index directory.
+// IndexBase returns the krew index directory. This directory contains the default
+// index and custom ones.
 func (p Paths) IndexBase() string {
 	return filepath.Join(p.base, "index")
 }
@@ -63,7 +64,7 @@ func (p Paths) IndexBase() string {
 //
 // e.g. {BasePath}/index/
 func (p Paths) IndexPath(name string) string {
-	if _, ok := os.LookupEnv(constants.EnableMultiIndexFlag); ok {
+	if _, ok := os.LookupEnv(constants.EnableMultiIndexSwitch); ok {
 		if name == "" {
 			return filepath.Join(p.base, "index", constants.DefaultIndexName)
 		}

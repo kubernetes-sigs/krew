@@ -24,7 +24,7 @@ const (
 	IndexURI = "https://github.com/kubernetes-sigs/krew-index.git"
 	// DefaultIndexName is a magic string that's used for a plugin name specified without an index.
 	DefaultIndexName = "default"
-	// EnableMultiIndexFlag is the name of the environment variable that needs to be set to use
+	// EnableMultiIndexSwitch is the name of the environment variable that needs to be set to use
 	// the features around multiple indexes (this will be removed later on).
-	EnableMultiIndexFlag = "X_KREW_ENABLE_MULTI_INDEX"
+	EnableMultiIndexSwitch = "X_KREW_ENABLE_MULTI_INDEX"
 )

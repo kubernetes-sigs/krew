@@ -69,7 +69,7 @@ This command will be removed without further notice from future versions of krew
 }
 
 func init() {
-	if _, ok := os.LookupEnv(constants.EnableMultiIndexFlag); ok {
+	if _, ok := os.LookupEnv(constants.EnableMultiIndexSwitch); ok {
 		systemCmd.AddCommand(indexUpgradeCmd)
 	}
 	systemCmd.AddCommand(receiptsUpgradeCmd)
