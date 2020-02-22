@@ -22,8 +22,6 @@ import (
 	"k8s.io/klog"
 
 	"sigs.k8s.io/krew/internal/environment"
-	"sigs.k8s.io/krew/internal/gitutil"
-	"sigs.k8s.io/krew/pkg/constants"
 )
 
 // Done checks if the krew installation requires a migration to support multiple indexes.
@@ -46,15 +44,22 @@ func Migrate(paths environment.Paths) error {
 		klog.V(2).Infoln("Already migrated")
 		return nil
 	}
+	indexPath := paths.IndexPath()
+	tmpPath := filepath.Join(paths.BasePath(), "tmp_index_migration")
+	newPath := filepath.Join(paths.IndexPath(), "default")
 
-	err = os.RemoveAll(paths.IndexPath())
-	if err != nil {
-		return errors.Wrapf(err, "could not remove index directory %q", paths.IndexPath())
+	if err := os.Rename(indexPath, tmpPath); err != nil {
+		return errors.Wrapf(err, "could not move index directory %q to temporary location %q", indexPath, tmpPath)
 	}
-	err = gitutil.EnsureCloned(constants.IndexURI, filepath.Join(paths.IndexPath(), "default"))
-	if err != nil {
-		return errors.Wrap(err, "failed to clone index")
+
+	if err := os.Mkdir(indexPath, os.ModePerm); err != nil {
+		return errors.Wrapf(err, "could create index directory %q", indexPath)
 	}
+
+	if err := os.Rename(tmpPath, newPath); err != nil {
+		return errors.Wrapf(err, "could not move temporary index directory %q to new location %q", tmpPath, newPath)
+	}
+
 	klog.Infof("Migration completed successfully.")
 	return nil
 }
