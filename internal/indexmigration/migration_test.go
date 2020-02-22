@@ -23,10 +23,6 @@ import (
 )
 
 func TestIsMigrated(t *testing.T) {
-	if _, ok := os.LookupEnv("X_KREW_ENABLE_MULTI_INDEX"); !ok {
-		t.Skip("Set X_KREW_ENABLE_MULTI_INDEX variable to run this test")
-	}
-
 	tests := []struct {
 		name     string
 		dirPath  string
