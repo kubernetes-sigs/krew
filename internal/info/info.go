@@ -22,6 +22,7 @@ import (
 
 	"sigs.k8s.io/krew/internal/environment"
 	"sigs.k8s.io/krew/internal/index/indexscanner"
+	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/index"
 )
 
@@ -40,5 +41,5 @@ func LoadManifestFromReceiptOrIndex(p environment.Paths, name string) (index.Plu
 	}
 
 	klog.V(3).Infof("Plugin manifest for %q not found in the receipts dir", name)
-	return indexscanner.LoadPluginByName(p.IndexPluginsPath("default"), name)
+	return indexscanner.LoadPluginByName(p.IndexPluginsPath(constants.DefaultIndexName), name)
 }

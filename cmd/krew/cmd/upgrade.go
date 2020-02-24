@@ -25,6 +25,7 @@ import (
 	"sigs.k8s.io/krew/cmd/krew/cmd/internal"
 	"sigs.k8s.io/krew/internal/index/indexscanner"
 	"sigs.k8s.io/krew/internal/installation"
+	"sigs.k8s.io/krew/pkg/constants"
 )
 
 func init() {
@@ -62,7 +63,7 @@ kubectl krew upgrade foo bar"`,
 
 			var nErrors int
 			for _, name := range pluginNames {
-				plugin, err := indexscanner.LoadPluginByName(paths.IndexPluginsPath("default"), name)
+				plugin, err := indexscanner.LoadPluginByName(paths.IndexPluginsPath(constants.DefaultIndexName), name)
 				if err != nil {
 					if !os.IsNotExist(err) {
 						return errors.Wrapf(err, "failed to load the plugin manifest for plugin %s", name)
