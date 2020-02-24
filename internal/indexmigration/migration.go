@@ -44,9 +44,9 @@ func Migrate(paths environment.Paths) error {
 		klog.V(2).Infoln("Already migrated")
 		return nil
 	}
-	indexPath := paths.IndexPath()
+	indexPath := paths.IndexBase()
 	tmpPath := filepath.Join(paths.BasePath(), "tmp_index_migration")
-	newPath := filepath.Join(paths.IndexPath(), "default")
+	newPath := filepath.Join(paths.IndexBase(), "default")
 
 	if err := os.Rename(indexPath, tmpPath); err != nil {
 		return errors.Wrapf(err, "could not move index directory %q to temporary location %q", indexPath, tmpPath)
