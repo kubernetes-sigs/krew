@@ -91,7 +91,7 @@ Remarks:
 
 			var install []index.Plugin
 			for _, name := range pluginNames {
-				plugin, err := indexscanner.LoadPluginByName(paths.IndexPluginsPath(""), name)
+				plugin, err := indexscanner.LoadPluginByName(paths.IndexPluginsPath("default"), name)
 				if err != nil {
 					if os.IsNotExist(err) {
 						return errors.Errorf("plugin %q does not exist in the plugin index", name)
