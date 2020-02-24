@@ -65,9 +65,6 @@ func (p Paths) IndexBase() string {
 // e.g. {BasePath}/index/
 func (p Paths) IndexPath(name string) string {
 	if _, ok := os.LookupEnv(constants.EnableMultiIndexSwitch); ok {
-		if name == "" {
-			return filepath.Join(p.base, "index", constants.DefaultIndexName)
-		}
 		return filepath.Join(p.base, "index", name)
 	}
 	return p.IndexBase()
