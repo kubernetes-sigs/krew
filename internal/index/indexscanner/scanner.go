@@ -121,3 +121,42 @@ func DecodePluginFile(r io.Reader) (index.Plugin, error) {
 	err = yaml.Unmarshal(b, &plugin)
 	return plugin, err
 }
+
+// ReadReceiptFromFile loads a file from the FS. When receipt file not found, it
+// returns an error that can be checked with os.IsNotExist.
+func ReadReceiptFromFile(path string) (index.Receipt, error) {
+	f, err := os.Open(path)
+	if os.IsNotExist(err) {
+		// TODO(ahmetb): we should use go1.13+ errors.Is construct at call sites to evaluate if an error is os.IsNotExist
+		return index.Receipt{}, err
+	} else if err != nil {
+		return index.Receipt{}, errors.Wrap(err, "failed to open index file")
+	}
+	return ReadReceipt(f)
+}
+
+func ReadReceipt(f io.ReadCloser) (index.Receipt, error) {
+	defer f.Close()
+	r, err := DecodeReceiptFile(f)
+	if err != nil {
+		return r, errors.Wrap(err, "failed to decode plugin manifest")
+	}
+	return r, errors.Wrap(validation.ValidateReceipt(r.Name, r), "receipt manifest validation error")
+}
+
+// DecodeReceiptFile tries to decodes a receipt manifest from r.
+func DecodeReceiptFile(r io.Reader) (index.Receipt, error) {
+	var receipt index.Receipt
+	b, err := ioutil.ReadAll(r)
+	if err != nil {
+		return receipt, err
+	}
+
+	// TODO(ahmetb): when we have a stable API that won't add new fields,
+	// we can consider failing on unknown fields. Currently, disabling due to
+	// incremental field additions to plugin manifests independently from the
+	// installed version of krew.
+	// yaml.UnmarshalStrict()
+	err = yaml.Unmarshal(b, &receipt)
+	return receipt, err
+}

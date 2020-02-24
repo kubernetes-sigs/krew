@@ -24,7 +24,7 @@ import (
 	"sigs.k8s.io/krew/pkg/index"
 )
 
-// Store saves the given plugin at the destination.
+// Store saves the given plugin receipt at the destination.
 // The caller has to ensure that the destination directory exists.
 func Store(plugin index.Plugin, dest string) error {
 	yamlBytes, err := yaml.Marshal(plugin)
@@ -38,6 +38,6 @@ func Store(plugin index.Plugin, dest string) error {
 
 // Load reads the plugin receipt at the specified destination.
 // If not found, it returns os.IsNotExist error.
-func Load(path string) (index.Plugin, error) {
-	return indexscanner.ReadPluginFromFile(path)
+func Load(path string) (index.Receipt, error) {
+	return indexscanner.ReadReceiptFromFile(path)
 }
