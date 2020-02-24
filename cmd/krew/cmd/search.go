@@ -25,6 +25,7 @@ import (
 
 	"sigs.k8s.io/krew/internal/index/indexscanner"
 	"sigs.k8s.io/krew/internal/installation"
+	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/index"
 )
 
@@ -42,7 +43,7 @@ Examples:
   To fuzzy search plugins with a keyword:
     kubectl krew search KEYWORD`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		plugins, err := indexscanner.LoadPluginListFromFS(paths.IndexPluginsPath())
+		plugins, err := indexscanner.LoadPluginListFromFS(paths.IndexPluginsPath(constants.DefaultIndexName))
 		if err != nil {
 			return errors.Wrap(err, "failed to load the list of plugins from the index")
 		}

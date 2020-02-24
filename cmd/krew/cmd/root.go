@@ -139,7 +139,7 @@ func preRun(cmd *cobra.Command, _ []string) error {
 		return errors.New("krew home outdated")
 	}
 
-	if _, ok := os.LookupEnv("X_KREW_ENABLE_MULTI_INDEX"); ok {
+	if _, ok := os.LookupEnv(constants.EnableMultiIndexSwitch); ok {
 		isMigrated, err = indexmigration.Done(paths)
 		if err != nil {
 			return errors.Wrap(err, "error getting file info")
@@ -199,7 +199,7 @@ func cleanupStaleKrewInstallations() error {
 }
 
 func checkIndex(_ *cobra.Command, _ []string) error {
-	if ok, err := gitutil.IsGitCloned(paths.IndexPath()); err != nil {
+	if ok, err := gitutil.IsGitCloned(paths.IndexPath(constants.DefaultIndexName)); err != nil {
 		return errors.Wrap(err, "failed to check local index git repository")
 	} else if !ok {
 		return errors.New(`krew local plugin index is not initialized (run "kubectl krew update")`)

@@ -76,7 +76,7 @@ func Migrate(newPaths environment.Paths) error {
 	klog.Infoln("These plugins will be reinstalled: ", installed)
 
 	// krew must be skipped by the normal migration logic
-	if err := copyKrewManifest(newPaths.IndexPluginsPath(), newPaths.InstallReceiptsPath()); err != nil {
+	if err := copyKrewManifest(newPaths.IndexPluginsPath(constants.DefaultIndexName), newPaths.InstallReceiptsPath()); err != nil {
 		return errors.Wrapf(err, "failed to copy krew manifest")
 	}
 
@@ -138,7 +138,7 @@ func getPluginsToReinstall(oldPaths oldenvironment.Paths, newPaths environment.P
 
 // isAvailableInIndex checks that the given plugin is available in the index
 func isAvailableInIndex(paths environment.Paths, plugin string) bool {
-	pluginYaml := filepath.Join(paths.IndexPluginsPath(), plugin+constants.ManifestExtension)
+	pluginYaml := filepath.Join(paths.IndexPluginsPath(constants.DefaultIndexName), plugin+constants.ManifestExtension)
 	_, err := os.Lstat(pluginYaml)
 	return err == nil
 }

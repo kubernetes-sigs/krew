@@ -23,6 +23,7 @@ import (
 	"k8s.io/client-go/util/homedir"
 
 	"sigs.k8s.io/krew/internal/testutil"
+	"sigs.k8s.io/krew/pkg/constants"
 )
 
 func TestMustGetKrewPaths_resolvesToHomeDir(t *testing.T) {
@@ -49,31 +50,45 @@ func TestPaths(t *testing.T) {
 	base := filepath.FromSlash("/foo")
 	p := NewPaths(base)
 	if got := p.BasePath(); got != base {
-		t.Fatalf("BasePath()=%s; expected=%s", got, base)
+		t.Errorf("BasePath()=%s; expected=%s", got, base)
 	}
 	if got, expected := p.BinPath(), filepath.FromSlash("/foo/bin"); got != expected {
-		t.Fatalf("BinPath()=%s; expected=%s", got, expected)
+		t.Errorf("BinPath()=%s; expected=%s", got, expected)
 	}
-	if got, expected := p.IndexPath(), filepath.FromSlash("/foo/index"); got != expected {
-		t.Fatalf("IndexPath()=%s; expected=%s", got, expected)
-	}
-	if got, expected := p.IndexPluginsPath(), filepath.FromSlash("/foo/index/plugins"); got != expected {
-		t.Fatalf("IndexPluginsPath()=%s; expected=%s", got, expected)
-	}
+
+	t.Run("with EnableMultiIndexSwitch", func(t *testing.T) {
+		os.Setenv(constants.EnableMultiIndexSwitch, "1")
+		defer os.Unsetenv(constants.EnableMultiIndexSwitch)
+		if got, expected := p.IndexPath(constants.DefaultIndexName), filepath.FromSlash("/foo/index/default"); got != expected {
+			t.Errorf("IndexPath(\"%s\")=%s; expected=%s", constants.DefaultIndexName, got, expected)
+		}
+		if got, expected := p.IndexPluginsPath(constants.DefaultIndexName), filepath.FromSlash("/foo/index/default/plugins"); got != expected {
+			t.Errorf("IndexPluginsPath(\"%s\")=%s; expected=%s", constants.DefaultIndexName, got, expected)
+		}
+	})
+	t.Run("without EnableMultiIndexSwitch", func(t *testing.T) {
+		if got, expected := p.IndexPath(constants.DefaultIndexName), filepath.FromSlash("/foo/index"); got != expected {
+			t.Errorf("IndexPath(\"%s\")=%s; expected=%s", constants.DefaultIndexName, got, expected)
+		}
+		if got, expected := p.IndexPluginsPath(constants.DefaultIndexName), filepath.FromSlash("/foo/index/plugins"); got != expected {
+			t.Errorf("IndexPluginsPath(\"%s\")=%s; expected=%s", constants.DefaultIndexName, got, expected)
+		}
+	})
+
 	if got, expected := p.InstallPath(), filepath.FromSlash("/foo/store"); got != expected {
-		t.Fatalf("InstallPath()=%s; expected=%s", got, expected)
+		t.Errorf("InstallPath()=%s; expected=%s", got, expected)
 	}
 	if got, expected := p.PluginInstallPath("my-plugin"), filepath.FromSlash("/foo/store/my-plugin"); got != expected {
-		t.Fatalf("PluginInstallPath()=%s; expected=%s", got, expected)
+		t.Errorf("PluginInstallPath()=%s; expected=%s", got, expected)
 	}
 	if got, expected := p.PluginVersionInstallPath("my-plugin", "v1"), filepath.FromSlash("/foo/store/my-plugin/v1"); got != expected {
-		t.Fatalf("PluginVersionInstallPath()=%s; expected=%s", got, expected)
+		t.Errorf("PluginVersionInstallPath()=%s; expected=%s", got, expected)
 	}
 	if got := p.InstallReceiptsPath(); !strings.HasSuffix(got, filepath.FromSlash("receipts")) {
-		t.Fatalf("InstallReceiptsPath()=%s; expected suffix 'receipts'", got)
+		t.Errorf("InstallReceiptsPath()=%s; expected suffix 'receipts'", got)
 	}
 	if got := p.PluginInstallReceiptPath("my-plugin"); !strings.HasSuffix(got, filepath.FromSlash("receipts/my-plugin.yaml")) {
-		t.Fatalf("PluginInstallReceiptPath()=%s; expected suffix 'receipts/my-plugin.yaml'", got)
+		t.Errorf("PluginInstallReceiptPath()=%s; expected suffix 'receipts/my-plugin.yaml'", got)
 	}
 }
 

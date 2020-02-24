@@ -24,6 +24,7 @@ import (
 
 	"sigs.k8s.io/krew/internal/environment"
 	"sigs.k8s.io/krew/internal/testutil"
+	"sigs.k8s.io/krew/pkg/constants"
 )
 
 func TestLoadManifestFromReceiptOrIndex(t *testing.T) {
@@ -51,7 +52,7 @@ func TestLoadManifestFromReceiptOrIndex(t *testing.T) {
 		{
 			name: "manifest in index",
 			prepare: func(paths environment.Paths, tmpDir *testutil.TempDir) {
-				path := filepath.Join(paths.IndexPluginsPath(), pluginName+".yaml")
+				path := filepath.Join(paths.IndexPluginsPath(constants.DefaultIndexName), pluginName+".yaml")
 				tmpDir.Write(path, yamlBytes)
 			},
 		},
@@ -66,7 +67,7 @@ func TestLoadManifestFromReceiptOrIndex(t *testing.T) {
 		{
 			name: "invalid manifest in index",
 			prepare: func(paths environment.Paths, tmpDir *testutil.TempDir) {
-				path := filepath.Join(paths.IndexPluginsPath(), pluginName+".yaml")
+				path := filepath.Join(paths.IndexPluginsPath(constants.DefaultIndexName), pluginName+".yaml")
 				tmpDir.Write(path, []byte("invalid yaml file"))
 			},
 			shouldErr: true,

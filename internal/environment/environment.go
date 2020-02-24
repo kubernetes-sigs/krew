@@ -54,15 +54,30 @@ func NewPaths(base string) Paths {
 // BasePath returns krew base directory.
 func (p Paths) BasePath() string { return p.base }
 
-// IndexPath returns the base directory where plugin index repository is cloned.
-//
-// e.g. {BasePath}/index/
-func (p Paths) IndexPath() string { return filepath.Join(p.base, "index") }
+// IndexBase returns the krew index directory. This directory contains the default
+// index and custom ones.
+func (p Paths) IndexBase() string {
+	return filepath.Join(p.base, "index")
+}
 
-// IndexPluginsPath returns the plugins directory of the index repository.
-//
-// e.g. {BasePath}/index/plugins/
-func (p Paths) IndexPluginsPath() string { return filepath.Join(p.base, "index", "plugins") }
+// IndexPath returns the directory where a plugin index repository is cloned.
+// When constants.EnableMultiIndexSwitch var is unset it just returns the krew
+// index base.
+// e.g. {BasePath}/index/default or {BasePath}/index
+func (p Paths) IndexPath(name string) string {
+	if _, ok := os.LookupEnv(constants.EnableMultiIndexSwitch); ok {
+		return filepath.Join(p.base, "index", name)
+	}
+	return p.IndexBase()
+}
+
+// IndexPluginsPath returns the plugins directory of an index repository.
+// When constants.EnableMultiIndexSwitch var is unset it just returns the old
+// structure krew-index plugins.
+// e.g. {BasePath}/index/default/plugins/ or {BasePath}/index/plugins/
+func (p Paths) IndexPluginsPath(name string) string {
+	return filepath.Join(p.IndexPath(name), "plugins")
+}
 
 // InstallReceiptsPath returns the base directory where plugin receipts are stored.
 //
