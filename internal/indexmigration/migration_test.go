@@ -23,10 +23,6 @@ import (
 )
 
 func TestIsMigrated(t *testing.T) {
-	if _, ok := os.LookupEnv("X_KREW_ENABLE_MULTI_INDEX"); !ok {
-		t.Skip("Set X_KREW_ENABLE_MULTI_INDEX variable to run this test")
-	}
-
 	tests := []struct {
 		name     string
 		dirPath  string
@@ -61,6 +57,35 @@ func TestIsMigrated(t *testing.T) {
 			}
 			if actual != test.expected {
 				t.Errorf("Expected %v but found %v", test.expected, actual)
+			}
+		})
+	}
+}
+
+func TestMigrate(t *testing.T) {
+	var tests = []struct {
+		name   string
+		gitDir string
+	}{
+		{name: "migration is necessary", gitDir: "index/.git"},
+		{name: "no migration is necessary", gitDir: "index/default/.git"},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			tmpDir, cleanup := testutil.NewTempDir(t)
+			defer cleanup()
+
+			tmpDir.Write(tt.gitDir, nil)
+
+			newPaths := environment.NewPaths(tmpDir.Root())
+			err := Migrate(newPaths)
+			if err != nil {
+				t.Fatal(err)
+			}
+			done, err := Done(newPaths)
+			if err != nil || !done {
+				t.Errorf("expected migration to be done: %s", err)
 			}
 		})
 	}
