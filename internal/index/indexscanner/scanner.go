@@ -86,44 +86,46 @@ func LoadPluginByName(pluginsDir, pluginName string) (index.Plugin, error) {
 // ReadPluginFromFile loads a file from the FS. When plugin file not found, it
 // returns an error that can be checked with os.IsNotExist.
 func ReadPluginFromFile(path string) (index.Plugin, error) {
-	f, err := os.Open(path)
-	if os.IsNotExist(err) {
-		// TODO(ahmetb): we should use go1.13+ errors.Is construct at call sites to evaluate if an error is os.IsNotExist
-		return index.Plugin{}, err
-	} else if err != nil {
-		return index.Plugin{}, errors.Wrap(err, "failed to open index file")
+	var plugin index.Plugin
+	err := readFromFile(path, &plugin)
+	if err != nil {
+		return plugin, err
 	}
-	return ReadPlugin(f)
+	return plugin, errors.Wrap(validation.ValidatePlugin(plugin.Name, plugin), "plugin manifest validation error")
 }
 
 func ReadPlugin(f io.ReadCloser) (index.Plugin, error) {
 	defer f.Close()
-	plugin := &index.Plugin{}
-	err := decodeFile(f, plugin)
-	p := *plugin
+	var plugin index.Plugin
+	err := decodeFile(f, &plugin)
 	if err != nil {
-		return p, errors.Wrap(err, "failed to decode plugin manifest")
+		return plugin, errors.Wrap(err, "failed to decode plugin manifest")
 	}
-	return p, errors.Wrap(validation.ValidatePlugin(p.Name, p), "plugin manifest validation error")
+	return plugin, errors.Wrap(validation.ValidatePlugin(plugin.Name, plugin), "plugin manifest validation error")
 }
 
 // ReadReceiptFromFile loads a file from the FS. When receipt file not found, it
 // returns an error that can be checked with os.IsNotExist.
 func ReadReceiptFromFile(path string) (index.Receipt, error) {
+	var receipt index.Receipt
+	err := readFromFile(path, &receipt)
+	return receipt, err
+}
+
+// readFromFile loads a file from the FS into the provided object.
+func readFromFile(path string, as interface{}) error {
 	f, err := os.Open(path)
 	if os.IsNotExist(err) {
-		// TODO(ahmetb): we should use go1.13+ errors.Is construct at call sites to evaluate if an error is os.IsNotExist
-		return index.Receipt{}, err
+		return err
 	} else if err != nil {
-		return index.Receipt{}, errors.Wrap(err, "failed to open index file")
+		return errors.Wrapf(err, "failed to open file %s", path)
 	}
 	defer f.Close()
-	receipt := &index.Receipt{}
-	err = decodeFile(f, receipt)
+	err = decodeFile(f, &as)
 	if err != nil {
-		return *receipt, errors.Wrap(err, "failed to decode plugin manifest")
+		return errors.Wrap(err, "failed to decode plugin manifest")
 	}
-	return *receipt, nil
+	return nil
 }
 
 // decodeFile tries to decode a plugin/receipt

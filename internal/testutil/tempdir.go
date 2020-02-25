@@ -23,8 +23,6 @@ import (
 	"testing"
 
 	"sigs.k8s.io/yaml"
-
-	"sigs.k8s.io/krew/pkg/index"
 )
 
 type TempDir struct {
@@ -77,11 +75,11 @@ func (td *TempDir) Write(file string, content []byte) *TempDir {
 	return td
 }
 
-func (td *TempDir) WritePlugin(file string, plugin index.Plugin) *TempDir {
+func (td *TempDir) WriteYaml(file string, obj interface{}) *TempDir {
 	td.t.Helper()
-	content, err := yaml.Marshal(plugin)
+	content, err := yaml.Marshal(obj)
 	if err != nil {
-		td.t.Fatalf("cannot marshal plugin: %s", err)
+		td.t.Fatalf("cannot marshal obj: %s", err)
 	}
 	return td.Write(file, content)
 }
