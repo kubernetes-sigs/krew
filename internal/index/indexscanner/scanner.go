@@ -131,7 +131,7 @@ func ReadReceipt(f io.ReadCloser) (index.Receipt, error) {
 	return r, errors.Wrap(validation.ValidateReceipt(r.Name, r), "receipt manifest validation error")
 }
 
-// decodeFile tries to decode
+// decodeFile tries to decode a plugin/receipt
 func decodeFile(r io.Reader, as interface{}) error {
 	b, err := ioutil.ReadAll(r)
 	if err != nil {
