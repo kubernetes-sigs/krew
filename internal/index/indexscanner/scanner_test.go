@@ -90,6 +90,59 @@ func TestReadPluginFile(t *testing.T) {
 	}
 }
 
+func TestReadReceiptFile(t *testing.T) {
+	type args struct {
+		receiptFilePath string
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantErr    bool
+		matchFirst labels.Set
+	}{
+		{
+			name: "read receipt file",
+			args: args{
+				// TODO(chriskim06) use different file when new receipt fields are added
+				receiptFilePath: filepath.Join(testdataPath(t), "testindex", "plugins", "foo.yaml"),
+			},
+			wantErr: false,
+			matchFirst: labels.Set{
+				"os": "macos",
+			},
+		},
+	}
+	neverMatch := labels.Set{}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ReadReceiptFromFile(tt.args.receiptFilePath)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ReadReceiptFromFile() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			if got.Name != "foo" && got.Kind != "Plugin" {
+				t.Errorf("ReadReceiptFromFile() has not parsed the metainformations %v", got)
+				return
+			}
+
+			sel, err := metav1.LabelSelectorAsSelector(got.Spec.Platforms[0].Selector)
+			if err != nil {
+				t.Errorf("ReadReceiptFromFile() error parsing label err: %v", err)
+				return
+			}
+			if !sel.Matches(tt.matchFirst) || sel.Matches(neverMatch) {
+				t.Errorf("ReadReceiptFromFile() didn't parse label selector properly: %##v", sel)
+				return
+			}
+		})
+	}
+}
+
 func TestReadPluginFile_preservesNotFoundErr(t *testing.T) {
 	_, err := ReadPluginFromFile(filepath.Join(testdataPath(t), "does-not-exist.yaml"))
 	if err == nil {

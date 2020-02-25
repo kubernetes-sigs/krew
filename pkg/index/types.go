@@ -60,4 +60,6 @@ type FileOperation struct {
 }
 
 // Receipt describes a plugin receipt file.
-type Receipt Plugin
+type Receipt struct {
+	Plugin `json:",inline" yaml:",inline"`
+}

@@ -59,7 +59,7 @@ func TestLoad(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	testPluginReceipt := index.Receipt(testPlugin)
+	testPluginReceipt := index.Receipt{Plugin: testPlugin}
 	if diff := cmp.Diff(&gotPlugin, &testPluginReceipt); diff != "" {
 		t.Fatal(diff)
 	}

@@ -98,28 +98,13 @@ func ReadPluginFromFile(path string) (index.Plugin, error) {
 
 func ReadPlugin(f io.ReadCloser) (index.Plugin, error) {
 	defer f.Close()
-	p, err := DecodePluginFile(f)
+	plugin := &index.Plugin{}
+	err := decodeFile(f, plugin)
+	p := *plugin
 	if err != nil {
 		return p, errors.Wrap(err, "failed to decode plugin manifest")
 	}
 	return p, errors.Wrap(validation.ValidatePlugin(p.Name, p), "plugin manifest validation error")
-}
-
-// DecodePluginFile tries to decodes a plugin manifest from r.
-func DecodePluginFile(r io.Reader) (index.Plugin, error) {
-	var plugin index.Plugin
-	b, err := ioutil.ReadAll(r)
-	if err != nil {
-		return plugin, err
-	}
-
-	// TODO(ahmetb): when we have a stable API that won't add new fields,
-	// we can consider failing on unknown fields. Currently, disabling due to
-	// incremental field additions to plugin manifests independently from the
-	// installed version of krew.
-	// yaml.UnmarshalStrict()
-	err = yaml.Unmarshal(b, &plugin)
-	return plugin, err
 }
 
 // ReadReceiptFromFile loads a file from the FS. When receipt file not found, it
@@ -137,19 +122,20 @@ func ReadReceiptFromFile(path string) (index.Receipt, error) {
 
 func ReadReceipt(f io.ReadCloser) (index.Receipt, error) {
 	defer f.Close()
-	r, err := DecodeReceiptFile(f)
+	receipt := &index.Receipt{}
+	err := decodeFile(f, receipt)
+	r := *receipt
 	if err != nil {
 		return r, errors.Wrap(err, "failed to decode plugin manifest")
 	}
 	return r, errors.Wrap(validation.ValidateReceipt(r.Name, r), "receipt manifest validation error")
 }
 
-// DecodeReceiptFile tries to decodes a receipt manifest from r.
-func DecodeReceiptFile(r io.Reader) (index.Receipt, error) {
-	var receipt index.Receipt
+// decodeFile tries to decode
+func decodeFile(r io.Reader, as interface{}) error {
 	b, err := ioutil.ReadAll(r)
 	if err != nil {
-		return receipt, err
+		return err
 	}
 
 	// TODO(ahmetb): when we have a stable API that won't add new fields,
@@ -157,6 +143,5 @@ func DecodeReceiptFile(r io.Reader) (index.Receipt, error) {
 	// incremental field additions to plugin manifests independently from the
 	// installed version of krew.
 	// yaml.UnmarshalStrict()
-	err = yaml.Unmarshal(b, &receipt)
-	return receipt, err
+	return yaml.Unmarshal(b, &as)
 }
