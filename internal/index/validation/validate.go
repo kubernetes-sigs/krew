@@ -99,45 +99,6 @@ func ValidatePlugin(name string, p index.Plugin) error {
 	return nil
 }
 
-// ValidateReceipt checks for structural validity of the Receipt object with given
-// name.
-func ValidateReceipt(name string, r index.Receipt) error {
-	if !isSupportedAPIVersion(r.APIVersion) {
-		return errors.Errorf("plugin manifest has apiVersion=%q, not supported in this version of krew (try updating plugin index or install a newer version of krew)", r.APIVersion)
-	}
-
-	if r.Kind != constants.PluginKind {
-		return errors.Errorf("plugin manifest has kind=%q, but only %q is supported", r.Kind, constants.PluginKind)
-	}
-	if !IsSafePluginName(name) {
-		return errors.Errorf("the plugin name %q is not allowed, must match %q", name, safePluginRegexp.String())
-	}
-	if r.Name != name {
-		return errors.Errorf("plugin should be named %q, not %q", name, r.Name)
-	}
-	if r.Spec.ShortDescription == "" {
-		return errors.New("should have a short description")
-	}
-	if strings.ContainsAny(r.Spec.ShortDescription, "\r\n") {
-		return errors.New("should not have line breaks in short description")
-	}
-	if len(r.Spec.Platforms) == 0 {
-		return errors.New("should have a platform specified")
-	}
-	if r.Spec.Version == "" {
-		return errors.New("should have a version specified")
-	}
-	if _, err := semver.Parse(r.Spec.Version); err != nil {
-		return errors.Wrap(err, "failed to parse plugin version")
-	}
-	for _, pl := range r.Spec.Platforms {
-		if err := validatePlatform(pl); err != nil {
-			return errors.Wrapf(err, "platform (%+v) is badly constructed", pl)
-		}
-	}
-	return nil
-}
-
 // validatePlatform checks Platform for structural validity.
 func validatePlatform(p index.Platform) error {
 	if p.URI == "" {

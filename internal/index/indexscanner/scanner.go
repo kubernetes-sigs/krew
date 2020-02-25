@@ -117,18 +117,13 @@ func ReadReceiptFromFile(path string) (index.Receipt, error) {
 	} else if err != nil {
 		return index.Receipt{}, errors.Wrap(err, "failed to open index file")
 	}
-	return ReadReceipt(f)
-}
-
-func ReadReceipt(f io.ReadCloser) (index.Receipt, error) {
 	defer f.Close()
 	receipt := &index.Receipt{}
-	err := decodeFile(f, receipt)
-	r := *receipt
+	err = decodeFile(f, receipt)
 	if err != nil {
-		return r, errors.Wrap(err, "failed to decode plugin manifest")
+		return *receipt, errors.Wrap(err, "failed to decode plugin manifest")
 	}
-	return r, errors.Wrap(validation.ValidateReceipt(r.Name, r), "receipt manifest validation error")
+	return *receipt, nil
 }
 
 // decodeFile tries to decode a plugin/receipt
