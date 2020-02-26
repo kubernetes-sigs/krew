@@ -1,0 +1,15 @@
+{{ partial "header.html" . }}
+    <article>
+        <h1>{{.Title}}</h1>
+        {{ with .Content }}
+            {{.}}
+        {{ else }}
+            <p>This page is not yet written.</p>
+        {{ end }}
+    </article>
+
+    <p>
+        <a href="{{ "/" | relURL }}" rel="home">
+        &larr; Table of Contents</a>
+    </p>
+{{ partial "footer.html" }}

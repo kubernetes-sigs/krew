@@ -1,0 +1,14 @@
+{{ with .Pages}}
+    <ul>
+    {{ range . }}
+        {{ if .Pages }}
+            <li>{{.Name}}</li>
+            {{ partial "toc.html" .}}
+        {{ else }}
+            <li>
+                <a href="{{ .Permalink| relURL }}">{{.Name}}</a>
+            </li>
+        {{ end }}
+    {{ end }}
+    </ul>
+{{ end }}

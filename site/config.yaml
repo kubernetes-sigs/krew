@@ -1,0 +1,7 @@
+baseURL: "https://krew.sigs.k8s.io/"
+languageCode: "en-us"
+title: "Krew – kubectl plugin manager"
+
+markup:
+    highlight:
+      style: dracula
