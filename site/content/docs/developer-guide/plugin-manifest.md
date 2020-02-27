@@ -138,7 +138,7 @@ You can use the `files` field to specify
 which files should be copied into the plugin directory while extracting the
 files out of archive.
 
-The `files:` list specifies the copy operations (like `mv(1) <from> <to>`) to
+The `files:` list specifies the copy operations (like `mv <from> <to>`) to
 the files `from` the archive `to` the installation destination.
 
 * **Example:** Extract all files (default behavior, you can omit `files:` altogether)
@@ -193,6 +193,5 @@ plugin name (i.e. the `metadata.name` field).
 > will automatically convert them to underscores for kubectl to be able to find
 > your plugin.
 >
-> For example, if your  is named `view-logs` and your plugin binary is named
+> For example, if your plugin name is `view-logs` and your plugin binary is named
 > `run.sh`, krew will create a symbolic named `kubectl-view_logs` automatically.
-

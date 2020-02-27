@@ -51,7 +51,7 @@ Let's get started.
 1. Uninstall a plugin you no longer use:
 
     ```sh
-    kubectl krew remove access-matrix
+    kubectl krew uninstall access-matrix
     ```
 
 This is pretty much all you need to know as a user to use Krew.

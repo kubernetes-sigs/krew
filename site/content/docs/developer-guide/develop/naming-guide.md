@@ -4,7 +4,7 @@ slug: naming-guide
 weight: 200
 ---
 
-This document explain the best practices and recommendations for naming your
+This document explains the best practices and recommendations for naming your
 kubectl plugins.
 
 These guidelines are used for reviewing the plugins [submitted to Krew]({{<ref
