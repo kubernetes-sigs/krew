@@ -37,6 +37,9 @@ func FetchLatestTag() (string, error) {
 		return "", errors.Wrapf(err, "could not GET the latest release")
 	}
 	defer response.Body.Close()
+	if response.StatusCode != http.StatusOK {
+		return "", errors.Errorf("expected HTTP status 200 OK, got %s", response.Status)
+	}
 
 	var res struct {
 		Tag string `json:"tag_name"`
