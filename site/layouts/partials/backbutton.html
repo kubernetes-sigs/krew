@@ -2,8 +2,8 @@
 {{ $userGuide := "/docs/user-guide" }}
 {{ $devGuide := "/docs/developer-guide" }}
 
-{{ $isUserGuide := .IsDescendant (.Site.GetPage "section" $userGuide) }}
-{{ $isDevGuide := .IsDescendant (.Site.GetPage "section" $devGuide) }}
+{{ $isUserGuide := .Parent.IsDescendant (.Site.GetPage "section" $userGuide) }}
+{{ $isDevGuide := .Parent.IsDescendant (.Site.GetPage "section" $devGuide) }}
 
 {{ $parent := "" }}
 {{ if $isUserGuide }}
