@@ -1,0 +1,7 @@
+{{ partial "header.html" . }}
+
+
+    <h1 class="display-4">Documentation</h1>
+    {{ partial "toc.html" (.Site.GetPage "section" "docs") }}
+
+{{ partial "footer.html" }}
