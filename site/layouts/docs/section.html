@@ -13,11 +13,10 @@
         <aside class="lead">{{.}}</aside>
     {{ end }}
 
-
     {{ partial "toc.html" . }}
 
     {{ if not $isDocsHome }}
-        <a href="{{  "/docs/" | relURL}}" class="btn btn-link btn-sm rounded">&larr; Documentation</a>
+        {{ partial "backbutton.html" .}}
     {{ end }}
 </article>
 {{ partial "footer.html" }}
