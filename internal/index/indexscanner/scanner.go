@@ -86,31 +86,47 @@ func LoadPluginByName(pluginsDir, pluginName string) (index.Plugin, error) {
 // ReadPluginFromFile loads a file from the FS. When plugin file not found, it
 // returns an error that can be checked with os.IsNotExist.
 func ReadPluginFromFile(path string) (index.Plugin, error) {
-	f, err := os.Open(path)
-	if os.IsNotExist(err) {
-		// TODO(ahmetb): we should use go1.13+ errors.Is construct at call sites to evaluate if an error is os.IsNotExist
-		return index.Plugin{}, err
-	} else if err != nil {
-		return index.Plugin{}, errors.Wrap(err, "failed to open index file")
+	var plugin index.Plugin
+	err := readFromFile(path, &plugin)
+	if err != nil {
+		return plugin, err
 	}
-	return ReadPlugin(f)
+	return plugin, errors.Wrap(validation.ValidatePlugin(plugin.Name, plugin), "plugin manifest validation error")
 }
 
 func ReadPlugin(f io.ReadCloser) (index.Plugin, error) {
-	defer f.Close()
-	p, err := DecodePluginFile(f)
+	var plugin index.Plugin
+	err := decodeFile(f, &plugin)
 	if err != nil {
-		return p, errors.Wrap(err, "failed to decode plugin manifest")
+		return plugin, errors.Wrap(err, "failed to decode plugin manifest")
 	}
-	return p, errors.Wrap(validation.ValidatePlugin(p.Name, p), "plugin manifest validation error")
+	return plugin, errors.Wrap(validation.ValidatePlugin(plugin.Name, plugin), "plugin manifest validation error")
 }
 
-// DecodePluginFile tries to decodes a plugin manifest from r.
-func DecodePluginFile(r io.Reader) (index.Plugin, error) {
-	var plugin index.Plugin
+// ReadReceiptFromFile loads a file from the FS. When receipt file not found, it
+// returns an error that can be checked with os.IsNotExist.
+func ReadReceiptFromFile(path string) (index.Receipt, error) {
+	var receipt index.Receipt
+	err := readFromFile(path, &receipt)
+	return receipt, err
+}
+
+// readFromFile loads a file from the FS into the provided object.
+func readFromFile(path string, as interface{}) error {
+	f, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	err = decodeFile(f, &as)
+	return errors.Wrap(err, "failed to parse yaml file")
+}
+
+// decodeFile tries to decode a plugin/receipt
+func decodeFile(r io.ReadCloser, as interface{}) error {
+	defer r.Close()
 	b, err := ioutil.ReadAll(r)
 	if err != nil {
-		return plugin, err
+		return err
 	}
 
 	// TODO(ahmetb): when we have a stable API that won't add new fields,
@@ -118,6 +134,5 @@ func DecodePluginFile(r io.Reader) (index.Plugin, error) {
 	// incremental field additions to plugin manifests independently from the
 	// installed version of krew.
 	// yaml.UnmarshalStrict()
-	err = yaml.Unmarshal(b, &plugin)
-	return plugin, err
+	return yaml.Unmarshal(b, &as)
 }

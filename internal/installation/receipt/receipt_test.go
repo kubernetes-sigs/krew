@@ -22,6 +22,7 @@ import (
 
 	"sigs.k8s.io/krew/internal/index/indexscanner"
 	"sigs.k8s.io/krew/internal/testutil"
+	"sigs.k8s.io/krew/pkg/index"
 )
 
 func TestStore(t *testing.T) {
@@ -58,7 +59,8 @@ func TestLoad(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if diff := cmp.Diff(&gotPlugin, &testPlugin); diff != "" {
+	testPluginReceipt := index.Receipt{Plugin: testPlugin}
+	if diff := cmp.Diff(&gotPlugin, &testPluginReceipt); diff != "" {
 		t.Fatal(diff)
 	}
 }
