@@ -19,7 +19,7 @@ version of the plugin they have installed.)
 
 If you only change `version`, `uri` and `sha256` fields of your plugin manifest,
 your pull request will be automatically approved, tested and merged ([see an
-example](https://github.com/kubernetes-sigs/krew-index/pull/508/files)).
+example](https://github.com/kubernetes-sigs/krew-index/pull/508)).
 
 However, you can [**automate releasing your plugin**]({{< ref
 "release-automation.md" >}}) if you're publishing your plugins on GitHub.

@@ -12,4 +12,4 @@ Krew self-hosts).
 You can alternatively install it via some
 OS-package managers like Homebrew (macOS).
 
-[readme]: http://sigs.k8s.io/krew/README.md
+[readme]: https://sigs.k8s.io/krew/README.md#installation

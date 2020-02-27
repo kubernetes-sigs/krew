@@ -7,7 +7,7 @@ weight: 400
 To remove Krew and plugins installed altogether, run this on your Linux/macOS machine:
 
 ```sh
-rm -rf -- ~/.krew
+{{<prompt>}}rm -rf -- ~/.krew
 ```
 
 On Windows, remove directory: `%USERPROFILE%\.krew`.

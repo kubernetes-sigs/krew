@@ -4,19 +4,18 @@ slug: discovering-plugins
 weight: 300
 ---
 
-You can find a list of `kubectl` plugins distributed on Krew [here][list].
+You can find a list of `kubectl` plugins distributed via Krew [here][list].
+However, you can achieve this using the command-line as well.
 
-On your machine, there's a local copy of which plugins are available on Krew. To
-update your local copy of the plugin list, run:
+## Search available plugins
 
-## List all plugins
+First, refresh your local copy of the plugin index:
 
 ```sh
 {{<prompt>}}kubectl krew update
 ```
 
-To find plugins, run the `search` command. This command lists all available
-plugins:
+To list all plugins available, run:
 
 ```text
 {{<prompt>}}kubectl krew search
@@ -33,9 +32,6 @@ cluster-group    Exec commands across a group of contexts.           no
 config-cleanup   Automatically clean up your kubeconfig              no
 ...{{</output>}}
 ```
-
-## Search plugins
-
 You can specify search keywords as arguments:
 
 ```sh

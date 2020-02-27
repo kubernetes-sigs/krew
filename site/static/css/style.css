@@ -1,0 +1,32 @@
+blockquote {
+    margin-left: 12px;
+    color: #555;
+    max-width: 520px;
+    border-left: 2px solid #ddd;
+    padding-left: 12px;
+}
+
+article h1, article h2, article h3, article h4 {
+    font-weight: 200;
+}
+
+pre {
+    padding: 12px;
+}
+
+.noselect {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.cliprompt {
+    color: orange;
+}
+
+pre .cmdoutput {
+    color: #aaa;
+}
