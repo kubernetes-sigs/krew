@@ -75,7 +75,7 @@ func (td *TempDir) Write(file string, content []byte) *TempDir {
 	return td
 }
 
-func (td *TempDir) WriteYaml(file string, obj interface{}) *TempDir {
+func (td *TempDir) WriteYAML(file string, obj interface{}) *TempDir {
 	td.t.Helper()
 	content, err := yaml.Marshal(obj)
 	if err != nil {

@@ -19,11 +19,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-
-	"sigs.k8s.io/krew/internal/testutil"
 )
 
 func TestReadPluginFile(t *testing.T) {
@@ -88,56 +85,6 @@ func TestReadPluginFile(t *testing.T) {
 			if !sel.Matches(tt.matchFirst) || sel.Matches(neverMatch) {
 				t.Errorf("ReadPluginFromFile() didn't parse label selector properly: %##v", sel)
 				return
-			}
-		})
-	}
-}
-
-func TestReadReceiptFile(t *testing.T) {
-	tests := []struct {
-		name            string
-		receiptFileName string
-		wantErr         bool
-		matchFirst      labels.Set
-	}{
-		{
-			name:            "read receipt file",
-			receiptFileName: "foo.yaml",
-			wantErr:         false,
-			matchFirst: labels.Set{
-				"arch": "amd64",
-				"os":   "linux",
-			},
-		},
-	}
-	neverMatch := labels.Set{}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tmpDir, cleanup := testutil.NewTempDir(t)
-			defer cleanup()
-
-			receipt := testutil.NewPlugin().WithName("foo").V()
-			receiptFile := filepath.Join(tmpDir.Root(), "receipts", tt.receiptFileName)
-			tmpDir.WriteYaml(receiptFile, receipt)
-
-			got, err := ReadReceiptFromFile(receiptFile)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ReadReceiptFromFile() error = %v, wantErr %v", err, tt.wantErr)
-			}
-			if err != nil {
-				t.Error(err)
-			}
-			if cmp.Diff(got.Plugin, receipt) != "" {
-				t.Errorf("ReadReceiptFromFile() has not parsed the receipt properly: %+v", got)
-			}
-
-			sel, err := metav1.LabelSelectorAsSelector(got.Spec.Platforms[0].Selector)
-			if err != nil {
-				t.Errorf("ReadReceiptFromFile() error parsing label err: %v", err)
-			}
-			if !sel.Matches(tt.matchFirst) || sel.Matches(neverMatch) {
-				t.Errorf("ReadReceiptFromFile() didn't parse label selector properly: %##v", sel)
 			}
 		})
 	}

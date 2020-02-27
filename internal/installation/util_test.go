@@ -65,7 +65,7 @@ func TestListInstalledPlugins(t *testing.T) {
 			defer cleanup()
 
 			for _, plugin := range test.plugins {
-				tempDir.WriteYaml(plugin.Name+constants.ManifestExtension, plugin)
+				tempDir.WriteYAML(plugin.Name+constants.ManifestExtension, plugin)
 			}
 
 			actual, err := ListInstalledPlugins(tempDir.Root())

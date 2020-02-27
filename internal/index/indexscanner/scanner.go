@@ -95,7 +95,6 @@ func ReadPluginFromFile(path string) (index.Plugin, error) {
 }
 
 func ReadPlugin(f io.ReadCloser) (index.Plugin, error) {
-	defer f.Close()
 	var plugin index.Plugin
 	err := decodeFile(f, &plugin)
 	if err != nil {
@@ -115,21 +114,16 @@ func ReadReceiptFromFile(path string) (index.Receipt, error) {
 // readFromFile loads a file from the FS into the provided object.
 func readFromFile(path string, as interface{}) error {
 	f, err := os.Open(path)
-	if os.IsNotExist(err) {
-		return err
-	} else if err != nil {
-		return errors.Wrapf(err, "failed to open file %s", path)
-	}
-	defer f.Close()
-	err = decodeFile(f, &as)
 	if err != nil {
-		return errors.Wrap(err, "failed to decode plugin manifest")
+		return err
 	}
-	return nil
+	err = decodeFile(f, &as)
+	return errors.Wrap(err, "failed to parse yaml file")
 }
 
 // decodeFile tries to decode a plugin/receipt
-func decodeFile(r io.Reader, as interface{}) error {
+func decodeFile(r io.ReadCloser, as interface{}) error {
+	defer r.Close()
 	b, err := ioutil.ReadAll(r)
 	if err != nil {
 		return err
