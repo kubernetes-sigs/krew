@@ -1,7 +1,9 @@
+title: "Krew – kubectl plugin manager"
 baseURL: "https://krew.sigs.k8s.io/"
 languageCode: "en-us"
-title: "Krew – kubectl plugin manager"
-
+disableKinds:
+- taxonomy
+- taxonomyTerm
 markup:
-    highlight:
-      style: dracula
+  highlight:
+    style: dracula

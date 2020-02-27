@@ -1,3 +1,7 @@
+div.top-level-container {
+    max-width: 840px;
+}
+
 blockquote {
     margin-left: 12px;
     color: #555;
@@ -7,7 +11,7 @@ blockquote {
 }
 
 article h1, article h2, article h3, article h4 {
-    font-weight: 200;
+    font-weight: 300;
 }
 
 pre {
@@ -29,4 +33,8 @@ pre {
 
 pre .cmdoutput {
     color: #aaa;
+}
+
+.lead {
+    letter-spacing: -1px;
 }

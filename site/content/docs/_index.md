@@ -1,3 +1,4 @@
 ---
-title: Krew
+title: Documentation
+slug: docs
 ---

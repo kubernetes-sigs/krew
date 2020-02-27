@@ -1,0 +1,23 @@
+{{ $isDocsHome := (eq .Slug "docs") }}
+{{ partial "header.html" . }}
+<article>
+    <h1>
+        {{ if $isDocsHome }}
+            Documentation
+        {{else}}
+            {{ .Title}}
+        {{end}}
+    </h1>
+
+    {{ with .Content }}
+        <aside class="lead">{{.}}</aside>
+    {{ end }}
+
+
+    {{ partial "toc.html" . }}
+
+    {{ if not $isDocsHome }}
+        <a href="{{  "/docs/" | relURL}}" class="btn btn-link btn-sm rounded">&larr; Documentation</a>
+    {{ end }}
+</article>
+{{ partial "footer.html" }}
