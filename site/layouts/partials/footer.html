@@ -1,12 +1,25 @@
 
-        <footer class="text-muted">
+        <footer class="text-muted small">
             <hr/>
-            <small>
-                &copy; {{ now.Format "2006"}} The Kubernetes Authors.
-                Krew documentation is distributed under
-                <a target="_blank" href='https://creativecommons.org/licenses/by/4.0/' class='text-muted'>CC-BY-4.0</a>.<br/>
-                Krew is a Kubernetes <a href="https://github.com/kubernetes/community/blob/master/sig-cli/README.md#cli-special-interest-group" target="_blank">SIG CLI</a> project.
-            </small>
+            &copy; {{ now.Format "2006"}} The Kubernetes Authors.
+            Krew is a Kubernetes
+                <a href="https://github.com/kubernetes/community/blob/master/sig-cli/README.md#cli-special-interest-group" target="_blank" class="text-info">
+                    SIG CLI</a> project.
+                <p>
+                    {{ with .File }}
+                        <a href="http://sigs.k8s.io/krew/site/content/{{- .File.Path -}}" target="_blank" class="text-info">
+                        Edit Page</a>
+                    {{ end }}
+
+                    {{ if .GitInfo }}
+                    <strong>&middot;</strong>
+                    Built from commit
+                    <a href="https://github.com/kubernetes-sigs/krew/commit/{{- .GitInfo.Hash -}}"
+                        target="_blank" class="text-muted">
+                        {{- .GitInfo.AbbreviatedHash -}}
+                    </a>.
+                    {{ end}}
+                </p>
         </footer>
         </div>
     </div><!-- .container -->
