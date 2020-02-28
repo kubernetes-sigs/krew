@@ -36,5 +36,6 @@ pre .cmdoutput {
 }
 
 .lead {
-    letter-spacing: -1px;
+    letter-spacing: -0.4px;
+    font-weight: 300;
 }
