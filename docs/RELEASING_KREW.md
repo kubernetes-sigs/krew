@@ -32,12 +32,9 @@ Krew tags versions starting with `v`. Example: `v0.2.0-rc.1`.
     TAG=v0.3.2-rc.1 # <- change this
     ```
 
-1. **Update installation instructions:** Version number is hardcoded in
-   `README.md`.
+1. **Create a release commit:**
 
-1. **Commit the changes back:**
-
-       git commit -am "Release ${TAG:?TAG required}"
+       git commit -am "Release ${TAG:?TAG required}" --allow-empty
 
 1. **Push PR and merge changes**: The repository hooks forbid direct pushes to
    master, so the changes from the previous step need to be pushed and merged
@@ -47,8 +44,8 @@ Krew tags versions starting with `v`. Example: `v0.2.0-rc.1`.
 
    (Only repository administrators can directly push to master branch.)
 
-1. **Wait until the build succeeds:** Wait for Travis CI to show green for the
-   build for the commit you just pushed to master branch.
+1. **Wait until the build succeeds:** Wait for CI to show green for the
+   build of the commit you just pushed to master branch.
 
 1. **Tag the release:**
 
