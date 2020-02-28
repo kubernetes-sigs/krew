@@ -1,0 +1,21 @@
+{{ $docsHome := "/docs" }}
+{{ $userGuide := "/docs/user-guide" }}
+{{ $devGuide := "/docs/developer-guide" }}
+
+{{ $isUserGuide := .Parent.IsDescendant (.Site.GetPage "section" $userGuide) }}
+{{ $isDevGuide := .Parent.IsDescendant (.Site.GetPage "section" $devGuide) }}
+
+{{ $parent := "" }}
+{{ if $isUserGuide }}
+    {{ $parent = $userGuide }}
+{{ else if $isDevGuide }}
+    {{ $parent = $devGuide }}
+{{ else }}
+    {{ $parent = $docsHome }}
+{{ end }}
+
+{{ $parent := .Site.GetPage "section" $parent }}
+
+<a href="{{  $parent.RelPermalink}}" class="btn btn-link btn-sm rounded">
+    &larr; {{ $parent.Title }}
+</a>

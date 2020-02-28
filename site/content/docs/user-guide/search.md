@@ -26,12 +26,9 @@ advise-psp       Suggests PodSecurityPolicies for cluster.           no
 auth-proxy       Authentication proxy to a pod or service            no
 bulk-action      Do bulk actions on Kubernetes resources.            no
 ca-cert          Print the PEM CA certificate of the current clu...  no
-capture          Triggers a Sysdig capture to troubleshoot the r...  no
-change-ns        View or change the current namespace via kubectl.   no
-cluster-group    Exec commands across a group of contexts.           no
-config-cleanup   Automatically clean up your kubeconfig              no
 ...{{</output>}}
 ```
+
 You can specify search keywords as arguments:
 
 ```sh

@@ -5,12 +5,14 @@ weight: 100
 ---
 
 Krew helps you discover and install [`kubectl` plugins][kpl] on your machine.
+
 There are [a lot of][list] `kubectl` plugins you can install and use to enhance
 your Kubernetes experience.
 
-Let's get started.
+Let's get started:
 
-1. [Install and set up]({{<ref "setup/install.md">}}) Krew.
+1. [Install and set up]({{<ref "setup/install.md">}}) Krew on your machine.
+
 1. Download the plugin list:
 
     ```sh
@@ -21,16 +23,14 @@ Let's get started.
 
     ```sh
     {{<prompt>}}kubectl krew search
-    {{<output>}}
-NAME                            DESCRIPTION                                         INSTALLED
+    {{<output>}}NAME                            DESCRIPTION                                         INSTALLED
 access-matrix                   Show an RBAC access matrix for server resources     no
 advise-psp                      Suggests PodSecurityPolicies for cluster.           no
 auth-proxy                      Authentication proxy to a pod or service            no
-bulk-action                     Do bulk actions on Kubernetes resources.            no
-ca-cert                         Print the PEM CA certificate of the current clu...  no{{</output>}}
+[...]{{</output>}}
     ```
 
-1. Install a plugin:
+1. Choose a plugin from the list and install it:
 
     ```sh
     {{<prompt>}}kubectl krew install access-matrix

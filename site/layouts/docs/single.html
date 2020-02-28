@@ -1,5 +1,5 @@
 {{ partial "header.html" . }}
-    <article>
+    <article class="py-lg-3">
         <h1>{{.Title}}</h1>
         {{ with .Content }}
             {{.}}
@@ -8,8 +8,5 @@
         {{ end }}
     </article>
 
-    <p>
-        <a href="{{ "/" | relURL }}" rel="home">
-        &larr; Table of Contents</a>
-    </p>
+{{ partial "backbutton.html" .}}
 {{ partial "footer.html" }}

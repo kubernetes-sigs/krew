@@ -13,7 +13,7 @@ existing plugins.
 1. Familiarize yourself with [Krew plugin naming guide]({{< ref "../develop/naming-guide.md" >}}).
 1. Read the [plugin development best practices]({{< ref
    "../develop/best-practices.md" >}}).
-1. Develop a [plugin manifest](../plugin-manifest.md).
+1. Develop a [plugin manifest]({{< ref "../plugin-manifest.md" >}})
 1. Make sure your plugin’s source code is available as open source.
 1. Adopt an open source license, and add it to your plugin archive file.
 1. Tag a git release with a [semantic
