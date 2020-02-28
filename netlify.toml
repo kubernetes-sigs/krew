@@ -1,7 +1,7 @@
 [build]
 base = "site/"
 publish = "site/public/"
-command = "hugo --gc"
+command = "hugo"
 
 [build.environment]
 HUGO_VERSION = "0.65.1"
