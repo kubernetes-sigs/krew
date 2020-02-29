@@ -133,7 +133,7 @@ func TestReadReceiptFromFile(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			gotReceipt, err := ReadReceiptFromFile(tt.args.receiptFilePath)
 			if err != nil {
-				t.Errorf("ReadReceiptFromFile() error: %v", err)
+				t.Fatalf("ReadReceiptFromFile() error: %v", err)
 			}
 			testPlugin := testutil.NewPlugin().WithName(tt.args.pluginName).V()
 			receipt := testutil.NewReceipt().WithPlugin(testPlugin)
