@@ -19,8 +19,13 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+
+	"sigs.k8s.io/krew/internal/testutil"
+	"sigs.k8s.io/krew/pkg/constants"
+	"sigs.k8s.io/krew/pkg/index"
 )
 
 func TestReadPluginFile(t *testing.T) {
@@ -85,6 +90,63 @@ func TestReadPluginFile(t *testing.T) {
 			if !sel.Matches(tt.matchFirst) || sel.Matches(neverMatch) {
 				t.Errorf("ReadPluginFromFile() didn't parse label selector properly: %##v", sel)
 				return
+			}
+		})
+	}
+}
+
+func TestReadReceiptFromFile(t *testing.T) {
+	type args struct {
+		receiptFilePath string
+		pluginName      string
+		indexName       string
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{
+			name: "read receipt of plugin from default index without status",
+			args: args{
+				receiptFilePath: filepath.Join(testdataPath(t), "testindex", "receipts", "default.yaml"),
+				pluginName:      constants.DefaultIndexName + "-plugin",
+			},
+		},
+		{
+			name: "read receipt of plugin from default index with status",
+			args: args{
+				receiptFilePath: filepath.Join(testdataPath(t), "testindex", "receipts", "default-explicit.yaml"),
+				pluginName:      constants.DefaultIndexName + "-explicit-plugin",
+				indexName:       constants.DefaultIndexName,
+			},
+		},
+		{
+			name: "read receipt of plugin from custom index",
+			args: args{
+				receiptFilePath: filepath.Join(testdataPath(t), "testindex", "receipts", "custom.yaml"),
+				pluginName:      "custom-plugin",
+				indexName:       "custom",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotReceipt, err := ReadReceiptFromFile(tt.args.receiptFilePath)
+			if err != nil {
+				t.Errorf("ReadReceiptFromFile() error: %v", err)
+			}
+			testPlugin := testutil.NewPlugin().WithName(tt.args.pluginName).V()
+			receipt := testutil.NewReceipt().WithPlugin(testPlugin)
+			if tt.args.indexName != "" {
+				receipt = receipt.WithStatus(index.ReceiptStatus{
+					Source: index.SourceIndex{
+						Name: tt.args.indexName,
+					},
+				})
+			}
+			testReceipt := receipt.V()
+			if diff := cmp.Diff(gotReceipt, testReceipt); diff != "" {
+				t.Errorf("expected matching receipts: %s\n", diff)
 			}
 		})
 	}

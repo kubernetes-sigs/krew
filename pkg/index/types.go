@@ -62,4 +62,17 @@ type FileOperation struct {
 // Receipt describes a plugin receipt file.
 type Receipt struct {
 	Plugin `json:",inline" yaml:",inline"`
+
+	Status ReceiptStatus `json:"status,omitempty"`
+}
+
+// ReceiptStatus contains information about the installed plugin.
+type ReceiptStatus struct {
+	Source SourceIndex `json:"source"`
+}
+
+// SourceIndex contains information about the index a plugin was installed from.
+type SourceIndex struct {
+	// Name is the configured name of an index a plugin was installed from.
+	Name string `json:"name"`
 }

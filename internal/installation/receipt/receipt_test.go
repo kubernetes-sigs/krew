@@ -22,6 +22,7 @@ import (
 
 	"sigs.k8s.io/krew/internal/index/indexscanner"
 	"sigs.k8s.io/krew/internal/testutil"
+	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/index"
 )
 
@@ -59,7 +60,11 @@ func TestLoad(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	testPluginReceipt := index.Receipt{Plugin: testPlugin}
+	testPluginReceipt := testutil.NewReceipt().WithPlugin(testPlugin).WithStatus(index.ReceiptStatus{
+		Source: index.SourceIndex{
+			Name: constants.DefaultIndexName,
+		},
+	}).V()
 	if diff := cmp.Diff(&gotPlugin, &testPluginReceipt); diff != "" {
 		t.Fatal(diff)
 	}
