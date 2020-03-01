@@ -1,7 +1,7 @@
 ---
 title: Uninstalling Krew
 slug: uninstall
-weight: 400
+weight: 200
 ---
 
 To remove Krew and plugins installed altogether, run this on your Linux/macOS machine:
