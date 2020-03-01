@@ -3,6 +3,11 @@
 Krew logo is designed by [@iboonox](https://twitter.com/iboonox) and it is
 licensed under Apache 2.0 license.
 
+Krew logo follows the nautical theme of Kubernetes: The tentacles wrapping
+around the crate refer to tentacles of a cuttlefish, which is the mascot of
+[kubectl](https://github.com/kubernetes/kubectl#kubectl) project, and the crate
+represents a kubectl plugin package.
+
 ## Available logo types
 
 <!-- below we use a table so we can control max height -->
