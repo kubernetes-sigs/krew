@@ -1,6 +1,7 @@
 title: "Krew – kubectl plugin manager"
 baseURL: "https://krew.sigs.k8s.io/"
 languageCode: "en-us"
+enableGitInfo: true
 enableRobotsTXT: true
 disableKinds:
 - taxonomy
