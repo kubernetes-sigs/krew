@@ -1,7 +1,7 @@
 ---
 title: Writing Krew plugin manifests
 slug: plugin-manifest
-weight: 100
+weight: 150
 ---
 
 Each Krew plugin has a "plugin manifest", which is a YAML file that describes
