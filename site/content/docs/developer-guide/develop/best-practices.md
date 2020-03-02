@@ -21,7 +21,7 @@ If you are planning to write a plugin with Go, check out:
 - [cli-runtime]: Provides packages to share code with `kubectl` for printing output or [sharing command-line options][cli-opts]
 - [sample-cli-plugin]: An example plugin implementation in Go
 
-### Consistency with kubectl
+### Consistency with kubectl {#kubectl-options}
 
 Krew does not try to impose any rules in terms of the shape of your plugin.
 
@@ -39,7 +39,7 @@ Furthermore, by using the [genericclioptions][cli-opts] package (Go), you can
 support the global command-line flags listed in `kubectl options` (e.g.
 `--kubeconfig`, `--context` and many others) in your plugins.
 
-### Import authentication plugins (Go)
+### Import authentication plugins (Go) {#auth-plugins}
 
 By default, plugins that use [client-go]
 cannot authenticate to Kubernetes clusters on many cloud providers. To overcome
@@ -54,7 +54,7 @@ import _ "k8s.io/client-go/plugin/pkg/client/auth"
 [cli-opts]: https://godoc.org/k8s.io/cli-runtime/pkg/genericclioptions
 [sample-cli-plugin]: https://github.com/kubernetes/sample-cli-plugin
 
-## Revise usage/help messages with `kubectl` prefix
+## Revise usage/help messages with `kubectl` prefix {#help-messages}
 
 Users discover how to use your plugin by calling it without any arguments (which
 might trigger a help message), or `-h`/`--help` options.
