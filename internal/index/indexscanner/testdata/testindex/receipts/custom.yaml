@@ -19,9 +19,6 @@ metadata:
 spec:
   platforms:
   - bin: kubectl-test-plugin
-    files:
-    - from: ./*.sh
-      to: .
     selector:
       matchLabels:
         arch: amd64
@@ -30,6 +27,6 @@ spec:
     uri: http://example.com/
   shortDescription: in-memory test plugin object
   version: v1.0.0-test.1
-Status:
-  Source:
-    Name: custom
+status:
+  source:
+    name: custom

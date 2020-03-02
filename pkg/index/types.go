@@ -63,7 +63,7 @@ type FileOperation struct {
 type Receipt struct {
 	Plugin `json:",inline" yaml:",inline"`
 
-	Status ReceiptStatus `json:"status,omitempty"`
+	Status ReceiptStatus `json:"status"`
 }
 
 // ReceiptStatus contains information about the installed plugin.

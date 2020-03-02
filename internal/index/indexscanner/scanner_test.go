@@ -23,7 +23,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
-	"sigs.k8s.io/krew/internal/testutil"
 	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/index"
 )
@@ -98,34 +97,39 @@ func TestReadPluginFile(t *testing.T) {
 func TestReadReceiptFromFile(t *testing.T) {
 	type args struct {
 		receiptFilePath string
-		pluginName      string
-		indexName       string
 	}
 	tests := []struct {
-		name string
-		args args
+		name       string
+		args       args
+		wantStatus index.ReceiptStatus
 	}{
 		{
-			name: "read receipt of plugin from default index without status",
+			name: "read receipt of plugin without status",
 			args: args{
-				receiptFilePath: filepath.Join(testdataPath(t), "testindex", "receipts", "default.yaml"),
-				pluginName:      constants.DefaultIndexName + "-plugin",
+				receiptFilePath: filepath.Join(testdataPath(t), "testindex", "receipts", "foo.yaml"),
 			},
+			wantStatus: index.ReceiptStatus{},
 		},
 		{
 			name: "read receipt of plugin from default index with status",
 			args: args{
-				receiptFilePath: filepath.Join(testdataPath(t), "testindex", "receipts", "default-explicit.yaml"),
-				pluginName:      constants.DefaultIndexName + "-explicit-plugin",
-				indexName:       constants.DefaultIndexName,
+				receiptFilePath: filepath.Join(testdataPath(t), "testindex", "receipts", "foo-explicit.yaml"),
+			},
+			wantStatus: index.ReceiptStatus{
+				Source: index.SourceIndex{
+					Name: constants.DefaultIndexName,
+				},
 			},
 		},
 		{
 			name: "read receipt of plugin from custom index",
 			args: args{
 				receiptFilePath: filepath.Join(testdataPath(t), "testindex", "receipts", "custom.yaml"),
-				pluginName:      "custom-plugin",
-				indexName:       "custom",
+			},
+			wantStatus: index.ReceiptStatus{
+				Source: index.SourceIndex{
+					Name: "custom",
+				},
 			},
 		},
 	}
@@ -135,17 +139,7 @@ func TestReadReceiptFromFile(t *testing.T) {
 			if err != nil {
 				t.Fatalf("ReadReceiptFromFile() error: %v", err)
 			}
-			testPlugin := testutil.NewPlugin().WithName(tt.args.pluginName).V()
-			receipt := testutil.NewReceipt().WithPlugin(testPlugin)
-			if tt.args.indexName != "" {
-				receipt = receipt.WithStatus(index.ReceiptStatus{
-					Source: index.SourceIndex{
-						Name: tt.args.indexName,
-					},
-				})
-			}
-			testReceipt := receipt.V()
-			if diff := cmp.Diff(gotReceipt, testReceipt); diff != "" {
+			if diff := cmp.Diff(gotReceipt.Status, tt.wantStatus); diff != "" {
 				t.Errorf("expected matching receipts: %s\n", diff)
 			}
 		})
