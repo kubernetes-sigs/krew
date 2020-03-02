@@ -82,5 +82,5 @@ Krew tags versions starting with `v`. Example: `v0.2.0-rc.1`.
 
 ## Release artifacts
 
-When a tag is pushed to the repository, Travis CI will make a release on GitHub
-and upload the release artifacts as files on the release.
+When a tag is pushed to the repository, GitHub workflow will make a release
+on GitHub, and upload the release artifacts as files on the release.
