@@ -53,3 +53,34 @@ import _ "k8s.io/client-go/plugin/pkg/client/auth"
 [client-go]: https://godoc.org/k8s.io/client-go
 [cli-opts]: https://godoc.org/k8s.io/cli-runtime/pkg/genericclioptions
 [sample-cli-plugin]: https://github.com/kubernetes/sample-cli-plugin
+
+## Revise usage/help messages with `kubectl` prefix
+
+Users discover how to use your plugin by calling it without any arguments (which
+might trigger a help message), or `-h`/`--help` options.
+
+Therefore, change your usage strings to show `kubectl ` prefix before the plugin
+name. For example
+
+```text
+Usage:
+  kubectl popeye [flags]
+```
+
+To determine whether an executable is running as a plugin or not, you can look
+at argv[0], which would have the `kubectl-` prefix. To determine whether your
+program is running as a kubectl plugin or not:
+
+- **Go:**
+
+    ```go
+    if strings.HasPrefix(filepath.Base(os.Args[0]), "kubectl-") { }
+    ```
+
+- **Bash:**
+
+    ```bash
+    if [[ "$(basename "$0")" == kubectl-* ]]; then # invoked as plugin
+        # ...
+    fi
+    ```
