@@ -21,8 +21,6 @@ import (
 )
 
 func Test_fetchLatestTag_GitHubAPI(t *testing.T) {
-	// TODO(corneliusweig) re-enable once Travis CI is discontinued
-	t.Skip("skipping GitHub API test due to instability on travis")
 	tag, err := FetchLatestTag()
 	if err != nil {
 		t.Error(err)
