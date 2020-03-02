@@ -1,8 +1,8 @@
 # Contributor Guide
 
-This guide is intended for people who want to start working on `krew` itself.
-If you intend to write a new plugin, see [Developer Guide](./DEVELOPER_GUIDE.md)
-instead.
+This guide is intended for people who want to start working on `krew` itself. If
+you intend to write a new plugin, see the [Developer
+Guide](https://krew.sigs.k8s.io/docs/developer-guide/) instead.
 
 ## Setting up the environment
 

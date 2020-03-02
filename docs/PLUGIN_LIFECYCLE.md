@@ -1,8 +1,10 @@
 # Plugin Lifecycle
 
-(This guide is intended for developers of krew.)
+(This guide is intended for developers of Krew.)
 
 :warning: The instructions below may not be up to date for krew v0.2 and higher.
+It is provided as a reference to learn how Krew works under the covers, but
+may not be entirely accurate.
 
 ## Installation
 

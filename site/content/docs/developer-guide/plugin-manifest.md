@@ -1,11 +1,14 @@
 ---
 title: Writing Krew plugin manifests
 slug: plugin-manifest
-weight: 100
+weight: 150
 ---
 
 Each Krew plugin has a "plugin manifest", which is a YAML file that describes
 the plugin, how it can be downloaded and installed on a machine.
+
+Plugin manifests must have the same name as the plugin (e.g. plugin `foo` has a
+manifest file named `foo.yaml`).
 
 It is **highly recommended** you look at [example plugin manifests]({{< ref
 "example-plugin-manifests.md" >}}) to copy from an existing plugin and adapt to

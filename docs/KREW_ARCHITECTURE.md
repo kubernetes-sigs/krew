@@ -2,7 +2,9 @@
 
 (This guide is intended for developers of krew.)
 
-:warning: The instructions below are not up to date for krew v0.2+.
+:warning: The instructions below are not up to date for krew v0.2+. But this
+document is still retained as a reference to highlight some original design
+decisions behind Krew.
 
 <!-- TOC depthFrom:2 -->
 
