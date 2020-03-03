@@ -36,7 +36,7 @@ func TestStore(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	actual, err := indexscanner.ReadReceiptFromFile(tmpDir.Path("some-plugin.yaml"))
+	actual, err := indexscanner.ReadReceiptFromFile(dest)
 	if err != nil {
 		t.Fatal(err)
 	}

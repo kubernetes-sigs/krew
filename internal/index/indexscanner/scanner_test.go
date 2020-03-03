@@ -23,6 +23,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
+	"sigs.k8s.io/krew/internal/testutil"
 	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/index"
 )
@@ -95,54 +96,24 @@ func TestReadPluginFile(t *testing.T) {
 }
 
 func TestReadReceiptFromFile(t *testing.T) {
-	type args struct {
-		receiptFilePath string
-	}
-	tests := []struct {
-		name       string
-		args       args
-		wantStatus index.ReceiptStatus
-	}{
-		{
-			name: "read receipt of plugin without status",
-			args: args{
-				receiptFilePath: filepath.Join(testdataPath(t), "testindex", "receipts", "foo.yaml"),
-			},
-			wantStatus: index.ReceiptStatus{},
-		},
-		{
-			name: "read receipt of plugin from default index with status",
-			args: args{
-				receiptFilePath: filepath.Join(testdataPath(t), "testindex", "receipts", "foo-explicit.yaml"),
-			},
-			wantStatus: index.ReceiptStatus{
-				Source: index.SourceIndex{
-					Name: constants.DefaultIndexName,
-				},
-			},
-		},
-		{
-			name: "read receipt of plugin from custom index",
-			args: args{
-				receiptFilePath: filepath.Join(testdataPath(t), "testindex", "receipts", "custom.yaml"),
-			},
-			wantStatus: index.ReceiptStatus{
-				Source: index.SourceIndex{
-					Name: "custom",
-				},
-			},
+	tmpDir, cleanup := testutil.NewTempDir(t)
+	defer cleanup()
+
+	name := "foo"
+	wantStatus := &index.ReceiptStatus{
+		Source: index.SourceIndex{
+			Name: name,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			gotReceipt, err := ReadReceiptFromFile(tt.args.receiptFilePath)
-			if err != nil {
-				t.Fatalf("ReadReceiptFromFile() error: %v", err)
-			}
-			if diff := cmp.Diff(tt.wantStatus, gotReceipt.Status); diff != "" {
-				t.Errorf("expected matching receipts: %s\n", diff)
-			}
-		})
+	testReceipt := testutil.NewReceipt().WithPlugin(testutil.NewPlugin().V()).WithStatus(*wantStatus).V()
+	tmpDir.WriteYAML(name+constants.ManifestExtension, testReceipt)
+
+	gotReceipt, err := ReadReceiptFromFile(tmpDir.Path(name + constants.ManifestExtension))
+	if err != nil {
+		t.Fatalf("ReadReceiptFromFile() error: %v", err)
+	}
+	if diff := cmp.Diff(*wantStatus, gotReceipt.Status); diff != "" {
+		t.Errorf("expected matching receipts: %s\n", diff)
 	}
 }
 
