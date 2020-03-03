@@ -2,7 +2,7 @@ div.top-level-container {
     max-width: 960px;
 }
 
-blockquote {
+blockquote, .blockquote {
     margin-left: 12px;
     color: #555;
     max-width: 520px;
@@ -16,6 +16,7 @@ article h1, article h2, article h3, article h4 {
 
 pre {
     padding: 12px;
+    overflow-y: scroll;
 }
 
 .noselect {
@@ -38,4 +39,9 @@ pre .cmdoutput {
 .lead {
     letter-spacing: -0.4px;
     font-weight: 300;
+}
+
+article aside.toc {
+    background-color: #f8f8f8;;
+    font-size: 1rem;
 }

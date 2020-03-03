@@ -4,6 +4,8 @@ slug: best-practices
 weight: 300
 ---
 
+{{< toc >}}
+
 This guide lists practices to use while developing `kubectl` plugins. Before
 submitting your plugin to Krew, please review these
 
@@ -11,7 +13,7 @@ While Krew project does not enforce any strict guidelines about how a plugin
 works, using some of these practices can help your plugin work for more users
 and behave more predictably.
 
-### Choosing a language
+## Choosing a language
 
 Most `kubectl` plugins are written in Go or as bash scripts.
 
@@ -21,7 +23,7 @@ If you are planning to write a plugin with Go, check out:
 - [cli-runtime]: Provides packages to share code with `kubectl` for printing output or [sharing command-line options][cli-opts]
 - [sample-cli-plugin]: An example plugin implementation in Go
 
-### Consistency with kubectl {#kubectl-options}
+## Consistency with kubectl {#kubectl-options}
 
 Krew does not try to impose any rules in terms of the shape of your plugin.
 
@@ -39,7 +41,7 @@ Furthermore, by using the [genericclioptions][cli-opts] package (Go), you can
 support the global command-line flags listed in `kubectl options` (e.g.
 `--kubeconfig`, `--context` and many others) in your plugins.
 
-### Import authentication plugins (Go) {#auth-plugins}
+## Import authentication plugins (Go) {#auth-plugins}
 
 By default, plugins that use [client-go]
 cannot authenticate to Kubernetes clusters on many cloud providers. To overcome
