@@ -1,7 +1,9 @@
 {{ partial "header.html" . }}
 
 <article>
-    {{.Content}}
+    <div class="lead">
+        {{.Content}}
+    </div>
 
     <a href="{{ "/docs/user-guide/quickstart" | relURL }} " class="btn btn-primary text-nowrap">Quickstart</a>
 

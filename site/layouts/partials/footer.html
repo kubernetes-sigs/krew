@@ -13,7 +13,7 @@
 
                     {{ if .GitInfo }}
                     <strong>&middot;</strong>
-                    Built from commit
+                    Last updated in commit
                     <a href="https://github.com/kubernetes-sigs/krew/commit/{{- .GitInfo.Hash -}}"
                         target="_blank" class="text-muted">
                         {{- .GitInfo.AbbreviatedHash -}}
