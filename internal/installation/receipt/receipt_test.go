@@ -22,8 +22,6 @@ import (
 
 	"sigs.k8s.io/krew/internal/index/indexscanner"
 	"sigs.k8s.io/krew/internal/testutil"
-	"sigs.k8s.io/krew/pkg/constants"
-	"sigs.k8s.io/krew/pkg/index"
 )
 
 func TestStore(t *testing.T) {
@@ -31,11 +29,7 @@ func TestStore(t *testing.T) {
 	defer cleanup()
 
 	testPlugin := testutil.NewPlugin().WithName("some-plugin").WithPlatforms(testutil.NewPlatform().V()).V()
-	testReceipt := testutil.NewReceipt().WithPlugin(testPlugin).WithStatus(index.ReceiptStatus{
-		Source: index.SourceIndex{
-			Name: constants.DefaultIndexName,
-		},
-	}).V()
+	testReceipt := testutil.NewReceipt().WithPlugin(testPlugin).V()
 	dest := tmpDir.Path("some-plugin.yaml")
 
 	if err := Store(testPlugin, dest); err != nil {
@@ -65,11 +59,7 @@ func TestLoad(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	testPluginReceipt := testutil.NewReceipt().WithPlugin(testPlugin).WithStatus(index.ReceiptStatus{
-		Source: index.SourceIndex{
-			Name: constants.DefaultIndexName,
-		},
-	}).V()
+	testPluginReceipt := testutil.NewReceipt().WithPlugin(testPlugin).V()
 	if diff := cmp.Diff(&gotPlugin, &testPluginReceipt); diff != "" {
 		t.Fatal(diff)
 	}

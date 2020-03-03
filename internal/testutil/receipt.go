@@ -15,6 +15,7 @@
 package testutil
 
 import (
+	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/index"
 )
 
@@ -22,7 +23,13 @@ type Receipt struct{ v index.Receipt }
 
 // NewReceipt builds an index.Receipt that is valid.
 func NewReceipt() *Receipt {
-	return &Receipt{v: index.Receipt{}}
+	return &Receipt{v: index.Receipt{
+		Status: index.ReceiptStatus{
+			Source: index.SourceIndex{
+				Name: constants.DefaultIndexName,
+			},
+		},
+	}}
 }
 
 func (r *Receipt) WithPlugin(p index.Plugin) *Receipt        { r.v.Plugin = p; return r }
