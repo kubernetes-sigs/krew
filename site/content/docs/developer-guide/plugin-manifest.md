@@ -4,6 +4,8 @@ slug: plugin-manifest
 weight: 150
 ---
 
+{{<toc>}}
+
 Each Krew plugin has a "plugin manifest", which is a YAML file that describes
 the plugin, how it can be downloaded and installed on a machine.
 
@@ -14,7 +16,7 @@ It is **highly recommended** you look at [example plugin manifests]({{< ref
 "example-plugin-manifests.md" >}}) to copy from an existing plugin and adapt to
 your needs instead of learning everything in this page.
 
-#### Sample plugin manifest
+## Sample plugin manifest
 
 Here's a sample manifest file that installs a bash-based plugin that supports
 only Linux and macOS:
@@ -58,7 +60,7 @@ spec:
     bin: restart.sh
 ```
 
-#### Documentation fields
+## Documentation fields
 
 - `shortDescription:` (required): Punchline for your plugin. It should not exceed
   a few words (to be properly shown in `kubectl krew search` output). **Avoid**
@@ -75,7 +77,7 @@ spec:
 
   `caveats` are shown to the user after installing the plugin for the first time.
 
-#### Specifying plugin download options
+## Specifying plugin download options
 
 Krew plugins must be packaged as `.zip` or `.tar.gz` archives, and should
 accessible to download from user’s machine. The relevant fields are:
@@ -90,7 +92,7 @@ accessible to download from user’s machine. The relevant fields are:
     ...
 ```
 
-#### Specifying platform-specific instructions
+## Specifying platform-specific instructions
 
 Krew makes it possible to install the same plugin on different operating systems
 (like `windows`, `darwin` (macOS), and `linux`) and different architectures
@@ -132,7 +134,7 @@ architectures using the keys `os` and `arch` respectively.
 The possible values for `os` and `arch`  come from the Go runtime. Run
 `go tool dist list` to see all possible platforms and architectures.
 
-#### Specifying files to install
+## Specifying files to install
 
 Each operating system may require a different set of files from the archive to
 be installed.
@@ -174,7 +176,7 @@ the files `from` the archive `to` the installation destination.
   As a result of this operation, the copied out files will preserve their
   directory structure in the extracted directory.
 
-#### Specifying plugin executable
+## Specifying plugin executable
 
 Each `platform` field requires a path to the plugin executable in the plugin's
 installation directory.
