@@ -139,7 +139,7 @@ func TestReadReceiptFromFile(t *testing.T) {
 			if err != nil {
 				t.Fatalf("ReadReceiptFromFile() error: %v", err)
 			}
-			if diff := cmp.Diff(gotReceipt.Status, tt.wantStatus); diff != "" {
+			if diff := cmp.Diff(tt.wantStatus, gotReceipt.Status); diff != "" {
 				t.Errorf("expected matching receipts: %s\n", diff)
 			}
 		})

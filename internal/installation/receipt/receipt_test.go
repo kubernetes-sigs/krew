@@ -31,18 +31,23 @@ func TestStore(t *testing.T) {
 	defer cleanup()
 
 	testPlugin := testutil.NewPlugin().WithName("some-plugin").WithPlatforms(testutil.NewPlatform().V()).V()
+	testReceipt := testutil.NewReceipt().WithPlugin(testPlugin).WithStatus(index.ReceiptStatus{
+		Source: index.SourceIndex{
+			Name: constants.DefaultIndexName,
+		},
+	}).V()
 	dest := tmpDir.Path("some-plugin.yaml")
 
 	if err := Store(testPlugin, dest); err != nil {
 		t.Fatal(err)
 	}
 
-	actual, err := indexscanner.LoadPluginByName(tmpDir.Root(), "some-plugin")
+	actual, err := indexscanner.ReadReceiptFromFile(tmpDir.Path("some-plugin.yaml"))
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if diff := cmp.Diff(&testPlugin, &actual); diff != "" {
+	if diff := cmp.Diff(&testReceipt, &actual); diff != "" {
 		t.Fatal(diff)
 	}
 }
