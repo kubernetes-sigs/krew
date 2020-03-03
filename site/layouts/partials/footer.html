@@ -6,15 +6,14 @@
                 <a href="https://github.com/kubernetes/community/blob/master/sig-cli/README.md#cli-special-interest-group" target="_blank" class="text-info">
                     SIG CLI</a> project.
                 <p>
-                    {{ with .File }}
+                    {{- with .File -}}
                         <a href="http://sigs.k8s.io/krew/site/content/{{- .File.Path -}}" target="_blank" class="text-info">
                         Edit Page</a>
-                    {{ end }}
-
-                    {{ if .GitInfo }}
+                    {{- end -}}
+                    {{- if .GitInfo }}
                         &middot;
                         <span id="lastmod"></span>
-                    {{ end}}
+                    {{- end}}
                 </p>
             </footer>
         </div>
@@ -22,10 +21,8 @@
 
     {{ if .GitInfo }}
     <script>
-        var lastMod = {{- .Lastmod.Unix -}};
-        var commitHash = '{{- .GitInfo.Hash -}}';
-        function writeLastMod(){
-            var days = (Date.now()/1000 - window.lastMod)/(60*60*24);
+        function writeLastMod(lastMod, commitHash){
+            var days = (Date.now()/1000 - lastMod)/(60*60*24);
             var text;
             if (days < 1) {
                 text = 'today'
@@ -40,10 +37,10 @@
             }
             document.getElementById('lastmod').innerHTML = `Page last updated ` +
                 `<a class="text-info" target="_blank"` +
-                `href="https://github.com/kubernetes-sigs/krew/commit/${window.commitHash}">` +
+                `href="https://github.com/kubernetes-sigs/krew/commit/${commitHash}">` +
                 `${text}</a>.`;
         };
-        writeLastMod();
+    writeLastMod({{- .Lastmod.Unix -}}, '{{- .GitInfo.Hash -}}');
     </script>
     {{ end }}
 
