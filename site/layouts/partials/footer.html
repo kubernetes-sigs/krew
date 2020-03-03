@@ -40,7 +40,7 @@
                 `href="https://github.com/kubernetes-sigs/krew/commit/${commitHash}">` +
                 `${text}</a>.`;
         };
-    writeLastMod({{- .Lastmod.Unix -}}, '{{- .GitInfo.Hash -}}');
+        writeLastMod({{- .Lastmod.Unix -}}, '{{- .GitInfo.Hash -}}');
     </script>
     {{ end }}
 
