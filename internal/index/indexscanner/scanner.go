@@ -108,6 +108,9 @@ func ReadPlugin(f io.ReadCloser) (index.Plugin, error) {
 func ReadReceiptFromFile(path string) (index.Receipt, error) {
 	var receipt index.Receipt
 	err := readFromFile(path, &receipt)
+	if receipt.Status.Source.Name == "" {
+		receipt.Status.Source.Name = constants.DefaultIndexName
+	}
 	return receipt, err
 }
 
