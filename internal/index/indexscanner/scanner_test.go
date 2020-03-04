@@ -96,24 +96,58 @@ func TestReadPluginFile(t *testing.T) {
 }
 
 func TestReadReceiptFromFile(t *testing.T) {
-	tmpDir, cleanup := testutil.NewTempDir(t)
-	defer cleanup()
-
-	name := "foo"
-	wantStatus := &index.ReceiptStatus{
-		Source: index.SourceIndex{
-			Name: name,
+	type args struct {
+		status index.ReceiptStatus
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantStatus index.ReceiptStatus
+	}{
+		{
+			name: "read receipt of plugin from index foo",
+			args: args{
+				status: index.ReceiptStatus{
+					Source: index.SourceIndex{
+						Name: "foo",
+					},
+				},
+			},
+			wantStatus: index.ReceiptStatus{
+				Source: index.SourceIndex{
+					Name: "foo",
+				},
+			},
+		},
+		{
+			name: "read receipt of plugin without status",
+			args: args{
+				status: index.ReceiptStatus{},
+			},
+			wantStatus: index.ReceiptStatus{
+				Source: index.SourceIndex{
+					Name: constants.DefaultIndexName,
+				},
+			},
 		},
 	}
-	testReceipt := testutil.NewReceipt().WithPlugin(testutil.NewPlugin().V()).WithStatus(*wantStatus).V()
-	tmpDir.WriteYAML(name+constants.ManifestExtension, testReceipt)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tmpDir, cleanup := testutil.NewTempDir(t)
+			defer cleanup()
 
-	gotReceipt, err := ReadReceiptFromFile(tmpDir.Path(name + constants.ManifestExtension))
-	if err != nil {
-		t.Fatalf("ReadReceiptFromFile() error: %v", err)
-	}
-	if diff := cmp.Diff(*wantStatus, gotReceipt.Status); diff != "" {
-		t.Errorf("expected matching receipts: %s\n", diff)
+			plugin := "plugin" + constants.ManifestExtension
+			testReceipt := testutil.NewReceipt().WithPlugin(testutil.NewPlugin().V()).WithStatus(tt.args.status).V()
+			tmpDir.WriteYAML(plugin, testReceipt)
+
+			gotReceipt, err := ReadReceiptFromFile(tmpDir.Path(plugin))
+			if err != nil {
+				t.Fatalf("ReadReceiptFromFile() error: %v", err)
+			}
+			if diff := cmp.Diff(tt.wantStatus, gotReceipt.Status); diff != "" {
+				t.Errorf("expected matching receipts: %s\n", diff)
+			}
+		})
 	}
 }
 
