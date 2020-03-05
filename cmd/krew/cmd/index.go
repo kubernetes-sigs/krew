@@ -25,7 +25,7 @@ import (
 	"sigs.k8s.io/krew/pkg/constants"
 )
 
-// listCmd represents the list command
+// indexCmd represents the index command
 var indexCmd = &cobra.Command{
 	Use:    "index",
 	Short:  "Perform krew index commands",
