@@ -31,7 +31,8 @@ func EnsureCloned(uri, destinationPath string) error {
 	if ok, err := IsGitCloned(destinationPath); err != nil {
 		return err
 	} else if !ok {
-		return exec("", "clone", "-v", uri, destinationPath)
+		_, err = exec("", "clone", "-v", uri, destinationPath)
+		return err
 	}
 	return nil
 }
@@ -49,15 +50,15 @@ func IsGitCloned(gitPath string) (bool, error) {
 // and also will create a pristine working directory by removing
 // untracked files and directories.
 func updateAndCleanUntracked(destinationPath string) error {
-	if err := exec(destinationPath, "fetch", "-v"); err != nil {
+	if _, err := exec(destinationPath, "fetch", "-v"); err != nil {
 		return errors.Wrapf(err, "fetch index at %q failed", destinationPath)
 	}
 
-	if err := exec(destinationPath, "reset", "--hard", "@{upstream}"); err != nil {
+	if _, err := exec(destinationPath, "reset", "--hard", "@{upstream}"); err != nil {
 		return errors.Wrapf(err, "reset index at %q failed", destinationPath)
 	}
 
-	err := exec(destinationPath, "clean", "-xfd")
+	_, err := exec(destinationPath, "clean", "-xfd")
 	return errors.Wrapf(err, "clean index at %q failed", destinationPath)
 }
 
@@ -69,7 +70,12 @@ func EnsureUpdated(uri, destinationPath string) error {
 	return updateAndCleanUntracked(destinationPath)
 }
 
-func exec(pwd string, args ...string) error {
+// GetRemoteURL returns the url of the remote origin
+func GetRemoteURL(dir string) (string, error) {
+	return exec(dir, "config", "--get", "remote.origin.url")
+}
+
+func exec(pwd string, args ...string) (string, error) {
 	klog.V(4).Infof("Going to run git %s", strings.Join(args, " "))
 	cmd := osexec.Command("git", args...)
 	cmd.Dir = pwd
@@ -80,7 +86,7 @@ func exec(pwd string, args ...string) error {
 	}
 	cmd.Stdout, cmd.Stderr = w, w
 	if err := cmd.Run(); err != nil {
-		return errors.Wrapf(err, "command execution failure, output=%q", buf.String())
+		return "", errors.Wrapf(err, "command execution failure, output=%q", buf.String())
 	}
-	return nil
+	return buf.String(), nil
 }

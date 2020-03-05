@@ -15,49 +15,55 @@
 package cmd
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+
+	"sigs.k8s.io/krew/internal/gitutil"
 	"sigs.k8s.io/krew/pkg/constants"
 )
 
 // listCmd represents the list command
 var indexCmd = &cobra.Command{
-	Use:   "index",
-	Short: "Perform krew index commands",
-	Long: `Show a list of installed kubectl plugins and their versions.
-
-Remarks:
-  Redirecting the output of this command to a program or file will only print
-  the names of the plugins installed. This output can be piped back to the
-  "install" command.`,
+	Use:    "index",
+	Short:  "Perform krew index commands",
+	Long:   "Show a list of installed kubectl plugins and their versions.",
 	Args:   cobra.NoArgs,
-	Hidden: true,
+	Hidden: true, // remove this once multi-index is enabled
 }
 
 var indexListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List configured indexes",
-	Long:  `Print a list of configured indexes.`,
-	Args:  cobra.NoArgs,
-	RunE: func(cmd *cobra.Command, args []string) error {
+	Long: `Print a list of configured indexes.
+
+This command prints a list of indexes. It shows the name and the remote URL for
+each configured index.`,
+	Args: cobra.NoArgs,
+	RunE: func(_ *cobra.Command, _ []string) error {
 		dirs, err := ioutil.ReadDir(paths.IndexBase())
 		if err != nil {
 			return errors.Wrapf(err, "failed to read directory %s", paths.IndexBase())
 		}
+		var rows [][]string
 		for _, dir := range dirs {
-			fmt.Fprintln(os.Stdout, dir.Name())
+			indexName := dir.Name()
+			remote, err := gitutil.GetRemoteURL(paths.IndexPath(indexName))
+			if err != nil {
+				return errors.Wrapf(err, "failed to list the remote URL for index %s", indexName)
+			}
+			rows = append(rows, []string{indexName, remote})
 		}
-		return nil
+		rows = sortByFirstColumn(rows)
+		return printTable(os.Stdout, []string{"INDEX", "URL"}, rows)
 	},
 }
 
 func init() {
 	if _, ok := os.LookupEnv(constants.EnableMultiIndexSwitch); ok {
-		indexCmd.AddCommand(indexListCmd)
 		rootCmd.AddCommand(indexCmd)
+		indexCmd.AddCommand(indexListCmd)
 	}
 }
