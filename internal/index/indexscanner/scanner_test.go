@@ -19,8 +19,13 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+
+	"sigs.k8s.io/krew/internal/testutil"
+	"sigs.k8s.io/krew/pkg/constants"
+	"sigs.k8s.io/krew/pkg/index"
 )
 
 func TestReadPluginFile(t *testing.T) {
@@ -85,6 +90,62 @@ func TestReadPluginFile(t *testing.T) {
 			if !sel.Matches(tt.matchFirst) || sel.Matches(neverMatch) {
 				t.Errorf("ReadPluginFromFile() didn't parse label selector properly: %##v", sel)
 				return
+			}
+		})
+	}
+}
+
+func TestReadReceiptFromFile(t *testing.T) {
+	type args struct {
+		status index.ReceiptStatus
+	}
+	tests := []struct {
+		name       string
+		args       args
+		wantStatus index.ReceiptStatus
+	}{
+		{
+			name: "read receipt of plugin from index foo",
+			args: args{
+				status: index.ReceiptStatus{
+					Source: index.SourceIndex{
+						Name: "foo",
+					},
+				},
+			},
+			wantStatus: index.ReceiptStatus{
+				Source: index.SourceIndex{
+					Name: "foo",
+				},
+			},
+		},
+		{
+			name: "read receipt of plugin without status",
+			args: args{
+				status: index.ReceiptStatus{},
+			},
+			wantStatus: index.ReceiptStatus{
+				Source: index.SourceIndex{
+					Name: constants.DefaultIndexName,
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tmpDir, cleanup := testutil.NewTempDir(t)
+			defer cleanup()
+
+			plugin := "plugin" + constants.ManifestExtension
+			testReceipt := testutil.NewReceipt().WithPlugin(testutil.NewPlugin().V()).WithStatus(tt.args.status).V()
+			tmpDir.WriteYAML(plugin, testReceipt)
+
+			gotReceipt, err := ReadReceiptFromFile(tmpDir.Path(plugin))
+			if err != nil {
+				t.Fatalf("ReadReceiptFromFile() error: %v", err)
+			}
+			if diff := cmp.Diff(tt.wantStatus, gotReceipt.Status); diff != "" {
+				t.Errorf("expected matching receipts: %s\n", diff)
 			}
 		})
 	}
