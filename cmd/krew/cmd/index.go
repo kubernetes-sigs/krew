@@ -29,7 +29,7 @@ import (
 var indexCmd = &cobra.Command{
 	Use:    "index",
 	Short:  "Perform krew index commands",
-	Long:   "Show a list of installed kubectl plugins and their versions.",
+	Long:   "Perform krew index commands such as adding and removing indexes.",
 	Args:   cobra.NoArgs,
 	Hidden: true, // remove this once multi-index is enabled
 }
@@ -40,7 +40,7 @@ var indexListCmd = &cobra.Command{
 	Long: `Print a list of configured indexes.
 
 This command prints a list of indexes. It shows the name and the remote URL for
-each configured index.`,
+each configured index in table format.`,
 	Args: cobra.NoArgs,
 	RunE: func(_ *cobra.Command, _ []string) error {
 		dirs, err := ioutil.ReadDir(paths.IndexBase())
