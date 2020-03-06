@@ -56,14 +56,13 @@ each configured index in table format.`,
 			}
 			rows = append(rows, []string{indexName, remote})
 		}
-		rows = sortByFirstColumn(rows)
 		return printTable(os.Stdout, []string{"INDEX", "URL"}, rows)
 	},
 }
 
 func init() {
 	if _, ok := os.LookupEnv(constants.EnableMultiIndexSwitch); ok {
-		rootCmd.AddCommand(indexCmd)
 		indexCmd.AddCommand(indexListCmd)
+		rootCmd.AddCommand(indexCmd)
 	}
 }
