@@ -123,6 +123,7 @@ func findRepo(homePage string) string {
 		`https://kubernetes.github.io/ingress-nginx/kubectl-plugin/`: "kubernetes/ingress-nginx",
 		`https://kudo.dev/`:                                          "kudobuilder/kudo",
 		`https://kubevirt.io`:                                        "kubevirt/kubectl-virt-plugin",
+		`https://popeyecli.io`:                                       "derailed/popeye",
 	}
 	return knownHomePages[homePage]
 }
