@@ -3,8 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <title>
         {{ if .IsHome }}
             {{ .Site.Title }}
@@ -21,10 +20,11 @@
 
 <body>
 
-    <div class="container top-level-container shadow-lg rounded
-        col-12 col-lg-8 col-xl-6
-        my-0 my-md-5
-        p-0">
-        {{ partial "navbar.html" . }}
+    {{ partial "navbar.html" . }}
 
-        <div class="py-md-4 pl-2 px-md-5">
+    <div class="container top-level-container
+        col-12 col-lg-8 col-xl-6
+        my-1 my-md-3
+        p-0">
+
+        <div class="py-1 pl-2 px-md-5">

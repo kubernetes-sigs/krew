@@ -16,7 +16,7 @@ article h1, article h2, article h3, article h4 {
 
 pre {
     padding: 12px;
-    overflow-y: scroll;
+    overflow: auto
 }
 
 .noselect {
