@@ -15,23 +15,22 @@
 package cmd
 
 import (
-	"io/ioutil"
 	"os"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
-	"sigs.k8s.io/krew/internal/gitutil"
+	"sigs.k8s.io/krew/internal/index/indexoperations"
 	"sigs.k8s.io/krew/pkg/constants"
 )
 
 // indexCmd represents the index command
 var indexCmd = &cobra.Command{
 	Use:    "index",
-	Short:  "Perform krew index commands",
-	Long:   "Perform krew index commands such as adding and removing indexes.",
+	Short:  "Add, remove, and list indexes",
+	Long:   "Perform krew index commands such as adding, removing, and listing indexes.",
 	Args:   cobra.NoArgs,
-	Hidden: true, // remove this once multi-index is enabled
+	Hidden: true, // TODO(chriskim06) remove this once multi-index is enabled
 }
 
 var indexListCmd = &cobra.Command{
@@ -43,18 +42,13 @@ This command prints a list of indexes. It shows the name and the remote URL for
 each configured index in table format.`,
 	Args: cobra.NoArgs,
 	RunE: func(_ *cobra.Command, _ []string) error {
-		dirs, err := ioutil.ReadDir(paths.IndexBase())
+		indexes, err := indexoperations.ListIndexes(paths.IndexBase())
 		if err != nil {
-			return errors.Wrapf(err, "failed to read directory %s", paths.IndexBase())
+			return errors.Wrap(err, "failed to list indexes")
 		}
 		var rows [][]string
-		for _, dir := range dirs {
-			indexName := dir.Name()
-			remote, err := gitutil.GetRemoteURL(paths.IndexPath(indexName))
-			if err != nil {
-				return errors.Wrapf(err, "failed to list the remote URL for index %s", indexName)
-			}
-			rows = append(rows, []string{indexName, remote})
+		for _, index := range indexes {
+			rows = append(rows, []string{index.Name, index.URL})
 		}
 		return printTable(os.Stdout, []string{"INDEX", "URL"}, rows)
 	},
