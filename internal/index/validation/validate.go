@@ -55,7 +55,13 @@ func IsSafePluginName(name string) bool {
 }
 
 func isSupportedAPIVersion(apiVersion string) bool {
-	return apiVersion == constants.CurrentAPIVersion
+	versions := constants.GetSupportedAPIVersions()
+	for version := range versions {
+		if apiVersion == versions[version] {
+			return true
+		}
+	}
+	return false
 }
 
 func isValidSHA256(s string) bool { return validSHA256.MatchString(s) }

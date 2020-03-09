@@ -28,3 +28,8 @@ const (
 	// the features around multiple indexes (this will be removed later on).
 	EnableMultiIndexSwitch = "X_KREW_ENABLE_MULTI_INDEX"
 )
+
+// GetSupportedAPIVersions returns a list containing all the supported versions of the API in from of strings.
+func GetSupportedAPIVersions() [1]string {
+	return [1]string{"krew.googlecontainertools.github.com/v1alpha2"}
+}
