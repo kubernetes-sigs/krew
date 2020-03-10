@@ -54,7 +54,7 @@ func ListIndexes(path string) ([]Index, error) {
 	return indexes, nil
 }
 
-// AddIndex initializes a new index to download plugins from.
+// AddIndex initializes a new index to install plugins from.
 func AddIndex(path, name, url string) error {
 	dir := filepath.Join(path, name)
 	if _, err := os.Stat(dir); !os.IsNotExist(err) {

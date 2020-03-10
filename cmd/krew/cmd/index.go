@@ -62,7 +62,11 @@ var indexAddCmd = &cobra.Command{
 
 Example:
   kubectl krew index add index-name index-url`,
-	RunE: func(_ *cobra.Command, args []string) error {
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) != 2 {
+			return cmd.Help()
+		}
+
 		err := indexoperations.AddIndex(paths.IndexBase(), args[0], args[1])
 		if err != nil {
 			return errors.Wrapf(err, "failed to add index %s: %s", args[0], args[1])
