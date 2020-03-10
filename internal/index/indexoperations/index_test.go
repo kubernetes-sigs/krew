@@ -43,17 +43,7 @@ func TestListIndexes(t *testing.T) {
 
 	for _, index := range wantIndexes {
 		path := tmpDir.Path("index/" + index.Name)
-		if err := os.MkdirAll(path, os.ModePerm); err != nil {
-			t.Fatalf("cannot create directory %q: %s", filepath.Dir(path), err)
-		}
-		_, err := gitutil.Exec(path, "init")
-		if err != nil {
-			t.Fatalf("error initializing git repo: %s", err)
-		}
-		_, err = gitutil.Exec(path, "remote", "add", "origin", index.URL)
-		if err != nil {
-			t.Fatalf("error setting remote origin: %s", err)
-		}
+		initEmptyGitRepo(t, path, index.URL)
 	}
 
 	gotIndexes, err := ListIndexes(environment.NewPaths(tmpDir.Root()).IndexBase())
@@ -62,5 +52,67 @@ func TestListIndexes(t *testing.T) {
 	}
 	if diff := cmp.Diff(wantIndexes, gotIndexes); diff != "" {
 		t.Errorf("output does not match: %s", diff)
+	}
+}
+
+func TestAddIndex(t *testing.T) {
+	type args struct {
+		index Index
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "valid git repository",
+			args: args{
+				index: Index{
+					Name: "foo",
+					URL:  "https://github.com/valid/index.git",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid git repository",
+			args: args{
+				index: Index{
+					Name: "bar",
+				},
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tmpDir, cleanup := testutil.NewTempDir(t)
+			defer cleanup()
+
+			if tt.args.index.URL != "" {
+				path := tmpDir.Path("index/" + tt.args.index.Name)
+				initEmptyGitRepo(t, path, tt.args.index.URL)
+			}
+
+			gotErr := AddIndex(tmpDir.Path("index"), tt.args.index.Name, tt.args.index.URL)
+			if (gotErr != nil) != tt.wantErr {
+				t.Errorf("AddIndex(), error = %v, wantErr = %v", gotErr, tt.wantErr)
+			}
+		})
+	}
+}
+
+func initEmptyGitRepo(t *testing.T, path, url string) {
+	if err := os.MkdirAll(path, os.ModePerm); err != nil {
+		t.Fatalf("cannot create directory %q: %s", filepath.Dir(path), err)
+	}
+	_, err := gitutil.Exec(path, "init")
+	if err != nil {
+		t.Fatalf("error initializing git repo: %s", err)
+	}
+	_, err = gitutil.Exec(path, "remote", "add", "origin", url)
+	if err != nil {
+		t.Fatalf("error setting remote origin: %s", err)
 	}
 }

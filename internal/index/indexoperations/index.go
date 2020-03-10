@@ -16,6 +16,7 @@ package indexoperations
 
 import (
 	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"github.com/pkg/errors"
@@ -51,4 +52,13 @@ func ListIndexes(path string) ([]Index, error) {
 		})
 	}
 	return indexes, nil
+}
+
+// AddIndex initializes a new index to download plugins from.
+func AddIndex(path, name, url string) error {
+	dir := filepath.Join(path, name)
+	if _, err := os.Stat(dir); !os.IsNotExist(err) {
+		return errors.Wrapf(err, "index '%s' already exists", name)
+	}
+	return gitutil.EnsureCloned(url, dir)
 }

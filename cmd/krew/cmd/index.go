@@ -19,6 +19,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"k8s.io/klog"
 
 	"sigs.k8s.io/krew/internal/index/indexoperations"
 	"sigs.k8s.io/krew/pkg/constants"
@@ -54,9 +55,27 @@ each configured index in table format.`,
 	},
 }
 
+var indexAddCmd = &cobra.Command{
+	Use:   "add",
+	Short: "Add a new index",
+	Long: `Configure a new index to install plugins from.
+
+Example:
+  kubectl krew index add index-name index-url`,
+	RunE: func(_ *cobra.Command, args []string) error {
+		err := indexoperations.AddIndex(paths.IndexBase(), args[0], args[1])
+		if err != nil {
+			return errors.Wrapf(err, "failed to add index %s: %s", args[0], args[1])
+		}
+		klog.Infoln("Successfully added index")
+		return nil
+	},
+}
+
 func init() {
 	if _, ok := os.LookupEnv(constants.EnableMultiIndexSwitch); ok {
 		indexCmd.AddCommand(indexListCmd)
+		indexCmd.AddCommand(indexAddCmd)
 		rootCmd.AddCommand(indexCmd)
 	}
 }
