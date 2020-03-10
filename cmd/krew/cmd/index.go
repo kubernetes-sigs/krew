@@ -27,8 +27,8 @@ import (
 // indexCmd represents the index command
 var indexCmd = &cobra.Command{
 	Use:    "index",
-	Short:  "Add, remove, and list indexes",
-	Long:   "Perform krew index commands such as adding, removing, and listing indexes.",
+	Short:  "Manage custom plugin indexes",
+	Long:   "Manage which repositories are used to discover and install plugins from.",
 	Args:   cobra.NoArgs,
 	Hidden: true, // TODO(chriskim06) remove this once multi-index is enabled
 }

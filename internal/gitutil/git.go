@@ -72,8 +72,7 @@ func EnsureUpdated(uri, destinationPath string) error {
 
 // GetRemoteURL returns the url of the remote origin
 func GetRemoteURL(dir string) (string, error) {
-	remote, err := Exec(dir, "config", "--get", "remote.origin.url")
-	return strings.TrimRight(remote, "\n\r"), err
+	return Exec(dir, "config", "--get", "remote.origin.url")
 }
 
 func Exec(pwd string, args ...string) (string, error) {
@@ -89,5 +88,5 @@ func Exec(pwd string, args ...string) (string, error) {
 	if err := cmd.Run(); err != nil {
 		return "", errors.Wrapf(err, "command execution failure, output=%q", buf.String())
 	}
-	return buf.String(), nil
+	return strings.TrimSpace(buf.String()), nil
 }
