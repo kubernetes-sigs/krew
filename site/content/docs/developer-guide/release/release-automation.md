@@ -1,6 +1,6 @@
 ---
 title: Automating plugin updates
-slug: updating-plugins.md
+slug: updating-plugins
 weight: 300
 ---
 
