@@ -1,29 +1,31 @@
 <nav class="navbar navbar-expand-md navbar-light bg-light">
-    <a class="navbar-brand" href="{{"/" | relURL }}">
-        <img src="{{ "/img/krew-logo.svg" }}" height="40vw"/>
-    </a>
-
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-        <div class="navbar-nav">
-          <a class="nav-item nav-link {{if .IsHome}}active{{end}}" href="{{"/"|relURL}}">
-            Home
-            {{if .IsHome}}<span class="sr-only">(current)</span>{{end}}
+    <div class="container top-level-container col-12">
+        <a class="navbar-brand" href="{{"/" | relURL }}">
+            <img src="{{ "/img/krew-logo.svg" }}" height="40vw"/>
         </a>
 
-        {{ $isQuickstart := (eq .Slug "quickstart") }}
-        {{ $isDocs := (and (eq .Section "docs") (ne .Slug "quickstart")) }}
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+            <div class="navbar-nav">
+            <a class="nav-item nav-link {{if .IsHome}}active{{end}}" href="{{"/"|relURL}}">
+                Home
+                {{if .IsHome}}<span class="sr-only">(current)</span>{{end}}
+            </a>
 
-        <a class="nav-item nav-link {{if $isQuickstart}}active{{end}}" href="{{ "/docs/user-guide/quickstart/" | relURL}}">
-            Quickstart
-            {{if $isQuickstart}}<span class="sr-only">(current)</span>{{end}}
-        </a>
-        <a class="nav-item nav-link {{if $isDocs}}active{{end}}" href="{{ "/docs/" | relURL}}">
-            Documentation
-            {{if $isDocs}}<span class="sr-only">(current)</span>{{end}}
-        </a>
-        <a class="nav-item nav-link" href="https://sigs.k8s.io/krew">GitHub</a>
+            {{ $isQuickstart := (eq .Slug "quickstart") }}
+            {{ $isDocs := (and (eq .Section "docs") (ne .Slug "quickstart")) }}
+
+            <a class="nav-item nav-link {{if $isQuickstart}}active{{end}}" href="{{ "/docs/user-guide/quickstart/" | relURL}}">
+                Quickstart
+                {{if $isQuickstart}}<span class="sr-only">(current)</span>{{end}}
+            </a>
+            <a class="nav-item nav-link {{if $isDocs}}active{{end}}" href="{{ "/docs/" | relURL}}">
+                Documentation
+                {{if $isDocs}}<span class="sr-only">(current)</span>{{end}}
+            </a>
+            <a class="nav-item nav-link" href="https://sigs.k8s.io/krew">GitHub</a>
+        </div>
     </div>
 </nav>
