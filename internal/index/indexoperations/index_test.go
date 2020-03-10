@@ -65,20 +65,20 @@ func TestAddIndex(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "valid git repository",
+			name: "invalid git repository",
+			args: args{
+				index: Index{
+					Name: "foo",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "preexisting index",
 			args: args{
 				index: Index{
 					Name: "foo",
 					URL:  "https://github.com/valid/index.git",
-				},
-			},
-			wantErr: false,
-		},
-		{
-			name: "invalid git repository",
-			args: args{
-				index: Index{
-					Name: "bar",
 				},
 			},
 			wantErr: true,

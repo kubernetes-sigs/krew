@@ -57,8 +57,10 @@ func ListIndexes(path string) ([]Index, error) {
 // AddIndex initializes a new index to install plugins from.
 func AddIndex(path, name, url string) error {
 	dir := filepath.Join(path, name)
-	if _, err := os.Stat(dir); !os.IsNotExist(err) {
-		return errors.Wrapf(err, "index '%s' already exists", name)
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		return gitutil.EnsureCloned(url, dir)
+	} else if err != nil {
+		return errors.Wrapf(err, "failed to describe %s", dir)
 	}
-	return gitutil.EnsureCloned(url, dir)
+	return errors.New("index already exists")
 }
