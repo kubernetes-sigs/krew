@@ -55,42 +55,35 @@ func TestListIndexes(t *testing.T) {
 	}
 }
 
-func TestAddIndex(t *testing.T) {
-	tests := []struct {
-		name      string
-		localRepo string
-		wantErr   bool
-	}{
-		{
-			name:      "valid git repository",
-			localRepo: "local/foo",
-			wantErr:   false,
-		},
-		{
-			name:    "invalid git repository",
-			wantErr: true,
-		},
-		{
-			name:      "preexisting index",
-			localRepo: "index/foo",
-			wantErr:   true,
-		},
+func TestAddIndexSuccess(t *testing.T) {
+	tmpDir, cleanup := testutil.NewTempDir(t)
+	defer cleanup()
+
+	indexName := "foo"
+	localRepo := tmpDir.Path("local/" + indexName)
+	initEmptyGitRepo(t, localRepo, "")
+
+	if err := AddIndex(tmpDir.Path("index"), indexName, localRepo); err != nil {
+		t.Errorf("error adding index: %v", err)
+	}
+}
+
+func TestAddIndexFailure(t *testing.T) {
+	tmpDir, cleanup := testutil.NewTempDir(t)
+	defer cleanup()
+
+	indexName := "foo"
+	indexRoot := tmpDir.Path("index")
+	if err := AddIndex(indexRoot, indexName, tmpDir.Path("invalid/repo")); err == nil {
+		t.Error("expected error when adding index with invalid URL")
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tmpDir, cleanup := testutil.NewTempDir(t)
-			defer cleanup()
+	localRepo := tmpDir.Path("local/" + indexName)
+	initEmptyGitRepo(t, tmpDir.Path("index/"+indexName), "")
+	initEmptyGitRepo(t, localRepo, "")
 
-			if tt.localRepo != "" {
-				initEmptyGitRepo(t, tmpDir.Path(tt.localRepo), "")
-			}
-
-			gotErr := AddIndex(tmpDir.Path("index"), "foo", tmpDir.Path(tt.localRepo))
-			if (gotErr != nil) != tt.wantErr {
-				t.Errorf("AddIndex(), error = %v, wantErr = %v", gotErr, tt.wantErr)
-			}
-		})
+	if err := AddIndex(indexRoot, indexName, localRepo); err == nil {
+		t.Error("expected error when adding an index that already exists")
 	}
 }
 
