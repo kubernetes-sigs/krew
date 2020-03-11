@@ -56,20 +56,15 @@ each configured index in table format.`,
 }
 
 var indexAddCmd = &cobra.Command{
-	Use:   "add",
-	Short: "Add a new index",
-	Long: `Configure a new index to install plugins from.
-
-Example:
-  kubectl krew index add index-name index-url`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 2 {
-			return cmd.Help()
-		}
-
+	Use:     "add",
+	Short:   "Add a new index",
+	Long:    "Configure a new index to install plugins from.",
+	Example: "kubectl krew index add default " + constants.IndexURI,
+	Args:    cobra.ExactArgs(2),
+	RunE: func(_ *cobra.Command, args []string) error {
 		err := indexoperations.AddIndex(paths.IndexBase(), args[0], args[1])
 		if err != nil {
-			return errors.Wrapf(err, "failed to add index %s: %s", args[0], args[1])
+			return errors.Wrap(err, "failed to add index")
 		}
 		klog.Infoln("Successfully added index")
 		return nil

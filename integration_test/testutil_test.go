@@ -30,6 +30,8 @@ import (
 
 	"github.com/pkg/errors"
 
+	"sigs.k8s.io/krew/internal/environment"
+	"sigs.k8s.io/krew/internal/indexmigration"
 	"sigs.k8s.io/krew/internal/testutil"
 	"sigs.k8s.io/krew/pkg/constants"
 )
@@ -171,6 +173,13 @@ func (it *ITest) WithIndex() *ITest {
 	return it
 }
 
+// WithMigratedIndex initializes the index and performs the index migration.
+func (it *ITest) WithMigratedIndex() *ITest {
+	it.initializeIndex()
+	it.migrateIndex()
+	return it
+}
+
 // WithEnv sets an environment variable for the krew run.
 func (it *ITest) WithEnv(key string, value interface{}) *ITest {
 	if key == "KREW_ROOT" {
@@ -282,6 +291,13 @@ func (it *ITest) initializeIndex() {
 	cmd.Stdin = bytes.NewReader(indexTar)
 	if err := cmd.Run(); err != nil {
 		it.t.Fatalf("cannot restore index from cache: %s", err)
+	}
+}
+
+func (it *ITest) migrateIndex() {
+	err := indexmigration.Migrate(environment.NewPaths(it.Root()))
+	if err != nil {
+		it.t.Fatalf("could not migrate index: %s", err)
 	}
 }
 

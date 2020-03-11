@@ -56,32 +56,24 @@ func TestListIndexes(t *testing.T) {
 }
 
 func TestAddIndex(t *testing.T) {
-	type args struct {
-		index Index
-	}
 	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
+		name      string
+		localRepo string
+		wantErr   bool
 	}{
 		{
-			name: "invalid git repository",
-			args: args{
-				index: Index{
-					Name: "foo",
-				},
-			},
+			name:      "valid git repository",
+			localRepo: "local/foo",
+			wantErr:   false,
+		},
+		{
+			name:    "invalid git repository",
 			wantErr: true,
 		},
 		{
-			name: "preexisting index",
-			args: args{
-				index: Index{
-					Name: "foo",
-					URL:  "https://github.com/valid/index.git",
-				},
-			},
-			wantErr: true,
+			name:      "preexisting index",
+			localRepo: "index/foo",
+			wantErr:   true,
 		},
 	}
 
@@ -90,12 +82,11 @@ func TestAddIndex(t *testing.T) {
 			tmpDir, cleanup := testutil.NewTempDir(t)
 			defer cleanup()
 
-			if tt.args.index.URL != "" {
-				path := tmpDir.Path("index/" + tt.args.index.Name)
-				initEmptyGitRepo(t, path, tt.args.index.URL)
+			if tt.localRepo != "" {
+				initEmptyGitRepo(t, tmpDir.Path(tt.localRepo), "")
 			}
 
-			gotErr := AddIndex(tmpDir.Path("index"), tt.args.index.Name, tt.args.index.URL)
+			gotErr := AddIndex(tmpDir.Path("index"), "foo", tmpDir.Path(tt.localRepo))
 			if (gotErr != nil) != tt.wantErr {
 				t.Errorf("AddIndex(), error = %v, wantErr = %v", gotErr, tt.wantErr)
 			}
@@ -104,15 +95,15 @@ func TestAddIndex(t *testing.T) {
 }
 
 func initEmptyGitRepo(t *testing.T, path, url string) {
+	t.Helper()
+
 	if err := os.MkdirAll(path, os.ModePerm); err != nil {
 		t.Fatalf("cannot create directory %q: %s", filepath.Dir(path), err)
 	}
-	_, err := gitutil.Exec(path, "init")
-	if err != nil {
+	if _, err := gitutil.Exec(path, "init"); err != nil {
 		t.Fatalf("error initializing git repo: %s", err)
 	}
-	_, err = gitutil.Exec(path, "remote", "add", "origin", url)
-	if err != nil {
+	if _, err := gitutil.Exec(path, "remote", "add", "origin", url); err != nil {
 		t.Fatalf("error setting remote origin: %s", err)
 	}
 }
