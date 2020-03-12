@@ -36,20 +36,22 @@ func testdataPath(t *testing.T) string {
 func TestListInstalledPlugins(t *testing.T) {
 	tests := []struct {
 		name     string
-		plugins  []index.Plugin
+		plugins  []index.Receipt
 		expected map[string]string
 	}{
 		{
-			name:     "single plugin",
-			plugins:  []index.Plugin{testutil.NewPlugin().WithName("test").WithVersion("v0.0.1").V()},
+			name: "single plugin",
+			plugins: []index.Receipt{
+				testutil.NewReceipt().WithPlugin(testutil.NewPlugin().WithName("test").WithVersion("v0.0.1").V()).V(),
+			},
 			expected: map[string]string{"test": "v0.0.1"},
 		},
 		{
 			name: "multiple plugins",
-			plugins: []index.Plugin{
-				testutil.NewPlugin().WithName("plugin-a").WithVersion("v0.0.1").V(),
-				testutil.NewPlugin().WithName("plugin-b").WithVersion("v0.1.0").V(),
-				testutil.NewPlugin().WithName("plugin-c").WithVersion("v1.0.0").V(),
+			plugins: []index.Receipt{
+				testutil.NewReceipt().WithPlugin(testutil.NewPlugin().WithName("plugin-a").WithVersion("v0.0.1").V()).V(),
+				testutil.NewReceipt().WithPlugin(testutil.NewPlugin().WithName("plugin-b").WithVersion("v0.1.0").V()).V(),
+				testutil.NewReceipt().WithPlugin(testutil.NewPlugin().WithName("plugin-c").WithVersion("v1.0.0").V()).V(),
 			},
 			expected: map[string]string{
 				"plugin-a": "v0.0.1",
