@@ -18,6 +18,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/pkg/errors"
 
@@ -56,6 +57,10 @@ func ListIndexes(path string) ([]Index, error) {
 
 // AddIndex initializes a new index to install plugins from.
 func AddIndex(path, name, url string) error {
+	if strings.ContainsAny(name, "./") {
+		return errors.New("index name cannot contain path characters")
+	}
+
 	dir := filepath.Join(path, name)
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		return gitutil.EnsureCloned(url, dir)

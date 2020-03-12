@@ -173,13 +173,6 @@ func (it *ITest) WithIndex() *ITest {
 	return it
 }
 
-// WithMigratedIndex initializes the index and performs the index migration.
-func (it *ITest) WithMigratedIndex() *ITest {
-	it.initializeIndex()
-	it.migrateIndex()
-	return it
-}
-
 // WithEnv sets an environment variable for the krew run.
 func (it *ITest) WithEnv(key string, value interface{}) *ITest {
 	if key == "KREW_ROOT" {
@@ -292,12 +285,11 @@ func (it *ITest) initializeIndex() {
 	if err := cmd.Run(); err != nil {
 		it.t.Fatalf("cannot restore index from cache: %s", err)
 	}
-}
 
-func (it *ITest) migrateIndex() {
-	err := indexmigration.Migrate(environment.NewPaths(it.Root()))
-	if err != nil {
-		it.t.Fatalf("could not migrate index: %s", err)
+	for _, e := range it.env {
+		if strings.Contains(e, constants.EnableMultiIndexSwitch) {
+			indexmigration.Migrate(environment.NewPaths(it.Root()))
+		}
 	}
 }
 

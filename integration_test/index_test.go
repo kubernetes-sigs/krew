@@ -17,31 +17,65 @@ package integrationtest
 import (
 	"bytes"
 	"os"
-	"path/filepath"
 	"testing"
 
 	"sigs.k8s.io/krew/pkg/constants"
 )
 
-func TestKrewIndex(t *testing.T) {
+func TestKrewIndexAdd(t *testing.T) {
 	skipShort(t)
 
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	initialList := test.WithMigratedIndex().WithEnv(constants.EnableMultiIndexSwitch, 1).Krew("index", "list").RunOrFailOutput()
-	if !bytes.Contains(initialList, []byte(constants.IndexURI)) {
-		t.Fatalf("expected krew-index in output:\n%s", string(initialList))
+	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+	if err := test.Krew("index", "add").Run(); err == nil {
+		t.Fatal("expected index add with no args to fail")
+	}
+	if err := test.Krew("index", "add", "foo", "https://invalid").Run(); err == nil {
+		t.Fatal("expected index add with invalid URL to fail")
+	}
+	if err := test.Krew("index", "add", "../../usr/bin", constants.IndexURI); err == nil {
+		t.Fatal("expected index add with path characters to fail")
+	}
+	if err := test.Krew("index", "add", "foo", constants.IndexURI).Run(); err != nil {
+		t.Fatalf("error adding new index: %v", err)
+	}
+}
+
+func TestKrewIndexList(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+	out := test.Krew("index", "list").RunOrFailOutput()
+	if !bytes.Contains(out, []byte(constants.DefaultIndexName)) {
+		t.Fatalf("expected index 'default' in output:\n%s", string(out))
 	}
 
-	indexName := "foo"
-	test.Krew("index", "add", indexName, constants.IndexURI).RunOrFail()
-	if _, err := os.Stat(filepath.Join(test.Root(), "index", indexName, ".git")); err != nil {
-		t.Fatalf("error adding index: %s", err)
+	test.Krew("index", "add", "foo", constants.IndexURI).RunOrFail()
+	out = test.Krew("index", "list").RunOrFailOutput()
+	if !bytes.Contains(out, []byte("foo")) {
+		t.Fatalf("expected index 'foo' in output:\n%s", string(out))
+	}
+}
+
+func TestKrewIndexList_NoIndexes(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+	index := test.TempDir().Path("index/" + constants.DefaultIndexName)
+	if err := os.RemoveAll(index); err != nil {
+		t.Fatalf("error removing default index: %v", err)
 	}
 
-	eventualList := test.Krew("index", "list").RunOrFailOutput()
-	if !bytes.Contains(eventualList, []byte(indexName)) {
-		t.Fatalf("expected index 'foo' in output:\n%s", string(eventualList))
+	out := test.Krew("index", "list").RunOrFailOutput()
+	if !bytes.Equal(out, []byte("INDEX  URL\n")) {
+		t.Fatalf("expected index list to be empty:\n%s", string(out))
 	}
 }
