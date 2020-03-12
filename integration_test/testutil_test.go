@@ -288,7 +288,9 @@ func (it *ITest) initializeIndex() {
 
 	for _, e := range it.env {
 		if strings.Contains(e, constants.EnableMultiIndexSwitch) {
-			indexmigration.Migrate(environment.NewPaths(it.Root()))
+			if err := indexmigration.Migrate(environment.NewPaths(it.Root())); err != nil {
+				it.t.Fatalf("error migrating index: %s", err)
+			}
 		}
 	}
 }
