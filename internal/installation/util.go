@@ -22,24 +22,52 @@ import (
 
 	"sigs.k8s.io/krew/internal/installation/receipt"
 	"sigs.k8s.io/krew/pkg/constants"
+	"sigs.k8s.io/krew/pkg/index"
 )
 
 // ListInstalledPlugins returns a list of all install plugins in a
 // name:version format based on the install receipts at the specified dir.
 func ListInstalledPlugins(receiptsDir string) (map[string]string, error) {
-	matches, err := filepath.Glob(filepath.Join(receiptsDir, "*"+constants.ManifestExtension))
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to grab receipts directory (%s) for manifests", receiptsDir)
-	}
-	klog.V(4).Infof("Found %d install receipts in %s", len(matches), receiptsDir)
 	installed := make(map[string]string)
-	for _, m := range matches {
-		r, err := receipt.Load(m)
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to parse plugin install receipt %s", m)
-		}
-		klog.V(4).Infof("parsed receipt for %s: version=%s", r.GetObjectMeta().GetName(), r.Spec.Version)
+	receipts, err := getInstalledPluginReceipts(receiptsDir)
+	if err != nil {
+		return nil, err
+	}
+	for _, r := range receipts {
 		installed[r.GetObjectMeta().GetName()] = r.Spec.Version
 	}
 	return installed, nil
+}
+
+// InstalledPluginsFromIndex returns a list of all install plugins from a particular index.
+func InstalledPluginsFromIndex(receiptsDir, indexName string) ([]index.Receipt, error) {
+	var out []index.Receipt
+	receipts, err := getInstalledPluginReceipts(receiptsDir)
+	if err != nil {
+		return nil, err
+	}
+	for _, r := range receipts {
+		if r.Status.Source.Name == indexName {
+			out = append(out, r)
+		}
+	}
+	return out, nil
+}
+
+func getInstalledPluginReceipts(receiptsDir string) ([]index.Receipt, error) {
+	files, err := filepath.Glob(filepath.Join(receiptsDir, "*"+constants.ManifestExtension))
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to glob receipts directory (%s) for manifests", receiptsDir)
+	}
+	out := make([]index.Receipt, 0, len(files))
+	for _, f := range files {
+		r, err := receipt.Load(f)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to parse plugin install receipt %s", f)
+		}
+		out = append(out, r)
+		klog.V(4).Infof("parsed receipt for %s: version=%s", r.GetObjectMeta().GetName(), r.Spec.Version)
+
+	}
+	return out, nil
 }

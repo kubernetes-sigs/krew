@@ -80,3 +80,35 @@ func TestListInstalledPlugins(t *testing.T) {
 		})
 	}
 }
+
+func TestInstalledPluginsFromIndex(t *testing.T) {
+	tempDir, cleanup := testutil.NewTempDir(t)
+	defer cleanup()
+
+	indexA := index.ReceiptStatus{Source: index.SourceIndex{Name: "a"}}
+	var indexNone index.ReceiptStatus
+
+	for _, testReceipt := range []index.Receipt{
+		testutil.NewReceipt().WithPlugin(testutil.NewPlugin().WithName("a1").V()).WithStatus(indexA).V(),
+		testutil.NewReceipt().WithPlugin(testutil.NewPlugin().WithName("a2").V()).WithStatus(indexA).V(),
+		testutil.NewReceipt().WithPlugin(testutil.NewPlugin().WithName("default1").V()).WithStatus(indexNone).V(),
+	} {
+		tempDir.WriteYAML(testReceipt.Name+constants.ManifestExtension, testReceipt)
+	}
+
+	v, err := InstalledPluginsFromIndex(tempDir.Root(), "a")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if expected, got := 2, len(v); expected != got {
+		t.Fatalf("expected %d, got: %d for index 'a'", expected, got)
+	}
+
+	v, err = InstalledPluginsFromIndex(tempDir.Root(), constants.DefaultIndexName)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if expected, got := 1, len(v); expected != got {
+		t.Fatalf("expected %d, got: %d for index 'a'", expected, got)
+	}
+}
