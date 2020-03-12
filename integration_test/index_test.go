@@ -84,3 +84,50 @@ func TestKrewIndexList_NoIndexes(t *testing.T) {
 		t.Fatalf("expected index list to be empty:\n%s", string(out))
 	}
 }
+
+func TestKrewIndexRemove_nonExisting(t *testing.T) {
+	skipShort(t)
+	test, cleanup := NewTest(t)
+	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1)
+	defer cleanup()
+
+	err := test.Krew("index", "remove", "non-existing").Run()
+	if err == nil {
+		t.Fatal("expected error")
+	}
+}
+
+func TestKrewIndexRemove_ok(t *testing.T) {
+	skipShort(t)
+	test, cleanup := NewTest(t)
+	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1)
+	defer cleanup()
+
+	test.Krew("index", "add", "foo", constants.IndexURI).RunOrFail()
+	test.Krew("index", "remove", "foo").RunOrFail()
+}
+
+func TestKrewIndexRemoveFailsWhenPluginsInstalled(t *testing.T) {
+	skipShort(t)
+	test, cleanup := NewTest(t)
+	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1)
+	defer cleanup()
+
+	test.Krew("install", validPlugin).RunOrFailOutput()
+	if err := test.Krew("remove", "default").Run(); err == nil {
+		t.Fatal("expected error while removing index when there are installed plugins")
+	}
+
+	// using --force skips the check
+	test.Krew("index", "remove", "--force", "default").RunOrFail()
+}
+
+func TestKrewIndexRemoveForce_nonExisting(t *testing.T) {
+	skipShort(t)
+	test, cleanup := NewTest(t)
+	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1)
+	defer cleanup()
+
+	// --force returns success for non-existing indexes
+	test.Krew("index", "remove", "--force", "non-existing").RunOrFail()
+}

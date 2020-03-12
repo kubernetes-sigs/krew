@@ -24,9 +24,14 @@ import (
 	"sigs.k8s.io/krew/internal/environment"
 	"sigs.k8s.io/krew/internal/gitutil"
 	"sigs.k8s.io/krew/internal/testutil"
+	"sigs.k8s.io/krew/pkg/constants"
 )
 
 func TestListIndexes(t *testing.T) {
+	// TODO remove after index integration feature gate is no longer neeeded
+	os.Setenv(constants.EnableMultiIndexSwitch, "1")
+	defer os.Unsetenv(constants.EnableMultiIndexSwitch)
+
 	tmpDir, cleanup := testutil.NewTempDir(t)
 	defer cleanup()
 
@@ -41,12 +46,13 @@ func TestListIndexes(t *testing.T) {
 		},
 	}
 
+	paths := environment.NewPaths(tmpDir.Root())
 	for _, index := range wantIndexes {
-		path := tmpDir.Path("index/" + index.Name)
+		path := paths.IndexPath(index.Name)
 		initEmptyGitRepo(t, path, index.URL)
 	}
 
-	gotIndexes, err := ListIndexes(environment.NewPaths(tmpDir.Root()).IndexBase())
+	gotIndexes, err := ListIndexes(paths)
 	if err != nil {
 		t.Errorf("error listing indexes: %v", err)
 	}
@@ -56,6 +62,10 @@ func TestListIndexes(t *testing.T) {
 }
 
 func TestAddIndexSuccess(t *testing.T) {
+	// TODO remove after index integration feature gate is no longer neeeded
+	os.Setenv(constants.EnableMultiIndexSwitch, "1")
+	defer os.Unsetenv(constants.EnableMultiIndexSwitch)
+
 	tmpDir, cleanup := testutil.NewTempDir(t)
 	defer cleanup()
 
@@ -63,11 +73,11 @@ func TestAddIndexSuccess(t *testing.T) {
 	localRepo := tmpDir.Path("local/" + indexName)
 	initEmptyGitRepo(t, localRepo, "")
 
-	indexRoot := tmpDir.Path("index")
-	if err := AddIndex(indexRoot, indexName, localRepo); err != nil {
+	paths := environment.NewPaths(tmpDir.Root())
+	if err := AddIndex(paths, indexName, localRepo); err != nil {
 		t.Errorf("error adding index: %v", err)
 	}
-	gotIndexes, err := ListIndexes(indexRoot)
+	gotIndexes, err := ListIndexes(paths)
 	if err != nil {
 		t.Errorf("error listing indexes: %s", err)
 	}
@@ -83,12 +93,16 @@ func TestAddIndexSuccess(t *testing.T) {
 }
 
 func TestAddIndexFailure(t *testing.T) {
+	// TODO remove after index integration feature gate is no longer neeeded
+	os.Setenv(constants.EnableMultiIndexSwitch, "1")
+	defer os.Unsetenv(constants.EnableMultiIndexSwitch)
+
 	tmpDir, cleanup := testutil.NewTempDir(t)
 	defer cleanup()
 
 	indexName := "foo"
-	indexRoot := tmpDir.Path("index")
-	if err := AddIndex(indexRoot, indexName, tmpDir.Path("invalid/repo")); err == nil {
+	paths := environment.NewPaths(tmpDir.Root())
+	if err := AddIndex(paths, indexName, tmpDir.Path("invalid/repo")); err == nil {
 		t.Error("expected error when adding index with invalid URL")
 	}
 
@@ -96,12 +110,58 @@ func TestAddIndexFailure(t *testing.T) {
 	initEmptyGitRepo(t, tmpDir.Path("index/"+indexName), "")
 	initEmptyGitRepo(t, localRepo, "")
 
-	if err := AddIndex(indexRoot, indexName, localRepo); err == nil {
+	if err := AddIndex(paths, indexName, localRepo); err == nil {
 		t.Error("expected error when adding an index that already exists")
 	}
 
-	if err := AddIndex(indexRoot, "foo/bar", ""); err == nil {
+	if err := AddIndex(paths, "foo/bar", ""); err == nil {
 		t.Error("expected error with invalid index name")
+	}
+}
+
+func TestDeleteIndex(t *testing.T) {
+	// TODO(ahmetb) remove multi-index gate once it's fully integrated
+	os.Setenv(constants.EnableMultiIndexSwitch, "1")
+	defer os.Unsetenv(constants.EnableMultiIndexSwitch)
+
+	// root directory does not exist
+	if err := DeleteIndex(environment.NewPaths(filepath.FromSlash("/tmp/does-not-exist/foo")), "bar"); err == nil {
+		t.Fatal("expected error")
+	} else if !os.IsNotExist(err) {
+		t.Fatalf("not ENOENT error: %v", err)
+	}
+
+	tmpDir, cleanup := testutil.NewTempDir(t)
+	defer cleanup()
+	p := environment.NewPaths(tmpDir.Root())
+
+	// index does not exist
+	if err := DeleteIndex(p, "unknown-index"); err == nil {
+		t.Fatal("expected error")
+	} else if !os.IsNotExist(err) {
+		t.Fatalf("not ENOENT error: %v", err)
+	}
+
+	if err := os.MkdirAll(p.IndexPath("some-index"), 0755); err != nil {
+		t.Fatalf("err creating test index: %v", err)
+	}
+
+	if err := DeleteIndex(p, "some-index"); err != nil {
+		t.Fatalf("got error while deleting index: %v", err)
+	}
+}
+
+func initEmptyGitRepo(t *testing.T, path, url string) {
+	t.Helper()
+
+	if err := os.MkdirAll(path, os.ModePerm); err != nil {
+		t.Fatalf("cannot create directory %q: %s", filepath.Dir(path), err)
+	}
+	if _, err := gitutil.Exec(path, "init"); err != nil {
+		t.Fatalf("error initializing git repo: %s", err)
+	}
+	if _, err := gitutil.Exec(path, "remote", "add", "origin", url); err != nil {
+		t.Fatalf("error setting remote origin: %s", err)
 	}
 }
 
@@ -143,19 +203,5 @@ func TestIsValidIndexName(t *testing.T) {
 				t.Errorf("IsValidIndexName(%s), got = %t, want = %t", tt.index, got, tt.want)
 			}
 		})
-	}
-}
-
-func initEmptyGitRepo(t *testing.T, path, url string) {
-	t.Helper()
-
-	if err := os.MkdirAll(path, os.ModePerm); err != nil {
-		t.Fatalf("cannot create directory %q: %s", filepath.Dir(path), err)
-	}
-	if _, err := gitutil.Exec(path, "init"); err != nil {
-		t.Fatalf("error initializing git repo: %s", err)
-	}
-	if _, err := gitutil.Exec(path, "remote", "add", "origin", url); err != nil {
-		t.Fatalf("error setting remote origin: %s", err)
 	}
 }

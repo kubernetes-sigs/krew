@@ -17,11 +17,11 @@ package indexoperations
 import (
 	"io/ioutil"
 	"os"
-	"path/filepath"
 	"regexp"
 
 	"github.com/pkg/errors"
 
+	"sigs.k8s.io/krew/internal/environment"
 	"sigs.k8s.io/krew/internal/gitutil"
 )
 
@@ -35,16 +35,16 @@ type Index struct {
 
 // ListIndexes returns a slice of Index objects. The path argument is used as
 // the base path of the index.
-func ListIndexes(path string) ([]Index, error) {
-	dirs, err := ioutil.ReadDir(path)
+func ListIndexes(paths environment.Paths) ([]Index, error) {
+	dirs, err := ioutil.ReadDir(paths.IndexBase())
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to read directory %s", path)
+		return nil, errors.New("failed to list directory")
 	}
 
 	indexes := []Index{}
 	for _, dir := range dirs {
 		indexName := dir.Name()
-		remote, err := gitutil.GetRemoteURL(filepath.Join(path, indexName))
+		remote, err := gitutil.GetRemoteURL(paths.IndexPath(indexName))
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to list the remote URL for index %s", indexName)
 		}
@@ -58,18 +58,31 @@ func ListIndexes(path string) ([]Index, error) {
 }
 
 // AddIndex initializes a new index to install plugins from.
-func AddIndex(path, name, url string) error {
+func AddIndex(paths environment.Paths, name, url string) error {
 	if !IsValidIndexName(name) {
 		return errors.New("invalid index name")
 	}
 
-	dir := filepath.Join(path, name)
+	dir := paths.IndexPath(name)
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		return gitutil.EnsureCloned(url, dir)
 	} else if err != nil {
 		return err
 	}
 	return errors.New("index already exists")
+}
+
+// DeleteIndex removes specified index name. If index does not exist, returns an error that can be tested by os.IsNotExist.
+func DeleteIndex(paths environment.Paths, name string) error {
+	if !IsValidIndexName(name) {
+		return errors.New("invalid index name")
+	}
+
+	dir := paths.IndexPath(name)
+	if _, err := os.Stat(dir); err != nil {
+		return err
+	}
+	return os.RemoveAll(dir)
 }
 
 // IsValidIndexName validates if an index name contains invalid characters
