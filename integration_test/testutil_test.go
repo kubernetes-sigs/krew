@@ -286,6 +286,7 @@ func (it *ITest) initializeIndex() {
 		it.t.Fatalf("cannot restore index from cache: %s", err)
 	}
 
+	// TODO(chriskim06) simplify once multi-index is enabled
 	for _, e := range it.env {
 		if strings.Contains(e, constants.EnableMultiIndexSwitch) {
 			if err := indexmigration.Migrate(environment.NewPaths(it.Root())); err != nil {

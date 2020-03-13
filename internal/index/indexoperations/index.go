@@ -18,11 +18,17 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
+	"regexp"
 
 	"github.com/pkg/errors"
 
 	"sigs.k8s.io/krew/internal/gitutil"
+	"sigs.k8s.io/krew/pkg/constants"
+)
+
+var (
+	NoIndexMessage   = "No index configured, run kubectl krew index add default " + constants.IndexURI + " to get started"
+	validNamePattern = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
 )
 
 // Index describes the name and URL of a configured index.
@@ -35,7 +41,9 @@ type Index struct {
 // the base path of the index.
 func ListIndexes(path string) ([]Index, error) {
 	dirs, err := ioutil.ReadDir(path)
-	if err != nil {
+	if os.IsNotExist(err) {
+		return nil, nil
+	} else if err != nil {
 		return nil, errors.Wrapf(err, "failed to read directory %s", path)
 	}
 
@@ -57,7 +65,7 @@ func ListIndexes(path string) ([]Index, error) {
 
 // AddIndex initializes a new index to install plugins from.
 func AddIndex(path, name, url string) error {
-	if strings.ContainsAny(name, "./") {
+	if !IsValidIndexName(name) {
 		return errors.New("index name cannot contain path characters")
 	}
 
@@ -65,7 +73,12 @@ func AddIndex(path, name, url string) error {
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		return gitutil.EnsureCloned(url, dir)
 	} else if err != nil {
-		return errors.Wrapf(err, "failed to describe %s", dir)
+		return err
 	}
 	return errors.New("index already exists")
+}
+
+// IsValidIndexName validates if an index name contains invalid characters
+func IsValidIndexName(name string) bool {
+	return validNamePattern.MatchString(name)
 }

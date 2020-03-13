@@ -15,10 +15,11 @@
 package integrationtest
 
 import (
-	"bytes"
 	"os"
+	"strings"
 	"testing"
 
+	"sigs.k8s.io/krew/internal/index/indexoperations"
 	"sigs.k8s.io/krew/pkg/constants"
 )
 
@@ -38,7 +39,7 @@ func TestKrewIndexAdd(t *testing.T) {
 	if err := test.Krew("index", "add", "../../usr/bin", constants.IndexURI); err == nil {
 		t.Fatal("expected index add with path characters to fail")
 	}
-	if err := test.Krew("index", "add", "foo", constants.IndexURI).Run(); err != nil {
+	if err := test.Krew("index", "add", "foo", test.TempDir().Path("index/"+constants.DefaultIndexName)).Run(); err != nil {
 		t.Fatalf("error adding new index: %v", err)
 	}
 }
@@ -51,13 +52,13 @@ func TestKrewIndexList(t *testing.T) {
 
 	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
 	out := test.Krew("index", "list").RunOrFailOutput()
-	if !bytes.Contains(out, []byte(constants.DefaultIndexName)) {
+	if !strings.Contains(string(out), constants.DefaultIndexName) {
 		t.Fatalf("expected index 'default' in output:\n%s", string(out))
 	}
 
-	test.Krew("index", "add", "foo", constants.IndexURI).RunOrFail()
+	test.Krew("index", "add", "foo", test.TempDir().Path("index/"+constants.DefaultIndexName)).RunOrFail()
 	out = test.Krew("index", "list").RunOrFailOutput()
-	if !bytes.Contains(out, []byte("foo")) {
+	if !strings.Contains(string(out), "foo") {
 		t.Fatalf("expected index 'foo' in output:\n%s", string(out))
 	}
 }
@@ -69,13 +70,13 @@ func TestKrewIndexList_NoIndexes(t *testing.T) {
 	defer cleanup()
 
 	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
-	index := test.TempDir().Path("index/" + constants.DefaultIndexName)
+	index := test.TempDir().Path("index")
 	if err := os.RemoveAll(index); err != nil {
 		t.Fatalf("error removing default index: %v", err)
 	}
 
 	out := test.Krew("index", "list").RunOrFailOutput()
-	if !bytes.Equal(out, []byte("INDEX  URL\n")) {
+	if !strings.Contains(string(out), indexoperations.NoIndexMessage) {
 		t.Fatalf("expected index list to be empty:\n%s", string(out))
 	}
 }

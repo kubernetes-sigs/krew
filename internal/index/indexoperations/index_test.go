@@ -66,6 +66,9 @@ func TestAddIndexSuccess(t *testing.T) {
 	if err := AddIndex(tmpDir.Path("index"), indexName, localRepo); err != nil {
 		t.Errorf("error adding index: %v", err)
 	}
+	if _, err := os.Stat(tmpDir.Path("index/" + indexName)); err != nil {
+		t.Errorf("error reading newly added index: %s", err)
+	}
 }
 
 func TestAddIndexFailure(t *testing.T) {
@@ -84,6 +87,28 @@ func TestAddIndexFailure(t *testing.T) {
 
 	if err := AddIndex(indexRoot, indexName, localRepo); err == nil {
 		t.Error("expected error when adding an index that already exists")
+	}
+
+	if err := AddIndex(indexRoot, "foo/bar", ""); err == nil {
+		t.Error("expected error with invalid index name")
+	}
+}
+
+func TestIsValidIndexName(t *testing.T) {
+	if IsValidIndexName(" ") {
+		t.Error("name cannot contain spaces")
+	}
+	if IsValidIndexName("foo/bar") {
+		t.Error("name cannot contain forward slashes")
+	}
+	if IsValidIndexName("foo\\bar") {
+		t.Error("name cannot contain back slashes")
+	}
+	if IsValidIndexName("foo.bar") {
+		t.Error("name cannot contain forward periods")
+	}
+	if !IsValidIndexName("foo") {
+		t.Error("expected valid index name: foo")
 	}
 }
 

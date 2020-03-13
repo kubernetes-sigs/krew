@@ -47,6 +47,12 @@ each configured index in table format.`,
 		if err != nil {
 			return errors.Wrap(err, "failed to list indexes")
 		}
+
+		if len(indexes) == 0 {
+			klog.Info(indexoperations.NoIndexMessage)
+			return nil
+		}
+
 		var rows [][]string
 		for _, index := range indexes {
 			rows = append(rows, []string{index.Name, index.URL})
@@ -62,12 +68,7 @@ var indexAddCmd = &cobra.Command{
 	Example: "kubectl krew index add default " + constants.IndexURI,
 	Args:    cobra.ExactArgs(2),
 	RunE: func(_ *cobra.Command, args []string) error {
-		err := indexoperations.AddIndex(paths.IndexBase(), args[0], args[1])
-		if err != nil {
-			return errors.Wrap(err, "failed to add index")
-		}
-		klog.Infoln("Successfully added index")
-		return nil
+		return indexoperations.AddIndex(paths.IndexBase(), args[0], args[1])
 	},
 }
 
