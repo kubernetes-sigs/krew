@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/fatih/color"
@@ -58,7 +59,7 @@ var (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "krew",
+	Use:   "krew", // This is prefixed by kubectl in the custom usage template
 	Short: "krew is the kubectl plugin manager",
 	Long: `krew is the kubectl plugin manager.
 You can invoke krew through kubectl: "kubectl krew [command]..."`,
@@ -98,6 +99,12 @@ func init() {
 	}
 
 	paths = environment.MustGetKrewPaths()
+
+	// Cobra doesn't have a way to specify a two word command (ie. "kubectl krew"), so set a custom usage template
+	// with kubectl in it. Cobra will use this template for the root and all child commands.
+	rootCmd.SetUsageTemplate(strings.NewReplacer(
+		"{{.UseLine}}", "kubectl {{.UseLine}}",
+		"{{.CommandPath}}", "kubectl {{.CommandPath}}").Replace(rootCmd.UsageTemplate()))
 }
 
 func preRun(cmd *cobra.Command, _ []string) error {
