@@ -14,7 +14,10 @@
 
 package integrationtest
 
-import "testing"
+import (
+	"regexp"
+	"testing"
+)
 
 func TestKrewHelp(t *testing.T) {
 	skipShort(t)
@@ -26,4 +29,23 @@ func TestKrewHelp(t *testing.T) {
 	test.Krew("help").RunOrFail()
 	test.Krew("-h").RunOrFail()
 	test.Krew("--help").RunOrFail()
+}
+
+func TestRootHelpShowsKubectlPrefix(t *testing.T) {
+	skipShort(t)
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	out := string(test.Krew("help").RunOrFailOutput())
+
+	expect := []*regexp.Regexp{
+		regexp.MustCompile(`(?m)Usage:\s+kubectl krew`),
+		regexp.MustCompile(`(?m)Use "kubectl krew`),
+	}
+
+	for _, e := range expect {
+		if !e.MatchString(out) {
+			t.Errorf("output does not have matching string to pattern %s ; output=%s", e, out)
+		}
+	}
 }
