@@ -95,20 +95,43 @@ func TestAddIndexFailure(t *testing.T) {
 }
 
 func TestIsValidIndexName(t *testing.T) {
-	if IsValidIndexName(" ") {
-		t.Error("name cannot contain spaces")
+	tests := []struct {
+		name  string
+		index string
+		want  bool
+	}{
+		{
+			name:  "with space",
+			index: "foo bar",
+			want:  false,
+		},
+		{
+			name:  "with forward slash",
+			index: "foo/bar",
+			want:  false,
+		},
+		{
+			name:  "with back slash",
+			index: "foo\\bar",
+			want:  false,
+		},
+		{
+			name:  "with period",
+			index: "foo.bar",
+			want:  false,
+		},
+		{
+			name:  "valid name",
+			index: "foo",
+			want:  true,
+		},
 	}
-	if IsValidIndexName("foo/bar") {
-		t.Error("name cannot contain forward slashes")
-	}
-	if IsValidIndexName("foo\\bar") {
-		t.Error("name cannot contain back slashes")
-	}
-	if IsValidIndexName("foo.bar") {
-		t.Error("name cannot contain forward periods")
-	}
-	if !IsValidIndexName("foo") {
-		t.Error("expected valid index name: foo")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsValidIndexName(tt.index); tt.want != got {
+				t.Errorf("IsValidIndexName(%s), got = %t, want = %t", tt.index, got, tt.want)
+			}
+		})
 	}
 }
 

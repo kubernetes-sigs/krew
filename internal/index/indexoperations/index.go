@@ -23,13 +23,9 @@ import (
 	"github.com/pkg/errors"
 
 	"sigs.k8s.io/krew/internal/gitutil"
-	"sigs.k8s.io/krew/pkg/constants"
 )
 
-var (
-	NoIndexMessage   = "No index configured, run kubectl krew index add default " + constants.IndexURI + " to get started"
-	validNamePattern = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
-)
+var validNamePattern = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
 
 // Index describes the name and URL of a configured index.
 type Index struct {
@@ -41,9 +37,7 @@ type Index struct {
 // the base path of the index.
 func ListIndexes(path string) ([]Index, error) {
 	dirs, err := ioutil.ReadDir(path)
-	if os.IsNotExist(err) {
-		return nil, nil
-	} else if err != nil {
+	if err != nil {
 		return nil, errors.Wrapf(err, "failed to read directory %s", path)
 	}
 

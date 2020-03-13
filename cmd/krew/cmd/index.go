@@ -19,7 +19,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"k8s.io/klog"
 
 	"sigs.k8s.io/krew/internal/index/indexoperations"
 	"sigs.k8s.io/krew/pkg/constants"
@@ -46,11 +45,6 @@ each configured index in table format.`,
 		indexes, err := indexoperations.ListIndexes(paths.IndexBase())
 		if err != nil {
 			return errors.Wrap(err, "failed to list indexes")
-		}
-
-		if len(indexes) == 0 {
-			klog.Info(indexoperations.NoIndexMessage)
-			return nil
 		}
 
 		var rows [][]string
