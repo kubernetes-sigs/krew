@@ -53,7 +53,7 @@ func TestKrewIndexList(t *testing.T) {
 	defer cleanup()
 
 	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
-	out := test.Krew("index", "list").RunOrFailOutput()
+	out := string(test.Krew("index", "list").RunOrFailOutput())
 	if !bytes.Contains(out, []byte(constants.DefaultIndexName)) {
 		t.Fatalf("expected index 'default' in output:\n%s", string(out))
 	}
