@@ -15,7 +15,6 @@
 package integrationtest
 
 import (
-	"bytes"
 	"os"
 	"testing"
 
@@ -53,15 +52,17 @@ func TestKrewIndexList(t *testing.T) {
 	defer cleanup()
 
 	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
-	out := string(test.Krew("index", "list").RunOrFailOutput())
-	if !bytes.Contains(out, []byte(constants.DefaultIndexName)) {
-		t.Fatalf("expected index 'default' in output:\n%s", string(out))
+	out := test.Krew("index", "list").RunOrFailOutput()
+	if indexes := lines(out); len(indexes) < 2 {
+		// the first line is the header
+		t.Fatal("expected at least 1 index in output")
 	}
 
 	test.Krew("index", "add", "foo", test.TempDir().Path("index/"+constants.DefaultIndexName)).RunOrFail()
 	out = test.Krew("index", "list").RunOrFailOutput()
-	if !bytes.Contains(out, []byte("foo")) {
-		t.Fatalf("expected index 'foo' in output:\n%s", string(out))
+	if indexes := lines(out); len(indexes) < 3 {
+		// the first line is the header
+		t.Fatal("expected 2 indexes in output")
 	}
 }
 
@@ -78,7 +79,8 @@ func TestKrewIndexList_NoIndexes(t *testing.T) {
 	}
 
 	out := test.Krew("index", "list").RunOrFailOutput()
-	if !bytes.Equal(out, []byte("INDEX  URL\n")) {
+	if indexes := lines(out); len(indexes) > 1 {
+		// the first line is the header
 		t.Fatalf("expected index list to be empty:\n%s", string(out))
 	}
 }
