@@ -60,7 +60,7 @@ func ListIndexes(path string) ([]Index, error) {
 // AddIndex initializes a new index to install plugins from.
 func AddIndex(path, name, url string) error {
 	if !IsValidIndexName(name) {
-		return errors.New("index name cannot contain path characters")
+		return errors.New("invalid index name")
 	}
 
 	dir := filepath.Join(path, name)

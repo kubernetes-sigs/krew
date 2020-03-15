@@ -63,11 +63,22 @@ func TestAddIndexSuccess(t *testing.T) {
 	localRepo := tmpDir.Path("local/" + indexName)
 	initEmptyGitRepo(t, localRepo, "")
 
-	if err := AddIndex(tmpDir.Path("index"), indexName, localRepo); err != nil {
+	indexRoot := tmpDir.Path("index")
+	if err := AddIndex(indexRoot, indexName, localRepo); err != nil {
 		t.Errorf("error adding index: %v", err)
 	}
-	if _, err := os.Stat(tmpDir.Path("index/" + indexName)); err != nil {
-		t.Errorf("error reading newly added index: %s", err)
+	gotIndexes, err := ListIndexes(indexRoot)
+	if err != nil {
+		t.Errorf("error listing indexes: %s", err)
+	}
+	wantIndexes := []Index{
+		{
+			Name: indexName,
+			URL:  localRepo,
+		},
+	}
+	if diff := cmp.Diff(wantIndexes, gotIndexes); diff != "" {
+		t.Errorf("expected index %s in list: %s", indexName, diff)
 	}
 }
 
