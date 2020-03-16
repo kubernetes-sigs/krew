@@ -43,17 +43,7 @@ func TestListIndexes(t *testing.T) {
 
 	for _, index := range wantIndexes {
 		path := tmpDir.Path("index/" + index.Name)
-		if err := os.MkdirAll(path, os.ModePerm); err != nil {
-			t.Fatalf("cannot create directory %q: %s", filepath.Dir(path), err)
-		}
-		_, err := gitutil.Exec(path, "init")
-		if err != nil {
-			t.Fatalf("error initializing git repo: %s", err)
-		}
-		_, err = gitutil.Exec(path, "remote", "add", "origin", index.URL)
-		if err != nil {
-			t.Fatalf("error setting remote origin: %s", err)
-		}
+		initEmptyGitRepo(t, path, index.URL)
 	}
 
 	gotIndexes, err := ListIndexes(environment.NewPaths(tmpDir.Root()).IndexBase())
@@ -62,5 +52,110 @@ func TestListIndexes(t *testing.T) {
 	}
 	if diff := cmp.Diff(wantIndexes, gotIndexes); diff != "" {
 		t.Errorf("output does not match: %s", diff)
+	}
+}
+
+func TestAddIndexSuccess(t *testing.T) {
+	tmpDir, cleanup := testutil.NewTempDir(t)
+	defer cleanup()
+
+	indexName := "foo"
+	localRepo := tmpDir.Path("local/" + indexName)
+	initEmptyGitRepo(t, localRepo, "")
+
+	indexRoot := tmpDir.Path("index")
+	if err := AddIndex(indexRoot, indexName, localRepo); err != nil {
+		t.Errorf("error adding index: %v", err)
+	}
+	gotIndexes, err := ListIndexes(indexRoot)
+	if err != nil {
+		t.Errorf("error listing indexes: %s", err)
+	}
+	wantIndexes := []Index{
+		{
+			Name: indexName,
+			URL:  localRepo,
+		},
+	}
+	if diff := cmp.Diff(wantIndexes, gotIndexes); diff != "" {
+		t.Errorf("expected index %s in list: %s", indexName, diff)
+	}
+}
+
+func TestAddIndexFailure(t *testing.T) {
+	tmpDir, cleanup := testutil.NewTempDir(t)
+	defer cleanup()
+
+	indexName := "foo"
+	indexRoot := tmpDir.Path("index")
+	if err := AddIndex(indexRoot, indexName, tmpDir.Path("invalid/repo")); err == nil {
+		t.Error("expected error when adding index with invalid URL")
+	}
+
+	localRepo := tmpDir.Path("local/" + indexName)
+	initEmptyGitRepo(t, tmpDir.Path("index/"+indexName), "")
+	initEmptyGitRepo(t, localRepo, "")
+
+	if err := AddIndex(indexRoot, indexName, localRepo); err == nil {
+		t.Error("expected error when adding an index that already exists")
+	}
+
+	if err := AddIndex(indexRoot, "foo/bar", ""); err == nil {
+		t.Error("expected error with invalid index name")
+	}
+}
+
+func TestIsValidIndexName(t *testing.T) {
+	tests := []struct {
+		name  string
+		index string
+		want  bool
+	}{
+		{
+			name:  "with space",
+			index: "foo bar",
+			want:  false,
+		},
+		{
+			name:  "with forward slash",
+			index: "foo/bar",
+			want:  false,
+		},
+		{
+			name:  "with back slash",
+			index: "foo\\bar",
+			want:  false,
+		},
+		{
+			name:  "with period",
+			index: "foo.bar",
+			want:  false,
+		},
+		{
+			name:  "valid name",
+			index: "foo",
+			want:  true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsValidIndexName(tt.index); tt.want != got {
+				t.Errorf("IsValidIndexName(%s), got = %t, want = %t", tt.index, got, tt.want)
+			}
+		})
+	}
+}
+
+func initEmptyGitRepo(t *testing.T, path, url string) {
+	t.Helper()
+
+	if err := os.MkdirAll(path, os.ModePerm); err != nil {
+		t.Fatalf("cannot create directory %q: %s", filepath.Dir(path), err)
+	}
+	if _, err := gitutil.Exec(path, "init"); err != nil {
+		t.Fatalf("error initializing git repo: %s", err)
+	}
+	if _, err := gitutil.Exec(path, "remote", "add", "origin", url); err != nil {
+		t.Fatalf("error setting remote origin: %s", err)
 	}
 }

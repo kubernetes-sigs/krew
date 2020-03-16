@@ -117,6 +117,7 @@ func preRun(cmd *cobra.Command, _ []string) error {
 	if err := ensureDirs(paths.BasePath(),
 		paths.InstallPath(),
 		paths.BinPath(),
+		paths.IndexBase(),
 		paths.InstallReceiptsPath()); err != nil {
 		klog.Fatal(err)
 	}

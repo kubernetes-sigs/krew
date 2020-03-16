@@ -30,6 +30,8 @@ import (
 
 	"github.com/pkg/errors"
 
+	"sigs.k8s.io/krew/internal/environment"
+	"sigs.k8s.io/krew/internal/indexmigration"
 	"sigs.k8s.io/krew/internal/testutil"
 	"sigs.k8s.io/krew/pkg/constants"
 )
@@ -282,6 +284,15 @@ func (it *ITest) initializeIndex() {
 	cmd.Stdin = bytes.NewReader(indexTar)
 	if err := cmd.Run(); err != nil {
 		it.t.Fatalf("cannot restore index from cache: %s", err)
+	}
+
+	// TODO(chriskim06) simplify once multi-index is enabled
+	for _, e := range it.env {
+		if strings.Contains(e, constants.EnableMultiIndexSwitch) {
+			if err := indexmigration.Migrate(environment.NewPaths(it.Root())); err != nil {
+				it.t.Fatalf("error migrating index: %s", err)
+			}
+		}
 	}
 }
 

@@ -16,12 +16,16 @@ package indexoperations
 
 import (
 	"io/ioutil"
+	"os"
 	"path/filepath"
+	"regexp"
 
 	"github.com/pkg/errors"
 
 	"sigs.k8s.io/krew/internal/gitutil"
 )
+
+var validNamePattern = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
 
 // Index describes the name and URL of a configured index.
 type Index struct {
@@ -51,4 +55,24 @@ func ListIndexes(path string) ([]Index, error) {
 		})
 	}
 	return indexes, nil
+}
+
+// AddIndex initializes a new index to install plugins from.
+func AddIndex(path, name, url string) error {
+	if !IsValidIndexName(name) {
+		return errors.New("invalid index name")
+	}
+
+	dir := filepath.Join(path, name)
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		return gitutil.EnsureCloned(url, dir)
+	} else if err != nil {
+		return err
+	}
+	return errors.New("index already exists")
+}
+
+// IsValidIndexName validates if an index name contains invalid characters
+func IsValidIndexName(name string) bool {
+	return validNamePattern.MatchString(name)
 }

@@ -46,6 +46,7 @@ each configured index in table format.`,
 		if err != nil {
 			return errors.Wrap(err, "failed to list indexes")
 		}
+
 		var rows [][]string
 		for _, index := range indexes {
 			rows = append(rows, []string{index.Name, index.URL})
@@ -54,9 +55,21 @@ each configured index in table format.`,
 	},
 }
 
+var indexAddCmd = &cobra.Command{
+	Use:     "add",
+	Short:   "Add a new index",
+	Long:    "Configure a new index to install plugins from.",
+	Example: "kubectl krew index add default " + constants.IndexURI,
+	Args:    cobra.ExactArgs(2),
+	RunE: func(_ *cobra.Command, args []string) error {
+		return indexoperations.AddIndex(paths.IndexBase(), args[0], args[1])
+	},
+}
+
 func init() {
 	if _, ok := os.LookupEnv(constants.EnableMultiIndexSwitch); ok {
 		indexCmd.AddCommand(indexListCmd)
+		indexCmd.AddCommand(indexAddCmd)
 		rootCmd.AddCommand(indexCmd)
 	}
 }
