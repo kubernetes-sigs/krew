@@ -46,7 +46,7 @@ jobs:
       run: hack/run-lint.sh
 
     - name: Run unit tests
-      run: go test -short -coverprofile=coverage.txt -covermode=atomic ./...
+      run: go test -short ./...
 
     - name: Make binaries && verify krew installation
       run: hack/make-all.sh
