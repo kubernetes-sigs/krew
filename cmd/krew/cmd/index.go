@@ -104,7 +104,7 @@ func indexDelete(_ *cobra.Command, args []string) error {
 
 		internal.PrintWarning(os.Stderr, `Plugins [%s] are still installed from index %q!
 Removing indexes while there are plugins installed from is not recommended
-(you can use --force to ignore this check).`, strings.Join(names, ", "), name)
+(you can use --force to ignore this check).`+"\n", strings.Join(names, ", "), name)
 		return errors.Errorf("there are still plugins installed from this index")
 	}
 
