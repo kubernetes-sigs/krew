@@ -1,4 +1,4 @@
-// Copyright 2019 The Kubernetes Authors.
+// Copyright 2020 The Kubernetes Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,18 +15,13 @@
 package internal
 
 import (
-	"os"
+	"fmt"
+	"io"
 
-	"sigs.k8s.io/krew/pkg/constants"
+	"github.com/fatih/color"
 )
 
-const securityNoticeFmt = `You installed plugin %q from the krew-index plugin repository.
-   These plugins are not audited for security by the Krew maintainers.
-   Run them at your own risk.`
-
-func PrintSecurityNotice(plugin string) {
-	if plugin == constants.KrewPluginName {
-		return // do not warn for krew itself
-	}
-	PrintWarning(os.Stderr, securityNoticeFmt+"\n", plugin)
+func PrintWarning(w io.Writer, format string, a ...interface{}) {
+	color.New(color.FgRed, color.Bold).Fprint(w, "WARNING: ")
+	fmt.Fprintf(w, format, a...)
 }

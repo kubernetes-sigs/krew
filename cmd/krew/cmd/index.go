@@ -18,11 +18,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/fatih/color"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"k8s.io/klog"
 
+	"sigs.k8s.io/krew/cmd/krew/cmd/internal"
 	"sigs.k8s.io/krew/internal/index/indexoperations"
 	"sigs.k8s.io/krew/internal/installation"
 	"sigs.k8s.io/krew/pkg/constants"
@@ -77,7 +77,7 @@ var indexDeleteCmd = &cobra.Command{
 install plugins from.
 
 If there are plugins installed from the specified index, the index cannot be
-removed (unless --force) is used. Removing indexes while there are plugins
+removed (unless --force is used). Removing indexes while there are plugins
 installed from them is not supported behavior.`,
 	Args: cobra.ExactArgs(1),
 	RunE: indexDelete,
@@ -98,10 +98,10 @@ func indexDelete(_ *cobra.Command, args []string) error {
 			names = append(names, v.Name)
 		}
 
-		warning := color.New(color.FgRed, color.Bold).Sprint("WARNING:")
-		klog.Warningf("%s Plugins [%s] are still installed from index %q.", warning, strings.Join(names, ", "), name)
-		klog.Warning("Uninstall them first before removing this index (or, use --force, which may result in unsupported behavior).")
-		return errors.Errorf("refusing to remove due to installed plugins from this index")
+		internal.PrintWarning(os.Stderr, `%s Plugins [%s] are still installed from index %q.
+			"Removing indexes while there are plugins installed from them may result in
+			"unsupported behavior (use --force to ignore this check).`, strings.Join(names, ", "), name)
+		return errors.Errorf("there are still plugins installed from this index")
 	}
 
 	err = indexoperations.DeleteIndex(paths, name)
@@ -120,7 +120,8 @@ var (
 )
 
 func init() {
-	forceIndexDelete = indexDeleteCmd.Flags().Bool("force", false, "Remove index even if it has plugins installed (may yield in unsupported behavior)")
+	forceIndexDelete = indexDeleteCmd.Flags().Bool("force", false,
+		"Remove index even if it has plugins currently installed (may result in unsupported behavior)")
 
 	indexCmd.AddCommand(indexAddCmd)
 	indexCmd.AddCommand(indexListCmd)
