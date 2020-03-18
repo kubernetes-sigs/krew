@@ -58,7 +58,8 @@ func TestKrewIndexList(t *testing.T) {
 		t.Fatal("expected at least 1 index in output")
 	}
 
-	test.Krew("index", "add", "foo", test.TempDir().Path("index/"+constants.DefaultIndexName)).RunOrFail()
+	localIndex := test.TempDir().Path("index/" + constants.DefaultIndexName)
+	test.Krew("index", "add", "foo", localIndex).RunOrFail()
 	out = test.Krew("index", "list").RunOrFailOutput()
 	if indexes := lines(out); len(indexes) < 3 {
 		// the first line is the header
@@ -100,10 +101,11 @@ func TestKrewIndexRemove_nonExisting(t *testing.T) {
 func TestKrewIndexRemove_ok(t *testing.T) {
 	skipShort(t)
 	test, cleanup := NewTest(t)
-	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1)
+	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
 	defer cleanup()
 
-	test.Krew("index", "add", "foo", constants.IndexURI).RunOrFail()
+	localIndex := test.TempDir().Path("index/" + constants.DefaultIndexName)
+	test.Krew("index", "add", "foo", localIndex).RunOrFail()
 	test.Krew("index", "remove", "foo").RunOrFail()
 }
 
@@ -114,7 +116,7 @@ func TestKrewIndexRemoveFailsWhenPluginsInstalled(t *testing.T) {
 	defer cleanup()
 
 	test.Krew("install", validPlugin).RunOrFailOutput()
-	if err := test.Krew("remove", "default").Run(); err == nil {
+	if err := test.Krew("index", "remove", "default").Run(); err == nil {
 		t.Fatal("expected error while removing index when there are installed plugins")
 	}
 

@@ -38,7 +38,7 @@ type Index struct {
 func ListIndexes(paths environment.Paths) ([]Index, error) {
 	dirs, err := ioutil.ReadDir(paths.IndexBase())
 	if err != nil {
-		return nil, errors.New("failed to list directory")
+		return nil, errors.Wrap(err, "failed to list directory")
 	}
 
 	indexes := []Index{}

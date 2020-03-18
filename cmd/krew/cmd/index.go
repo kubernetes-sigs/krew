@@ -28,6 +28,10 @@ import (
 	"sigs.k8s.io/krew/pkg/constants"
 )
 
+var (
+	forceIndexDelete *bool
+)
+
 // indexCmd represents the index command
 var indexCmd = &cobra.Command{
 	Use:    "index",
@@ -86,21 +90,21 @@ installed from them is not supported behavior.`,
 func indexDelete(_ *cobra.Command, args []string) error {
 	name := args[0]
 
-	pl, err := installation.InstalledPluginsFromIndex(paths.InstallReceiptsPath(), name)
+	ps, err := installation.InstalledPluginsFromIndex(paths.InstallReceiptsPath(), name)
 	if err != nil {
 		return errors.Wrap(err, "failed querying plugins installed from the index")
 	}
-	klog.V(4).Infof("Found %d plugins from index", len(pl))
+	klog.V(4).Infof("Found %d plugins from index", len(ps))
 
-	if len(pl) > 0 && !*forceIndexDelete {
+	if len(ps) > 0 && !*forceIndexDelete {
 		var names []string
-		for _, v := range pl {
-			names = append(names, v.Name)
+		for _, pl := range ps {
+			names = append(names, pl.Name)
 		}
 
-		internal.PrintWarning(os.Stderr, `Plugins [%s] are still installed from index %q.
-			"Removing indexes while there are plugins installed from them may result in
-			"unsupported behavior (use --force to ignore this check).`, strings.Join(names, ", "), name)
+		internal.PrintWarning(os.Stderr, `Plugins [%s] are still installed from index %q!
+Removing indexes while there are plugins installed from is not recommended
+(you can use --force to ignore this check).`, strings.Join(names, ", "), name)
 		return errors.Errorf("there are still plugins installed from this index")
 	}
 
@@ -114,10 +118,6 @@ func indexDelete(_ *cobra.Command, args []string) error {
 	}
 	return errors.Wrap(err, "error while removing the plugin index")
 }
-
-var (
-	forceIndexDelete *bool
-)
 
 func init() {
 	forceIndexDelete = indexDeleteCmd.Flags().Bool("force", false,
