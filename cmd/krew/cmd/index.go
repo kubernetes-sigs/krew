@@ -23,7 +23,6 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/klog"
 
-	"sigs.k8s.io/krew/internal/environment"
 	"sigs.k8s.io/krew/internal/index/indexoperations"
 	"sigs.k8s.io/krew/internal/installation"
 	"sigs.k8s.io/krew/pkg/constants"
@@ -87,7 +86,7 @@ installed from them is not supported behavior.`,
 func indexDelete(_ *cobra.Command, args []string) error {
 	name := args[0]
 
-	pl, err := installation.InstalledPluginsFromIndex(environment.MustGetKrewPaths().InstallReceiptsPath(), name)
+	pl, err := installation.InstalledPluginsFromIndex(paths.InstallReceiptsPath(), name)
 	if err != nil {
 		return errors.Wrap(err, "failed querying plugins installed from the index")
 	}
@@ -105,7 +104,7 @@ func indexDelete(_ *cobra.Command, args []string) error {
 		return errors.Errorf("refusing to remove due to installed plugins from this index")
 	}
 
-	err = indexoperations.DeleteIndex(environment.MustGetKrewPaths(), name)
+	err = indexoperations.DeleteIndex(paths, name)
 	if os.IsNotExist(err) {
 		if *forceIndexDelete {
 			klog.V(4).Infof("Index not found, but --force is used, so not returning an error")
