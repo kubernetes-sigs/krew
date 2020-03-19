@@ -77,12 +77,12 @@ var indexAddCmd = &cobra.Command{
 var indexDeleteCmd = &cobra.Command{
 	Use:   "remove",
 	Short: "Remove a configured index",
-	Long: `Remove a configured index repository which is used to discover and
-install plugins from.
+	Long: `Removes a configured plugin index
 
-If there are plugins installed from the specified index, the index cannot be
-removed (unless --force is used). Removing indexes while there are plugins
-installed from them is not supported behavior.`,
+It is only safe to remove indexes without installed plugins. Removing an index
+while there are plugins installed will result in an error, unless the --force
+option is used ( not recommended).`,
+
 	Args: cobra.ExactArgs(1),
 	RunE: indexDelete,
 }
