@@ -58,7 +58,8 @@ func TestKrewIndexList(t *testing.T) {
 		t.Fatal("expected at least 1 index in output")
 	}
 
-	test.Krew("index", "add", "foo", test.TempDir().Path("index/"+constants.DefaultIndexName)).RunOrFail()
+	localIndex := test.TempDir().Path("index/" + constants.DefaultIndexName)
+	test.Krew("index", "add", "foo", localIndex).RunOrFail()
 	out = test.Krew("index", "list").RunOrFailOutput()
 	if indexes := lines(out); len(indexes) < 3 {
 		// the first line is the header
@@ -83,4 +84,52 @@ func TestKrewIndexList_NoIndexes(t *testing.T) {
 		// the first line is the header
 		t.Fatalf("expected index list to be empty:\n%s", string(out))
 	}
+}
+
+func TestKrewIndexRemove_nonExisting(t *testing.T) {
+	skipShort(t)
+	test, cleanup := NewTest(t)
+	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1)
+	defer cleanup()
+
+	err := test.Krew("index", "remove", "non-existing").Run()
+	if err == nil {
+		t.Fatal("expected error")
+	}
+}
+
+func TestKrewIndexRemove_ok(t *testing.T) {
+	skipShort(t)
+	test, cleanup := NewTest(t)
+	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+	defer cleanup()
+
+	localIndex := test.TempDir().Path("index/" + constants.DefaultIndexName)
+	test.Krew("index", "add", "foo", localIndex).RunOrFail()
+	test.Krew("index", "remove", "foo").RunOrFail()
+}
+
+func TestKrewIndexRemoveFailsWhenPluginsInstalled(t *testing.T) {
+	skipShort(t)
+	test, cleanup := NewTest(t)
+	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1)
+	defer cleanup()
+
+	test.Krew("install", validPlugin).RunOrFailOutput()
+	if err := test.Krew("index", "remove", "default").Run(); err == nil {
+		t.Fatal("expected error while removing index when there are installed plugins")
+	}
+
+	// using --force skips the check
+	test.Krew("index", "remove", "--force", "default").RunOrFail()
+}
+
+func TestKrewIndexRemoveForce_nonExisting(t *testing.T) {
+	skipShort(t)
+	test, cleanup := NewTest(t)
+	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1)
+	defer cleanup()
+
+	// --force returns success for non-existing indexes
+	test.Krew("index", "remove", "--force", "non-existing").RunOrFail()
 }

@@ -16,12 +16,20 @@ package cmd
 
 import (
 	"os"
+	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"k8s.io/klog"
 
+	"sigs.k8s.io/krew/cmd/krew/cmd/internal"
 	"sigs.k8s.io/krew/internal/index/indexoperations"
+	"sigs.k8s.io/krew/internal/installation"
 	"sigs.k8s.io/krew/pkg/constants"
+)
+
+var (
+	forceIndexDelete *bool
 )
 
 // indexCmd represents the index command
@@ -42,7 +50,7 @@ This command prints a list of indexes. It shows the name and the remote URL for
 each configured index in table format.`,
 	Args: cobra.NoArgs,
 	RunE: func(_ *cobra.Command, _ []string) error {
-		indexes, err := indexoperations.ListIndexes(paths.IndexBase())
+		indexes, err := indexoperations.ListIndexes(paths)
 		if err != nil {
 			return errors.Wrap(err, "failed to list indexes")
 		}
@@ -62,14 +70,64 @@ var indexAddCmd = &cobra.Command{
 	Example: "kubectl krew index add default " + constants.IndexURI,
 	Args:    cobra.ExactArgs(2),
 	RunE: func(_ *cobra.Command, args []string) error {
-		return indexoperations.AddIndex(paths.IndexBase(), args[0], args[1])
+		return indexoperations.AddIndex(paths, args[0], args[1])
 	},
 }
 
+var indexDeleteCmd = &cobra.Command{
+	Use:   "remove",
+	Short: "Remove a configured index",
+	Long: `Removes a configured plugin index
+
+It is only safe to remove indexes without installed plugins. Removing an index
+while there are plugins installed will result in an error, unless the --force
+option is used ( not recommended).`,
+
+	Args: cobra.ExactArgs(1),
+	RunE: indexDelete,
+}
+
+func indexDelete(_ *cobra.Command, args []string) error {
+	name := args[0]
+
+	ps, err := installation.InstalledPluginsFromIndex(paths.InstallReceiptsPath(), name)
+	if err != nil {
+		return errors.Wrap(err, "failed querying plugins installed from the index")
+	}
+	klog.V(4).Infof("Found %d plugins from index", len(ps))
+
+	if len(ps) > 0 && !*forceIndexDelete {
+		var names []string
+		for _, pl := range ps {
+			names = append(names, pl.Name)
+		}
+
+		internal.PrintWarning(os.Stderr, `Plugins [%s] are still installed from index %q!
+Removing indexes while there are plugins installed from is not recommended
+(you can use --force to ignore this check).`+"\n", strings.Join(names, ", "), name)
+		return errors.Errorf("there are still plugins installed from this index")
+	}
+
+	err = indexoperations.DeleteIndex(paths, name)
+	if os.IsNotExist(err) {
+		if *forceIndexDelete {
+			klog.V(4).Infof("Index not found, but --force is used, so not returning an error")
+			return nil // success if --force specified and index does not exist.
+		}
+		return errors.Errorf("index %q does not exist", name)
+	}
+	return errors.Wrap(err, "error while removing the plugin index")
+}
+
 func init() {
+	forceIndexDelete = indexDeleteCmd.Flags().Bool("force", false,
+		"Remove index even if it has plugins currently installed (may result in unsupported behavior)")
+
+	indexCmd.AddCommand(indexAddCmd)
+	indexCmd.AddCommand(indexListCmd)
+	indexCmd.AddCommand(indexDeleteCmd)
+
 	if _, ok := os.LookupEnv(constants.EnableMultiIndexSwitch); ok {
-		indexCmd.AddCommand(indexListCmd)
-		indexCmd.AddCommand(indexAddCmd)
 		rootCmd.AddCommand(indexCmd)
 	}
 }
