@@ -26,7 +26,7 @@ import (
 
 // Store saves the given plugin receipt at the destination.
 // The caller has to ensure that the destination directory exists.
-func Store(plugin index.Plugin, dest string) error {
+func Store(plugin index.Receipt, dest string) error {
 	yamlBytes, err := yaml.Marshal(plugin)
 	if err != nil {
 		return errors.Wrapf(err, "convert to yaml")
@@ -40,4 +40,15 @@ func Store(plugin index.Plugin, dest string) error {
 // If not found, it returns os.IsNotExist error.
 func Load(path string) (index.Receipt, error) {
 	return indexscanner.ReadReceiptFromFile(path)
+}
+
+func New(plugin index.Plugin, indexName string) index.Receipt {
+	return index.Receipt{
+		Plugin: plugin,
+		Status: index.ReceiptStatus{
+			Source: index.SourceIndex{
+				Name: indexName,
+			},
+		},
+	}
 }

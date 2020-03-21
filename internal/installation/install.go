@@ -54,7 +54,7 @@ var (
 
 // Install will download and install a plugin. The operation tries
 // to not get the plugin dir in a bad state if it fails during the process.
-func Install(p environment.Paths, plugin index.Plugin, opts InstallOpts) error {
+func Install(p environment.Paths, plugin index.Receipt, opts InstallOpts) error {
 	klog.V(2).Infof("Looking for installed versions")
 	_, err := receipt.Load(p.PluginInstallReceiptPath(plugin.Name))
 	if err == nil {

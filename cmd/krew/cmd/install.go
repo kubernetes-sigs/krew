@@ -27,6 +27,8 @@ import (
 	"sigs.k8s.io/krew/cmd/krew/cmd/internal"
 	"sigs.k8s.io/krew/internal/index/indexscanner"
 	"sigs.k8s.io/krew/internal/installation"
+	"sigs.k8s.io/krew/internal/installation/receipt"
+	"sigs.k8s.io/krew/internal/pathutil"
 	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/index"
 )
@@ -90,16 +92,17 @@ Remarks:
 				return errors.New("--archive can be specified only with --manifest or --manifest-url")
 			}
 
-			var install []index.Plugin
+			var install []index.Receipt
 			for _, name := range pluginNames {
-				plugin, err := indexscanner.LoadPluginByName(paths.IndexPluginsPath(constants.DefaultIndexName), name)
+				indexName, pluginName := pathutil.CanonicalPluginName(name)
+				plugin, err := indexscanner.LoadPluginByName(paths.IndexPluginsPath(constants.DefaultIndexName), pluginName)
 				if err != nil {
 					if os.IsNotExist(err) {
 						return errors.Errorf("plugin %q does not exist in the plugin index", name)
 					}
 					return errors.Wrapf(err, "failed to load plugin %q from the index", name)
 				}
-				install = append(install, plugin)
+				install = append(install, receipt.New(plugin, indexName))
 			}
 
 			if *manifest != "" {
@@ -107,13 +110,13 @@ Remarks:
 				if err != nil {
 					return errors.Wrap(err, "failed to load plugin manifest from file")
 				}
-				install = append(install, plugin)
+				install = append(install, receipt.New(plugin, constants.DefaultIndexName))
 			} else if *manifestURL != "" {
 				plugin, err := readPluginFromURL(*manifestURL)
 				if err != nil {
 					return errors.Wrap(err, "failed to read plugin manifest file from url")
 				}
-				install = append(install, plugin)
+				install = append(install, receipt.New(plugin, constants.DefaultIndexName))
 			}
 
 			if len(install) == 0 {
