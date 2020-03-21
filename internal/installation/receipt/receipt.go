@@ -42,6 +42,7 @@ func Load(path string) (index.Receipt, error) {
 	return indexscanner.ReadReceiptFromFile(path)
 }
 
+// New returns a new receipt with the given plugin and index name.
 func New(plugin index.Plugin, indexName string) index.Receipt {
 	return index.Receipt{
 		Plugin: plugin,
