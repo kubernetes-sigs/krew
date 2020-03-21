@@ -123,15 +123,16 @@ Remarks:
 				return cmd.Help()
 			}
 
-			for _, plugin := range install {
-				klog.V(2).Infof("Will install plugin: %s\n", plugin.Name)
+			for _, pluginReceipt := range install {
+				klog.V(2).Infof("Will install plugin: %s\n", pluginReceipt.Name)
 			}
 
 			var failed []string
 			var returnErr error
-			for _, plugin := range install {
+			for _, pluginReceipt := range install {
+				plugin := pluginReceipt.Plugin
 				fmt.Fprintf(os.Stderr, "Installing plugin: %s\n", plugin.Name)
-				err := installation.Install(paths, plugin, installation.InstallOpts{
+				err := installation.Install(paths, pluginReceipt, installation.InstallOpts{
 					ArchiveFileOverride: *archiveFileOverride,
 				})
 				if err == installation.ErrIsAlreadyInstalled {

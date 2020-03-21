@@ -29,7 +29,8 @@ import (
 
 // Upgrade will reinstall and delete the old plugin. The operation tries
 // to not get the plugin dir in a bad state if it fails during the process.
-func Upgrade(p environment.Paths, plugin index.Receipt) error {
+func Upgrade(p environment.Paths, pluginReceipt index.Receipt) error {
+	plugin := pluginReceipt.Plugin
 	installReceipt, err := receipt.Load(p.PluginInstallReceiptPath(plugin.Name))
 	if err != nil {
 		return errors.Wrapf(err, "failed to load install receipt for plugin %q", plugin.Name)
@@ -78,7 +79,7 @@ func Upgrade(p environment.Paths, plugin index.Receipt) error {
 	}
 
 	klog.V(2).Infof("Upgrading install receipt for plugin %s", plugin.Name)
-	if err = receipt.Store(plugin, p.PluginInstallReceiptPath(plugin.Name)); err != nil {
+	if err = receipt.Store(pluginReceipt, p.PluginInstallReceiptPath(plugin.Name)); err != nil {
 		return errors.Wrap(err, "installation receipt could not be stored, uninstall may fail")
 	}
 
@@ -92,7 +93,7 @@ func Upgrade(p environment.Paths, plugin index.Receipt) error {
 // Krew on Windows needs special care because active directories can't be
 // deleted. This method will mark old krew versions and during next run clean
 // the directory.
-func cleanupInstallation(p environment.Paths, plugin index.Receipt, oldVersion string) error {
+func cleanupInstallation(p environment.Paths, plugin index.Plugin, oldVersion string) error {
 	if plugin.Name == constants.KrewPluginName && IsWindows() {
 		klog.V(1).Infof("not removing old version of krew during upgrade on windows (should be cleaned up on the next run)")
 		return nil

@@ -54,7 +54,8 @@ var (
 
 // Install will download and install a plugin. The operation tries
 // to not get the plugin dir in a bad state if it fails during the process.
-func Install(p environment.Paths, plugin index.Receipt, opts InstallOpts) error {
+func Install(p environment.Paths, pluginReceipt index.Receipt, opts InstallOpts) error {
+	plugin := pluginReceipt.Plugin
 	klog.V(2).Infof("Looking for installed versions")
 	_, err := receipt.Load(p.PluginInstallReceiptPath(plugin.Name))
 	if err == nil {
@@ -85,7 +86,7 @@ func Install(p environment.Paths, plugin index.Receipt, opts InstallOpts) error 
 		return errors.Wrap(err, "install failed")
 	}
 	klog.V(3).Infof("Storing install receipt for plugin %s", plugin.Name)
-	err = receipt.Store(plugin, p.PluginInstallReceiptPath(plugin.Name))
+	err = receipt.Store(pluginReceipt, p.PluginInstallReceiptPath(plugin.Name))
 	return errors.Wrap(err, "installation receipt could not be stored, uninstall may fail")
 }
 
