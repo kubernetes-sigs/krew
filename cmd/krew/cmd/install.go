@@ -95,7 +95,7 @@ Remarks:
 			var install []index.Receipt
 			for _, name := range pluginNames {
 				indexName, pluginName := pathutil.CanonicalPluginName(name)
-				plugin, err := indexscanner.LoadPluginByName(paths.IndexPluginsPath(constants.DefaultIndexName), pluginName)
+				plugin, err := indexscanner.LoadPluginByName(paths.IndexPluginsPath(indexName), pluginName)
 				if err != nil {
 					if os.IsNotExist(err) {
 						return errors.Errorf("plugin %q does not exist in the plugin index", name)
