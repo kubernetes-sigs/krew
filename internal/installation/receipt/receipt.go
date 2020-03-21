@@ -21,6 +21,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"sigs.k8s.io/krew/internal/index/indexscanner"
+	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/index"
 )
 
@@ -44,11 +45,15 @@ func Load(path string) (index.Receipt, error) {
 
 // New returns a new receipt with the given plugin and index name.
 func New(plugin index.Plugin, indexName string) index.Receipt {
+	name := indexName
+	if name == "" {
+		name = constants.DefaultIndexName
+	}
 	return index.Receipt{
 		Plugin: plugin,
 		Status: index.ReceiptStatus{
 			Source: index.SourceIndex{
-				Name: indexName,
+				Name: name,
 			},
 		},
 	}
