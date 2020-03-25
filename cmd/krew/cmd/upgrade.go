@@ -25,7 +25,6 @@ import (
 	"sigs.k8s.io/krew/cmd/krew/cmd/internal"
 	"sigs.k8s.io/krew/internal/index/indexscanner"
 	"sigs.k8s.io/krew/internal/installation"
-	"sigs.k8s.io/krew/internal/installation/receipt"
 	"sigs.k8s.io/krew/internal/pathutil"
 )
 
@@ -76,7 +75,7 @@ kubectl krew upgrade foo bar"`,
 
 				if err == nil {
 					fmt.Fprintf(os.Stderr, "Upgrading plugin: %s\n", name)
-					err = installation.Upgrade(paths, receipt.New(plugin, indexName))
+					err = installation.Upgrade(paths, plugin, indexName)
 					if ignoreUpgraded && err == installation.ErrIsAlreadyUpgraded {
 						fmt.Fprintf(os.Stderr, "Skipping plugin %s, it is already on the newest version\n", name)
 						continue
