@@ -54,7 +54,7 @@ Examples:
 			pluginMap[p.Name] = p
 		}
 
-		receipts, err := installation.ListInstalledPluginReceipts(paths.InstallReceiptsPath())
+		receipts, err := installation.GetInstalledPluginReceipts(paths.InstallReceiptsPath())
 		if err != nil {
 			return errors.Wrap(err, "failed to load installed plugins")
 		}

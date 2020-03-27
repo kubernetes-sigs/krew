@@ -40,7 +40,7 @@ Remarks:
   the names of the plugins installed. This output can be piped back to the
   "install" command.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			receipts, err := installation.ListInstalledPluginReceipts(paths.InstallReceiptsPath())
+			receipts, err := installation.GetInstalledPluginReceipts(paths.InstallReceiptsPath())
 			if err != nil {
 				return errors.Wrap(err, "failed to find all installed versions")
 			}
