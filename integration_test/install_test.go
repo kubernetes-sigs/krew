@@ -95,6 +95,33 @@ func TestKrewInstall_StdinAndPositionalArguments(t *testing.T) {
 	test.AssertExecutableNotInPATH("kubectl-" + validPlugin2)
 }
 
+func TestKrewInstall_ExplicitDefaultIndex(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	test.Krew("install", "default/"+validPlugin).RunOrFail()
+	test.AssertExecutableInPATH("kubectl-" + validPlugin)
+}
+
+func TestKrewInstall_CustomIndex(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+	test.Krew("index", "add", "foo", test.TempDir().Path("index/"+constants.DefaultIndexName)).RunOrFail()
+	test.Krew("install", "foo/"+validPlugin).RunOrFail()
+	test.AssertExecutableInPATH("kubectl-" + validPlugin)
+
+	if err := test.Krew("install", "invalid/"+validPlugin2).Run(); err == nil {
+		t.Fatal("expected install from invalid index to fail")
+	}
+	test.AssertExecutableNotInPATH("kubectl-" + validPlugin2)
+}
+
 func TestKrewInstall_Manifest(t *testing.T) {
 	skipShort(t)
 

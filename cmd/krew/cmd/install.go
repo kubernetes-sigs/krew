@@ -137,7 +137,7 @@ Remarks:
 			}
 
 			for _, pluginEntry := range install {
-				klog.V(2).Infof("Will install plugin: %s\n", pluginEntry.p.Name)
+				klog.V(2).Infof("Will install plugin: %s/%s\n", pluginEntry.indexName, pluginEntry.p.Name)
 			}
 
 			var failed []string
