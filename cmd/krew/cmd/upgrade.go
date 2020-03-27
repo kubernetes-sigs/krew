@@ -25,7 +25,7 @@ import (
 	"sigs.k8s.io/krew/cmd/krew/cmd/internal"
 	"sigs.k8s.io/krew/internal/index/indexscanner"
 	"sigs.k8s.io/krew/internal/installation"
-	"sigs.k8s.io/krew/pkg/constants"
+	"sigs.k8s.io/krew/internal/pathutil"
 )
 
 func init() {
@@ -63,7 +63,8 @@ kubectl krew upgrade foo bar"`,
 
 			var nErrors int
 			for _, name := range pluginNames {
-				plugin, err := indexscanner.LoadPluginByName(paths.IndexPluginsPath(constants.DefaultIndexName), name)
+				indexName, pluginName := pathutil.CanonicalPluginName(name)
+				plugin, err := indexscanner.LoadPluginByName(paths.IndexPluginsPath(indexName), pluginName)
 				if err != nil {
 					if !os.IsNotExist(err) {
 						return errors.Wrapf(err, "failed to load the plugin manifest for plugin %s", name)
@@ -74,7 +75,7 @@ kubectl krew upgrade foo bar"`,
 
 				if err == nil {
 					fmt.Fprintf(os.Stderr, "Upgrading plugin: %s\n", name)
-					err = installation.Upgrade(paths, plugin)
+					err = installation.Upgrade(paths, plugin, indexName)
 					if ignoreUpgraded && err == installation.ErrIsAlreadyUpgraded {
 						fmt.Fprintf(os.Stderr, "Skipping plugin %s, it is already on the newest version\n", name)
 						continue

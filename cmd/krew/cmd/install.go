@@ -27,9 +27,15 @@ import (
 	"sigs.k8s.io/krew/cmd/krew/cmd/internal"
 	"sigs.k8s.io/krew/internal/index/indexscanner"
 	"sigs.k8s.io/krew/internal/installation"
+	"sigs.k8s.io/krew/internal/pathutil"
 	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/index"
 )
+
+type pluginEntry struct {
+	p         index.Plugin
+	indexName string
+}
 
 func init() {
 	var (
@@ -90,16 +96,20 @@ Remarks:
 				return errors.New("--archive can be specified only with --manifest or --manifest-url")
 			}
 
-			var install []index.Plugin
+			var install []pluginEntry
 			for _, name := range pluginNames {
-				plugin, err := indexscanner.LoadPluginByName(paths.IndexPluginsPath(constants.DefaultIndexName), name)
+				indexName, pluginName := pathutil.CanonicalPluginName(name)
+				plugin, err := indexscanner.LoadPluginByName(paths.IndexPluginsPath(indexName), pluginName)
 				if err != nil {
 					if os.IsNotExist(err) {
 						return errors.Errorf("plugin %q does not exist in the plugin index", name)
 					}
 					return errors.Wrapf(err, "failed to load plugin %q from the index", name)
 				}
-				install = append(install, plugin)
+				install = append(install, pluginEntry{
+					p:         plugin,
+					indexName: indexName,
+				})
 			}
 
 			if *manifest != "" {
@@ -107,28 +117,35 @@ Remarks:
 				if err != nil {
 					return errors.Wrap(err, "failed to load plugin manifest from file")
 				}
-				install = append(install, plugin)
+				install = append(install, pluginEntry{
+					p:         plugin,
+					indexName: constants.DefaultIndexName,
+				})
 			} else if *manifestURL != "" {
 				plugin, err := readPluginFromURL(*manifestURL)
 				if err != nil {
 					return errors.Wrap(err, "failed to read plugin manifest file from url")
 				}
-				install = append(install, plugin)
+				install = append(install, pluginEntry{
+					p:         plugin,
+					indexName: constants.DefaultIndexName,
+				})
 			}
 
 			if len(install) == 0 {
 				return cmd.Help()
 			}
 
-			for _, plugin := range install {
-				klog.V(2).Infof("Will install plugin: %s\n", plugin.Name)
+			for _, pluginEntry := range install {
+				klog.V(2).Infof("Will install plugin: %s/%s\n", pluginEntry.indexName, pluginEntry.p.Name)
 			}
 
 			var failed []string
 			var returnErr error
-			for _, plugin := range install {
+			for _, entry := range install {
+				plugin := entry.p
 				fmt.Fprintf(os.Stderr, "Installing plugin: %s\n", plugin.Name)
-				err := installation.Install(paths, plugin, installation.InstallOpts{
+				err := installation.Install(paths, plugin, entry.indexName, installation.InstallOpts{
 					ArchiveFileOverride: *archiveFileOverride,
 				})
 				if err == installation.ErrIsAlreadyInstalled {

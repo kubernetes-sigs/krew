@@ -22,6 +22,7 @@ import (
 
 	"sigs.k8s.io/krew/internal/index/indexscanner"
 	"sigs.k8s.io/krew/internal/testutil"
+	"sigs.k8s.io/krew/pkg/constants"
 )
 
 func TestStore(t *testing.T) {
@@ -32,7 +33,7 @@ func TestStore(t *testing.T) {
 	testReceipt := testutil.NewReceipt().WithPlugin(testPlugin).V()
 	dest := tmpDir.Path("some-plugin.yaml")
 
-	if err := Store(testPlugin, dest); err != nil {
+	if err := Store(testReceipt, dest); err != nil {
 		t.Fatal(err)
 	}
 
@@ -51,7 +52,8 @@ func TestLoad(t *testing.T) {
 	defer cleanup()
 
 	testPlugin := testutil.NewPlugin().WithName("foo").WithPlatforms(testutil.NewPlatform().V()).V()
-	if err := Store(testPlugin, tmpDir.Path("foo.yaml")); err != nil {
+	testPluginReceipt := testutil.NewReceipt().WithPlugin(testPlugin).V()
+	if err := Store(testPluginReceipt, tmpDir.Path("foo.yaml")); err != nil {
 		t.Fatal(err)
 	}
 
@@ -59,7 +61,6 @@ func TestLoad(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	testPluginReceipt := testutil.NewReceipt().WithPlugin(testPlugin).V()
 	if diff := cmp.Diff(&gotPlugin, &testPluginReceipt); diff != "" {
 		t.Fatal(diff)
 	}
@@ -69,5 +70,15 @@ func TestLoad_preservesNonExistsError(t *testing.T) {
 	_, err := Load("non-existing.yaml")
 	if !os.IsNotExist(err) {
 		t.Fatalf("returned error is not ENOENT: %+v", err)
+	}
+}
+
+func TestNew(t *testing.T) {
+	testPlugin := testutil.NewPlugin().WithName("foo").WithPlatforms(testutil.NewPlatform().V()).V()
+	wantReceipt := testutil.NewReceipt().WithPlugin(testPlugin).V()
+
+	gotReceipt := New(testPlugin, constants.DefaultIndexName)
+	if diff := cmp.Diff(gotReceipt, wantReceipt); diff != "" {
+		t.Fatalf("expected receipts to match: %s", diff)
 	}
 }
