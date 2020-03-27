@@ -25,18 +25,9 @@ import (
 	"sigs.k8s.io/krew/pkg/index"
 )
 
-// ListInstalledPlugins returns a list of all install plugins in a
-// name:version format based on the install receipts at the specified dir.
-func ListInstalledPlugins(receiptsDir string) (map[string]string, error) {
-	installed := make(map[string]string)
-	receipts, err := getInstalledPluginReceipts(receiptsDir)
-	if err != nil {
-		return nil, err
-	}
-	for _, r := range receipts {
-		installed[r.GetObjectMeta().GetName()] = r.Spec.Version
-	}
-	return installed, nil
+// ListInstalledPlugins returns a list of receipts.
+func ListInstalledPlugins(receiptsDir string) ([]index.Receipt, error) {
+	return getInstalledPluginReceipts(receiptsDir)
 }
 
 // InstalledPluginsFromIndex returns a list of all install plugins from a particular index.

@@ -40,7 +40,7 @@ Remarks:
   the names of the plugins installed. This output can be piped back to the
   "install" command.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			plugins, err := installation.ListInstalledPlugins(paths.InstallReceiptsPath())
+			receipts, err := installation.ListInstalledPlugins(paths.InstallReceiptsPath())
 			if err != nil {
 				return errors.Wrap(err, "failed to find all installed versions")
 			}
@@ -48,8 +48,8 @@ Remarks:
 			// return sorted list of plugin names when piped to other commands or file
 			if !isTerminal(os.Stdout) {
 				var names []string
-				for name := range plugins {
-					names = append(names, name)
+				for _, receipt := range receipts {
+					names = append(names, receipt.Name)
 				}
 				sort.Strings(names)
 				fmt.Fprintln(os.Stdout, strings.Join(names, "\n"))
@@ -58,8 +58,8 @@ Remarks:
 
 			// print table
 			var rows [][]string
-			for p, version := range plugins {
-				rows = append(rows, []string{p, version})
+			for _, receipt := range receipts {
+				rows = append(rows, []string{receipt.Name, receipt.Spec.Version})
 			}
 			rows = sortByFirstColumn(rows)
 			return printTable(os.Stdout, []string{"PLUGIN", "VERSION"}, rows)
