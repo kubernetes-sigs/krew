@@ -33,7 +33,7 @@ func testdataPath(t *testing.T) string {
 	return filepath.Join(pwd, "testdata")
 }
 
-func TestListInstalledPlugins(t *testing.T) {
+func TestListInstalledPluginReceipts(t *testing.T) {
 	tests := []struct {
 		name     string
 		receipts []index.Receipt
@@ -63,7 +63,7 @@ func TestListInstalledPlugins(t *testing.T) {
 				tempDir.WriteYAML(plugin.Name+constants.ManifestExtension, plugin)
 			}
 
-			actual, err := ListInstalledPlugins(tempDir.Root())
+			actual, err := ListInstalledPluginReceipts(tempDir.Root())
 			if err != nil {
 				t.Fatal(err)
 			}

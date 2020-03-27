@@ -120,7 +120,7 @@ func ensureIndexUpdated(_ *cobra.Command, _ []string) error {
 		return errors.Wrap(err, "failed to load plugin index after update")
 	}
 
-	receipts, err := installation.ListInstalledPlugins(paths.InstallReceiptsPath())
+	receipts, err := installation.ListInstalledPluginReceipts(paths.InstallReceiptsPath())
 	if err != nil {
 		return errors.Wrap(err, "failed to load installed plugins list after update")
 	}
