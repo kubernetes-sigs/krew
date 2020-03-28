@@ -43,6 +43,8 @@ func Load(path string) (index.Receipt, error) {
 	return indexscanner.ReadReceiptFromFile(path)
 }
 
+// CanonicalName returns the index and plugin name from a receipt.
+// The index name is omitted if it is the default index.
 func CanonicalName(receipt index.Receipt) string {
 	name := receipt.Name
 	if receipt.Status.Source.Name != constants.DefaultIndexName {
