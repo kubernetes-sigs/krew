@@ -25,38 +25,41 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
-	"sigs.k8s.io/krew/internal/info"
+	"sigs.k8s.io/krew/internal/index/indexscanner"
 	"sigs.k8s.io/krew/internal/installation"
+	"sigs.k8s.io/krew/internal/pathutil"
 	"sigs.k8s.io/krew/pkg/index"
 )
 
 // infoCmd represents the info command
 var infoCmd = &cobra.Command{
 	Use:   "info",
-	Short: "Show information about a kubectl plugin",
-	Long: `Show information about a kubectl plugin.
+	Short: "Show information about an available plugin",
+	Long: `Show detailed information about an available plugin.
 
-This command can be used to print information such as its download URL, last
-available version, platform availability and the caveats.
+Examples:
+  kubectl krew info PLUGIN
+  kubectl krew info INDEX/PLUGIN`,
 
-Example:
-  kubectl krew info PLUGIN`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		plugin, err := info.LoadManifestFromReceiptOrIndex(paths, args[0])
+		index, plugin := pathutil.CanonicalPluginName(args[0])
+
+		p, err := indexscanner.LoadPluginByName(paths.IndexPluginsPath(index), plugin)
 		if os.IsNotExist(err) {
-			return errors.Errorf("plugin %q not found", args[0])
+			return errors.Errorf("plugin %q not found in index %q", args[0], index)
 		} else if err != nil {
 			return errors.Wrap(err, "failed to load plugin manifest")
 		}
-		printPluginInfo(os.Stdout, plugin)
+		printPluginInfo(os.Stdout, p, index)
 		return nil
 	},
 	PreRunE: checkIndex,
 	Args:    cobra.ExactArgs(1),
 }
 
-func printPluginInfo(out io.Writer, plugin index.Plugin) {
+func printPluginInfo(out io.Writer, plugin index.Plugin, indexName string) {
 	fmt.Fprintf(out, "NAME: %s\n", plugin.Name)
+	fmt.Fprintf(out, "INDEX: %s\n", indexName)
 	if platform, ok, err := installation.GetMatchingPlatform(plugin.Spec.Platforms); err == nil && ok {
 		if platform.URI != "" {
 			fmt.Fprintf(out, "URI: %s\n", platform.URI)

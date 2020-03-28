@@ -14,7 +14,12 @@
 
 package integrationtest
 
-import "testing"
+import (
+	"strings"
+	"testing"
+
+	"sigs.k8s.io/krew/pkg/constants"
+)
 
 func TestKrewInfo(t *testing.T) {
 	skipShort(t)
@@ -22,7 +27,11 @@ func TestKrewInfo(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test.WithIndex().Krew("info", validPlugin).RunOrFail()
+	out := string(test.WithIndex().Krew("info", validPlugin).RunOrFailOutput())
+	expected := `INDEX: default`
+	if !strings.Contains(out, expected) {
+		t.Fatalf("info output doesn't have %q. output=%q", expected, out)
+	}
 }
 
 func TestKrewInfoInvalidPlugin(t *testing.T) {
@@ -35,5 +44,24 @@ func TestKrewInfoInvalidPlugin(t *testing.T) {
 	err := test.WithIndex().Krew("info", plugin).Run()
 	if err == nil {
 		t.Errorf("Expected `krew info %s` to fail", plugin)
+	}
+}
+
+func TestKrewInfoCustomIndex(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+	defaultIndexRoot := test.TempDir().Path("index/" + constants.DefaultIndexName)
+
+	test.Krew("index", "add", "foo", defaultIndexRoot).RunOrFail()
+	test.Krew("install", "foo/"+validPlugin).RunOrFail()
+
+	out := string(test.Krew("info", "foo/"+validPlugin).RunOrFailOutput())
+	expected := `INDEX: foo`
+	if !strings.Contains(out, expected) {
+		t.Fatalf("info output doesn't have %q. output=%q", expected, out)
 	}
 }
