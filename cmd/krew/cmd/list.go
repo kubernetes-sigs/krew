@@ -26,6 +26,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"sigs.k8s.io/krew/internal/installation"
+	"sigs.k8s.io/krew/internal/installation/receipt"
 )
 
 func init() {
@@ -48,8 +49,8 @@ Remarks:
 			// return sorted list of plugin names when piped to other commands or file
 			if !isTerminal(os.Stdout) {
 				var names []string
-				for _, receipt := range receipts {
-					names = append(names, receipt.Name)
+				for _, r := range receipts {
+					names = append(names, receipt.CanonicalName(r))
 				}
 				sort.Strings(names)
 				fmt.Fprintln(os.Stdout, strings.Join(names, "\n"))
@@ -58,8 +59,8 @@ Remarks:
 
 			// print table
 			var rows [][]string
-			for _, receipt := range receipts {
-				rows = append(rows, []string{receipt.Name, receipt.Spec.Version})
+			for _, r := range receipts {
+				rows = append(rows, []string{receipt.CanonicalName(r), r.Spec.Version})
 			}
 			rows = sortByFirstColumn(rows)
 			return printTable(os.Stdout, []string{"PLUGIN", "VERSION"}, rows)

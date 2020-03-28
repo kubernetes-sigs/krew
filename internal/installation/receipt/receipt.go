@@ -21,6 +21,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"sigs.k8s.io/krew/internal/index/indexscanner"
+	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/index"
 )
 
@@ -40,6 +41,14 @@ func Store(receipt index.Receipt, dest string) error {
 // If not found, it returns os.IsNotExist error.
 func Load(path string) (index.Receipt, error) {
 	return indexscanner.ReadReceiptFromFile(path)
+}
+
+func CanonicalName(receipt index.Receipt) string {
+	name := receipt.Name
+	if receipt.Status.Source.Name != constants.DefaultIndexName {
+		name = receipt.Status.Source.Name + "/" + receipt.Name
+	}
+	return name
 }
 
 // New returns a new receipt with the given plugin and index name.
