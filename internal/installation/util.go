@@ -25,24 +25,10 @@ import (
 	"sigs.k8s.io/krew/pkg/index"
 )
 
-// ListInstalledPlugins returns a list of all install plugins in a
-// name:version format based on the install receipts at the specified dir.
-func ListInstalledPlugins(receiptsDir string) (map[string]string, error) {
-	installed := make(map[string]string)
-	receipts, err := getInstalledPluginReceipts(receiptsDir)
-	if err != nil {
-		return nil, err
-	}
-	for _, r := range receipts {
-		installed[r.GetObjectMeta().GetName()] = r.Spec.Version
-	}
-	return installed, nil
-}
-
 // InstalledPluginsFromIndex returns a list of all install plugins from a particular index.
 func InstalledPluginsFromIndex(receiptsDir, indexName string) ([]index.Receipt, error) {
 	var out []index.Receipt
-	receipts, err := getInstalledPluginReceipts(receiptsDir)
+	receipts, err := GetInstalledPluginReceipts(receiptsDir)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +40,8 @@ func InstalledPluginsFromIndex(receiptsDir, indexName string) ([]index.Receipt, 
 	return out, nil
 }
 
-func getInstalledPluginReceipts(receiptsDir string) ([]index.Receipt, error) {
+// GetInstalledPluginReceipts returns a list of receipts.
+func GetInstalledPluginReceipts(receiptsDir string) ([]index.Receipt, error) {
 	files, err := filepath.Glob(filepath.Join(receiptsDir, "*"+constants.ManifestExtension))
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to glob receipts directory (%s) for manifests", receiptsDir)

@@ -47,12 +47,12 @@ kubectl krew upgrade foo bar"`,
 			var pluginNames []string
 			if len(args) == 0 {
 				// Upgrade all plugins.
-				installed, err := installation.ListInstalledPlugins(paths.InstallReceiptsPath())
+				installed, err := installation.GetInstalledPluginReceipts(paths.InstallReceiptsPath())
 				if err != nil {
 					return errors.Wrap(err, "failed to find all installed versions")
 				}
-				for name := range installed {
-					pluginNames = append(pluginNames, name)
+				for _, receipt := range installed {
+					pluginNames = append(pluginNames, receipt.Name)
 				}
 				ignoreUpgraded = true
 				skipErrors = true

@@ -33,30 +33,23 @@ func testdataPath(t *testing.T) string {
 	return filepath.Join(pwd, "testdata")
 }
 
-func TestListInstalledPlugins(t *testing.T) {
+func TestGetInstalledPluginReceipts(t *testing.T) {
 	tests := []struct {
 		name     string
-		plugins  []index.Receipt
-		expected map[string]string
+		receipts []index.Receipt
 	}{
 		{
 			name: "single plugin",
-			plugins: []index.Receipt{
+			receipts: []index.Receipt{
 				testutil.NewReceipt().WithPlugin(testutil.NewPlugin().WithName("test").WithVersion("v0.0.1").V()).V(),
 			},
-			expected: map[string]string{"test": "v0.0.1"},
 		},
 		{
 			name: "multiple plugins",
-			plugins: []index.Receipt{
+			receipts: []index.Receipt{
 				testutil.NewReceipt().WithPlugin(testutil.NewPlugin().WithName("plugin-a").WithVersion("v0.0.1").V()).V(),
 				testutil.NewReceipt().WithPlugin(testutil.NewPlugin().WithName("plugin-b").WithVersion("v0.1.0").V()).V(),
 				testutil.NewReceipt().WithPlugin(testutil.NewPlugin().WithName("plugin-c").WithVersion("v1.0.0").V()).V(),
-			},
-			expected: map[string]string{
-				"plugin-a": "v0.0.1",
-				"plugin-b": "v0.1.0",
-				"plugin-c": "v1.0.0",
 			},
 		},
 	}
@@ -66,15 +59,15 @@ func TestListInstalledPlugins(t *testing.T) {
 			tempDir, cleanup := testutil.NewTempDir(t)
 			defer cleanup()
 
-			for _, plugin := range test.plugins {
+			for _, plugin := range test.receipts {
 				tempDir.WriteYAML(plugin.Name+constants.ManifestExtension, plugin)
 			}
 
-			actual, err := ListInstalledPlugins(tempDir.Root())
+			actual, err := GetInstalledPluginReceipts(tempDir.Root())
 			if err != nil {
 				t.Fatal(err)
 			}
-			if diff := cmp.Diff(test.expected, actual); diff != "" {
+			if diff := cmp.Diff(test.receipts, actual); diff != "" {
 				t.Error(diff)
 			}
 		})

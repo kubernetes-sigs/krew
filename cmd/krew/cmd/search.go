@@ -54,9 +54,15 @@ Examples:
 			pluginMap[p.Name] = p
 		}
 
-		installed, err := installation.ListInstalledPlugins(paths.InstallReceiptsPath())
+		receipts, err := installation.GetInstalledPluginReceipts(paths.InstallReceiptsPath())
 		if err != nil {
 			return errors.Wrap(err, "failed to load installed plugins")
+		}
+
+		// TODO(chriskim06) include index name when refactoring for custom indexes
+		installed := make(map[string]string)
+		for _, receipt := range receipts {
+			installed[receipt.Name] = receipt.Spec.Version
 		}
 
 		var matchNames []string
