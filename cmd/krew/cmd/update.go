@@ -129,6 +129,7 @@ func ensureIndexUpdated(_ *cobra.Command, _ []string) error {
 		installedPlugins[receipt.Name] = receipt.Spec.Version
 	}
 
+	// TODO(chriskim06) consider commenting this out when refactoring for custom indexes
 	showUpdatedPlugins(os.Stderr, preUpdateIndex, posUpdateIndex, installedPlugins)
 
 	return nil
