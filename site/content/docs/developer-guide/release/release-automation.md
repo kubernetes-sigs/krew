@@ -1,6 +1,6 @@
 ---
 title: Automating plugin updates
-slug: updating-plugins
+slug: automating-updates
 weight: 300
 ---
 
