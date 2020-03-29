@@ -45,12 +45,6 @@ type installOperation struct {
 	binDir     string
 }
 
-// PluginEntry describes a plugin and the index it comes from.
-type PluginEntry struct {
-	Plugin    index.Plugin
-	IndexName string
-}
-
 // Plugin lifecycle errors
 var (
 	ErrIsAlreadyInstalled = errors.New("can't install, the newest version is already installed")
