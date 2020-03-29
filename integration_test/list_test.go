@@ -18,6 +18,8 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+
+	"sigs.k8s.io/krew/pkg/constants"
 )
 
 func TestKrewList(t *testing.T) {
@@ -26,7 +28,8 @@ func TestKrewList(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	initialList := test.WithIndex().Krew("list").RunOrFailOutput()
+	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+	initialList := test.Krew("list").RunOrFailOutput()
 	initialOut := []byte{'\n'}
 
 	if diff := cmp.Diff(initialList, initialOut); diff != "" {
@@ -40,5 +43,13 @@ func TestKrewList(t *testing.T) {
 	if diff := cmp.Diff(eventualList, expected); diff != "" {
 		t.Fatalf("'list' output doesn't match:\n%s", diff)
 	}
-	// TODO(ahmetb): install multiple plugins and see if the output is sorted
+
+	test.Krew("index", "add", "foo", test.TempDir().Path("index/"+constants.DefaultIndexName)).RunOrFail()
+	test.Krew("install", "foo/"+validPlugin2).RunOrFail()
+
+	want := []string{validPlugin, "foo/" + validPlugin2}
+	actual := lines(test.Krew("list").RunOrFailOutput())
+	if diff := cmp.Diff(actual, want); diff != "" {
+		t.Fatalf("'list' output doesn't match:\n%s", diff)
+	}
 }
