@@ -15,8 +15,12 @@
 package integrationtest
 
 import (
+	"regexp"
+	"sort"
 	"strings"
 	"testing"
+
+	"sigs.k8s.io/krew/pkg/constants"
 )
 
 func TestKrewSearchAll(t *testing.T) {
@@ -44,5 +48,54 @@ func TestKrewSearchOne(t *testing.T) {
 	}
 	if !strings.HasPrefix(plugins[1], "krew ") {
 		t.Errorf("The first match should be krew")
+	}
+}
+
+func TestKrewSearchMultiIndex(t *testing.T) {
+	skipShort(t)
+	test, cleanup := NewTest(t)
+	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+	defer cleanup()
+
+	// alias default plugin index to another
+	localIndex := test.TempDir().Path("index/" + constants.DefaultIndexName)
+	test.Krew("index", "add", "foo", localIndex).RunOrFailOutput()
+
+	test.Krew("install", validPlugin).RunOrFail()
+	test.Krew("install", "foo/"+validPlugin2).RunOrFail()
+
+	output := string(test.Krew("search").RunOrFailOutput())
+	wantPatterns := []*regexp.Regexp{
+		regexp.MustCompile(`(?m)^` + validPlugin + `\b.*\byes`),
+		regexp.MustCompile(`(?m)^` + validPlugin2 + `\b.*\bno`),
+		regexp.MustCompile(`(?m)^foo/` + validPlugin + `\b.*\bno$`),
+		regexp.MustCompile(`(?m)^foo/` + validPlugin2 + `\b.*\byes$`),
+	}
+	for _, p := range wantPatterns {
+		if !p.MatchString(output) {
+			t.Fatalf("pattern %s not found in search output=%s", p, output)
+		}
+	}
+}
+
+func TestKrewSearchMultiIndexSortedByDisplayName(t *testing.T) {
+	skipShort(t)
+	test, cleanup := NewTest(t)
+	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+	defer cleanup()
+
+	// alias default plugin index to another
+	localIndex := test.TempDir().Path("index/" + constants.DefaultIndexName)
+	test.Krew("index", "add", "foo", localIndex).RunOrFailOutput()
+
+	output := string(test.Krew("search").RunOrFailOutput())
+
+	// match first column that is not NAME by matching everything up until a space
+	names := regexp.MustCompile(`(?m)^[^\s|NAME]+\b`).FindAllString(output, -1)
+	if len(names) < 10 {
+		t.Fatalf("could not capture names")
+	}
+	if !sort.StringsAreSorted(names) {
+		t.Fatalf("names are not sorted: [%s]", strings.Join(names, ", "))
 	}
 }
