@@ -22,11 +22,12 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sahilm/fuzzy"
 	"github.com/spf13/cobra"
+	"k8s.io/klog"
 
+	"sigs.k8s.io/krew/internal/index/indexoperations"
 	"sigs.k8s.io/krew/internal/index/indexscanner"
 	"sigs.k8s.io/krew/internal/installation"
 	"sigs.k8s.io/krew/pkg/constants"
-	"sigs.k8s.io/krew/pkg/index"
 )
 
 // searchCmd represents the search command
@@ -43,58 +44,91 @@ Examples:
   To fuzzy search plugins with a keyword:
     kubectl krew search KEYWORD`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		plugins, err := indexscanner.LoadPluginListFromFS(paths.IndexPluginsPath(constants.DefaultIndexName))
-		if err != nil {
-			return errors.Wrap(err, "failed to load the list of plugins from the index")
+		indexes := []indexoperations.Index{
+			{
+				Name: constants.DefaultIndexName,
+				URL:  constants.IndexURI, // unused here but providing for completeness
+			},
 		}
-		names := make([]string, len(plugins))
-		pluginMap := make(map[string]index.Plugin, len(plugins))
-		for i, p := range plugins {
-			names[i] = p.Name
-			pluginMap[p.Name] = p
+		if os.Getenv(constants.EnableMultiIndexSwitch) != "" {
+			out, err := indexoperations.ListIndexes(paths)
+			if err != nil {
+				return errors.Wrapf(err, "failed to list plugin indexes available")
+			}
+			indexes = out
 		}
 
+		klog.V(3).Infof("found %d indexes", len(indexes))
+
+		var plugins []pluginEntry
+		for _, idx := range indexes {
+			ps, err := indexscanner.LoadPluginListFromFS(paths.IndexPluginsPath(constants.DefaultIndexName))
+			if err != nil {
+				return errors.Wrap(err, "failed to load the list of plugins from the index")
+			}
+			for _, p := range ps {
+				plugins = append(plugins, pluginEntry{p, idx.Name})
+			}
+		}
+
+		keys := func(v map[string]pluginEntry) []string {
+			out := make([]string, 0, len(v))
+			for k := range v {
+				out = append(out, k)
+			}
+			return out
+		}
+
+		pluginMap := make(map[string]pluginEntry, len(plugins))
+		for _, p := range plugins {
+			pluginMap[canonicalName(p.p, p.indexName)] = p
+		}
+
+		installed := make(map[string]string)
 		receipts, err := installation.GetInstalledPluginReceipts(paths.InstallReceiptsPath())
 		if err != nil {
 			return errors.Wrap(err, "failed to load installed plugins")
 		}
-
-		// TODO(chriskim06) include index name when refactoring for custom indexes
-		installed := make(map[string]string)
 		for _, receipt := range receipts {
-			installed[receipt.Name] = receipt.Spec.Version
+			index := receipt.Status.Source.Name
+			if index == "" {
+				index = constants.DefaultIndexName
+			}
+			installed[receipt.Name] = index
 		}
 
-		var matchNames []string
+		corpus := keys(pluginMap)
+		var searchResults []string
 		if len(args) > 0 {
-			matches := fuzzy.Find(strings.Join(args, ""), names)
+			matches := fuzzy.Find(strings.Join(args, ""), corpus)
 			for _, m := range matches {
-				matchNames = append(matchNames, m.Str)
+				searchResults = append(searchResults, m.Str)
 			}
 		} else {
-			matchNames = names
+			searchResults = corpus
 		}
 
 		// No plugins found
-		if len(matchNames) == 0 {
+		if len(searchResults) == 0 {
 			return nil
 		}
 
 		var rows [][]string
 		cols := []string{"NAME", "DESCRIPTION", "INSTALLED"}
-		for _, name := range matchNames {
-			plugin := pluginMap[name]
+		for _, name := range searchResults {
+			v := pluginMap[name]
 			var status string
-			if _, ok := installed[name]; ok {
+			if index := installed[v.p.Name]; index == v.indexName {
 				status = "yes"
-			} else if _, ok, err := installation.GetMatchingPlatform(plugin.Spec.Platforms); err != nil {
+			} else if _, ok, err := installation.GetMatchingPlatform(v.p.Spec.Platforms); err != nil {
 				return errors.Wrapf(err, "failed to get the matching platform for plugin %s", name)
 			} else if ok {
 				status = "no"
 			} else {
 				status = "unavailable on " + runtime.GOOS
 			}
-			rows = append(rows, []string{name, limitString(plugin.Spec.ShortDescription, 50), status})
+
+			rows = append(rows, []string{displayName(v.p, v.indexName), limitString(v.p.Spec.ShortDescription, 50), status})
 		}
 		rows = sortByFirstColumn(rows)
 		return printTable(os.Stdout, cols, rows)
