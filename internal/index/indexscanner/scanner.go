@@ -79,7 +79,7 @@ func LoadPluginByName(pluginsDir, pluginName string) (index.Plugin, error) {
 		return index.Plugin{}, errors.Errorf("plugin name %q not allowed", pluginName)
 	}
 
-	klog.V(4).Infof("Reading plugin %q", pluginName)
+	klog.V(4).Infof("Reading plugin %q from %s", pluginName, pluginsDir)
 	return ReadPluginFromFile(filepath.Join(pluginsDir, pluginName+constants.ManifestExtension))
 }
 
