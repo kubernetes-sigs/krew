@@ -23,7 +23,6 @@ import (
 	"sigs.k8s.io/krew/internal/index/indexscanner"
 	"sigs.k8s.io/krew/internal/testutil"
 	"sigs.k8s.io/krew/pkg/constants"
-	"sigs.k8s.io/krew/pkg/index"
 )
 
 func TestStore(t *testing.T) {
@@ -71,38 +70,6 @@ func TestLoad_preservesNonExistsError(t *testing.T) {
 	_, err := Load("non-existing.yaml")
 	if !os.IsNotExist(err) {
 		t.Fatalf("returned error is not ENOENT: %+v", err)
-	}
-}
-
-func TestCanonicalName(t *testing.T) {
-	tests := []struct {
-		name     string
-		receipt  index.Receipt
-		expected string
-	}{
-		{
-			name:     "from default index",
-			receipt:  testutil.NewReceipt().WithPlugin(testutil.NewPlugin().WithName("foo").V()).V(),
-			expected: "foo",
-		},
-		{
-			name: "from custom index",
-			receipt: testutil.NewReceipt().WithPlugin(testutil.NewPlugin().WithName("bar").V()).WithStatus(index.ReceiptStatus{
-				Source: index.SourceIndex{
-					Name: "foo",
-				},
-			}).V(),
-			expected: "foo/bar",
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			actual := CanonicalName(test.receipt)
-			if diff := cmp.Diff(test.expected, actual); diff != "" {
-				t.Fatalf("expected name to match: %s", diff)
-			}
-		})
 	}
 }
 
