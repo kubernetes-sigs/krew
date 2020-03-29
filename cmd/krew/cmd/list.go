@@ -26,8 +26,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"sigs.k8s.io/krew/internal/installation"
-	"sigs.k8s.io/krew/pkg/constants"
-	"sigs.k8s.io/krew/pkg/index"
 )
 
 func init() {
@@ -51,7 +49,7 @@ Remarks:
 			if !isTerminal(os.Stdout) {
 				var names []string
 				for _, r := range receipts {
-					names = append(names, displayName(r))
+					names = append(names, displayName(r.Plugin, indexOf(r)))
 				}
 				sort.Strings(names)
 				fmt.Fprintln(os.Stdout, strings.Join(names, "\n"))
@@ -61,7 +59,7 @@ Remarks:
 			// print table
 			var rows [][]string
 			for _, r := range receipts {
-				rows = append(rows, []string{displayName(r), r.Spec.Version})
+				rows = append(rows, []string{displayName(r.Plugin, indexOf(r)), r.Spec.Version})
 			}
 			rows = sortByFirstColumn(rows)
 			return printTable(os.Stdout, []string{"PLUGIN", "VERSION"}, rows)
@@ -88,15 +86,4 @@ func sortByFirstColumn(rows [][]string) [][]string {
 		return rows[a][0] < rows[b][0]
 	})
 	return rows
-}
-
-// displayName returns the index and plugin name from a receipt.
-// The index name is omitted if it is the default index.
-func displayName(receipt index.Receipt) string {
-	name := receipt.Name
-	indexName := receipt.Status.Source.Name
-	if indexName != "" && indexName != constants.DefaultIndexName {
-		name = receipt.Status.Source.Name + "/" + receipt.Name
-	}
-	return name
 }
