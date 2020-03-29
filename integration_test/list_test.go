@@ -15,11 +15,19 @@
 package integrationtest
 
 import (
+	"os"
+	"sort"
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 
+	"sigs.k8s.io/krew/internal/environment"
+	"sigs.k8s.io/krew/internal/index/indexscanner"
+	"sigs.k8s.io/krew/internal/installation/receipt"
+	"sigs.k8s.io/krew/internal/testutil"
 	"sigs.k8s.io/krew/pkg/constants"
+	"sigs.k8s.io/krew/pkg/index"
 )
 
 func TestKrewList(t *testing.T) {
@@ -28,7 +36,7 @@ func TestKrewList(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
 	initialList := test.Krew("list").RunOrFailOutput()
 	initialOut := []byte{'\n'}
 
@@ -51,5 +59,34 @@ func TestKrewList(t *testing.T) {
 	actual := lines(test.Krew("list").RunOrFailOutput())
 	if diff := cmp.Diff(actual, want); diff != "" {
 		t.Fatalf("'list' output doesn't match:\n%s", diff)
+	}
+}
+
+func TestKrewListSorted(t *testing.T) {
+	skipShort(t)
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+	os.Setenv(constants.EnableMultiIndexSwitch, "1")
+	defer os.Unsetenv(constants.EnableMultiIndexSwitch)
+
+	paths := environment.NewPaths(test.Root())
+	ps, err := indexscanner.LoadPluginListFromFS(paths.IndexPluginsPath(constants.DefaultIndexName))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	indexes := []string{"", "default", "bar"}
+	for i, p := range ps {
+		src := indexes[i%len(indexes)]
+		r := testutil.NewReceipt().WithPlugin(p).WithStatus(index.ReceiptStatus{Source: index.SourceIndex{Name: src}}).V()
+		if err := receipt.Store(r, paths.PluginInstallReceiptPath(p.Name)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	out := lines(test.Krew("list").RunOrFailOutput())
+	if !sort.StringsAreSorted(out) {
+		t.Fatalf("list output is not sorted: [%s]", strings.Join(out, ", "))
 	}
 }
