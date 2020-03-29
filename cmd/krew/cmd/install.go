@@ -28,7 +28,6 @@ import (
 	"sigs.k8s.io/krew/internal/index/indexscanner"
 	"sigs.k8s.io/krew/internal/installation"
 	"sigs.k8s.io/krew/internal/pathutil"
-	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/index"
 )
 
@@ -119,7 +118,7 @@ Remarks:
 				}
 				install = append(install, pluginEntry{
 					p:         plugin,
-					indexName: constants.DefaultIndexName,
+					indexName: "detached",
 				})
 			} else if *manifestURL != "" {
 				plugin, err := readPluginFromURL(*manifestURL)
@@ -128,7 +127,7 @@ Remarks:
 				}
 				install = append(install, pluginEntry{
 					p:         plugin,
-					indexName: constants.DefaultIndexName,
+					indexName: "detached",
 				})
 			}
 
