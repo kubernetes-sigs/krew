@@ -40,8 +40,8 @@ import (
 const (
 	persistentIndexCache = "krew-persistent-index-cache"
 	krewBinaryEnv        = "KREW_BINARY"
-	validPlugin          = "ctx"   // a plugin in central index with small size
-	validPlugin2         = "mtail" // a plugin in central index with small size
+	validPlugin          = "ctx" // a plugin in central index with small size
+	validPlugin2         = "ns"  // a plugin in central index with small size
 )
 
 var (
