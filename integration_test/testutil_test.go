@@ -158,14 +158,16 @@ func (it *ITest) AssertExecutableNotInPATH(file string) {
 
 // AssertPluginFromIndex asserts that a receipt exists for the given plugin and
 // that it is from the specified index.
-func (it *ITest) AssertPluginFromIndex(t *testing.T, indexName, plugin string) {
+func (it *ITest) AssertPluginFromIndex(plugin, indexName string) {
+	it.t.Helper()
+
 	receiptPath := environment.NewPaths(it.Root()).PluginInstallReceiptPath(plugin)
 	r, err := receipt.Load(receiptPath)
 	if err != nil {
-		t.Fatalf("error loading receipt: %v", err)
+		it.t.Fatalf("error loading receipt: %v", err)
 	}
 	if r.Status.Source.Name != indexName {
-		t.Errorf("wanted index '%s', got: '%s'", indexName, r.Status.Source.Name)
+		it.t.Errorf("wanted index '%s', got: '%s'", indexName, r.Status.Source.Name)
 	}
 }
 

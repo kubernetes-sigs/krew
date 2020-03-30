@@ -44,6 +44,7 @@ func TestKrewInstall(t *testing.T) {
 
 	test.Krew("install", validPlugin).RunOrFailOutput()
 	test.AssertExecutableInPATH("kubectl-" + validPlugin)
+	test.AssertPluginFromIndex(validPlugin, "default")
 }
 
 func TestKrewInstallReRun(t *testing.T) {
@@ -103,6 +104,7 @@ func TestKrewInstall_ExplicitDefaultIndex(t *testing.T) {
 
 	test.Krew("install", "default/"+validPlugin).RunOrFail()
 	test.AssertExecutableInPATH("kubectl-" + validPlugin)
+	test.AssertPluginFromIndex(validPlugin, "default")
 }
 
 func TestKrewInstall_CustomIndex(t *testing.T) {
@@ -115,6 +117,7 @@ func TestKrewInstall_CustomIndex(t *testing.T) {
 	test.Krew("index", "add", "foo", test.TempDir().Path("index/"+constants.DefaultIndexName)).RunOrFail()
 	test.Krew("install", "foo/"+validPlugin).RunOrFail()
 	test.AssertExecutableInPATH("kubectl-" + validPlugin)
+	test.AssertPluginFromIndex(validPlugin, "foo")
 
 	if err := test.Krew("install", "invalid/"+validPlugin2).Run(); err == nil {
 		t.Fatal("expected install from invalid index to fail")
@@ -132,7 +135,7 @@ func TestKrewInstall_Manifest(t *testing.T) {
 		"--manifest", filepath.Join("testdata", validPlugin+constants.ManifestExtension)).
 		RunOrFail()
 	test.AssertExecutableInPATH("kubectl-" + validPlugin)
-	test.AssertPluginFromIndex(t, "detached", validPlugin)
+	test.AssertPluginFromIndex(validPlugin, "detached")
 }
 
 func TestKrewInstall_ManifestURL(t *testing.T) {
@@ -147,7 +150,7 @@ func TestKrewInstall_ManifestURL(t *testing.T) {
 		"--manifest-url", srv+"/"+validPlugin+constants.ManifestExtension).
 		RunOrFail()
 	test.AssertExecutableInPATH("kubectl-" + validPlugin)
-	test.AssertPluginFromIndex(t, "detached", validPlugin)
+	test.AssertPluginFromIndex(validPlugin, "detached")
 }
 
 func TestKrewInstall_ManifestAndArchive(t *testing.T) {
@@ -161,7 +164,7 @@ func TestKrewInstall_ManifestAndArchive(t *testing.T) {
 		"--archive", filepath.Join("testdata", fooPlugin+".tar.gz")).
 		RunOrFail()
 	test.AssertExecutableInPATH("kubectl-" + fooPlugin)
-	test.AssertPluginFromIndex(t, "detached", fooPlugin)
+	test.AssertPluginFromIndex(fooPlugin, "detached")
 }
 
 func TestKrewInstall_OnlyArchive(t *testing.T) {
