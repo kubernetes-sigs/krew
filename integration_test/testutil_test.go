@@ -32,6 +32,7 @@ import (
 
 	"sigs.k8s.io/krew/internal/environment"
 	"sigs.k8s.io/krew/internal/indexmigration"
+	"sigs.k8s.io/krew/internal/installation/receipt"
 	"sigs.k8s.io/krew/internal/testutil"
 	"sigs.k8s.io/krew/pkg/constants"
 )
@@ -152,6 +153,19 @@ func (it *ITest) AssertExecutableNotInPATH(file string) {
 	it.t.Helper()
 	if _, err := it.LookupExecutable(file); err == nil {
 		it.t.Fatalf("executable %s still exists in PATH", file)
+	}
+}
+
+// AssertPluginFromIndex asserts that a receipt exists for the given plugin and
+// that it is from the specified index.
+func (it *ITest) AssertPluginFromIndex(t *testing.T, indexName, plugin string) {
+	receiptPath := environment.NewPaths(it.Root()).PluginInstallReceiptPath(plugin)
+	r, err := receipt.Load(receiptPath)
+	if err != nil {
+		t.Fatalf("error loading receipt: %v", err)
+	}
+	if r.Status.Source.Name != indexName {
+		t.Errorf("wanted index '%s', got: '%s'", indexName, r.Status.Source.Name)
 	}
 }
 

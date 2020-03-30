@@ -132,6 +132,7 @@ func TestKrewInstall_Manifest(t *testing.T) {
 		"--manifest", filepath.Join("testdata", validPlugin+constants.ManifestExtension)).
 		RunOrFail()
 	test.AssertExecutableInPATH("kubectl-" + validPlugin)
+	test.AssertPluginFromIndex(t, "detached", validPlugin)
 }
 
 func TestKrewInstall_ManifestURL(t *testing.T) {
@@ -146,6 +147,7 @@ func TestKrewInstall_ManifestURL(t *testing.T) {
 		"--manifest-url", srv+"/"+validPlugin+constants.ManifestExtension).
 		RunOrFail()
 	test.AssertExecutableInPATH("kubectl-" + validPlugin)
+	test.AssertPluginFromIndex(t, "detached", validPlugin)
 }
 
 func TestKrewInstall_ManifestAndArchive(t *testing.T) {
@@ -159,6 +161,7 @@ func TestKrewInstall_ManifestAndArchive(t *testing.T) {
 		"--archive", filepath.Join("testdata", fooPlugin+".tar.gz")).
 		RunOrFail()
 	test.AssertExecutableInPATH("kubectl-" + fooPlugin)
+	test.AssertPluginFromIndex(t, "detached", fooPlugin)
 }
 
 func TestKrewInstall_OnlyArchive(t *testing.T) {
