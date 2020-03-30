@@ -21,6 +21,7 @@ import (
 	"strings"
 	"testing"
 
+	"sigs.k8s.io/krew/internal/installation/receipt"
 	"sigs.k8s.io/krew/pkg/constants"
 )
 
@@ -132,6 +133,7 @@ func TestKrewInstall_Manifest(t *testing.T) {
 		"--manifest", filepath.Join("testdata", validPlugin+constants.ManifestExtension)).
 		RunOrFail()
 	test.AssertExecutableInPATH("kubectl-" + validPlugin)
+	assertManifestPluginIndex(t, test, validPlugin)
 }
 
 func TestKrewInstall_ManifestURL(t *testing.T) {
@@ -146,6 +148,7 @@ func TestKrewInstall_ManifestURL(t *testing.T) {
 		"--manifest-url", srv+"/"+validPlugin+constants.ManifestExtension).
 		RunOrFail()
 	test.AssertExecutableInPATH("kubectl-" + validPlugin)
+	assertManifestPluginIndex(t, test, validPlugin)
 }
 
 func TestKrewInstall_ManifestAndArchive(t *testing.T) {
@@ -159,6 +162,7 @@ func TestKrewInstall_ManifestAndArchive(t *testing.T) {
 		"--archive", filepath.Join("testdata", fooPlugin+".tar.gz")).
 		RunOrFail()
 	test.AssertExecutableInPATH("kubectl-" + fooPlugin)
+	assertManifestPluginIndex(t, test, fooPlugin)
 }
 
 func TestKrewInstall_OnlyArchive(t *testing.T) {
@@ -215,4 +219,15 @@ func TestKrewInstall_NoManifestArgsWhenPositionalArgsSpecified(t *testing.T) {
 func localTestServer() (string, func()) {
 	s := httptest.NewServer(http.FileServer(http.Dir("testdata")))
 	return s.URL, s.Close
+}
+
+func assertManifestPluginIndex(t *testing.T, test *ITest, plugin string) {
+	receiptPath := test.TempDir().Path("receipts/" + plugin + constants.ManifestExtension)
+	r, err := receipt.Load(receiptPath)
+	if err != nil {
+		t.Fatalf("error loading receipt: %v", err)
+	}
+	if r.Status.Source.Name != "detached" {
+		t.Errorf("wanted index 'detached', got: '%s'", r.Status.Source.Name)
+	}
 }
