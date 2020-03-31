@@ -37,7 +37,7 @@ goimports -local sigs.k8s.io/krew -w cmd pkg integration_test
 Shell scripts are automatically formatted by `shfmt`, to install and to validate run:
 
 ```bash
-hach/run-lint.sh
+hack/run-lint.sh
 ```
 
 If format is in expected format, there will be no output.
