@@ -62,7 +62,7 @@ Examples:
 
 		var plugins []pluginEntry
 		for _, idx := range indexes {
-			ps, err := indexscanner.LoadPluginListFromFS(paths.IndexPluginsPath(constants.DefaultIndexName))
+			ps, err := indexscanner.LoadPluginListFromFS(paths.IndexPluginsPath(idx.Name))
 			if err != nil {
 				return errors.Wrap(err, "failed to load the list of plugins from the index")
 			}
