@@ -138,7 +138,7 @@ func TestKrewIndexRemove_unsafe(t *testing.T) {
 	expected := "invalid index name"
 	cases := []string{"a/b", `a\b`, "../a", `..\a`}
 	for _, c := range cases {
-		b, err := test.Krew("index", "add", c, constants.IndexURI).Run()
+		b, err := test.Krew("index", "remove", c, constants.IndexURI).Run()
 		if err == nil {
 			t.Fatalf("%q: expected error", c)
 		} else if !strings.Contains(string(b), expected) {

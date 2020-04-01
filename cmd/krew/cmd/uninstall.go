@@ -55,7 +55,7 @@ Remarks:
 	Aliases: []string{"remove"},
 }
 
-func unsafePluginNameErr(n string) error { return fmt.Errorf("plugin name %q not allowed", n) }
+func unsafePluginNameErr(n string) error { return errors.Errorf("plugin name %q not allowed", n) }
 
 func init() {
 	rootCmd.AddCommand(uninstallCmd)
