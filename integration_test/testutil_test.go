@@ -221,12 +221,10 @@ func (it *ITest) Run() ([]byte, error) {
 	cmd.Stderr = &b
 
 	start := time.Now()
-	if err := cmd.Run(); err != nil {
-		out := b.Bytes()
-		return out, errors.Wrapf(err, "krew %v: %v, %s", it.args, err, string(out))
-	}
+	err := cmd.Run()
+	out := b.Bytes()
 	it.t.Log("Ran in", time.Since(start))
-	return b.Bytes(), nil
+	return out, errors.Wrapf(err, "krew %v: %v, %s", it.args, err, string(out))
 }
 
 // RunOrFail runs the krew command and fails the test if the command returns an error.
