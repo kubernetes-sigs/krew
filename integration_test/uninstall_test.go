@@ -31,17 +31,17 @@ func TestKrewUninstall(t *testing.T) {
 
 	test = test.WithIndex()
 
-	if err := test.Krew("uninstall").Run(); err == nil {
+	if _, err := test.Krew("uninstall").Run(); err == nil {
 		t.Fatal("expected failure without no arguments")
 	}
-	if err := test.Krew("uninstall", validPlugin).Run(); err == nil {
+	if _, err := test.Krew("uninstall", validPlugin).Run(); err == nil {
 		t.Fatal("expected failure deleting non-installed plugin")
 	}
 	test.Krew("install", validPlugin).RunOrFailOutput()
 	test.Krew("uninstall", validPlugin).RunOrFailOutput()
 	test.AssertExecutableNotInPATH("kubectl-" + validPlugin)
 
-	if err := test.Krew("uninstall", validPlugin).Run(); err == nil {
+	if _, err := test.Krew("uninstall", validPlugin).Run(); err == nil {
 		t.Fatal("expected failure for uninstalled plugin")
 	}
 }

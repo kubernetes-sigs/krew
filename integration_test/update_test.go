@@ -44,7 +44,7 @@ func TestKrewUpdate(t *testing.T) {
 		t.Errorf("Less than %d plugins found, `krew update` most likely failed unless TestKrewSearchAll also failed", len(plugins)-1)
 	}
 
-	if err := test.Krew("update").Run(); err != nil {
+	if _, err := test.Krew("update").Run(); err != nil {
 		t.Fatal("re-run of 'update' must succeed")
 	}
 }

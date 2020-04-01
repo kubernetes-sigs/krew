@@ -205,33 +205,9 @@ func (it *ITest) WithStdin(r io.Reader) *ITest {
 	return it
 }
 
-// RunOrFail runs the krew command and fails the test if the command returns an error.
-func (it *ITest) RunOrFail() {
-	it.t.Helper()
-	if err := it.Run(); err != nil {
-		it.t.Fatal(err)
-	}
-}
-
-// Run runs the krew command.
-func (it *ITest) Run() error {
-	it.t.Helper()
-
-	cmd := it.cmd(context.Background())
-	it.t.Log(cmd.Args)
-
-	start := time.Now()
-	if err := cmd.Run(); err != nil {
-		return errors.Wrapf(err, "krew %v", it.args)
-	}
-
-	it.t.Log("Ran in", time.Since(start))
-	return nil
-}
-
-// RunOrFailOutput runs the krew command and fails the test if the command
-// returns an error. It only returns the standard output.
-func (it *ITest) RunOrFailOutput() []byte {
+// Run runs the krew command, and returns its combined output even when
+// it fails.
+func (it *ITest) Run() ([]byte, error) {
 	it.t.Helper()
 
 	cmd := it.cmd(context.Background())
@@ -240,13 +216,35 @@ func (it *ITest) RunOrFailOutput() []byte {
 	}
 	it.t.Log(cmd.Args)
 
-	start := time.Now()
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		it.t.Fatalf("krew %v: %v, %s", it.args, err, out)
-	}
+	var b bytes.Buffer
+	cmd.Stdout = &b
+	cmd.Stderr = &b
 
+	start := time.Now()
+	if err := cmd.Run(); err != nil {
+		out := b.Bytes()
+		return out, errors.Wrapf(err, "krew %v: %v, %s", it.args, err, string(out))
+	}
 	it.t.Log("Ran in", time.Since(start))
+	return b.Bytes(), nil
+}
+
+// RunOrFail runs the krew command and fails the test if the command returns an error.
+func (it *ITest) RunOrFail() {
+	it.t.Helper()
+	if _, err := it.Run(); err != nil {
+		it.t.Fatal(err)
+	}
+}
+
+// RunOrFailOutput runs the krew command and fails the test if the command
+// returns an error. It only returns the standard output.
+func (it *ITest) RunOrFailOutput() []byte {
+	it.t.Helper()
+	out, err := it.Run()
+	if err != nil {
+		it.t.Fatal(err)
+	}
 	return out
 }
 

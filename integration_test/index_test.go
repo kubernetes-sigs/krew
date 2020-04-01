@@ -28,19 +28,19 @@ func TestKrewIndexAdd(t *testing.T) {
 	defer cleanup()
 
 	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
-	if err := test.Krew("index", "add").Run(); err == nil {
+	if _, err := test.Krew("index", "add").Run(); err == nil {
 		t.Fatal("expected index add with no args to fail")
 	}
-	if err := test.Krew("index", "add", "foo", "https://invalid").Run(); err == nil {
+	if _, err := test.Krew("index", "add", "foo", "https://invalid").Run(); err == nil {
 		t.Fatal("expected index add with invalid URL to fail")
 	}
 	if err := test.Krew("index", "add", "../../usr/bin", constants.IndexURI); err == nil {
 		t.Fatal("expected index add with path characters to fail")
 	}
-	if err := test.Krew("index", "add", "foo", test.TempDir().Path("index/"+constants.DefaultIndexName)).Run(); err != nil {
+	if _, err := test.Krew("index", "add", "foo", test.TempDir().Path("index/"+constants.DefaultIndexName)).Run(); err != nil {
 		t.Fatalf("error adding new index: %v", err)
 	}
-	if err := test.Krew("index", "add", "foo", test.TempDir().Path("index/"+constants.DefaultIndexName)).Run(); err == nil {
+	if _, err := test.Krew("index", "add", "foo", test.TempDir().Path("index/"+constants.DefaultIndexName)).Run(); err == nil {
 		t.Fatal("expected adding same index to fail")
 	}
 }
@@ -92,7 +92,7 @@ func TestKrewIndexRemove_nonExisting(t *testing.T) {
 	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1)
 	defer cleanup()
 
-	err := test.Krew("index", "remove", "non-existing").Run()
+	_, err := test.Krew("index", "remove", "non-existing").Run()
 	if err == nil {
 		t.Fatal("expected error")
 	}
@@ -116,7 +116,7 @@ func TestKrewIndexRemoveFailsWhenPluginsInstalled(t *testing.T) {
 	defer cleanup()
 
 	test.Krew("install", validPlugin).RunOrFailOutput()
-	if err := test.Krew("index", "remove", "default").Run(); err == nil {
+	if _, err := test.Krew("index", "remove", "default").Run(); err == nil {
 		t.Fatal("expected error while removing index when there are installed plugins")
 	}
 

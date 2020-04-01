@@ -69,7 +69,7 @@ func TestKrewUpgradeWhenPlatformNoLongerMatches(t *testing.T) {
 	}
 
 	// if upgrading a specific plugin, it must fail, because no longer matching to a platform
-	err := test.Krew("upgrade", validPlugin, "--no-update-index").Run()
+	_, err := test.Krew("upgrade", validPlugin, "--no-update-index").Run()
 	if err == nil {
 		t.Fatal("expected failure when upgraded a specific plugin that no longer has a matching platform")
 	}
@@ -97,7 +97,7 @@ func TestKrewUpgrade_ValidPluginInstalledFromManifest(t *testing.T) {
 	}
 
 	// if upgrading a specific plugin, it must fail, because it's not included into index
-	err := test.Krew("upgrade", validPlugin, "--no-update-index").Run()
+	_, err := test.Krew("upgrade", validPlugin, "--no-update-index").Run()
 	if err == nil {
 		t.Fatal("expected failure when upgraded a specific plugin that is not included in index")
 	}
