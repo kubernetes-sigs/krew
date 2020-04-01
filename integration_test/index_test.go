@@ -16,6 +16,7 @@ package integrationtest
 
 import (
 	"os"
+	"strings"
 	"testing"
 
 	"sigs.k8s.io/krew/pkg/constants"
@@ -42,6 +43,25 @@ func TestKrewIndexAdd(t *testing.T) {
 	}
 	if _, err := test.Krew("index", "add", "foo", test.TempDir().Path("index/"+constants.DefaultIndexName)).Run(); err == nil {
 		t.Fatal("expected adding same index to fail")
+	}
+}
+
+func TestKrewIndexAddUnsafe(t *testing.T) {
+	skipShort(t)
+	test, cleanup := NewTest(t)
+	defer cleanup()
+	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+
+	cases := []string{"a/b", `a\b`, "../a", `..\a`}
+	expected := "invalid index name"
+
+	for _, c := range cases {
+		b, err := test.Krew("index", "add", c, constants.IndexURI).Run()
+		if err == nil {
+			t.Fatalf("%q: expected error", c)
+		} else if !strings.Contains(string(b), expected) {
+			t.Fatalf("%q: output doesn't contain %q: %q", c, expected, string(b))
+		}
 	}
 }
 
@@ -107,6 +127,24 @@ func TestKrewIndexRemove_ok(t *testing.T) {
 	localIndex := test.TempDir().Path("index/" + constants.DefaultIndexName)
 	test.Krew("index", "add", "foo", localIndex).RunOrFail()
 	test.Krew("index", "remove", "foo").RunOrFail()
+}
+
+func TestKrewIndexRemove_unsafe(t *testing.T) {
+	skipShort(t)
+	test, cleanup := NewTest(t)
+	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+	defer cleanup()
+
+	expected := "invalid index name"
+	cases := []string{"a/b", `a\b`, "../a", `..\a`}
+	for _, c := range cases {
+		b, err := test.Krew("index", "add", c, constants.IndexURI).Run()
+		if err == nil {
+			t.Fatalf("%q: expected error", c)
+		} else if !strings.Contains(string(b), expected) {
+			t.Fatalf("%q: output doesn't contain %q: %q", c, expected, string(b))
+		}
+	}
 }
 
 func TestKrewIndexRemoveFailsWhenPluginsInstalled(t *testing.T) {

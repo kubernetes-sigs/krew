@@ -182,6 +182,11 @@ func TestIsValidIndexName(t *testing.T) {
 			want:  false,
 		},
 		{
+			name:  "relative path",
+			index: "../foo",
+			want:  false,
+		},
+		{
 			name:  "with back slash",
 			index: "foo\\bar",
 			want:  false,

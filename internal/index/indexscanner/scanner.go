@@ -75,10 +75,6 @@ func LoadPluginListFromFS(indexDir string) ([]index.Plugin, error) {
 // LoadPluginByName loads a plugins index file by its name. When plugin
 // file not found, it returns an error that can be checked with os.IsNotExist.
 func LoadPluginByName(pluginsDir, pluginName string) (index.Plugin, error) {
-	if !validation.IsSafePluginName(pluginName) {
-		return index.Plugin{}, errors.Errorf("plugin name %q not allowed", pluginName)
-	}
-
 	klog.V(4).Infof("Reading plugin %q from %s", pluginName, pluginsDir)
 	return ReadPluginFromFile(filepath.Join(pluginsDir, pluginName+constants.ManifestExtension))
 }

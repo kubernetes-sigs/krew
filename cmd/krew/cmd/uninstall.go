@@ -22,6 +22,7 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/klog"
 
+	"sigs.k8s.io/krew/internal/index/validation"
 	"sigs.k8s.io/krew/internal/installation"
 )
 
@@ -38,6 +39,9 @@ Remarks:
   Failure to uninstall a plugin will result in an error and exit immediately.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		for _, name := range args {
+			if !validation.IsSafePluginName(name) {
+				return unsafePluginNameErr(name)
+			}
 			klog.V(4).Infof("Going to uninstall plugin %s\n", name)
 			if err := installation.Uninstall(paths, name); err != nil {
 				return errors.Wrapf(err, "failed to uninstall plugin %s", name)
@@ -50,6 +54,8 @@ Remarks:
 	Args:    cobra.MinimumNArgs(1),
 	Aliases: []string{"remove"},
 }
+
+func unsafePluginNameErr(n string) error { return fmt.Errorf("plugin name %q not allowed", n) }
 
 func init() {
 	rootCmd.AddCommand(uninstallCmd)
