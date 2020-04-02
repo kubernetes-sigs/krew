@@ -17,6 +17,21 @@ git clone https://github.com/kubernetes-sigs/krew .
 git remote set-url origin --push no_push   # to avoid pushes
 ```
 
+### Using macOS for development
+
+The tools provided in the `hack` folder expect you to use GNU binaries, the easiest way to install them is to use brew
+
+```bash
+brew install coreutils grep gnu-sed
+```
+And remember to add them to your `$PATH` to make them your default binaries
+
+```bash
+export PATH=$(brew --prefix coreutils)/libexec/gnubin:$PATH
+export PATH="$(brew --prefix grep)/libexec/gnubin:$PATH"
+export PATH="$(brew --prefix gnu-sed)/libexec/gnubin:$PATH"
+```
+
 ## Code style
 
 Krew adheres to standard `golang` code formatting conventions, and also expects
