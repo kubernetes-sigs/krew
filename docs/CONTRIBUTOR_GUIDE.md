@@ -17,16 +17,12 @@ git clone https://github.com/kubernetes-sigs/krew .
 git remote set-url origin --push no_push   # to avoid pushes
 ```
 
-### Mac specific requirements
+### Using macOS for development
 
-The tools provided in the `hack` folder expect you to use GNU binaries.
-
-The easiest way to install them is to use brew
+The tools provided in the `hack` folder expect you to use GNU binaries, the easiest way to install them is to use brew
 
 ```bash
-brew install coreutils
-brew install grep
-brew intall gnu-sed
+brew install coreutils grep gnu-sed
 ```
 And remember to add them to your `$PATH` to make them your default binaries
 
