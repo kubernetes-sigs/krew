@@ -67,7 +67,7 @@ var indexAddCmd = &cobra.Command{
 	Use:     "add",
 	Short:   "Add a new index",
 	Long:    "Configure a new index to install plugins from.",
-	Example: "kubectl krew index add default " + constants.IndexURI,
+	Example: "kubectl krew index add default " + constants.DefaultIndexURI,
 	Args:    cobra.ExactArgs(2),
 	RunE: func(_ *cobra.Command, args []string) error {
 		return indexoperations.AddIndex(paths, args[0], args[1])

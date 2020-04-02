@@ -33,7 +33,7 @@ var versionCmd = &cobra.Command{
 Remarks:
   - GitTag describes the release name krew is built from.
   - GitCommit describes the git revision ID which krew is built from.
-  - IndexURI is the URI where the index is updated from.
+  - DefaultIndexURI is the URI where the index is updated from.
   - BasePath is the root directory for krew installation.
   - IndexPath is the directory that stores the local copy of the index git repository.
   - InstallPath is the directory for plugin installations.
@@ -42,7 +42,7 @@ Remarks:
 		conf := [][]string{
 			{"GitTag", version.GitTag()},
 			{"GitCommit", version.GitCommit()},
-			{"IndexURI", constants.IndexURI},
+			{"IndexURI", constants.DefaultIndexURI},
 			{"BasePath", paths.BasePath()},
 			{"IndexPath", paths.IndexPath(constants.DefaultIndexName)},
 			{"InstallPath", paths.InstallPath()},

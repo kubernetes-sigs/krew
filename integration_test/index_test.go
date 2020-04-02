@@ -34,7 +34,7 @@ func TestKrewIndexAdd(t *testing.T) {
 	if err := test.Krew("index", "add", "foo", "https://invalid").Run(); err == nil {
 		t.Fatal("expected index add with invalid URL to fail")
 	}
-	if err := test.Krew("index", "add", "../../usr/bin", constants.IndexURI); err == nil {
+	if err := test.Krew("index", "add", "../../usr/bin", constants.DefaultIndexURI); err == nil {
 		t.Fatal("expected index add with path characters to fail")
 	}
 	if err := test.Krew("index", "add", "foo", test.TempDir().Path("index/"+constants.DefaultIndexName)).Run(); err != nil {
