@@ -41,7 +41,7 @@ func TestKrewInfoInvalidPlugin(t *testing.T) {
 	defer cleanup()
 
 	plugin := "invalid-plugin"
-	err := test.WithIndex().Krew("info", plugin).Run()
+	_, err := test.WithIndex().Krew("info", plugin).Run()
 	if err == nil {
 		t.Errorf("Expected `krew info %s` to fail", plugin)
 	}

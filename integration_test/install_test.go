@@ -119,7 +119,7 @@ func TestKrewInstall_CustomIndex(t *testing.T) {
 	test.AssertExecutableInPATH("kubectl-" + validPlugin)
 	test.AssertPluginFromIndex(validPlugin, "foo")
 
-	if err := test.Krew("install", "invalid/"+validPlugin2).Run(); err == nil {
+	if _, err := test.Krew("install", "invalid/"+validPlugin2).Run(); err == nil {
 		t.Fatal("expected install from invalid index to fail")
 	}
 	test.AssertExecutableNotInPATH("kubectl-" + validPlugin2)
@@ -173,7 +173,7 @@ func TestKrewInstall_OnlyArchive(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	err := test.Krew("install",
+	_, err := test.Krew("install",
 		"--archive", filepath.Join("testdata", fooPlugin+".tar.gz")).
 		Run()
 	if err == nil {
@@ -189,7 +189,7 @@ func TestKrewInstall_ManifestArgsAreMutuallyExclusive(t *testing.T) {
 	srv, shutdown := localTestServer()
 	defer shutdown()
 
-	if err := test.Krew("install",
+	if _, err := test.Krew("install",
 		"--manifest", filepath.Join("testdata", fooPlugin+constants.ManifestExtension),
 		"--manifest-url", srv+"/"+validPlugin+constants.ManifestExtension).
 		Run(); err == nil {
@@ -203,7 +203,7 @@ func TestKrewInstall_NoManifestArgsWhenPositionalArgsSpecified(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	err := test.Krew("install", validPlugin,
+	_, err := test.Krew("install", validPlugin,
 		"--manifest", filepath.Join("testdata", fooPlugin+constants.ManifestExtension),
 		"--archive", filepath.Join("testdata", fooPlugin+".tar.gz")).
 		Run()
@@ -211,7 +211,7 @@ func TestKrewInstall_NoManifestArgsWhenPositionalArgsSpecified(t *testing.T) {
 		t.Fatal("expected failure when positional args and --manifest specified")
 	}
 
-	err = test.Krew("install", validPlugin,
+	_, err = test.Krew("install", validPlugin,
 		"--manifest-url", filepath.Join("testdata", fooPlugin+constants.ManifestExtension)).Run()
 	if err == nil {
 		t.Fatal("expected failure when positional args and --manifest-url specified")

@@ -22,7 +22,7 @@ func TestUnknownCommand(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	if err := test.Krew("foobar").Run(); err == nil {
+	if _, err := test.Krew("foobar").Run(); err == nil {
 		t.Errorf("Expected `krew foobar` to fail")
 	}
 }
