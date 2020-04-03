@@ -98,11 +98,11 @@ Remarks:
 
 			var install []pluginEntry
 			for _, name := range pluginNames {
-				if !validation.IsSafePluginName(name) {
-					return unsafePluginNameErr(name)
+				indexName, pluginName := pathutil.CanonicalPluginName(name)
+				if !validation.IsSafePluginName(pluginName) {
+					return unsafePluginNameErr(pluginName)
 				}
 
-				indexName, pluginName := pathutil.CanonicalPluginName(name)
 				plugin, err := indexscanner.LoadPluginByName(paths.IndexPluginsPath(indexName), pluginName)
 				if err != nil {
 					if os.IsNotExist(err) {
