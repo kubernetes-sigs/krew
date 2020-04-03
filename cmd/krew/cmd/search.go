@@ -71,41 +71,32 @@ Examples:
 			}
 		}
 
-		keys := func(v map[string]pluginEntry) []string {
-			out := make([]string, 0, len(v))
-			for k := range v {
-				out = append(out, k)
-			}
-			return out
+		pluginCanonicalNames := make([]string, len(plugins))
+		pluginCanonicalNameMap := make(map[string]pluginEntry, len(plugins))
+		for i, p := range plugins {
+			cn := canonicalName(p.p, p.indexName)
+			pluginCanonicalNames[i] = cn
+			pluginCanonicalNameMap[cn] = p
 		}
 
-		pluginMap := make(map[string]pluginEntry, len(plugins))
-		for _, p := range plugins {
-			pluginMap[canonicalName(p.p, p.indexName)] = p
-		}
-
-		installed := make(map[string]string)
+		installed := make(map[string]bool)
 		receipts, err := installation.GetInstalledPluginReceipts(paths.InstallReceiptsPath())
 		if err != nil {
 			return errors.Wrap(err, "failed to load installed plugins")
 		}
 		for _, receipt := range receipts {
-			index := receipt.Status.Source.Name
-			if index == "" {
-				index = constants.DefaultIndexName
-			}
-			installed[receipt.Name] = index
+			cn := canonicalName(receipt.Plugin, indexOf(receipt))
+			installed[cn] = true
 		}
 
-		corpus := keys(pluginMap)
 		var searchResults []string
 		if len(args) > 0 {
-			matches := fuzzy.Find(strings.Join(args, ""), corpus)
+			matches := fuzzy.Find(strings.Join(args, ""), pluginCanonicalNames)
 			for _, m := range matches {
 				searchResults = append(searchResults, m.Str)
 			}
 		} else {
-			searchResults = corpus
+			searchResults = pluginCanonicalNames
 		}
 
 		// No plugins found
@@ -115,13 +106,13 @@ Examples:
 
 		var rows [][]string
 		cols := []string{"NAME", "DESCRIPTION", "INSTALLED"}
-		for _, name := range searchResults {
-			v := pluginMap[name]
+		for _, canonicalName := range searchResults {
+			v := pluginCanonicalNameMap[canonicalName]
 			var status string
-			if index := installed[v.p.Name]; index == v.indexName {
+			if installed[canonicalName] {
 				status = "yes"
 			} else if _, ok, err := installation.GetMatchingPlatform(v.p.Spec.Platforms); err != nil {
-				return errors.Wrapf(err, "failed to get the matching platform for plugin %s", name)
+				return errors.Wrapf(err, "failed to get the matching platform for plugin %s", canonicalName)
 			} else if ok {
 				status = "no"
 			} else {
