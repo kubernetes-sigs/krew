@@ -50,6 +50,31 @@ func TestKrewUpgrade(t *testing.T) {
 	}
 }
 
+func TestKrewUpgradeUnsafe(t *testing.T) {
+	skipShort(t)
+	test, cleanup := NewTest(t)
+	defer cleanup()
+	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+
+	cases := []string{
+		`../index/` + validPlugin,
+		`..\index\` + validPlugin,
+		`../default/` + validPlugin,
+		`..\default\` + validPlugin,
+		`index-name/sub-directory/plugin-name`,
+	}
+
+	expectedErr := `not allowed`
+	for _, c := range cases {
+		b, err := test.Krew("upgrade", c).Run()
+		if err == nil {
+			t.Fatalf("%q expected failure", c)
+		} else if !strings.Contains(string(b), expectedErr) {
+			t.Fatalf("%q does not contain err %q: %q", c, expectedErr, string(b))
+		}
+	}
+}
+
 func TestKrewUpgradeWhenPlatformNoLongerMatches(t *testing.T) {
 	skipShort(t)
 

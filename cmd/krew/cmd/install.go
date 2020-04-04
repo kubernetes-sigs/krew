@@ -26,6 +26,7 @@ import (
 
 	"sigs.k8s.io/krew/cmd/krew/cmd/internal"
 	"sigs.k8s.io/krew/internal/index/indexscanner"
+	"sigs.k8s.io/krew/internal/index/validation"
 	"sigs.k8s.io/krew/internal/installation"
 	"sigs.k8s.io/krew/internal/pathutil"
 	"sigs.k8s.io/krew/pkg/index"
@@ -98,6 +99,10 @@ Remarks:
 			var install []pluginEntry
 			for _, name := range pluginNames {
 				indexName, pluginName := pathutil.CanonicalPluginName(name)
+				if !validation.IsSafePluginName(pluginName) {
+					return unsafePluginNameErr(pluginName)
+				}
+
 				plugin, err := indexscanner.LoadPluginByName(paths.IndexPluginsPath(indexName), pluginName)
 				if err != nil {
 					if os.IsNotExist(err) {

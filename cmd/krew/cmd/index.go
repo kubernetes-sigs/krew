@@ -29,7 +29,8 @@ import (
 )
 
 var (
-	forceIndexDelete *bool
+	forceIndexDelete    *bool
+	errInvalidIndexName = errors.New("invalid index name")
 )
 
 // indexCmd represents the index command
@@ -70,7 +71,11 @@ var indexAddCmd = &cobra.Command{
 	Example: "kubectl krew index add default " + constants.IndexURI,
 	Args:    cobra.ExactArgs(2),
 	RunE: func(_ *cobra.Command, args []string) error {
-		return indexoperations.AddIndex(paths, args[0], args[1])
+		name := args[0]
+		if !indexoperations.IsValidIndexName(name) {
+			return errInvalidIndexName
+		}
+		return indexoperations.AddIndex(paths, name, args[1])
 	},
 }
 
@@ -89,6 +94,9 @@ option is used ( not recommended).`,
 
 func indexDelete(_ *cobra.Command, args []string) error {
 	name := args[0]
+	if !indexoperations.IsValidIndexName(name) {
+		return errInvalidIndexName
+	}
 
 	ps, err := installation.InstalledPluginsFromIndex(paths.InstallReceiptsPath(), name)
 	if err != nil {

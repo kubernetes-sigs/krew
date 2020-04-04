@@ -17,6 +17,7 @@ package integrationtest
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"sigs.k8s.io/krew/internal/environment"
@@ -74,4 +75,31 @@ func TestKrewRemove_ManifestRemovedFromIndex(t *testing.T) {
 		t.Fatalf("failed to remove local manifest file: %v", err)
 	}
 	test.Krew("remove", validPlugin).RunOrFail()
+}
+
+func TestKrewRemove_Unsafe(t *testing.T) {
+	skipShort(t)
+	test, cleanup := NewTest(t)
+	defer cleanup()
+	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+	test.Krew("install", validPlugin).RunOrFailOutput()
+
+	cases := []string{
+		`../index/` + validPlugin,
+		`..\index\` + validPlugin,
+		`../default/` + validPlugin,
+		`..\default\` + validPlugin,
+		`../receipts/` + validPlugin,
+		`..\receipts\` + validPlugin,
+		`default/subdir/plugin-name`,
+	}
+	expectedErr := `not allowed`
+	for _, c := range cases {
+		b, err := test.Krew("uninstall", c).Run()
+		if err == nil {
+			t.Fatalf("%q expected failure", c)
+		} else if !strings.Contains(string(b), expectedErr) {
+			t.Fatalf("%q does not contain err %q: %q", c, expectedErr, string(b))
+		}
+	}
 }

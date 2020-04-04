@@ -59,10 +59,6 @@ func ListIndexes(paths environment.Paths) ([]Index, error) {
 
 // AddIndex initializes a new index to install plugins from.
 func AddIndex(paths environment.Paths, name, url string) error {
-	if !IsValidIndexName(name) {
-		return errors.New("invalid index name")
-	}
-
 	dir := paths.IndexPath(name)
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		return gitutil.EnsureCloned(url, dir)
@@ -74,14 +70,11 @@ func AddIndex(paths environment.Paths, name, url string) error {
 
 // DeleteIndex removes specified index name. If index does not exist, returns an error that can be tested by os.IsNotExist.
 func DeleteIndex(paths environment.Paths, name string) error {
-	if !IsValidIndexName(name) {
-		return errors.New("invalid index name")
-	}
-
 	dir := paths.IndexPath(name)
 	if _, err := os.Stat(dir); err != nil {
 		return err
 	}
+
 	return os.RemoveAll(dir)
 }
 
