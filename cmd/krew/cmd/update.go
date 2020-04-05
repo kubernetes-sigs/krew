@@ -106,7 +106,7 @@ func ensureIndexUpdated(_ *cobra.Command, _ []string) error {
 	preUpdateIndex, _ := indexscanner.LoadPluginListFromFS(paths.IndexPluginsPath(constants.DefaultIndexName))
 
 	klog.V(1).Infof("Updating the local copy of plugin index (%s)", paths.IndexPath(constants.DefaultIndexName))
-	if err := gitutil.EnsureUpdated(constants.IndexURI, paths.IndexPath(constants.DefaultIndexName)); err != nil {
+	if err := gitutil.EnsureUpdated(constants.DefaultIndexURI, paths.IndexPath(constants.DefaultIndexName)); err != nil {
 		return errors.Wrap(err, "failed to update the local index")
 	}
 	fmt.Fprintln(os.Stderr, "Updated the local copy of plugin index.")

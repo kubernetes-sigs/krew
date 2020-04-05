@@ -314,7 +314,7 @@ func initFromGitClone(t *testing.T) ([]byte, error) {
 	defer cleanup()
 	indexRoot := indexDir.Root()
 
-	cmd := exec.Command("git", "clone", "--depth=1", "--single-branch", "--no-tags", constants.IndexURI)
+	cmd := exec.Command("git", "clone", "--depth=1", "--single-branch", "--no-tags", constants.DefaultIndexURI)
 	cmd.Dir = indexRoot
 	if err := cmd.Run(); err != nil {
 		return nil, err
