@@ -15,10 +15,13 @@
 package cmd
 
 import (
+	"os"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 
+	"sigs.k8s.io/krew/internal/environment"
+	"sigs.k8s.io/krew/internal/index/indexoperations"
 	"sigs.k8s.io/krew/internal/testutil"
 	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/index"
@@ -110,5 +113,52 @@ func Test_canonicalName(t *testing.T) {
 	p3 := testutil.NewPlugin().WithName("quux").V()
 	if expected, got := "custom/quux", canonicalName(p3, "custom"); got != expected {
 		t.Errorf("expected=%q; got=%q", expected, got)
+	}
+}
+
+func Test_allIndexes(t *testing.T) {
+	tmpDir, cleanup := testutil.NewTempDir(t)
+	defer cleanup()
+	paths := environment.NewPaths(tmpDir.Root())
+
+	expected := []indexoperations.Index{
+		{
+			Name: constants.DefaultIndexName,
+			URL:  constants.DefaultIndexURI,
+		},
+	}
+	actual, err := allIndexes(paths)
+	if err != nil {
+		t.Errorf("unexpected error getting indexes: %s", err)
+	}
+	if diff := cmp.Diff(expected, actual); diff != "" {
+		t.Errorf("got diffent output: %s", diff)
+	}
+
+	os.Setenv(constants.EnableMultiIndexSwitch, "1")
+	defer os.Unsetenv(constants.EnableMultiIndexSwitch)
+
+	expected = []indexoperations.Index{
+		{
+			Name: "custom",
+			URL:  "https://github.com/custom/index.git",
+		},
+		{
+			Name: "foo",
+			URL:  "https://github.com/foo/index.git",
+		},
+	}
+
+	for _, index := range expected {
+		path := paths.IndexPath(index.Name)
+		tmpDir.InitEmptyGitRepo(path, index.URL)
+	}
+
+	actual, err = allIndexes(paths)
+	if err != nil {
+		t.Errorf("unexpected error getting indexes: %s", err)
+	}
+	if diff := cmp.Diff(expected, actual); diff != "" {
+		t.Errorf("got diffent output: %s", diff)
 	}
 }

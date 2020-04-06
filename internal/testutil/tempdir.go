@@ -22,6 +22,7 @@ import (
 	"strings"
 	"testing"
 
+	"sigs.k8s.io/krew/internal/gitutil"
 	"sigs.k8s.io/yaml"
 )
 
@@ -82,4 +83,18 @@ func (td *TempDir) WriteYAML(file string, obj interface{}) *TempDir {
 		td.t.Fatalf("cannot marshal obj: %s", err)
 	}
 	return td.Write(file, content)
+}
+
+func (td *TempDir) InitEmptyGitRepo(path, url string) {
+	td.t.Helper()
+
+	if err := os.MkdirAll(path, os.ModePerm); err != nil {
+		td.t.Fatalf("cannot create directory %q: %s", filepath.Dir(path), err)
+	}
+	if _, err := gitutil.Exec(path, "init"); err != nil {
+		td.t.Fatalf("error initializing git repo: %s", err)
+	}
+	if _, err := gitutil.Exec(path, "remote", "add", "origin", url); err != nil {
+		td.t.Fatalf("error setting remote origin: %s", err)
+	}
 }

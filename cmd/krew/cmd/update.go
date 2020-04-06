@@ -105,9 +105,16 @@ func showUpdatedPlugins(out io.Writer, preUpdate, posUpdate []index.Plugin, inst
 func ensureIndexUpdated(_ *cobra.Command, _ []string) error {
 	preUpdateIndex, _ := indexscanner.LoadPluginListFromFS(paths.IndexPluginsPath(constants.DefaultIndexName))
 
-	klog.V(1).Infof("Updating the local copy of plugin index (%s)", paths.IndexPath(constants.DefaultIndexName))
-	if err := gitutil.EnsureUpdated(constants.DefaultIndexURI, paths.IndexPath(constants.DefaultIndexName)); err != nil {
-		return errors.Wrap(err, "failed to update the local index")
+	indexes, err := allIndexes(paths)
+	if err != nil {
+		return err
+	}
+	for _, idx := range indexes {
+		indexPath := paths.IndexPath(idx.Name)
+		klog.V(1).Infof("Updating the local copy of plugin index (%s)", indexPath)
+		if err := gitutil.EnsureUpdated(idx.URL, indexPath); err != nil {
+			return errors.Wrapf(err, "failed to update the local index %s", idx.Name)
+		}
 	}
 	fmt.Fprintln(os.Stderr, "Updated the local copy of plugin index.")
 

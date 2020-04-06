@@ -22,7 +22,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"sigs.k8s.io/krew/internal/environment"
-	"sigs.k8s.io/krew/internal/gitutil"
 	"sigs.k8s.io/krew/internal/testutil"
 	"sigs.k8s.io/krew/pkg/constants"
 )
@@ -49,7 +48,7 @@ func TestListIndexes(t *testing.T) {
 	paths := environment.NewPaths(tmpDir.Root())
 	for _, index := range wantIndexes {
 		path := paths.IndexPath(index.Name)
-		initEmptyGitRepo(t, path, index.URL)
+		tmpDir.InitEmptyGitRepo(path, index.URL)
 	}
 
 	gotIndexes, err := ListIndexes(paths)
@@ -71,7 +70,7 @@ func TestAddIndexSuccess(t *testing.T) {
 
 	indexName := "foo"
 	localRepo := tmpDir.Path("local/" + indexName)
-	initEmptyGitRepo(t, localRepo, "")
+	tmpDir.InitEmptyGitRepo(localRepo, "")
 
 	paths := environment.NewPaths(tmpDir.Root())
 	if err := AddIndex(paths, indexName, localRepo); err != nil {
@@ -107,8 +106,8 @@ func TestAddIndexFailure(t *testing.T) {
 	}
 
 	localRepo := tmpDir.Path("local/" + indexName)
-	initEmptyGitRepo(t, tmpDir.Path("index/"+indexName), "")
-	initEmptyGitRepo(t, localRepo, "")
+	tmpDir.InitEmptyGitRepo(tmpDir.Path("index/"+indexName), "")
+	tmpDir.InitEmptyGitRepo(localRepo, "")
 
 	if err := AddIndex(paths, indexName, localRepo); err == nil {
 		t.Error("expected error when adding an index that already exists")
@@ -148,20 +147,6 @@ func TestDeleteIndex(t *testing.T) {
 
 	if err := DeleteIndex(p, "some-index"); err != nil {
 		t.Fatalf("got error while deleting index: %v", err)
-	}
-}
-
-func initEmptyGitRepo(t *testing.T, path, url string) {
-	t.Helper()
-
-	if err := os.MkdirAll(path, os.ModePerm); err != nil {
-		t.Fatalf("cannot create directory %q: %s", filepath.Dir(path), err)
-	}
-	if _, err := gitutil.Exec(path, "init"); err != nil {
-		t.Fatalf("error initializing git repo: %s", err)
-	}
-	if _, err := gitutil.Exec(path, "remote", "add", "origin", url); err != nil {
-		t.Fatalf("error setting remote origin: %s", err)
 	}
 }
 

@@ -24,10 +24,8 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/klog"
 
-	"sigs.k8s.io/krew/internal/index/indexoperations"
 	"sigs.k8s.io/krew/internal/index/indexscanner"
 	"sigs.k8s.io/krew/internal/installation"
-	"sigs.k8s.io/krew/pkg/constants"
 )
 
 // searchCmd represents the search command
@@ -44,18 +42,9 @@ Examples:
   To fuzzy search plugins with a keyword:
     kubectl krew search KEYWORD`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		indexes := []indexoperations.Index{
-			{
-				Name: constants.DefaultIndexName,
-				URL:  constants.DefaultIndexURI, // unused here but providing for completeness
-			},
-		}
-		if os.Getenv(constants.EnableMultiIndexSwitch) != "" {
-			out, err := indexoperations.ListIndexes(paths)
-			if err != nil {
-				return errors.Wrapf(err, "failed to list plugin indexes available")
-			}
-			indexes = out
+		indexes, err := allIndexes(paths)
+		if err != nil {
+			return err
 		}
 
 		klog.V(3).Infof("found %d indexes", len(indexes))
