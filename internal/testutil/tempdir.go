@@ -22,8 +22,9 @@ import (
 	"strings"
 	"testing"
 
-	"sigs.k8s.io/krew/internal/gitutil"
 	"sigs.k8s.io/yaml"
+
+	"sigs.k8s.io/krew/internal/gitutil"
 )
 
 type TempDir struct {
