@@ -134,11 +134,17 @@ func Test_allIndexes(t *testing.T) {
 	if diff := cmp.Diff(expected, actual); diff != "" {
 		t.Errorf("got diffent output: %s", diff)
 	}
+}
 
+func Test_allIndexes_withMultiIndex(t *testing.T) {
 	os.Setenv(constants.EnableMultiIndexSwitch, "1")
 	defer os.Unsetenv(constants.EnableMultiIndexSwitch)
 
-	expected = []indexoperations.Index{
+	tmpDir, cleanup := testutil.NewTempDir(t)
+	defer cleanup()
+	paths := environment.NewPaths(tmpDir.Root())
+
+	expected := []indexoperations.Index{
 		{
 			Name: "custom",
 			URL:  "https://github.com/custom/index.git",
@@ -154,7 +160,7 @@ func Test_allIndexes(t *testing.T) {
 		tmpDir.InitEmptyGitRepo(path, index.URL)
 	}
 
-	actual, err = allIndexes(paths)
+	actual, err := allIndexes(paths)
 	if err != nil {
 		t.Errorf("unexpected error getting indexes: %s", err)
 	}
