@@ -47,7 +47,7 @@ Examples:
 		indexes := []indexoperations.Index{
 			{
 				Name: constants.DefaultIndexName,
-				URL:  constants.IndexURI, // unused here but providing for completeness
+				URL:  constants.DefaultIndexURI, // unused here but providing for completeness
 			},
 		}
 		if os.Getenv(constants.EnableMultiIndexSwitch) != "" {

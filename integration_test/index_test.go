@@ -56,7 +56,7 @@ func TestKrewIndexAddUnsafe(t *testing.T) {
 	expected := "invalid index name"
 
 	for _, c := range cases {
-		b, err := test.Krew("index", "add", c, constants.IndexURI).Run()
+		b, err := test.Krew("index", "add", c, constants.DefaultIndexURI).Run()
 		if err == nil {
 			t.Fatalf("%q: expected error", c)
 		} else if !strings.Contains(string(b), expected) {
