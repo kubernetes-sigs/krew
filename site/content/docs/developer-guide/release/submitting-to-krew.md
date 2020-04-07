@@ -16,16 +16,18 @@ existing plugins.
    "../develop/best-practices.md" >}}).
 1. Make sure your plugin’s source code is available as open source.
 1. Adopt an open source license, and add it to your plugin archive file.
+1. Make sure to extract the LICENSE file during the plugin installation.
 1. Tag a git release with a [semantic
-   version](https://semver.org) (e.g. `v1.0.0`)
+   version](https://semver.org) (e.g. `v1.0.0`).
 1. [Test plugin installation locally]({{< ref "../installing-locally.md" >}}).
 
 ## Submitting a plugin to krew-index
 
-Create a **pull request** to the [krew-index] repository with your plugin
-manifest (e.g. `example.yaml`) file to the `plugins/` directory.
+Once you followed the checklist above, create a **pull request** to the
+[krew-index] repository with your plugin manifest (e.g. `example.yaml`) file to
+the `plugins/` directory.
 
-After your pull request is merged, users can
-[install](../../user-guide/install.md) your plugin through Krew.
+After your pull request is merged, users can now find and [install]({{< ref
+"../../user-guide/install.md" >}}) your plugin through Krew.
 
 [krew-index]: https://sigs.k8s.io/krew-index
