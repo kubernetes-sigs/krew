@@ -45,7 +45,7 @@ Examples:
 	RunE: func(cmd *cobra.Command, args []string) error {
 		indexes, err := indexoperations.ListIndexes(paths)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "failed to list indexes")
 		}
 
 		klog.V(3).Infof("found %d indexes", len(indexes))
