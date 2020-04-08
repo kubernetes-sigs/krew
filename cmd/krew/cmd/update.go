@@ -19,12 +19,15 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
+	"sync"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"k8s.io/klog"
 
 	"sigs.k8s.io/krew/internal/gitutil"
+	"sigs.k8s.io/krew/internal/index/indexoperations"
 	"sigs.k8s.io/krew/internal/index/indexscanner"
 	"sigs.k8s.io/krew/internal/installation"
 	"sigs.k8s.io/krew/pkg/constants"
@@ -43,7 +46,7 @@ plugin index from the internet.
 Remarks:
   You don't need to run this command: Running "krew update" or "krew upgrade"
   will silently run this command.`,
-	RunE: ensureIndexUpdated,
+	RunE: ensureIndexesUpdated,
 }
 
 func showFormattedPluginsInfo(out io.Writer, header string, plugins []string) {
@@ -102,20 +105,38 @@ func showUpdatedPlugins(out io.Writer, preUpdate, posUpdate []index.Plugin, inst
 	}
 }
 
-func ensureIndexUpdated(_ *cobra.Command, _ []string) error {
+func ensureIndexesUpdated(_ *cobra.Command, _ []string) error {
 	preUpdateIndex, _ := indexscanner.LoadPluginListFromFS(paths.IndexPluginsPath(constants.DefaultIndexName))
 
-	indexes, err := allIndexes(paths)
+	indexes, err := indexoperations.ListIndexes(paths)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to list indexes")
 	}
+
+	var wg sync.WaitGroup
+	c := make(chan string)
 	for _, idx := range indexes {
-		indexPath := paths.IndexPath(idx.Name)
-		klog.V(1).Infof("Updating the local copy of plugin index (%s)", indexPath)
-		if err := gitutil.EnsureUpdated(idx.URL, indexPath); err != nil {
-			return errors.Wrapf(err, "failed to update the local index %s", idx.Name)
-		}
+		wg.Add(1)
+		go func(idx indexoperations.Index, c chan<- string) {
+			defer wg.Done()
+			indexPath := paths.IndexPath(idx.Name)
+			klog.V(1).Infof("Updating the local copy of plugin index (%s)", indexPath)
+			if err := gitutil.EnsureUpdated(idx.URL, indexPath); err != nil {
+				c <- idx.Name
+			}
+		}(idx, c)
 	}
+	wg.Wait()
+	close(c)
+
+	failed := make([]string, len(c))
+	for failure := range c {
+		failed = append(failed, failure)
+	}
+	if len(failed) != 0 {
+		return errors.Errorf("failed to update the following indexes: %s\n", strings.Join(failed, ", "))
+	}
+
 	fmt.Fprintln(os.Stderr, "Updated the local copy of plugin index.")
 
 	if len(preUpdateIndex) == 0 {

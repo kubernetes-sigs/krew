@@ -23,6 +23,7 @@ import (
 
 	"sigs.k8s.io/krew/internal/environment"
 	"sigs.k8s.io/krew/internal/gitutil"
+	"sigs.k8s.io/krew/pkg/constants"
 )
 
 var validNamePattern = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
@@ -36,6 +37,15 @@ type Index struct {
 // ListIndexes returns a slice of Index objects. The path argument is used as
 // the base path of the index.
 func ListIndexes(paths environment.Paths) ([]Index, error) {
+	if _, ok := os.LookupEnv(constants.EnableMultiIndexSwitch); !ok {
+		return []Index{
+			{
+				Name: constants.DefaultIndexName,
+				URL:  constants.DefaultIndexURI,
+			},
+		}, nil
+	}
+
 	dirs, err := ioutil.ReadDir(paths.IndexBase())
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to list directory")

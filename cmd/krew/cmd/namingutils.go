@@ -15,12 +15,6 @@
 package cmd
 
 import (
-	"os"
-
-	"github.com/pkg/errors"
-
-	"sigs.k8s.io/krew/internal/environment"
-	"sigs.k8s.io/krew/internal/index/indexoperations"
 	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/index"
 )
@@ -53,24 +47,4 @@ func canonicalName(p index.Plugin, indexName string) string {
 		indexName = constants.DefaultIndexName
 	}
 	return indexName + "/" + p.Name
-}
-
-// allIndexes returns a slice of index name and URL pairs
-func allIndexes(p environment.Paths) ([]indexoperations.Index, error) {
-	indexes := []indexoperations.Index{
-		{
-			Name: constants.DefaultIndexName,
-			URL:  constants.DefaultIndexURI,
-		},
-	}
-	if os.Getenv(constants.EnableMultiIndexSwitch) != "" {
-		out, err := indexoperations.ListIndexes(p)
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to list plugin indexes available")
-		}
-		if len(out) != 0 {
-			indexes = out
-		}
-	}
-	return indexes, nil
 }
