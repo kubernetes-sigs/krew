@@ -20,7 +20,6 @@ import (
 	"io"
 	"os"
 	"strings"
-	"sync"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -113,28 +112,14 @@ func ensureIndexesUpdated(_ *cobra.Command, _ []string) error {
 		return errors.Wrap(err, "failed to list indexes")
 	}
 
-	var wg sync.WaitGroup
-	c := make(chan string)
+	var failed []string
 	for _, idx := range indexes {
-		wg.Add(1)
-		go func(idx indexoperations.Index, c chan<- string) {
-			defer wg.Done()
-			indexPath := paths.IndexPath(idx.Name)
-			klog.V(1).Infof("Updating the local copy of plugin index (%s)", indexPath)
-			if err := gitutil.EnsureUpdated(idx.URL, indexPath); err != nil {
-				c <- idx.Name
-			}
-		}(idx, c)
-	}
-	wg.Wait()
-	close(c)
-
-	failed := make([]string, len(c))
-	for failure := range c {
-		failed = append(failed, failure)
-	}
-	if len(failed) != 0 {
-		return errors.Errorf("failed to update the following indexes: %s\n", strings.Join(failed, ", "))
+		indexPath := paths.IndexPath(idx.Name)
+		klog.V(1).Infof("Updating the local copy of plugin index (%s)", indexPath)
+		if err := gitutil.EnsureUpdated(idx.URL, indexPath); err != nil {
+			klog.V(1).Infof("error updating index %s: %s", idx.Name, err)
+			failed = append(failed, idx.Name)
+		}
 	}
 
 	fmt.Fprintln(os.Stderr, "Updated the local copy of plugin index.")
@@ -160,6 +145,9 @@ func ensureIndexesUpdated(_ *cobra.Command, _ []string) error {
 	// TODO(chriskim06) consider commenting this out when refactoring for custom indexes
 	showUpdatedPlugins(os.Stderr, preUpdateIndex, posUpdateIndex, installedPlugins)
 
+	if len(failed) != 0 {
+		return errors.Errorf("failed to update the following indexes: %s\n", strings.Join(failed, ", "))
+	}
 	return nil
 }
 

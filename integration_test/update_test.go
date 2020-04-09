@@ -49,6 +49,50 @@ func TestKrewUpdate(t *testing.T) {
 	}
 }
 
+func TestKrewUpdateMultipleIndexes(t *testing.T) {
+	skipShort(t)
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+	os.Setenv(constants.EnableMultiIndexSwitch, "1")
+	defer os.Unsetenv(constants.EnableMultiIndexSwitch)
+
+	paths := environment.NewPaths(test.Root())
+	test.Krew("index", "add", "foo", paths.IndexPath(constants.DefaultIndexName)).RunOrFail()
+	if err := os.RemoveAll(paths.IndexPluginsPath("foo")); err != nil {
+		t.Errorf("error removing plugins directory from index: %s", err)
+	}
+	test.Krew("update").RunOrFailOutput()
+	out, err := ioutil.ReadDir(paths.IndexPluginsPath("foo"))
+	if err != nil {
+		t.Errorf("error reading plugins directory: %s", err)
+	}
+	if len(out) == 0 {
+		t.Error("no plugins in index foo after update")
+	}
+}
+
+func TestKrewUpdateFailedIndex(t *testing.T) {
+	skipShort(t)
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+	os.Setenv(constants.EnableMultiIndexSwitch, "1")
+	defer os.Unsetenv(constants.EnableMultiIndexSwitch)
+
+	paths := environment.NewPaths(test.Root())
+	test.TempDir().InitEmptyGitRepo(paths.IndexPath("foo"), "invalid-git")
+	out, err := test.Krew("update").Run()
+	if err == nil {
+		t.Error("expected update to fail")
+	}
+	if !strings.Contains(string(out), "failed to update the following indexes: foo") {
+		t.Error("expected index update to fail for foo")
+	}
+}
+
 func TestKrewUpdateListsNewPlugins(t *testing.T) {
 	skipShort(t)
 	test, cleanup := NewTest(t)
