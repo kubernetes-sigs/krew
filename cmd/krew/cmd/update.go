@@ -113,12 +113,16 @@ func ensureIndexesUpdated(_ *cobra.Command, _ []string) error {
 	}
 
 	var failed []string
+	var returnErr error
 	for _, idx := range indexes {
 		indexPath := paths.IndexPath(idx.Name)
 		klog.V(1).Infof("Updating the local copy of plugin index (%s)", indexPath)
 		if err := gitutil.EnsureUpdated(idx.URL, indexPath); err != nil {
-			klog.V(1).Infof("error updating index %s: %s", idx.Name, err)
+			klog.Warningf("failed to update index %q: %v", idx.Name, err)
 			failed = append(failed, idx.Name)
+			if returnErr == nil {
+				returnErr = err
+			}
 		}
 	}
 
@@ -146,7 +150,7 @@ func ensureIndexesUpdated(_ *cobra.Command, _ []string) error {
 	showUpdatedPlugins(os.Stderr, preUpdateIndex, posUpdateIndex, installedPlugins)
 
 	if len(failed) != 0 {
-		return errors.Errorf("failed to update the following indexes: %s\n", strings.Join(failed, ", "))
+		return errors.Wrapf(returnErr, "failed to update the following indexes: %s\n", strings.Join(failed, ", "))
 	}
 	return nil
 }

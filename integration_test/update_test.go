@@ -55,6 +55,7 @@ func TestKrewUpdateMultipleIndexes(t *testing.T) {
 	defer cleanup()
 
 	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+	// to enable new paths in environment.NewPaths()
 	os.Setenv(constants.EnableMultiIndexSwitch, "1")
 	defer os.Unsetenv(constants.EnableMultiIndexSwitch)
 
@@ -64,12 +65,12 @@ func TestKrewUpdateMultipleIndexes(t *testing.T) {
 		t.Errorf("error removing plugins directory from index: %s", err)
 	}
 	test.Krew("update").RunOrFailOutput()
-	out, err := ioutil.ReadDir(paths.IndexPluginsPath("foo"))
-	if err != nil {
-		t.Errorf("error reading plugins directory: %s", err)
+	out := string(test.Krew("search").RunOrFailOutput())
+	if !strings.Contains(out, "\nctx") {
+		t.Error("expected plugin ctx in list of plugins")
 	}
-	if len(out) == 0 {
-		t.Error("no plugins in index foo after update")
+	if !strings.Contains(out, "foo/ctx") {
+		t.Error("expected plugin foo/ctx in list of plugins")
 	}
 }
 
