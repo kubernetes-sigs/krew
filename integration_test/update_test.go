@@ -89,8 +89,9 @@ func TestKrewUpdateFailedIndex(t *testing.T) {
 	if err == nil {
 		t.Error("expected update to fail")
 	}
-	if !strings.Contains(string(out), "failed to update the following indexes: foo") {
-		t.Error("expected index update to fail for foo")
+	msg := "failed to update the following indexes: foo"
+	if !strings.Contains(string(out), msg) {
+		t.Errorf("%q doesn't contain msg=%q", string(out), msg)
 	}
 }
 

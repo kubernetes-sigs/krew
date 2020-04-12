@@ -149,10 +149,7 @@ func ensureIndexesUpdated(_ *cobra.Command, _ []string) error {
 	// TODO(chriskim06) consider commenting this out when refactoring for custom indexes
 	showUpdatedPlugins(os.Stderr, preUpdateIndex, posUpdateIndex, installedPlugins)
 
-	if len(failed) != 0 {
-		return errors.Wrapf(returnErr, "failed to update the following indexes: %s\n", strings.Join(failed, ", "))
-	}
-	return nil
+	return errors.Wrapf(returnErr, "failed to update the following indexes: %s\n", strings.Join(failed, ", "))
 }
 
 func init() {
