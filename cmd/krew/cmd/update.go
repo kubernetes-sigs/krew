@@ -19,12 +19,14 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"k8s.io/klog"
 
 	"sigs.k8s.io/krew/internal/gitutil"
+	"sigs.k8s.io/krew/internal/index/indexoperations"
 	"sigs.k8s.io/krew/internal/index/indexscanner"
 	"sigs.k8s.io/krew/internal/installation"
 	"sigs.k8s.io/krew/pkg/constants"
@@ -43,7 +45,7 @@ plugin index from the internet.
 Remarks:
   You don't need to run this command: Running "krew update" or "krew upgrade"
   will silently run this command.`,
-	RunE: ensureIndexUpdated,
+	RunE: ensureIndexesUpdated,
 }
 
 func showFormattedPluginsInfo(out io.Writer, header string, plugins []string) {
@@ -102,13 +104,28 @@ func showUpdatedPlugins(out io.Writer, preUpdate, posUpdate []index.Plugin, inst
 	}
 }
 
-func ensureIndexUpdated(_ *cobra.Command, _ []string) error {
+func ensureIndexesUpdated(_ *cobra.Command, _ []string) error {
 	preUpdateIndex, _ := indexscanner.LoadPluginListFromFS(paths.IndexPluginsPath(constants.DefaultIndexName))
 
-	klog.V(1).Infof("Updating the local copy of plugin index (%s)", paths.IndexPath(constants.DefaultIndexName))
-	if err := gitutil.EnsureUpdated(constants.DefaultIndexURI, paths.IndexPath(constants.DefaultIndexName)); err != nil {
-		return errors.Wrap(err, "failed to update the local index")
+	indexes, err := indexoperations.ListIndexes(paths)
+	if err != nil {
+		return errors.Wrap(err, "failed to list indexes")
 	}
+
+	var failed []string
+	var returnErr error
+	for _, idx := range indexes {
+		indexPath := paths.IndexPath(idx.Name)
+		klog.V(1).Infof("Updating the local copy of plugin index (%s)", indexPath)
+		if err := gitutil.EnsureUpdated(idx.URL, indexPath); err != nil {
+			klog.Warningf("failed to update index %q: %v", idx.Name, err)
+			failed = append(failed, idx.Name)
+			if returnErr == nil {
+				returnErr = err
+			}
+		}
+	}
+
 	fmt.Fprintln(os.Stderr, "Updated the local copy of plugin index.")
 
 	if len(preUpdateIndex) == 0 {
@@ -132,7 +149,7 @@ func ensureIndexUpdated(_ *cobra.Command, _ []string) error {
 	// TODO(chriskim06) consider commenting this out when refactoring for custom indexes
 	showUpdatedPlugins(os.Stderr, preUpdateIndex, posUpdateIndex, installedPlugins)
 
-	return nil
+	return errors.Wrapf(returnErr, "failed to update the following indexes: %s\n", strings.Join(failed, ", "))
 }
 
 func init() {

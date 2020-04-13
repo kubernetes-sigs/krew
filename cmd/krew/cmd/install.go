@@ -189,7 +189,7 @@ Remarks:
 				klog.V(4).Infof("--no-update-index specified, skipping updating local copy of plugin index")
 				return nil
 			}
-			return ensureIndexUpdated(cmd, args)
+			return ensureIndexesUpdated(cmd, args)
 		},
 	}
 

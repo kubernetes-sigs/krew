@@ -150,7 +150,7 @@ func TestKrewIndexRemove_unsafe(t *testing.T) {
 func TestKrewIndexRemoveFailsWhenPluginsInstalled(t *testing.T) {
 	skipShort(t)
 	test, cleanup := NewTest(t)
-	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1)
+	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
 	defer cleanup()
 
 	test.Krew("install", validPlugin).RunOrFailOutput()
