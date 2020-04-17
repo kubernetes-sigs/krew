@@ -17,6 +17,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -26,6 +27,7 @@ import (
 	"sigs.k8s.io/krew/internal/index/indexscanner"
 	"sigs.k8s.io/krew/internal/index/validation"
 	"sigs.k8s.io/krew/internal/installation"
+	"sigs.k8s.io/krew/internal/installation/receipt"
 	"sigs.k8s.io/krew/internal/pathutil"
 )
 
@@ -59,15 +61,24 @@ kubectl krew upgrade foo bar"`,
 				skipErrors = true
 			} else {
 				// Upgrade certain plugins
-				pluginNames = args
+				for _, arg := range args {
+					if !validation.IsSafePluginName(arg) {
+						if strings.Contains(arg, "/") {
+							klog.Warning("upgrade command does not support INDEX/PLUGIN syntax; just specify PLUGIN")
+						}
+						return unsafePluginNameErr(arg)
+					}
+					r, err := receipt.Load(paths.PluginInstallReceiptPath(arg))
+					if err != nil {
+						return errors.Wrapf(err, "receipt not found for %q", arg)
+					}
+					pluginNames = append(pluginNames, r.Status.Source.Name+"/"+r.Name)
+				}
 			}
 
 			var nErrors int
 			for _, name := range pluginNames {
 				indexName, pluginName := pathutil.CanonicalPluginName(name)
-				if !validation.IsSafePluginName(pluginName) {
-					return unsafePluginNameErr(pluginName)
-				}
 				plugin, err := indexscanner.LoadPluginByName(paths.IndexPluginsPath(indexName), pluginName)
 				if err != nil {
 					if !os.IsNotExist(err) {

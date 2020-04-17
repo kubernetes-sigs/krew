@@ -69,9 +69,17 @@ func TestKrewUpgradePluginsFromCustomIndex(t *testing.T) {
 	}
 
 	modifyManifestVersion(t, receipt, "v0.0.0")
-	out = string(test.Krew("upgrade", "foo/"+validPlugin).RunOrFailOutput())
+	out = string(test.Krew("upgrade", validPlugin).RunOrFailOutput())
 	if !strings.Contains(out, "Upgrading plugin: foo/"+validPlugin) {
 		t.Errorf("expected plugin foo/%s to be upgraded", validPlugin)
+	}
+
+	b, err := test.Krew("upgrade", "foo/"+validPlugin).Run()
+	if err == nil {
+		t.Error("expected error when using canonical name with upgrade")
+	}
+	if !strings.Contains(string(b), "INDEX/PLUGIN") {
+		t.Error("expected warning about using canonical name to be in output")
 	}
 }
 
