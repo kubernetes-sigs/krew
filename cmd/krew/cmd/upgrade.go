@@ -77,23 +77,24 @@ kubectl krew upgrade foo bar"`,
 					}
 				}
 
+				pluginDisplayName := displayName(plugin, indexName)
 				if err == nil {
-					fmt.Fprintf(os.Stderr, "Upgrading plugin: %s\n", name)
+					fmt.Fprintf(os.Stderr, "Upgrading plugin: %s\n", pluginDisplayName)
 					err = installation.Upgrade(paths, plugin, indexName)
 					if ignoreUpgraded && err == installation.ErrIsAlreadyUpgraded {
-						fmt.Fprintf(os.Stderr, "Skipping plugin %s, it is already on the newest version\n", name)
+						fmt.Fprintf(os.Stderr, "Skipping plugin %s, it is already on the newest version\n", pluginDisplayName)
 						continue
 					}
 				}
 				if err != nil {
 					nErrors++
 					if skipErrors {
-						fmt.Fprintf(os.Stderr, "WARNING: failed to upgrade plugin %q, skipping (error: %v)\n", name, err)
+						fmt.Fprintf(os.Stderr, "WARNING: failed to upgrade plugin %q, skipping (error: %v)\n", pluginDisplayName, err)
 						continue
 					}
-					return errors.Wrapf(err, "failed to upgrade plugin %q", name)
+					return errors.Wrapf(err, "failed to upgrade plugin %q", pluginDisplayName)
 				}
-				fmt.Fprintf(os.Stderr, "Upgraded plugin: %s\n", name)
+				fmt.Fprintf(os.Stderr, "Upgraded plugin: %s\n", pluginDisplayName)
 				internal.PrintSecurityNotice(plugin.Name)
 			}
 			if nErrors > 0 {
