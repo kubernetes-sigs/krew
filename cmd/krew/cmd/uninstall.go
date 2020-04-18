@@ -17,7 +17,6 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -41,8 +40,8 @@ Remarks:
 	RunE: func(cmd *cobra.Command, args []string) error {
 		for _, name := range args {
 			if !validation.IsSafePluginName(name) {
-				if strings.Contains(name, "/") {
-					klog.Warningf("uninstall command does not support INDEX/PLUGIN syntax; just specify PLUGIN")
+				if isCanonicalName(name) {
+					return errors.New("uninstall command does not support INDEX/PLUGIN syntax; just specify PLUGIN")
 				}
 				return unsafePluginNameErr(name)
 			}

@@ -17,7 +17,6 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -63,8 +62,8 @@ kubectl krew upgrade foo bar"`,
 				// Upgrade certain plugins
 				for _, arg := range args {
 					if !validation.IsSafePluginName(arg) {
-						if strings.Contains(arg, "/") {
-							klog.Warning("upgrade command does not support INDEX/PLUGIN syntax; just specify PLUGIN")
+						if isCanonicalName(arg) {
+							return errors.New("upgrade command does not support INDEX/PLUGIN syntax; just specify PLUGIN")
 						}
 						return unsafePluginNameErr(arg)
 					}

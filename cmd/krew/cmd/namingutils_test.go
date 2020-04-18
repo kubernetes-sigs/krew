@@ -112,3 +112,15 @@ func Test_canonicalName(t *testing.T) {
 		t.Errorf("expected=%q; got=%q", expected, got)
 	}
 }
+
+func Test_isCanonicalName(t *testing.T) {
+	if isCanonicalName("foo") {
+		t.Error("expected foo to not be considered a canonical name")
+	}
+	if isCanonicalName("../index/foo") {
+		t.Error("expected ../index/foo to not be considered a canonical name")
+	}
+	if !isCanonicalName("index/foo") {
+		t.Error("expected index/foo to be considered a canonical name")
+	}
+}

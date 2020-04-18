@@ -47,6 +47,23 @@ func TestKrewUninstall(t *testing.T) {
 	}
 }
 
+func TestKrewUninstallPluginsFromCustomIndex(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+	test.Krew("index", "add", "foo", test.TempDir().Path("index/"+constants.DefaultIndexName)).RunOrFail()
+	test.Krew("install", "foo/"+validPlugin).RunOrFail()
+
+	if _, err := test.Krew("uninstall", "foo/"+validPlugin).Run(); err == nil {
+		t.Error("expected error when uninstalling by canonical name")
+	}
+	test.Krew("uninstall", validPlugin).RunOrFail()
+	test.AssertExecutableNotInPATH("kubectl-" + validPlugin)
+}
+
 func TestKrewRemove_AliasSupported(t *testing.T) {
 	skipShort(t)
 
