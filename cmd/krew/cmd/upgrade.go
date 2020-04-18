@@ -61,15 +61,15 @@ kubectl krew upgrade foo bar"`,
 			} else {
 				// Upgrade certain plugins
 				for _, arg := range args {
+					if isCanonicalName(arg) {
+						return errors.New("upgrade command does not support INDEX/PLUGIN syntax; just specify PLUGIN")
+					}
 					if !validation.IsSafePluginName(arg) {
-						if isCanonicalName(arg) {
-							return errors.New("upgrade command does not support INDEX/PLUGIN syntax; just specify PLUGIN")
-						}
 						return unsafePluginNameErr(arg)
 					}
 					r, err := receipt.Load(paths.PluginInstallReceiptPath(arg))
 					if err != nil {
-						return errors.Wrapf(err, "receipt not found for %q", arg)
+						return errors.Wrapf(err, "read receipt %q", arg)
 					}
 					pluginNames = append(pluginNames, r.Status.Source.Name+"/"+r.Name)
 				}

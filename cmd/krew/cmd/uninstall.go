@@ -39,10 +39,10 @@ Remarks:
   Failure to uninstall a plugin will result in an error and exit immediately.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		for _, name := range args {
+			if isCanonicalName(name) {
+				return errors.New("uninstall command does not support INDEX/PLUGIN syntax; just specify PLUGIN")
+			}
 			if !validation.IsSafePluginName(name) {
-				if isCanonicalName(name) {
-					return errors.New("uninstall command does not support INDEX/PLUGIN syntax; just specify PLUGIN")
-				}
 				return unsafePluginNameErr(name)
 			}
 			klog.V(4).Infof("Going to uninstall plugin %s\n", name)
