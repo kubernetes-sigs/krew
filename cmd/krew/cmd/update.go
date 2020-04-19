@@ -140,6 +140,7 @@ func ensureIndexesUpdated(_ *cobra.Command, _ []string) error {
 			if returnErr == nil {
 				returnErr = err
 			}
+			continue
 		}
 
 		if os.Getenv(constants.EnableMultiIndexSwitch) == "" || isDefaultIndex(idx.Name) {
