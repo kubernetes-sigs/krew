@@ -148,7 +148,7 @@ func ensureDefaultIndexIfNoneExist() error {
 		"failed to add default plugin index in absence of no indexes")
 }
 
-// ensureDefaultIndexIfNoneExist iterates over all indexes and updates them
+// ensureIndexesUpdated iterates over all indexes and updates them
 // and prints new plugins and upgrades available for installed plugins.
 func ensureIndexesUpdated() error {
 	indexes, err := indexoperations.ListIndexes(paths)
