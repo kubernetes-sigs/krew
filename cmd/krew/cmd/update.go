@@ -30,7 +30,6 @@ import (
 	"sigs.k8s.io/krew/internal/index/indexscanner"
 	"sigs.k8s.io/krew/internal/installation"
 	"sigs.k8s.io/krew/pkg/constants"
-	"sigs.k8s.io/krew/pkg/index"
 )
 
 // updateCmd represents the update command
@@ -59,27 +58,28 @@ func showFormattedPluginsInfo(out io.Writer, header string, plugins []string) {
 	fmt.Fprintf(out, "%s", b.String())
 }
 
-func showUpdatedPlugins(out io.Writer, preUpdate, posUpdate []index.Plugin, installedPlugins map[string]string) {
-	var newPlugins []index.Plugin
-	var updatedPlugins []index.Plugin
+func showUpdatedPlugins(out io.Writer, preUpdate, postUpdate []pluginEntry, installedPlugins map[string]string) {
+	var newPlugins []pluginEntry
+	var updatedPlugins []pluginEntry
 
-	oldIndex := make(map[string]index.Plugin)
+	oldIndexMap := make(map[string]pluginEntry)
 	for _, p := range preUpdate {
-		oldIndex[p.Name] = p
+		oldIndexMap[canonicalName(p.p, p.indexName)] = p
 	}
 
-	for _, p := range posUpdate {
-		old, ok := oldIndex[p.Name]
+	for _, p := range postUpdate {
+		cName := canonicalName(p.p, p.indexName)
+		old, ok := oldIndexMap[cName]
 		if !ok {
 			newPlugins = append(newPlugins, p)
 			continue
 		}
 
-		if _, ok := installedPlugins[p.Name]; !ok {
+		if _, ok := installedPlugins[cName]; !ok {
 			continue
 		}
 
-		if old.Spec.Version != p.Spec.Version {
+		if old.p.Spec.Version != p.p.Spec.Version {
 			updatedPlugins = append(updatedPlugins, p)
 		}
 	}
@@ -87,30 +87,47 @@ func showUpdatedPlugins(out io.Writer, preUpdate, posUpdate []index.Plugin, inst
 	if len(newPlugins) > 0 {
 		var s []string
 		for _, p := range newPlugins {
-			s = append(s, p.Name)
+			s = append(s, displayName(p.p, p.indexName))
 		}
-
 		showFormattedPluginsInfo(out, "New plugins available", s)
 	}
 
 	if len(updatedPlugins) > 0 {
 		var s []string
 		for _, p := range updatedPlugins {
-			old := oldIndex[p.Name]
-			s = append(s, fmt.Sprintf("%s %s -> %s", p.Name, old.Spec.Version, p.Spec.Version))
+			old := oldIndexMap[canonicalName(p.p, p.indexName)]
+			name := displayName(p.p, p.indexName)
+			s = append(s, fmt.Sprintf("%s %s -> %s", name, old.p.Spec.Version, p.p.Spec.Version))
 		}
-
 		showFormattedPluginsInfo(out, "Upgrades available for installed plugins", s)
 	}
 }
 
-func ensureIndexesUpdated(_ *cobra.Command, _ []string) error {
-	preUpdateIndex, _ := indexscanner.LoadPluginListFromFS(paths.IndexPluginsPath(constants.DefaultIndexName))
+// loadPlugins loads plugin entries from specified indexes. Parse errors
+// are ignored and logged.
+func loadPlugins(indexes []indexoperations.Index) []pluginEntry {
+	var out []pluginEntry
+	for _, idx := range indexes {
+		list, err := indexscanner.LoadPluginListFromFS(paths.IndexPluginsPath(idx.Name))
+		if err != nil {
+			klog.V(1).Infof("WARNING: failed to load plugin list from %q: %v", idx.Name, err)
+			continue
+		}
+		for _, v := range list {
+			out = append(out, pluginEntry{indexName: idx.Name, p: v})
+		}
+	}
+	return out
+}
 
+func ensureIndexesUpdated(_ *cobra.Command, _ []string) error {
 	indexes, err := indexoperations.ListIndexes(paths)
 	if err != nil {
 		return errors.Wrap(err, "failed to list indexes")
 	}
+
+	// collect list of existing plugins
+	preUpdatePlugins := loadPlugins(indexes)
 
 	var failed []string
 	var returnErr error
@@ -123,32 +140,29 @@ func ensureIndexesUpdated(_ *cobra.Command, _ []string) error {
 			if returnErr == nil {
 				returnErr = err
 			}
+			continue
+		}
+
+		if os.Getenv(constants.EnableMultiIndexSwitch) == "" || isDefaultIndex(idx.Name) {
+			fmt.Fprintln(os.Stderr, "Updated the local copy of plugin index.")
+		} else {
+			fmt.Fprintf(os.Stderr, "Updated the local copy of plugin index %q.\n", idx.Name)
 		}
 	}
 
-	fmt.Fprintln(os.Stderr, "Updated the local copy of plugin index.")
+	if len(preUpdatePlugins) != 0 {
+		postUpdatePlugins := loadPlugins(indexes)
 
-	if len(preUpdateIndex) == 0 {
-		return nil
+		receipts, err := installation.GetInstalledPluginReceipts(paths.InstallReceiptsPath())
+		if err != nil {
+			return errors.Wrap(err, "failed to load installed plugins list after update")
+		}
+		installedPlugins := make(map[string]string)
+		for _, receipt := range receipts {
+			installedPlugins[canonicalName(receipt.Plugin, indexOf(receipt))] = receipt.Spec.Version
+		}
+		showUpdatedPlugins(os.Stderr, preUpdatePlugins, postUpdatePlugins, installedPlugins)
 	}
-
-	posUpdateIndex, err := indexscanner.LoadPluginListFromFS(paths.IndexPluginsPath(constants.DefaultIndexName))
-	if err != nil {
-		return errors.Wrap(err, "failed to load plugin index after update")
-	}
-
-	receipts, err := installation.GetInstalledPluginReceipts(paths.InstallReceiptsPath())
-	if err != nil {
-		return errors.Wrap(err, "failed to load installed plugins list after update")
-	}
-	installedPlugins := make(map[string]string)
-	for _, receipt := range receipts {
-		installedPlugins[receipt.Name] = receipt.Spec.Version
-	}
-
-	// TODO(chriskim06) consider commenting this out when refactoring for custom indexes
-	showUpdatedPlugins(os.Stderr, preUpdateIndex, posUpdateIndex, installedPlugins)
-
 	return errors.Wrapf(returnErr, "failed to update the following indexes: %s\n", strings.Join(failed, ", "))
 }
 
