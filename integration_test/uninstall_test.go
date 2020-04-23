@@ -57,11 +57,24 @@ func TestKrewUninstallPluginsFromCustomIndex(t *testing.T) {
 	test.Krew("index", "add", "foo", test.TempDir().Path("index/"+constants.DefaultIndexName)).RunOrFail()
 	test.Krew("install", "foo/"+validPlugin).RunOrFail()
 
-	if _, err := test.Krew("uninstall", "foo/"+validPlugin).Run(); err == nil {
-		t.Error("expected error when uninstalling by canonical name")
-	}
 	test.Krew("uninstall", validPlugin).RunOrFail()
 	test.AssertExecutableNotInPATH("kubectl-" + validPlugin)
+}
+
+func TestKrewUninstall_CannotUseIndexSyntax(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+	out, err := test.Krew("uninstall", "foo/"+validPlugin).Run()
+	if err == nil {
+		t.Error("expected error when uninstalling by canonical name")
+	}
+	if !strings.Contains(string(out), "INDEX/PLUGIN") {
+		t.Error("expected warning about using canonical name to be in output")
+	}
 }
 
 func TestKrewRemove_AliasSupported(t *testing.T) {

@@ -114,13 +114,28 @@ func Test_canonicalName(t *testing.T) {
 }
 
 func Test_isCanonicalName(t *testing.T) {
-	if isCanonicalName("foo") {
-		t.Error("expected foo to not be considered a canonical name")
+	tests := []struct {
+		arg      string
+		expected bool
+	}{
+		{"foo", false},
+		{"../index/foo", false},
+		{"index/foo", true},
+		{"", false},
+		{"0-0", false},
+		{"a/", false},
+		{"/b", false},
+		{"a-a/b-b", true},
+		{"a//b", false},
+		{"a / b", false},
+		{"a /b", false},
+		{"a/ b", false},
 	}
-	if isCanonicalName("../index/foo") {
-		t.Error("expected ../index/foo to not be considered a canonical name")
-	}
-	if !isCanonicalName("index/foo") {
-		t.Error("expected index/foo to be considered a canonical name")
+	for _, tt := range tests {
+		t.Run(tt.arg, func(t *testing.T) {
+			if isCanonicalName(tt.arg) != tt.expected {
+				t.Errorf("expected isCanonicalName(%q) to be %t", tt.arg, tt.expected)
+			}
+		})
 	}
 }

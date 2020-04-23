@@ -63,8 +63,7 @@ kubectl krew upgrade foo bar"`,
 				for _, arg := range args {
 					if isCanonicalName(arg) {
 						return errors.New("upgrade command does not support INDEX/PLUGIN syntax; just specify PLUGIN")
-					}
-					if !validation.IsSafePluginName(arg) {
+					} else if !validation.IsSafePluginName(arg) {
 						return unsafePluginNameErr(arg)
 					}
 					r, err := receipt.Load(paths.PluginInstallReceiptPath(arg))

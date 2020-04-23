@@ -73,6 +73,13 @@ func TestKrewUpgradePluginsFromCustomIndex(t *testing.T) {
 	if !strings.Contains(out, "Upgrading plugin: foo/"+validPlugin) {
 		t.Errorf("expected plugin foo/%s to be upgraded", validPlugin)
 	}
+}
+
+func TestKrewUpgrade_CannotUseIndexSyntax(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
 
 	b, err := test.Krew("upgrade", "foo/"+validPlugin).Run()
 	if err == nil {

@@ -41,8 +41,7 @@ Remarks:
 		for _, name := range args {
 			if isCanonicalName(name) {
 				return errors.New("uninstall command does not support INDEX/PLUGIN syntax; just specify PLUGIN")
-			}
-			if !validation.IsSafePluginName(name) {
+			} else if !validation.IsSafePluginName(name) {
 				return unsafePluginNameErr(name)
 			}
 			klog.V(4).Infof("Going to uninstall plugin %s\n", name)
