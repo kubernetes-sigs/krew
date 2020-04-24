@@ -16,6 +16,7 @@ package integrationtest
 
 import (
 	"os"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -170,4 +171,58 @@ func TestKrewIndexRemoveForce_nonExisting(t *testing.T) {
 
 	// --force returns success for non-existing indexes
 	test.Krew("index", "remove", "--force", "non-existing").RunOrFail()
+}
+
+func TestKrewDefaultIndex_notAutomaticallyAdded(t *testing.T) {
+	skipShort(t)
+	test, cleanup := NewTest(t)
+	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1)
+	defer cleanup()
+
+	test.Krew("help").RunOrFail()
+	out, err := test.Krew("search").Run()
+	if err == nil {
+		t.Fatalf("search must've failed without any indexes. output=%s", string(out))
+	}
+	out = test.Krew("index", "list").RunOrFailOutput()
+	if len(lines(out)) > 1 {
+		t.Fatalf("expected no indexes; got output=%q", string(out))
+	}
+}
+
+func TestKrewDefaultIndex_AutoAddedOnInstall(t *testing.T) {
+	skipShort(t)
+	test, cleanup := NewTest(t)
+	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1)
+	defer cleanup()
+
+	test.Krew("install", validPlugin).RunOrFail()
+	ensureIndexListHasDefaultIndex(t, string(test.Krew("index", "list").RunOrFailOutput()))
+}
+
+func TestKrewDefaultIndex_AutoAddedOnUpdate(t *testing.T) {
+	skipShort(t)
+	test, cleanup := NewTest(t)
+	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1)
+	defer cleanup()
+
+	test.Krew("update").RunOrFail()
+	ensureIndexListHasDefaultIndex(t, string(test.Krew("index", "list").RunOrFailOutput()))
+}
+
+func TestKrewDefaultIndex_AutoAddedOnUpgrade(t *testing.T) {
+	skipShort(t)
+	test, cleanup := NewTest(t)
+	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1)
+	defer cleanup()
+
+	test.Krew("upgrade").RunOrFail()
+	ensureIndexListHasDefaultIndex(t, string(test.Krew("index", "list").RunOrFailOutput()))
+}
+
+func ensureIndexListHasDefaultIndex(t *testing.T, output string) {
+	t.Helper()
+	if !regexp.MustCompile(`(?m)^default\b`).MatchString(output) {
+		t.Fatalf("index list did not return default index:\n%s", output)
+	}
 }
