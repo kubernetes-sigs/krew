@@ -51,7 +51,7 @@ This command will be removed without further notice from future versions of krew
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return receiptsmigration.Migrate(paths)
 	},
-	PreRunE: ensureIndexesUpdated,
+	PreRunE: func(_ *cobra.Command, _ []string) error { return ensureIndexesUpdated() },
 }
 
 var indexUpgradeCmd = &cobra.Command{

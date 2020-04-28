@@ -44,7 +44,7 @@ plugin index from the internet.
 Remarks:
   You don't need to run this command: Running "krew update" or "krew upgrade"
   will silently run this command.`,
-	RunE: ensureIndexesUpdated,
+	RunE: ensureIndexes,
 }
 
 func showFormattedPluginsInfo(out io.Writer, header string, plugins []string) {
@@ -120,7 +120,37 @@ func loadPlugins(indexes []indexoperations.Index) []pluginEntry {
 	return out
 }
 
-func ensureIndexesUpdated(_ *cobra.Command, _ []string) error {
+func ensureIndexes(_ *cobra.Command, _ []string) error {
+	if os.Getenv(constants.EnableMultiIndexSwitch) != "" {
+		klog.V(3).Infof("Will check if there are any indexes added.")
+		if err := ensureDefaultIndexIfNoneExist(); err != nil {
+			return err
+		}
+	}
+	return ensureIndexesUpdated()
+}
+
+// ensureDefaultIndexIfNoneExist adds the default index automatically
+// (and informs the user about it) if no plugin index exists for krew.
+func ensureDefaultIndexIfNoneExist() error {
+	idx, err := indexoperations.ListIndexes(paths)
+	if err != nil {
+		return errors.Wrap(err, "failed to retrieve plugin indexes")
+	}
+	if len(idx) > 0 {
+		klog.V(3).Infof("Found %d indexes, skipping adding default index.", len(idx))
+		return nil
+	}
+
+	klog.V(3).Infof("No index found, add default index.")
+	fmt.Fprintf(os.Stderr, "Adding \"default\" plugin index from %s.\n", constants.DefaultIndexURI)
+	return errors.Wrap(indexoperations.AddIndex(paths, constants.DefaultIndexName, constants.DefaultIndexURI),
+		"failed to add default plugin index in absence of no indexes")
+}
+
+// ensureIndexesUpdated iterates over all indexes and updates them
+// and prints new plugins and upgrades available for installed plugins.
+func ensureIndexesUpdated() error {
 	indexes, err := indexoperations.ListIndexes(paths)
 	if err != nil {
 		return errors.Wrap(err, "failed to list indexes")

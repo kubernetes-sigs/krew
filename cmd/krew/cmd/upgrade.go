@@ -106,7 +106,7 @@ kubectl krew upgrade foo bar"`,
 				klog.V(4).Infof("--no-update-index specified, skipping updating local copy of plugin index")
 				return nil
 			}
-			return ensureIndexesUpdated(cmd, args)
+			return ensureIndexes(cmd, args)
 		},
 	}
 
