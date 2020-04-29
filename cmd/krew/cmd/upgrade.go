@@ -26,6 +26,7 @@ import (
 	"sigs.k8s.io/krew/internal/index/indexscanner"
 	"sigs.k8s.io/krew/internal/index/validation"
 	"sigs.k8s.io/krew/internal/installation"
+	"sigs.k8s.io/krew/internal/installation/receipt"
 	"sigs.k8s.io/krew/internal/pathutil"
 )
 
@@ -53,21 +54,29 @@ kubectl krew upgrade foo bar"`,
 					return errors.Wrap(err, "failed to find all installed versions")
 				}
 				for _, receipt := range installed {
-					pluginNames = append(pluginNames, receipt.Name)
+					pluginNames = append(pluginNames, receipt.Status.Source.Name+"/"+receipt.Name)
 				}
 				ignoreUpgraded = true
 				skipErrors = true
 			} else {
 				// Upgrade certain plugins
-				pluginNames = args
+				for _, arg := range args {
+					if isCanonicalName(arg) {
+						return errors.New("upgrade command does not support INDEX/PLUGIN syntax; just specify PLUGIN")
+					} else if !validation.IsSafePluginName(arg) {
+						return unsafePluginNameErr(arg)
+					}
+					r, err := receipt.Load(paths.PluginInstallReceiptPath(arg))
+					if err != nil {
+						return errors.Wrapf(err, "read receipt %q", arg)
+					}
+					pluginNames = append(pluginNames, r.Status.Source.Name+"/"+r.Name)
+				}
 			}
 
 			var nErrors int
 			for _, name := range pluginNames {
 				indexName, pluginName := pathutil.CanonicalPluginName(name)
-				if !validation.IsSafePluginName(pluginName) {
-					return unsafePluginNameErr(pluginName)
-				}
 				plugin, err := indexscanner.LoadPluginByName(paths.IndexPluginsPath(indexName), pluginName)
 				if err != nil {
 					if !os.IsNotExist(err) {
@@ -77,23 +86,24 @@ kubectl krew upgrade foo bar"`,
 					}
 				}
 
+				pluginDisplayName := displayName(plugin, indexName)
 				if err == nil {
-					fmt.Fprintf(os.Stderr, "Upgrading plugin: %s\n", name)
+					fmt.Fprintf(os.Stderr, "Upgrading plugin: %s\n", pluginDisplayName)
 					err = installation.Upgrade(paths, plugin, indexName)
 					if ignoreUpgraded && err == installation.ErrIsAlreadyUpgraded {
-						fmt.Fprintf(os.Stderr, "Skipping plugin %s, it is already on the newest version\n", name)
+						fmt.Fprintf(os.Stderr, "Skipping plugin %s, it is already on the newest version\n", pluginDisplayName)
 						continue
 					}
 				}
 				if err != nil {
 					nErrors++
 					if skipErrors {
-						fmt.Fprintf(os.Stderr, "WARNING: failed to upgrade plugin %q, skipping (error: %v)\n", name, err)
+						fmt.Fprintf(os.Stderr, "WARNING: failed to upgrade plugin %q, skipping (error: %v)\n", pluginDisplayName, err)
 						continue
 					}
-					return errors.Wrapf(err, "failed to upgrade plugin %q", name)
+					return errors.Wrapf(err, "failed to upgrade plugin %q", pluginDisplayName)
 				}
-				fmt.Fprintf(os.Stderr, "Upgraded plugin: %s\n", name)
+				fmt.Fprintf(os.Stderr, "Upgraded plugin: %s\n", pluginDisplayName)
 				internal.PrintSecurityNotice(plugin.Name)
 			}
 			if nErrors > 0 {

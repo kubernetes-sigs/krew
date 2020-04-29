@@ -20,6 +20,7 @@ import (
 	"strings"
 	"testing"
 
+	"sigs.k8s.io/krew/internal/environment"
 	"sigs.k8s.io/krew/pkg/constants"
 )
 
@@ -47,6 +48,45 @@ func TestKrewUpgrade(t *testing.T) {
 
 	if initialLocation == eventualLocation {
 		t.Errorf("Expecting the plugin path to change but was the same.")
+	}
+}
+
+func TestKrewUpgradePluginsFromCustomIndex(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+	test.Krew("index", "add", "foo", test.TempDir().Path("index/"+constants.DefaultIndexName)).RunOrFail()
+	test.Krew("install", "foo/"+validPlugin).RunOrFail()
+
+	receipt := environment.NewPaths(test.Root()).PluginInstallReceiptPath(validPlugin)
+	modifyManifestVersion(t, receipt, "v0.0.0")
+	out := string(test.Krew("upgrade").RunOrFailOutput())
+	if !strings.Contains(out, "Upgrading plugin: foo/"+validPlugin) {
+		t.Errorf("expected plugin foo/%s to be upgraded", validPlugin)
+	}
+
+	modifyManifestVersion(t, receipt, "v0.0.0")
+	out = string(test.Krew("upgrade", validPlugin).RunOrFailOutput())
+	if !strings.Contains(out, "Upgrading plugin: foo/"+validPlugin) {
+		t.Errorf("expected plugin foo/%s to be upgraded", validPlugin)
+	}
+}
+
+func TestKrewUpgrade_CannotUseIndexSyntax(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	b, err := test.Krew("upgrade", "foo/"+validPlugin).Run()
+	if err == nil {
+		t.Error("expected error when using canonical name with upgrade")
+	}
+	if !strings.Contains(string(b), "INDEX/PLUGIN") {
+		t.Error("expected warning about using canonical name to be in output")
 	}
 }
 

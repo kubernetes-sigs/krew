@@ -112,3 +112,30 @@ func Test_canonicalName(t *testing.T) {
 		t.Errorf("expected=%q; got=%q", expected, got)
 	}
 }
+
+func Test_isCanonicalName(t *testing.T) {
+	tests := []struct {
+		arg      string
+		expected bool
+	}{
+		{"foo", false},
+		{"../index/foo", false},
+		{"index/foo", true},
+		{"", false},
+		{"0-0", false},
+		{"a/", false},
+		{"/b", false},
+		{"a-a/b-b", true},
+		{"a//b", false},
+		{"a / b", false},
+		{"a /b", false},
+		{"a/ b", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.arg, func(t *testing.T) {
+			if isCanonicalName(tt.arg) != tt.expected {
+				t.Errorf("expected isCanonicalName(%q) to be %t", tt.arg, tt.expected)
+			}
+		})
+	}
+}

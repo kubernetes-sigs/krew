@@ -15,9 +15,13 @@
 package cmd
 
 import (
+	"regexp"
+
 	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/index"
 )
+
+var canonicalNameRegex = regexp.MustCompile(`^[\w-]+/[\w-]+$`)
 
 // indexOf returns the index name of a receipt.
 func indexOf(r index.Receipt) string {
@@ -47,4 +51,8 @@ func canonicalName(p index.Plugin, indexName string) string {
 		indexName = constants.DefaultIndexName
 	}
 	return indexName + "/" + p.Name
+}
+
+func isCanonicalName(s string) bool {
+	return canonicalNameRegex.MatchString(s)
 }
