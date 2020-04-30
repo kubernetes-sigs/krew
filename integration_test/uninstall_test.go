@@ -30,7 +30,7 @@ func TestKrewUninstall(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test = test.WithIndex()
+	test = test.WithDefaultIndex()
 
 	if _, err := test.Krew("uninstall").Run(); err == nil {
 		t.Fatal("expected failure without no arguments")
@@ -53,8 +53,7 @@ func TestKrewUninstallPluginsFromCustomIndex(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
-	test.Krew("index", "add", "foo", test.TempDir().Path("index/"+constants.DefaultIndexName)).RunOrFail()
+	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex().WithCustomIndex("foo")
 	test.Krew("install", "foo/"+validPlugin).RunOrFail()
 
 	test.Krew("uninstall", validPlugin).RunOrFail()
@@ -67,7 +66,7 @@ func TestKrewUninstall_CannotUseIndexSyntax(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex()
 	out, err := test.Krew("uninstall", "foo/"+validPlugin).Run()
 	if err == nil {
 		t.Error("expected error when uninstalling by canonical name")
@@ -83,7 +82,7 @@ func TestKrewRemove_AliasSupported(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test.WithIndex().Krew("install", validPlugin).RunOrFailOutput()
+	test.WithDefaultIndex().Krew("install", validPlugin).RunOrFailOutput()
 	test.Krew("remove", validPlugin).RunOrFailOutput()
 	test.AssertExecutableNotInPATH("kubectl-" + validPlugin)
 }
@@ -94,7 +93,7 @@ func TestKrewRemove_ManifestRemovedFromIndex(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test = test.WithIndex()
+	test = test.WithDefaultIndex()
 	manifestDir := environment.NewPaths(test.Root()).IndexPluginsPath(constants.DefaultIndexName)
 	localManifest := filepath.Join(manifestDir, validPlugin+constants.ManifestExtension)
 	if _, err := os.Stat(localManifest); err != nil {
@@ -111,7 +110,7 @@ func TestKrewRemove_Unsafe(t *testing.T) {
 	skipShort(t)
 	test, cleanup := NewTest(t)
 	defer cleanup()
-	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex()
 	test.Krew("install", validPlugin).RunOrFailOutput()
 
 	cases := []string{

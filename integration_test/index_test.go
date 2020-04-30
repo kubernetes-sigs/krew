@@ -29,7 +29,7 @@ func TestKrewIndexAdd(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex()
 	if _, err := test.Krew("index", "add").Run(); err == nil {
 		t.Fatal("expected index add with no args to fail")
 	}
@@ -51,7 +51,7 @@ func TestKrewIndexAddUnsafe(t *testing.T) {
 	skipShort(t)
 	test, cleanup := NewTest(t)
 	defer cleanup()
-	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex()
 
 	cases := []string{"a/b", `a\b`, "../a", `..\a`}
 	expected := "invalid index name"
@@ -72,15 +72,14 @@ func TestKrewIndexList(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex()
 	out := test.Krew("index", "list").RunOrFailOutput()
 	if indexes := lines(out); len(indexes) < 2 {
 		// the first line is the header
 		t.Fatal("expected at least 1 index in output")
 	}
 
-	localIndex := test.TempDir().Path("index/" + constants.DefaultIndexName)
-	test.Krew("index", "add", "foo", localIndex).RunOrFail()
+	test.WithCustomIndex("foo")
 	out = test.Krew("index", "list").RunOrFailOutput()
 	if indexes := lines(out); len(indexes) < 3 {
 		// the first line is the header
@@ -94,7 +93,7 @@ func TestKrewIndexList_NoIndexes(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex()
 	index := test.TempDir().Path("index")
 	if err := os.RemoveAll(index); err != nil {
 		t.Fatalf("error removing default index: %v", err)
@@ -122,18 +121,16 @@ func TestKrewIndexRemove_nonExisting(t *testing.T) {
 func TestKrewIndexRemove_ok(t *testing.T) {
 	skipShort(t)
 	test, cleanup := NewTest(t)
-	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex().WithCustomIndex("foo")
 	defer cleanup()
 
-	localIndex := test.TempDir().Path("index/" + constants.DefaultIndexName)
-	test.Krew("index", "add", "foo", localIndex).RunOrFail()
 	test.Krew("index", "remove", "foo").RunOrFail()
 }
 
 func TestKrewIndexRemove_unsafe(t *testing.T) {
 	skipShort(t)
 	test, cleanup := NewTest(t)
-	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex()
 	defer cleanup()
 
 	expected := "invalid index name"
@@ -151,7 +148,7 @@ func TestKrewIndexRemove_unsafe(t *testing.T) {
 func TestKrewIndexRemoveFailsWhenPluginsInstalled(t *testing.T) {
 	skipShort(t)
 	test, cleanup := NewTest(t)
-	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex()
 	defer cleanup()
 
 	test.Krew("install", validPlugin).RunOrFailOutput()

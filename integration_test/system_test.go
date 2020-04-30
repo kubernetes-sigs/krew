@@ -30,7 +30,7 @@ func TestKrewSystem(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test.WithIndex().Krew("install", validPlugin).RunOrFail()
+	test.WithDefaultIndex().Krew("install", validPlugin).RunOrFail()
 
 	// needs to be after initial installation
 	prepareOldKrewRoot(test)
@@ -50,7 +50,7 @@ func TestKrewSystem_ReceiptForKrew(t *testing.T) {
 	prepareOldKrewRoot(test)
 	touch(test.tempDir, "store/krew/ensure-folder-exists")
 
-	test.WithIndex().Krew("system", "receipts-upgrade").RunOrFailOutput()
+	test.WithDefaultIndex().Krew("system", "receipts-upgrade").RunOrFailOutput()
 
 	assertReceiptExistsFor(test, "krew")
 }
@@ -64,7 +64,7 @@ func TestKrewSystem_IgnoreAdditionalFolders(t *testing.T) {
 	prepareOldKrewRoot(test)
 
 	touch(test.tempDir, "store/not-a-plugin/ensure-folder-exists")
-	out := test.WithIndex().Krew("system", "receipts-upgrade").RunOrFailOutput()
+	out := test.WithDefaultIndex().Krew("system", "receipts-upgrade").RunOrFailOutput()
 
 	if !bytes.Contains(out, []byte("Skipping plugin not-a-plugin")) {
 		t.Errorf("Expected a message that 'not-a-plugin' is skipped, but output was:")
@@ -85,7 +85,7 @@ func TestKrewSystem_IgnoreUnknownPlugins(t *testing.T) {
 
 	prepareOldKrewRoot(test)
 
-	out := test.WithIndex().Krew("system", "receipts-upgrade").RunOrFailOutput()
+	out := test.WithDefaultIndex().Krew("system", "receipts-upgrade").RunOrFailOutput()
 
 	if !bytes.Contains(out, []byte("Skipping plugin foo")) {
 		t.Errorf("Expected a message that 'foo' is skipped, but output was:")

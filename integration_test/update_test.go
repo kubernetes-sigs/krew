@@ -33,7 +33,7 @@ func TestKrewUpdate(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	// nb do not call WithIndex() here
+	// nb do not call WithDefaultIndex() here
 	updateOut := string(test.Krew("update").RunOrFailOutput())
 	if strings.Contains(updateOut, "New plugins available:") {
 		t.Fatalf("clean index fetch should not show 'new plugins available': %s", updateOut)
@@ -54,13 +54,12 @@ func TestKrewUpdateMultipleIndexes(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex().WithCustomIndex("foo")
 	// to enable new paths in environment.NewPaths()
 	os.Setenv(constants.EnableMultiIndexSwitch, "1")
 	defer os.Unsetenv(constants.EnableMultiIndexSwitch)
 
 	paths := environment.NewPaths(test.Root())
-	test.Krew("index", "add", "foo", paths.IndexPath(constants.DefaultIndexName)).RunOrFail()
 	if err := os.RemoveAll(paths.IndexPluginsPath("foo")); err != nil {
 		t.Errorf("error removing plugins directory from index: %s", err)
 	}
@@ -79,7 +78,7 @@ func TestKrewUpdateFailedIndex(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex()
 	os.Setenv(constants.EnableMultiIndexSwitch, "1")
 	defer os.Unsetenv(constants.EnableMultiIndexSwitch)
 
@@ -100,7 +99,7 @@ func TestKrewUpdateListsNewPlugins(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test = test.WithIndex()
+	test = test.WithDefaultIndex()
 
 	pluginManifest := filepath.Join(environment.NewPaths(test.Root()).IndexPluginsPath(constants.DefaultIndexName), validPlugin+constants.ManifestExtension)
 	if err := os.Remove(pluginManifest); err != nil {
@@ -121,7 +120,7 @@ func TestKrewUpdateListsUpgradesAvailable(t *testing.T) {
 
 	test, cleanup := NewTest(t)
 	defer cleanup()
-	test = test.WithIndex()
+	test = test.WithDefaultIndex()
 
 	// set version of some manifests to v0.0.0
 	pluginManifest := filepath.Join(environment.NewPaths(test.Root()).IndexPluginsPath(constants.DefaultIndexName), validPlugin+constants.ManifestExtension)

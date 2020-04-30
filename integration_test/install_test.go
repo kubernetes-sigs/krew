@@ -37,7 +37,7 @@ func TestKrewInstall(t *testing.T) {
 		t.Fatal("expected to fail without initializing the index")
 	}
 
-	test = test.WithIndex()
+	test = test.WithDefaultIndex()
 	if err := test.Krew("install"); err == nil {
 		t.Fatal("expected failure without any args or stdin")
 	}
@@ -52,7 +52,7 @@ func TestKrewInstallReRun(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test = test.WithIndex()
+	test = test.WithDefaultIndex()
 	test.Krew("install", validPlugin).RunOrFail()
 	test.Krew("install", validPlugin).RunOrFail()
 	test.AssertExecutableInPATH("kubectl-" + validPlugin)
@@ -62,7 +62,7 @@ func TestKrewInstallUnsafe(t *testing.T) {
 	skipShort(t)
 	test, cleanup := NewTest(t)
 	defer cleanup()
-	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex()
 
 	cases := []string{
 		`../index/` + validPlugin,
@@ -89,7 +89,7 @@ func TestKrewInstall_MultiplePositionalArgs(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test.WithIndex().Krew("install", validPlugin, validPlugin2).RunOrFailOutput()
+	test.WithDefaultIndex().Krew("install", validPlugin, validPlugin2).RunOrFailOutput()
 	test.AssertExecutableInPATH("kubectl-" + validPlugin)
 	test.AssertExecutableInPATH("kubectl-" + validPlugin2)
 }
@@ -100,7 +100,7 @@ func TestKrewInstall_Stdin(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test.WithIndex().WithStdin(strings.NewReader(validPlugin + "\n" + validPlugin2)).
+	test.WithDefaultIndex().WithStdin(strings.NewReader(validPlugin + "\n" + validPlugin2)).
 		Krew("install").RunOrFailOutput()
 
 	test.AssertExecutableInPATH("kubectl-" + validPlugin)
@@ -114,7 +114,7 @@ func TestKrewInstall_StdinAndPositionalArguments(t *testing.T) {
 	defer cleanup()
 
 	// when stdin is detected, it's ignored in favor of positional arguments
-	test.WithIndex().
+	test.WithDefaultIndex().
 		WithStdin(strings.NewReader(validPlugin2)).
 		Krew("install", validPlugin).RunOrFail()
 	test.AssertExecutableInPATH("kubectl-" + validPlugin)
@@ -138,8 +138,7 @@ func TestKrewInstall_CustomIndex(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
-	test.Krew("index", "add", "foo", test.TempDir().Path("index/"+constants.DefaultIndexName)).RunOrFail()
+	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex().WithCustomIndex("foo")
 	test.Krew("install", "foo/"+validPlugin).RunOrFail()
 	test.AssertExecutableInPATH("kubectl-" + validPlugin)
 	test.AssertPluginFromIndex(validPlugin, "foo")

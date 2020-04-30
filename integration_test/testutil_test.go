@@ -183,9 +183,26 @@ func (it *ITest) Root() string {
 	return it.tempDir.Root()
 }
 
-// WithIndex initializes the index with the actual krew-index from github/kubernetes-sigs/krew-index.
-func (it *ITest) WithIndex() *ITest {
+// WithDefaultIndex initializes the index with the actual krew-index from github/kubernetes-sigs/krew-index.
+func (it *ITest) WithDefaultIndex() *ITest {
 	it.initializeIndex()
+	return it
+}
+
+// WithCustomIndex initializes a new index by cloning the default index. WithDefaultIndex needs to be called
+// before this function.
+func (it *ITest) WithCustomIndex(name string) *ITest {
+	// TODO(chriskim06) remove this once index migration happens
+	var isMultiIndexEnabled bool
+	for _, e := range it.env {
+		if strings.Contains(e, constants.EnableMultiIndexSwitch) {
+			isMultiIndexEnabled = true
+		}
+	}
+	if !isMultiIndexEnabled {
+		it.t.Fatalf("Cannot add a custom index without %s set", constants.EnableMultiIndexSwitch)
+	}
+	it.Krew("index", "add", name, it.TempDir().Path("index/"+constants.DefaultIndexName)).RunOrFail()
 	return it
 }
 
