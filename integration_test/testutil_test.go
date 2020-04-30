@@ -193,13 +193,7 @@ func (it *ITest) WithDefaultIndex() *ITest {
 // before this function.
 func (it *ITest) WithCustomIndex(name string) *ITest {
 	// TODO(chriskim06) remove this once index migration happens
-	var isMultiIndexEnabled bool
-	for _, e := range it.env {
-		if strings.Contains(e, constants.EnableMultiIndexSwitch) {
-			isMultiIndexEnabled = true
-		}
-	}
-	if !isMultiIndexEnabled {
+	if !isMultiIndexEnabled(it.env) {
 		it.t.Fatalf("Cannot add a custom index without %s set", constants.EnableMultiIndexSwitch)
 	}
 	it.Krew("index", "add", name, it.TempDir().Path("index/"+constants.DefaultIndexName)).RunOrFail()
@@ -316,13 +310,21 @@ func (it *ITest) initializeIndex() {
 	}
 
 	// TODO(chriskim06) simplify once multi-index is enabled
-	for _, e := range it.env {
-		if strings.Contains(e, constants.EnableMultiIndexSwitch) {
-			if err := indexmigration.Migrate(environment.NewPaths(it.Root())); err != nil {
-				it.t.Fatalf("error migrating index: %s", err)
-			}
+	if isMultiIndexEnabled(it.env) {
+		if err := indexmigration.Migrate(environment.NewPaths(it.Root())); err != nil {
+			it.t.Fatalf("error migrating index: %s", err)
 		}
 	}
+}
+
+func isMultiIndexEnabled(env []string) bool {
+	enabled := false
+	for _, e := range env {
+		if strings.Contains(e, constants.EnableMultiIndexSwitch) {
+			enabled = true
+		}
+	}
+	return enabled
 }
 
 func initFromGitClone(t *testing.T) ([]byte, error) {
