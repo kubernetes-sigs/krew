@@ -54,7 +54,7 @@ func TestKrewSearchOne(t *testing.T) {
 func TestKrewSearchMultiIndex(t *testing.T) {
 	skipShort(t)
 	test, cleanup := NewTest(t)
-	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex().WithCustomIndex("foo")
+	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex().WithCustomIndexFromDefault("foo")
 	defer cleanup()
 
 	test.Krew("install", validPlugin).RunOrFail()
@@ -77,7 +77,7 @@ func TestKrewSearchMultiIndex(t *testing.T) {
 func TestKrewSearchMultiIndexSortedByDisplayName(t *testing.T) {
 	skipShort(t)
 	test, cleanup := NewTest(t)
-	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex().WithCustomIndex("foo")
+	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex().WithCustomIndexFromDefault("foo")
 	defer cleanup()
 
 	output := string(test.Krew("search").RunOrFailOutput())

@@ -79,7 +79,7 @@ func TestKrewIndexList(t *testing.T) {
 		t.Fatal("expected at least 1 index in output")
 	}
 
-	test.WithCustomIndex("foo")
+	test.WithCustomIndexFromDefault("foo")
 	out = test.Krew("index", "list").RunOrFailOutput()
 	if indexes := lines(out); len(indexes) < 3 {
 		// the first line is the header
@@ -121,7 +121,7 @@ func TestKrewIndexRemove_nonExisting(t *testing.T) {
 func TestKrewIndexRemove_ok(t *testing.T) {
 	skipShort(t)
 	test, cleanup := NewTest(t)
-	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex().WithCustomIndex("foo")
+	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex().WithCustomIndexFromDefault("foo")
 	defer cleanup()
 
 	test.Krew("index", "remove", "foo").RunOrFail()

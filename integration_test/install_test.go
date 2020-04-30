@@ -138,7 +138,7 @@ func TestKrewInstall_CustomIndex(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex().WithCustomIndex("foo")
+	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex().WithCustomIndexFromDefault("foo")
 	test.Krew("install", "foo/"+validPlugin).RunOrFail()
 	test.AssertExecutableInPATH("kubectl-" + validPlugin)
 	test.AssertPluginFromIndex(validPlugin, "foo")

@@ -189,9 +189,9 @@ func (it *ITest) WithDefaultIndex() *ITest {
 	return it
 }
 
-// WithCustomIndex initializes a new index by cloning the default index. WithDefaultIndex needs to be called
-// before this function.
-func (it *ITest) WithCustomIndex(name string) *ITest {
+// WithCustomIndexFromDefault initializes a new index by cloning the default index. WithDefaultIndex needs
+// to be called before this function.
+func (it *ITest) WithCustomIndexFromDefault(name string) *ITest {
 	// TODO(chriskim06) remove this once index migration happens
 	if !isMultiIndexEnabled(it.env) {
 		it.t.Fatalf("Cannot add a custom index without %s set", constants.EnableMultiIndexSwitch)
