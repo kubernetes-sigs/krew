@@ -190,7 +190,8 @@ func (it *ITest) WithDefaultIndex() *ITest {
 }
 
 // WithCustomIndexFromDefault initializes a new index by cloning the default index. WithDefaultIndex needs
-// to be called before this function.
+// to be called before this function. This is a helper function for working with custom indexes in the
+// integration tests so that developers don't need to alias the cloned default index each time.
 func (it *ITest) WithCustomIndexFromDefault(name string) *ITest {
 	// TODO(chriskim06) remove this once index migration happens
 	if !isMultiIndexEnabled(it.env) {
@@ -318,13 +319,12 @@ func (it *ITest) initializeIndex() {
 }
 
 func isMultiIndexEnabled(env []string) bool {
-	enabled := false
 	for _, e := range env {
 		if strings.Contains(e, constants.EnableMultiIndexSwitch) {
-			enabled = true
+			return true
 		}
 	}
-	return enabled
+	return false
 }
 
 func initFromGitClone(t *testing.T) ([]byte, error) {
