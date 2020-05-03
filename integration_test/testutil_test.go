@@ -183,9 +183,21 @@ func (it *ITest) Root() string {
 	return it.tempDir.Root()
 }
 
-// WithIndex initializes the index with the actual krew-index from github/kubernetes-sigs/krew-index.
-func (it *ITest) WithIndex() *ITest {
+// WithDefaultIndex initializes the index with the actual krew-index from github/kubernetes-sigs/krew-index.
+func (it *ITest) WithDefaultIndex() *ITest {
 	it.initializeIndex()
+	return it
+}
+
+// WithCustomIndexFromDefault initializes a new index by cloning the default index. WithDefaultIndex needs
+// to be called before this function. This is a helper function for working with custom indexes in the
+// integration tests so that developers don't need to alias the cloned default index each time.
+func (it *ITest) WithCustomIndexFromDefault(name string) *ITest {
+	// TODO(chriskim06) remove this once index migration happens
+	if !isMultiIndexEnabled(it.env) {
+		it.t.Fatalf("Cannot add a custom index without %s set", constants.EnableMultiIndexSwitch)
+	}
+	it.Krew("index", "add", name, it.TempDir().Path("index/"+constants.DefaultIndexName)).RunOrFail()
 	return it
 }
 
@@ -299,13 +311,20 @@ func (it *ITest) initializeIndex() {
 	}
 
 	// TODO(chriskim06) simplify once multi-index is enabled
-	for _, e := range it.env {
-		if strings.Contains(e, constants.EnableMultiIndexSwitch) {
-			if err := indexmigration.Migrate(environment.NewPaths(it.Root())); err != nil {
-				it.t.Fatalf("error migrating index: %s", err)
-			}
+	if isMultiIndexEnabled(it.env) {
+		if err := indexmigration.Migrate(environment.NewPaths(it.Root())); err != nil {
+			it.t.Fatalf("error migrating index: %s", err)
 		}
 	}
+}
+
+func isMultiIndexEnabled(env []string) bool {
+	for _, e := range env {
+		if strings.Contains(e, constants.EnableMultiIndexSwitch) {
+			return true
+		}
+	}
+	return false
 }
 
 func initFromGitClone(t *testing.T) ([]byte, error) {

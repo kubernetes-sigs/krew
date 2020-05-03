@@ -36,7 +36,7 @@ func TestKrewList(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex().WithCustomIndexFromDefault("foo")
 	initialList := test.Krew("list").RunOrFailOutput()
 	initialOut := []byte{'\n'}
 
@@ -52,7 +52,6 @@ func TestKrewList(t *testing.T) {
 		t.Fatalf("'list' output doesn't match:\n%s", diff)
 	}
 
-	test.Krew("index", "add", "foo", test.TempDir().Path("index/"+constants.DefaultIndexName)).RunOrFail()
 	test.Krew("install", "foo/"+validPlugin2).RunOrFail()
 
 	want := []string{validPlugin, "foo/" + validPlugin2}
@@ -67,7 +66,7 @@ func TestKrewListSorted(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex()
 	os.Setenv(constants.EnableMultiIndexSwitch, "1")
 	defer os.Unsetenv(constants.EnableMultiIndexSwitch)
 

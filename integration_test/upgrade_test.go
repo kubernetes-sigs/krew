@@ -38,7 +38,7 @@ func TestKrewUpgrade(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test.WithIndex().
+	test.WithDefaultIndex().
 		Krew("install", "--manifest", filepath.Join("testdata", validPlugin+constants.ManifestExtension)).
 		RunOrFail()
 	initialLocation := resolvePluginSymlink(test, validPlugin)
@@ -57,8 +57,7 @@ func TestKrewUpgradePluginsFromCustomIndex(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
-	test.Krew("index", "add", "foo", test.TempDir().Path("index/"+constants.DefaultIndexName)).RunOrFail()
+	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex().WithCustomIndexFromDefault("foo")
 	test.Krew("install", "foo/"+validPlugin).RunOrFail()
 
 	receipt := environment.NewPaths(test.Root()).PluginInstallReceiptPath(validPlugin)
@@ -94,7 +93,7 @@ func TestKrewUpgradeUnsafe(t *testing.T) {
 	skipShort(t)
 	test, cleanup := NewTest(t)
 	defer cleanup()
-	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex()
 
 	cases := []string{
 		`../index/` + validPlugin,
@@ -121,7 +120,7 @@ func TestKrewUpgradeWhenPlatformNoLongerMatches(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test.WithIndex().
+	test.WithDefaultIndex().
 		Krew("install", validPlugin).
 		RunOrFail()
 
@@ -146,7 +145,7 @@ func TestKrewUpgrade_ValidPluginInstalledFromManifest(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test.WithIndex().
+	test.WithDefaultIndex().
 		Krew("install", validPlugin).
 		RunOrFail()
 

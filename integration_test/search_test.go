@@ -29,7 +29,7 @@ func TestKrewSearchAll(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	output := test.WithIndex().Krew("search").RunOrFailOutput()
+	output := test.WithDefaultIndex().Krew("search").RunOrFailOutput()
 	if plugins := lines(output); len(plugins) < 10 {
 		// the first line is the header
 		t.Errorf("Expected at least %d plugins", len(plugins)-1)
@@ -42,7 +42,7 @@ func TestKrewSearchOne(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	plugins := lines(test.WithIndex().Krew("search", "krew").RunOrFailOutput())
+	plugins := lines(test.WithDefaultIndex().Krew("search", "krew").RunOrFailOutput())
 	if len(plugins) < 2 {
 		t.Errorf("Expected krew to be a valid plugin")
 	}
@@ -54,12 +54,8 @@ func TestKrewSearchOne(t *testing.T) {
 func TestKrewSearchMultiIndex(t *testing.T) {
 	skipShort(t)
 	test, cleanup := NewTest(t)
-	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex().WithCustomIndexFromDefault("foo")
 	defer cleanup()
-
-	// alias default plugin index to another
-	localIndex := test.TempDir().Path("index/" + constants.DefaultIndexName)
-	test.Krew("index", "add", "foo", localIndex).RunOrFailOutput()
 
 	test.Krew("install", validPlugin).RunOrFail()
 	test.Krew("install", "foo/"+validPlugin2).RunOrFail()
@@ -81,12 +77,8 @@ func TestKrewSearchMultiIndex(t *testing.T) {
 func TestKrewSearchMultiIndexSortedByDisplayName(t *testing.T) {
 	skipShort(t)
 	test, cleanup := NewTest(t)
-	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithIndex()
+	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex().WithCustomIndexFromDefault("foo")
 	defer cleanup()
-
-	// alias default plugin index to another
-	localIndex := test.TempDir().Path("index/" + constants.DefaultIndexName)
-	test.Krew("index", "add", "foo", localIndex).RunOrFailOutput()
 
 	output := string(test.Krew("search").RunOrFailOutput())
 
