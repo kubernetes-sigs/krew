@@ -22,5 +22,5 @@ import (
 
 func main() {
 	cmd.Execute()
-	defer klog.Flush()
+	klog.Flush()
 }

@@ -20,7 +20,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"sigs.k8s.io/krew/internal/indexmigration"
-	"sigs.k8s.io/krew/internal/receiptsmigration"
 	"sigs.k8s.io/krew/pkg/constants"
 )
 
@@ -35,23 +34,6 @@ This command will be removed without further notice from future versions of krew
 `,
 	Args:   cobra.NoArgs,
 	Hidden: true,
-}
-
-// TODO(corneliusweig) remove migration code with v0.4
-// systemCmd represents the system command
-var receiptsUpgradeCmd = &cobra.Command{
-	Use:   "receipts-upgrade",
-	Short: "Perform a migration of the krew home",
-	Long: `Krew became more awesome! To use the new features, you need to run this
-one-time migration, which will reinstall all current plugins.
-
-This command will be removed without further notice from future versions of krew.
-`,
-	Args: cobra.NoArgs,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		return receiptsmigration.Migrate(paths)
-	},
-	PreRunE: func(_ *cobra.Command, _ []string) error { return ensureIndexesUpdated() },
 }
 
 var indexUpgradeCmd = &cobra.Command{
@@ -72,6 +54,5 @@ func init() {
 	if _, ok := os.LookupEnv(constants.EnableMultiIndexSwitch); ok {
 		systemCmd.AddCommand(indexUpgradeCmd)
 	}
-	systemCmd.AddCommand(receiptsUpgradeCmd)
 	rootCmd.AddCommand(systemCmd)
 }

@@ -141,8 +141,12 @@ func preRun(cmd *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
-	if !isMigrated && cmd.Use != "receipts-upgrade" {
-		fmt.Fprintln(os.Stderr, "You need to perform a migration to continue using krew.\nPlease run `kubectl krew system receipts-upgrade`")
+	if !isMigrated {
+		fmt.Fprintln(os.Stderr, `This version of Krew is not supported anymore. Please manually migrate:
+1. Backup plugin list: kubectl krew list > backup.txt
+2. Uninstall Krew: https://krew.sigs.k8s.io/docs/user-guide/setup/uninstall/
+3. Reinstall Krew: https://krew.sigs.k8s.io/docs/user-guide/setup/install/
+4. Install current plugins: kubectl krew install < backup.txt`)
 		return errors.New("krew home outdated")
 	}
 
