@@ -32,12 +32,13 @@ func TestKrewSystem(t *testing.T) {
 	// needs to be after initial installation
 	prepareOldKrewRoot(test)
 
+	// any command should fail here
 	out, err := test.Krew("list").Run()
 	if err == nil {
-		t.Errorf("krew should fail when old receipts structure is detected")
+		t.Error("krew should fail when old receipts structure is detected")
 	}
-	if !strings.Contains(string(out), "Reinstall Krew") {
-		t.Errorf("stuff")
+	if !strings.Contains(string(out), "Uninstall Krew") {
+		t.Errorf("output should contain instructions on upgrading: %s", string(out))
 	}
 }
 
