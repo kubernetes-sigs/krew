@@ -21,7 +21,7 @@ import (
 	"testing"
 )
 
-func TestKrewSystem(t *testing.T) {
+func TestKrewUnsupportedVersion(t *testing.T) {
 	skipShort(t)
 
 	test, cleanup := NewTest(t)
