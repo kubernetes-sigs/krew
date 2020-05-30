@@ -124,6 +124,7 @@ func findRepo(homePage string) string {
 		`https://kudo.dev/`:                                          "kudobuilder/kudo",
 		`https://kubevirt.io`:                                        "kubevirt/kubectl-virt-plugin",
 		`https://popeyecli.io`:                                       "derailed/popeye",
+		`https://soluble-ai.github.io/kubetap/`:                      "soluble-ai/kubetap",
 	}
 	return knownHomePages[homePage]
 }
