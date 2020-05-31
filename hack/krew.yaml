@@ -4,7 +4,7 @@ metadata:
   name: krew
 spec:
   version: "KREW_TAG"
-  homepage: https://sigs.k8s.io/krew
+  homepage: https://krew.sigs.k8s.io/
   shortDescription: Package manager for kubectl plugins.
   caveats: |
     krew is now installed! To start using kubectl plugins, you need to add
@@ -22,7 +22,8 @@ spec:
     For a full list of available plugins, run:
       $ kubectl krew search
 
-    You can find documentation at https://sigs.k8s.io/krew.
+    You can find documentation at
+      https://krew.sigs.k8s.io/docs/user-guide/quickstart/.
 
   platforms:
   - uri: https://github.com/kubernetes-sigs/krew/releases/download/KREW_TAG/krew.tar.gz
