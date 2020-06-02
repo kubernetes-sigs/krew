@@ -143,10 +143,9 @@ func preRun(cmd *cobra.Command, _ []string) error {
 	}
 	if !isMigrated {
 		fmt.Fprintln(os.Stderr, `This version of Krew is not supported anymore. Please manually migrate:
-1. Backup plugin list: kubectl krew list > backup.txt
-2. Uninstall Krew: https://krew.sigs.k8s.io/docs/user-guide/setup/uninstall/
-3. Install latest Krew: https://krew.sigs.k8s.io/docs/user-guide/setup/install/
-4. Install plugins from backup: kubectl krew install < backup.txt`)
+1. Uninstall Krew: https://krew.sigs.k8s.io/docs/user-guide/setup/uninstall/
+2. Install latest Krew: https://krew.sigs.k8s.io/docs/user-guide/setup/install/
+3. Install the plugins you used`)
 		return errors.New("krew home outdated")
 	}
 
