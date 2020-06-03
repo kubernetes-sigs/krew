@@ -60,9 +60,6 @@ jobs:
     - name: Run integration tests
       run: hack/run-integration-tests.sh
 
-    - name: Verify receipt migration from v0.2.x to v0.3.x
-      run: hack/verify-receipts-upgrade-migration.sh
-
     - name: Create a new release
       if: contains(github.ref, 'tags')
       id: create_release

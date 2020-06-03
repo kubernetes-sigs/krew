@@ -16,15 +16,12 @@
 package integrationtest
 
 import (
-	"bytes"
 	"os"
-	"path/filepath"
+	"strings"
 	"testing"
-
-	"sigs.k8s.io/krew/internal/testutil"
 )
 
-func TestKrewSystem(t *testing.T) {
+func TestKrewUnsupportedVersion(t *testing.T) {
 	skipShort(t)
 
 	test, cleanup := NewTest(t)
@@ -35,61 +32,13 @@ func TestKrewSystem(t *testing.T) {
 	// needs to be after initial installation
 	prepareOldKrewRoot(test)
 
-	test.Krew("system", "receipts-upgrade").RunOrFailOutput()
-	test.AssertExecutableInPATH("kubectl-" + validPlugin)
-
-	assertReceiptExistsFor(test, validPlugin)
-}
-
-func TestKrewSystem_ReceiptForKrew(t *testing.T) {
-	skipShort(t)
-
-	test, cleanup := NewTest(t)
-	defer cleanup()
-
-	prepareOldKrewRoot(test)
-	touch(test.tempDir, "store/krew/ensure-folder-exists")
-
-	test.WithDefaultIndex().Krew("system", "receipts-upgrade").RunOrFailOutput()
-
-	assertReceiptExistsFor(test, "krew")
-}
-
-func TestKrewSystem_IgnoreAdditionalFolders(t *testing.T) {
-	skipShort(t)
-
-	test, cleanup := NewTest(t)
-	defer cleanup()
-
-	prepareOldKrewRoot(test)
-
-	touch(test.tempDir, "store/not-a-plugin/ensure-folder-exists")
-	out := test.WithDefaultIndex().Krew("system", "receipts-upgrade").RunOrFailOutput()
-
-	if !bytes.Contains(out, []byte("Skipping plugin not-a-plugin")) {
-		t.Errorf("Expected a message that 'not-a-plugin' is skipped, but output was:")
-		t.Log(string(out))
+	// any command should fail here
+	out, err := test.Krew("list").Run()
+	if err == nil {
+		t.Error("krew should fail when old receipts structure is detected")
 	}
-}
-
-func TestKrewSystem_IgnoreUnknownPlugins(t *testing.T) {
-	skipShort(t)
-
-	test, cleanup := NewTest(t)
-	defer cleanup()
-
-	test.Krew("install",
-		"--manifest", filepath.Join("testdata", "foo.yaml"),
-		"--archive", filepath.Join("testdata", "foo.tar.gz")).
-		RunOrFail()
-
-	prepareOldKrewRoot(test)
-
-	out := test.WithDefaultIndex().Krew("system", "receipts-upgrade").RunOrFailOutput()
-
-	if !bytes.Contains(out, []byte("Skipping plugin foo")) {
-		t.Errorf("Expected a message that 'foo' is skipped, but output was:")
-		t.Log(string(out))
+	if !strings.Contains(string(out), "Uninstall Krew") {
+		t.Errorf("output should contain instructions on upgrading: %s", string(out))
 	}
 }
 
@@ -98,17 +47,4 @@ func prepareOldKrewRoot(test *ITest) {
 	if err := os.RemoveAll(test.tempDir.Path("receipts")); err != nil {
 		test.t.Fatal(err)
 	}
-}
-
-func assertReceiptExistsFor(it *ITest, plugin string) {
-	receipt := "receipts/" + plugin + ".yaml"
-	_, err := os.Lstat(it.tempDir.Path(receipt))
-	if err != nil {
-		it.t.Errorf("Expected plugin receipt %q but found none.", receipt)
-	}
-}
-
-// touch creates a file without content in the temporary directory.
-func touch(td *testutil.TempDir, file string) {
-	td.Write(file, nil)
 }
