@@ -53,7 +53,7 @@ func Migrate(paths environment.Paths) error {
 	}
 
 	if err := os.Mkdir(indexPath, os.ModePerm); err != nil {
-		return errors.Wrapf(err, "could create index directory %q", indexPath)
+		return errors.Wrapf(err, "could not create index directory %q", indexPath)
 	}
 
 	if err := os.Rename(tmpPath, newPath); err != nil {

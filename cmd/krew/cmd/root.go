@@ -156,7 +156,7 @@ func preRun(cmd *cobra.Command, _ []string) error {
 		}
 		if !isMigrated {
 			if err := indexmigration.Migrate(paths); err != nil {
-				return errors.Wrap(err, "Failed to automatically migrate index")
+				return errors.Wrap(err, "failed to automatically migrate index")
 			}
 		}
 	}
