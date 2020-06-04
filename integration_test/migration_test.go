@@ -19,7 +19,27 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"sigs.k8s.io/krew/pkg/constants"
 )
+
+func TestKrewIndexAutoMigration(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	test.WithDefaultIndex()
+
+	// any command here should cause the index migration to occur
+	out, err := test.WithEnv(constants.EnableMultiIndexSwitch, 1).Krew("index", "list").Run()
+	if err != nil {
+		t.Errorf("command failed: %v", err)
+	}
+	if !strings.Contains(string(out), "krew-index.git") {
+		t.Error("output should include the default index after migration")
+	}
+}
 
 func TestKrewUnsupportedVersion(t *testing.T) {
 	skipShort(t)

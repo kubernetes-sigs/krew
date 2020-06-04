@@ -154,9 +154,10 @@ func preRun(cmd *cobra.Command, _ []string) error {
 		if err != nil {
 			return errors.Wrap(err, "error getting file info")
 		}
-		if !isMigrated && cmd.Use != "index-upgrade" {
-			fmt.Fprintln(os.Stderr, "You need to perform a migration to continue using krew.\nPlease run `kubectl krew system index-upgrade`")
-			return errors.New("krew index outdated")
+		if !isMigrated {
+			if err := indexmigration.Migrate(paths); err != nil {
+				return errors.Wrap(err, "Failed to automatically migrate index")
+			}
 		}
 	}
 
