@@ -150,14 +150,8 @@ func preRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if _, ok := os.LookupEnv(constants.EnableMultiIndexSwitch); ok {
-		isMigrated, err = indexmigration.Done(paths)
-		if err != nil {
-			return errors.Wrap(err, "error getting file info")
-		}
-		if !isMigrated {
-			if err := indexmigration.Migrate(paths); err != nil {
-				return errors.Wrap(err, "failed to automatically migrate index")
-			}
+		if err := indexmigration.Migrate(paths); err != nil {
+			return errors.Wrap(err, "failed to automatically migrate index")
 		}
 	}
 

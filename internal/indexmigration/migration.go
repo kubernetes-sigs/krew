@@ -24,9 +24,9 @@ import (
 	"sigs.k8s.io/krew/internal/environment"
 )
 
-// Done checks if the krew installation requires a migration to support multiple indexes.
+// done checks if the krew installation requires a migration to support multiple indexes.
 // A migration is necessary when the index directory contains a ".git" directory.
-func Done(paths environment.Paths) (bool, error) {
+func done(paths environment.Paths) (bool, error) {
 	_, err := os.Stat(filepath.Join(paths.IndexBase(), ".git"))
 	if err != nil && os.IsNotExist(err) {
 		return true, nil
@@ -36,14 +36,16 @@ func Done(paths environment.Paths) (bool, error) {
 
 // Migrate removes the index directory and then clones krew-index to the new default index path.
 func Migrate(paths environment.Paths) error {
-	isMigrated, err := Done(paths)
+	isMigrated, err := done(paths)
 	if err != nil {
 		return errors.Wrap(err, "failed to check if index migration is complete")
 	}
 	if isMigrated {
-		klog.V(2).Infoln("Already migrated")
+		klog.V(2).Infoln("already migrated")
 		return nil
 	}
+
+	klog.Info("migrating krew index layout")
 	indexPath := paths.IndexBase()
 	tmpPath := filepath.Join(paths.BasePath(), "tmp_index_migration")
 	newPath := filepath.Join(paths.IndexBase(), "default")
@@ -60,6 +62,6 @@ func Migrate(paths environment.Paths) error {
 		return errors.Wrapf(err, "could not move temporary index directory %q to new location %q", tmpPath, newPath)
 	}
 
-	klog.Infof("Migration completed successfully.")
+	klog.Info("migration completed successfully")
 	return nil
 }

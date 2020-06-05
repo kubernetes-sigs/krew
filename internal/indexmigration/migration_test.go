@@ -51,7 +51,7 @@ func TestIsMigrated(t *testing.T) {
 			}
 
 			newPaths := environment.NewPaths(tmpDir.Root())
-			actual, err := Done(newPaths)
+			actual, err := done(newPaths)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -83,8 +83,8 @@ func TestMigrate(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			done, err := Done(newPaths)
-			if err != nil || !done {
+			migrationDone, err := done(newPaths)
+			if err != nil || !migrationDone {
 				t.Errorf("expected migration to be done: %s", err)
 			}
 		})
