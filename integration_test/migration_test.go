@@ -30,14 +30,11 @@ func TestKrewIndexAutoMigration(t *testing.T) {
 	defer cleanup()
 
 	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex()
-	prepareOldIndex(test)
+	prepareOldIndexLayout(test)
 
 	// any command here should cause the index migration to occur
-	out, err := test.Krew("index", "list").Run()
-	if err != nil {
-		t.Errorf("command failed: %v", err)
-	}
-	if !strings.Contains(string(out), "krew-index.git") {
+	test.Krew("index", "list").RunOrFail()
+	if !isIndexMigrated(test) {
 		t.Error("output should include the default index after migration")
 	}
 }
@@ -49,13 +46,10 @@ func TestKrewMigrationSkippedWithNoCommand(t *testing.T) {
 	defer cleanup()
 
 	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex()
-	prepareOldIndex(test)
+	prepareOldIndexLayout(test)
 
-	out, err := test.Krew().Run()
-	if err != nil {
-		t.Errorf("command failed: %v", err)
-	}
-	if strings.Contains(string(out), "Migration completed") {
+	test.Krew().RunOrFail()
+	if isIndexMigrated(test) {
 		t.Error("output should not include the migration message")
 	}
 }
@@ -81,7 +75,19 @@ func TestKrewUnsupportedVersion(t *testing.T) {
 	}
 }
 
-func prepareOldIndex(it *ITest) {
+func isIndexMigrated(it *ITest) bool {
+	indexPath := it.TempDir().Path("index/default")
+	if _, err := os.Stat(indexPath); err == nil {
+		return true
+	} else if os.IsNotExist(err) {
+		return false
+	} else {
+		it.t.Fatal(err)
+		return false
+	}
+}
+
+func prepareOldIndexLayout(it *ITest) {
 	indexPath := it.TempDir().Path("index/default")
 	tmpPath := it.TempDir().Path("tmp_index")
 	newPath := it.TempDir().Path("index")
