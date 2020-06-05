@@ -77,14 +77,8 @@ func TestKrewUnsupportedVersion(t *testing.T) {
 
 func isIndexMigrated(it *ITest) bool {
 	indexPath := it.TempDir().Path("index/default")
-	if _, err := os.Stat(indexPath); err == nil {
-		return true
-	} else if os.IsNotExist(err) {
-		return false
-	} else {
-		it.t.Fatal(err)
-		return false
-	}
+	_, err := os.Stat(indexPath)
+	return err == nil
 }
 
 func prepareOldIndexLayout(it *ITest) {
