@@ -16,16 +16,13 @@ jobs:
     steps:
 
     - name: Set up Go 1.13
-      uses: actions/setup-go@v1
+      uses: actions/setup-go@v2
       with:
         go-version: 1.13
       id: go
 
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
-
-    - name: Add GOPATH/bin to PATH
-      run: echo "::add-path::$(go env GOPATH)/bin"
 
     - name: Install dependencies
       run: go mod download
