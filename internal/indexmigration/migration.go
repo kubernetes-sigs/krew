@@ -41,11 +41,11 @@ func Migrate(paths environment.Paths) error {
 		return errors.Wrap(err, "failed to check if index migration is complete")
 	}
 	if isMigrated {
-		klog.V(2).Infoln("already migrated")
+		klog.V(2).Infoln("Already migrated.")
 		return nil
 	}
 
-	klog.Info("migrating krew index layout")
+	klog.Info("Migrating krew index layout.")
 	indexPath := paths.IndexBase()
 	tmpPath := filepath.Join(paths.BasePath(), "tmp_index_migration")
 	newPath := filepath.Join(paths.IndexBase(), "default")
@@ -62,6 +62,6 @@ func Migrate(paths environment.Paths) error {
 		return errors.Wrapf(err, "could not move temporary index directory %q to new location %q", tmpPath, newPath)
 	}
 
-	klog.Info("migration completed successfully")
+	klog.Info("Migration completed successfully.")
 	return nil
 }

@@ -35,22 +35,7 @@ func TestKrewIndexAutoMigration(t *testing.T) {
 	// any command here should cause the index migration to occur
 	test.Krew("index", "list").RunOrFail()
 	if !isIndexMigrated(test) {
-		t.Error("output should include the default index after migration")
-	}
-}
-
-func TestKrewMigrationSkippedWithNoCommand(t *testing.T) {
-	skipShort(t)
-
-	test, cleanup := NewTest(t)
-	defer cleanup()
-
-	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex()
-	prepareOldIndexLayout(test)
-
-	test.Krew().RunOrFail()
-	if isIndexMigrated(test) {
-		t.Error("output should not include the migration message")
+		t.Error("index should have been auto-migrated")
 	}
 }
 
