@@ -13,3 +13,7 @@
 
 out/
 build/
+
+# Editors
+.idea/
+.vscode/
