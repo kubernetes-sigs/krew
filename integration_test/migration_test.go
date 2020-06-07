@@ -66,6 +66,7 @@ func isIndexMigrated(it *ITest) bool {
 	return err == nil
 }
 
+// TODO remove when testing indexmigration is no longer necessary
 func prepareOldIndexLayout(it *ITest) {
 	indexPath := it.TempDir().Path("index/default")
 	tmpPath := it.TempDir().Path("tmp_index")
