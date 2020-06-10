@@ -150,13 +150,14 @@ func preRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if _, ok := os.LookupEnv(constants.EnableMultiIndexSwitch); ok {
-		isMigrated, err = indexmigration.Done(paths)
+		isMigrated, err := indexmigration.Done(paths)
 		if err != nil {
-			return errors.Wrap(err, "error getting file info")
+			return errors.Wrap(err, "failed to check if index migration is complete")
 		}
-		if !isMigrated && cmd.Use != "index-upgrade" {
-			fmt.Fprintln(os.Stderr, "You need to perform a migration to continue using krew.\nPlease run `kubectl krew system index-upgrade`")
-			return errors.New("krew index outdated")
+		if !isMigrated {
+			if err := indexmigration.Migrate(paths); err != nil {
+				return errors.Wrap(err, "index migration failed")
+			}
 		}
 	}
 

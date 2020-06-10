@@ -63,30 +63,18 @@ func TestIsMigrated(t *testing.T) {
 }
 
 func TestMigrate(t *testing.T) {
-	var tests = []struct {
-		name   string
-		gitDir string
-	}{
-		{name: "migration is necessary", gitDir: "index/.git"},
-		{name: "no migration is necessary", gitDir: "index/default/.git"},
+	tmpDir, cleanup := testutil.NewTempDir(t)
+	defer cleanup()
+
+	tmpDir.Write("index/.git", nil)
+
+	newPaths := environment.NewPaths(tmpDir.Root())
+	err := Migrate(newPaths)
+	if err != nil {
+		t.Fatal(err)
 	}
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			tmpDir, cleanup := testutil.NewTempDir(t)
-			defer cleanup()
-
-			tmpDir.Write(tt.gitDir, nil)
-
-			newPaths := environment.NewPaths(tmpDir.Root())
-			err := Migrate(newPaths)
-			if err != nil {
-				t.Fatal(err)
-			}
-			done, err := Done(newPaths)
-			if err != nil || !done {
-				t.Errorf("expected migration to be done: %s", err)
-			}
-		})
+	done, err := Done(newPaths)
+	if err != nil || !done {
+		t.Errorf("expected migration to be done: %s", err)
 	}
 }

@@ -19,7 +19,25 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"sigs.k8s.io/krew/pkg/constants"
 )
+
+func TestKrewIndexAutoMigration(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex()
+	prepareOldIndexLayout(test)
+
+	// any command here should cause the index migration to occur
+	test.Krew("index", "list").RunOrFail()
+	if !isIndexMigrated(test) {
+		t.Error("index should have been auto-migrated")
+	}
+}
 
 func TestKrewUnsupportedVersion(t *testing.T) {
 	skipShort(t)
@@ -39,6 +57,28 @@ func TestKrewUnsupportedVersion(t *testing.T) {
 	}
 	if !strings.Contains(string(out), "Uninstall Krew") {
 		t.Errorf("output should contain instructions on upgrading: %s", string(out))
+	}
+}
+
+func isIndexMigrated(it *ITest) bool {
+	indexPath := it.TempDir().Path("index/default")
+	_, err := os.Stat(indexPath)
+	return err == nil
+}
+
+// TODO remove when testing indexmigration is no longer necessary
+func prepareOldIndexLayout(it *ITest) {
+	indexPath := it.TempDir().Path("index/default")
+	tmpPath := it.TempDir().Path("tmp_index")
+	newPath := it.TempDir().Path("index")
+	if err := os.Rename(indexPath, tmpPath); err != nil {
+		it.t.Fatal(err)
+	}
+	if err := os.Remove(newPath); err != nil {
+		it.t.Fatal(err)
+	}
+	if err := os.Rename(tmpPath, newPath); err != nil {
+		it.t.Fatal(err)
 	}
 }
 
