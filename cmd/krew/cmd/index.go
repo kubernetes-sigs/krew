@@ -75,7 +75,13 @@ var indexAddCmd = &cobra.Command{
 		if !indexoperations.IsValidIndexName(name) {
 			return errInvalidIndexName
 		}
-		return indexoperations.AddIndex(paths, name, args[1])
+		err := indexoperations.AddIndex(paths, name, args[1])
+		if err == nil {
+			internal.PrintWarning(os.Stderr, `You have added a new index from %q
+The plugins in this index are not audited for security by the Krew maintainers.
+Run them at your own risk.`+"\n", args[1])
+		}
+		return err
 	},
 }
 
@@ -86,7 +92,7 @@ var indexDeleteCmd = &cobra.Command{
 
 It is only safe to remove indexes without installed plugins. Removing an index
 while there are plugins installed will result in an error, unless the --force
-option is used ( not recommended).`,
+option is used (not recommended).`,
 
 	Args: cobra.ExactArgs(1),
 	RunE: indexDelete,

@@ -28,6 +28,7 @@ import (
 	"sigs.k8s.io/krew/internal/installation"
 	"sigs.k8s.io/krew/internal/installation/receipt"
 	"sigs.k8s.io/krew/internal/pathutil"
+	"sigs.k8s.io/krew/pkg/constants"
 )
 
 func init() {
@@ -104,7 +105,9 @@ kubectl krew upgrade foo bar"`,
 					return errors.Wrapf(err, "failed to upgrade plugin %q", pluginDisplayName)
 				}
 				fmt.Fprintf(os.Stderr, "Upgraded plugin: %s\n", pluginDisplayName)
-				internal.PrintSecurityNotice(plugin.Name)
+				if indexName == constants.DefaultIndexName {
+					internal.PrintSecurityNotice(plugin.Name)
+				}
 			}
 			if nErrors > 0 {
 				fmt.Fprintf(os.Stderr, "WARNING: Some plugins failed to upgrade, check logs above.\n")
