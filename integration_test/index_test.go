@@ -66,6 +66,19 @@ func TestKrewIndexAddUnsafe(t *testing.T) {
 	}
 }
 
+func TestKrewIndexAddShowsSecurityWarning(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex()
+	out := string(test.Krew("index", "add", "foo", test.TempDir().Path("index/"+constants.DefaultIndexName)).RunOrFailOutput())
+	if !strings.Contains(out, "WARNING") {
+		t.Errorf("expected output to contain warning when adding custom index: %v", out)
+	}
+}
+
 func TestKrewIndexList(t *testing.T) {
 	skipShort(t)
 

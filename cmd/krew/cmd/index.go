@@ -76,12 +76,13 @@ var indexAddCmd = &cobra.Command{
 			return errInvalidIndexName
 		}
 		err := indexoperations.AddIndex(paths, name, args[1])
-		if err == nil {
-			internal.PrintWarning(os.Stderr, `You have added a new index from %q
+		if err != nil {
+			return err
+		}
+		internal.PrintWarning(os.Stderr, `You have added a new index from %q
 The plugins in this index are not audited for security by the Krew maintainers.
 Run them at your own risk.`+"\n", args[1])
-		}
-		return err
+		return nil
 	},
 }
 
