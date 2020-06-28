@@ -81,7 +81,8 @@ var indexAddCmd = &cobra.Command{
 		}
 		internal.PrintWarning(os.Stderr, `You have added a new index from %q
 The plugins in this index are not audited for security by the Krew maintainers.
-Install them at your own risk.`+"\n", args[1])
+Install them at your own risk.
+`, args[1])
 		return nil
 	},
 }

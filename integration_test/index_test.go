@@ -74,7 +74,7 @@ func TestKrewIndexAddShowsSecurityWarning(t *testing.T) {
 
 	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex()
 	out := string(test.Krew("index", "add", "foo", test.TempDir().Path("index/"+constants.DefaultIndexName)).RunOrFailOutput())
-	if !strings.Contains(out, "WARNING") {
+	if !strings.Contains(out, "WARNING: You have added a new index") {
 		t.Errorf("expected output to contain warning when adding custom index: %v", out)
 	}
 }
