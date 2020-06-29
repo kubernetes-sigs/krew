@@ -4,6 +4,9 @@ slug: managing-plugins
 weight: 200
 ---
 
+All of the same functionality for working with plugins exists for plugins from
+custom indexes.
+
 ## Discovering Plugins
 
 Searching for plugins doesn't change after adding custom indexes. The syntax
@@ -39,6 +42,9 @@ the name of the index it comes from. For example, if you added an index with the
 name `foo`:
 ```sh
 {{<prompt>}}kubectl krew index add foo https://github.com/foo/custom-index.git
+{{<output>}}WARNING: You have added a new index from "https://github.com/foo/custom-index.git"
+The plugins in this index are not audited for security by the Krew maintainers.
+Install them at your own risk.{{</output>}}
 ```
 then you would be able to install plugins from it as `foo/<PLUGIN>`:
 ```sh
@@ -53,10 +59,7 @@ Installed plugin: bar
  |      kubectl bar
  | Documentation:
  |      https://github.com/foo/bar
-/
-WARNING: You installed plugin "bar" from the krew-index plugin repository.
-   These plugins are not audited for security by the Krew maintainers.
-   Run them at your own risk.{{</output>}}
+/{{</output>}}
 ```
 
 The plugin can then be used like any other:
