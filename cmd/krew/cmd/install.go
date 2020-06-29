@@ -29,6 +29,7 @@ import (
 	"sigs.k8s.io/krew/internal/index/validation"
 	"sigs.k8s.io/krew/internal/installation"
 	"sigs.k8s.io/krew/internal/pathutil"
+	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/index"
 )
 
@@ -173,7 +174,9 @@ Remarks:
 					output += fmt.Sprintf("Caveats:\n%s\n", indent(plugin.Spec.Caveats))
 				}
 				fmt.Fprintln(os.Stderr, indent(output))
-				internal.PrintSecurityNotice(plugin.Name)
+				if entry.indexName == constants.DefaultIndexName {
+					internal.PrintSecurityNotice(plugin.Name)
+				}
 			}
 			if len(failed) > 0 {
 				return errors.Wrapf(returnErr, "failed to install some plugins: %+v", failed)

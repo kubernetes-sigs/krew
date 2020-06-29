@@ -149,6 +149,19 @@ func TestKrewInstall_CustomIndex(t *testing.T) {
 	test.AssertExecutableNotInPATH("kubectl-" + validPlugin2)
 }
 
+func TestKrewInstallNoSecurityWarningForCustomIndex(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex().WithCustomIndexFromDefault("foo")
+	out := string(test.Krew("install", "foo/"+validPlugin).RunOrFailOutput())
+	if strings.Contains(out, "Run them at your own risk") {
+		t.Errorf("expected install of custom plugin to not show security warning: %v", out)
+	}
+}
+
 func TestKrewInstall_Manifest(t *testing.T) {
 	skipShort(t)
 

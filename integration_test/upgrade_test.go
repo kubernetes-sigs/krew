@@ -74,6 +74,23 @@ func TestKrewUpgradePluginsFromCustomIndex(t *testing.T) {
 	}
 }
 
+func TestKrewUpgradeNoSecurityWarningForCustomIndex(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex().WithCustomIndexFromDefault("foo")
+	test.Krew("install", "foo/"+validPlugin).RunOrFail()
+
+	receipt := environment.NewPaths(test.Root()).PluginInstallReceiptPath(validPlugin)
+	modifyManifestVersion(t, receipt, "v0.0.1")
+	out := string(test.Krew("upgrade").RunOrFailOutput())
+	if strings.Contains(out, "Run them at your own risk") {
+		t.Errorf("expected install of custom plugin to not show security warning: %v", out)
+	}
+}
+
 func TestKrewUpgrade_CannotUseIndexSyntax(t *testing.T) {
 	skipShort(t)
 
