@@ -4,8 +4,8 @@ slug: overview
 weight: 100
 ---
 
-Custom indexes allow plugins to be hosted outside of the central index. Users
-can then add the custom index to start installing plugins from it.
+Custom indexes allow plugins to be hosted outside of `krew-index`. Users can
+then add the custom index to start installing plugins from it.
 
 ## Adding a custom index
 
@@ -38,5 +38,5 @@ foo      https://github.com/foo/custom-index.git{{</output>}}
 ## Caveats
 
 You can only have *one* plugin with a given name installed at a time. If both
-the central krew-index and a custom index you've added contain a plugin named
-`bar` then you will only be able to have one installed at a time.
+the `krew-index` and a custom index you've added contain a plugin named `bar`
+then you will only be able to have one installed at a time.

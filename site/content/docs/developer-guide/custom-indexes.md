@@ -5,8 +5,8 @@ weight: 500
 ---
 
 Custom indexes allow you to distribute your own custom plugins without having to
-go through the central krew-index. Hosting your own custom index is as simple as
-creating a git repository with the following structure:
+go through the central `krew-index`. Hosting your own custom index is as simple
+as creating a git repository with the following structure:
 ```
 custom-index/
   - plugins/
