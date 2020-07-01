@@ -66,13 +66,13 @@ Similarly:
     {{<prompt>}}kubectl krew search
     ```
 
-- To remove a plugin, you don't need to specify its index
+- To remove a plugin, you don't need to specify its index:
 
     ```sh
     {{<prompt>}}kubectl krew uninstall PLUGIN_NAME
     ```
 
-- To get information about a plugin from a custom index
+- To get information about a plugin from a custom index:
 
     ```sh
     {{<prompt>}}kubectl krew info INDEX_NAME/PLUGIN_NAME
