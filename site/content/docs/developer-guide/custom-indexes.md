@@ -20,14 +20,14 @@ have a use case such as:
 Hosting your own custom index is simple:
 
 - Custom index repositories must be `git` repositories.
-- Your clients should have a read access to the repository (if the repository
+- Your clients should have read access to the repository (if the repository
   is not public, users can still authenticate to it with SSH keys or other
   [gitremote-helpers](https://git-scm.com/docs/gitremote-helpers) installed
   on the client machine).
 - The repository must contain a `plugins/` directory at the root, with at least
   one plugin manifest in it. Plugin manifests should be directly in this
   directory.
-- Ensure plugins manifests are valid YAML and passes Krew manifest validation
+- Ensure plugin manifests are valid YAML and passes Krew manifest validation
   (optionally, you can use the
   [validate-krew-manifest](https://github.com/kubernetes-sigs/krew/tree/master/cmd/validate-krew-manifest)
   tool for static analysis).
