@@ -2,6 +2,7 @@
 title: Using Custom Plugin Indexes
 slug: custom-indexes
 weight: 800
+draft: true
 ---
 
 Plugin indexes contain plugin manifests, which are documents that describe
