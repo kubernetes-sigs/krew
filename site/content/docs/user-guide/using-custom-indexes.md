@@ -35,7 +35,7 @@ the remove command:
 
 ## Listing indexes
 
-To see what indexes you have added you can run the list command
+To see what indexes you have added run the list command
 
 ```sh
 {{<prompt>}}kubectl krew index list
