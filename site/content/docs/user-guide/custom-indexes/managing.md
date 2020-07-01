@@ -13,8 +13,7 @@ Searching for plugins doesn't change after adding custom indexes. The syntax
 remains the same but now results will show up from the custom indexes you added:
 ```sh
 {{<prompt>}}kubectl krew search
-{{<output>}}
-NAME             DESCRIPTION                                         INSTALLED
+{{<output>}}NAME             DESCRIPTION                                         INSTALLED
 access-matrix    Show an RBAC access matrix for server resources     no
 advise-psp       Suggests PodSecurityPolicies for cluster.           no
 auth-proxy       Authentication proxy to a pod or service            no
@@ -23,12 +22,17 @@ ca-cert          Print the PEM CA certificate of the current clu...  no
 foo/bar          Example plugin from a custom index.                 no
 ...{{</output>}}
 ```
-To learn more about a plugin from a custom index you can run the same commmand
-`kubectl krew info <INDEX>/<PLUGIN>`:
+You can specify search keywords as arguments:
+```sh
+{{<prompt>}}kubectl krew search bar
+{{<output>}}NAME             DESCRIPTION                                         INSTALLED
+foo/bar          Example plugin from a custom index.                 no
+starboard        Toolkit for finding risks in kubernetes resources   no{{</output>}}
+```
+To learn more about a plugin from a custom index you can run `kubectl krew info <INDEX>/<PLUGIN>`:
 ```sh
 {{<prompt>}}kubectl krew info foo/bar
-{{<output>}}
-NAME: bar
+{{<output>}}NAME: bar
 INDEX: foo
 VERSION: v0.1.0
 DESCRIPTION:
@@ -49,8 +53,7 @@ Install them at your own risk.{{</output>}}
 then you would be able to install plugins from it as `foo/<PLUGIN>`:
 ```sh
 {{<prompt>}}kubectl krew install foo/bar
-{{<output>}}
-Updated the local copy of plugin index.
+{{<output>}}Updated the local copy of plugin index.
 Updated the local copy of plugin index "foo".
 Installing plugin: bar
 Installed plugin: bar

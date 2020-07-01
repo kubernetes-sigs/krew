@@ -9,7 +9,7 @@ then add the custom index to start installing plugins from it.
 
 ## Adding a custom index
 
-A custom index can be added with the `kubectl krew index add [name] [git URI]` command
+A custom index can be added with the `kubectl krew index add` command
 ```sh
 {{<prompt>}}kubectl krew index add foo https://github.com/foo/custom-index.git
 {{<output>}}WARNING: You have added a new index from "https://github.com/foo/custom-index.git"
@@ -21,7 +21,7 @@ The URI you use can be any valid URI (e.g., `git@github.com:foo/custom-index.git
 
 ## Removing a custom index
 
-You can remove a custom index by passing the name was added with to the remove command
+You can remove a custom index by passing the name it was added with to the remove command
 ```sh
 {{<prompt>}}kubectl krew index remove foo
 ```
