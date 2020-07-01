@@ -7,7 +7,7 @@ weight: 500
 [Custom plugin indexes][ug] allow plugin developers to curate and distribute their plugins without
 having to go through the centralized [`krew-index`
 repository](https://github.com/kubernetes-sigs/krew) (which is a
-community-maintained curation kubectl plugins).
+community-maintained curation of kubectl plugins).
 
 Hosting your own custom index is as simple as creating a git repository with the
 following structure:
