@@ -7,7 +7,7 @@ draft: true
 
 Plugin indexes contain plugin manifests, which are documents that describe
 installation procedure for a plugin. For discovery purposes, Krew comes with a
-`default` plugin index,  plugins hosted in the [`krew-index`
+`default` plugin index, plugins hosted in the [`krew-index`
 repository](https://github.com/kubernetes-sigs/krew-index).
 
 However, some plugin authors may choose to host their own indexes that contain
@@ -82,3 +82,10 @@ Similarly:
 
 > **Caveat:** If two indexes offer a plugin with the same name, only one can
 > be installed at any time.
+
+## Advanced usage
+
+Krew ships with `krew-index` as the default, but this can be removed like any
+other index. Once this is removed, you can add another index with the name
+`default` and plugins from it will not require the `INDEX_NAME` prefix in
+commands.
