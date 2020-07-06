@@ -43,18 +43,6 @@ default  https://github.com/kubernetes-sigs/krew-index.git
 foo      https://github.com/foo/custom-index.git{{</output>}}
 ```
 
-## The default index
-
-When a plugin doesn't have an explicit `INDEX_NAME` prefix it refers to a plugin
-from the default index. These plugins have an implicit `default/` prepended to
-them in Krew commands. The `INDEX_NAME` prefix is used to differentiate plugins
-with the same name across different indexes.
-
-Krew ships with [`krew-index`][ki] as the default index, but this can be removed
-by passing `default` to the remove command. Once this is removed, you can add
-another index with the name `default` and plugins from it will not require the
-`INDEX_NAME` prefix in commands.
-
 ## Installing plugins from custom indexes
 
 Commands for managing plugins (e.g. `install`, `upgrade`) work with custom
@@ -93,5 +81,17 @@ Similarly:
 
 > **Caveat:** If two indexes offer a plugin with the same name, only one can
 > be installed at any time.
+
+## The default index
+
+When a plugin doesn't have an explicit `INDEX_NAME` prefix, it refers to a plugin
+from the `default` index. These plugins have an implicit `default/` prepended to
+them in Krew commands. The `INDEX_NAME` prefix is used to differentiate plugins
+with the same name across different indexes.
+
+Krew ships with [`krew-index`][ki] as the `default` index, but this can be
+removed using the `kubectl krew index remove default` command. Once this is
+removed, you can add another index with the name `default` and plugins from it
+will not require the `INDEX_NAME` prefix in commands.
 
 [ki]: https://github.com/kubernetes-sigs/krew-index
