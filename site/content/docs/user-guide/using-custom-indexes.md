@@ -7,8 +7,7 @@ draft: true
 
 Plugin indexes contain plugin manifests, which are documents that describe
 installation procedure for a plugin. For discovery purposes, Krew comes with a
-`default` plugin index, plugins hosted in the [`krew-index`
-repository](https://github.com/kubernetes-sigs/krew-index).
+`default` plugin index, plugins hosted in the [`krew-index` repository][ki].
 
 However, some plugin authors may choose to host their own indexes that contain
 their curation of kubectl plugins. These are called "custom plugin indexes".
@@ -35,7 +34,7 @@ the remove command:
 
 ## Listing indexes
 
-To see what indexes you have added run the list command
+To see what indexes you have added run the list command:
 
 ```sh
 {{<prompt>}}kubectl krew index list
@@ -43,6 +42,18 @@ To see what indexes you have added run the list command
 default  https://github.com/kubernetes-sigs/krew-index.git
 foo      https://github.com/foo/custom-index.git{{</output>}}
 ```
+
+## The default index
+
+When a plugin doesn't have an explicit `INDEX_NAME` prefix it refers to a plugin
+from the default index. These plugins have an implicit `default/` prepended to
+them in Krew commands. The `INDEX_NAME` prefix is used to differentiate plugins
+with the same name across different indexes.
+
+Krew ships with [`krew-index`][ki] as the default index, but this can be removed
+by passing `default` to the remove command. Once this is removed, you can add
+another index with the name `default` and plugins from it will not require the
+`INDEX_NAME` prefix in commands.
 
 ## Installing plugins from custom indexes
 
@@ -83,9 +94,4 @@ Similarly:
 > **Caveat:** If two indexes offer a plugin with the same name, only one can
 > be installed at any time.
 
-## Advanced usage
-
-Krew ships with `krew-index` as the default, but this can be removed like any
-other index. Once this is removed, you can add another index with the name
-`default` and plugins from it will not require the `INDEX_NAME` prefix in
-commands.
+[ki]: https://github.com/kubernetes-sigs/krew-index

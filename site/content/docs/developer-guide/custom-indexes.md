@@ -42,13 +42,3 @@ Example plugin repository layout:
     ├── plugin-b.yaml
     └── plugin-c.yaml
 ```
-
-## Duplicate plugin names
-
-Your custom index can contain plugins that have the same name as the ones in
-`krew-index`.
-
-Users of your index will need to install your plugin using the
-explicit `<INDEX>/<PLUGIN>` syntax. See the [user guide][ug].
-
-[ug]: {{< relref "../user-guide/using-custom-indexes.md">}}
