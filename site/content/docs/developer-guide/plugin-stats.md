@@ -1,7 +1,7 @@
 ---
 title: Plugin usage analytics
 slug: plugin-stats
-weight: 500
+weight: 600
 ---
 
 Krew does not track user behavior. However, for plugins that distribute their
