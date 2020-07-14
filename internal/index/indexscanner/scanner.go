@@ -117,7 +117,7 @@ func readFromFile(path string, as interface{}) error {
 		return err
 	}
 	err = decodeFile(f, &as)
-	return errors.Wrap(err, "failed to parse yaml file")
+	return errors.Wrapf(err, "failed to parse yaml file %q", path)
 }
 
 // decodeFile tries to decode a plugin/receipt
