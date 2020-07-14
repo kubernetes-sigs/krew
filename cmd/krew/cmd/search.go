@@ -54,7 +54,7 @@ Examples:
 		for _, idx := range indexes {
 			ps, err := indexscanner.LoadPluginListFromFS(paths.IndexPluginsPath(idx.Name))
 			if err != nil {
-				return errors.Wrap(err, "failed to load the list of plugins from the index")
+				return errors.Wrapf(err, "failed to load the list of plugins from the index %q", idx.Name)
 			}
 			for _, p := range ps {
 				plugins = append(plugins, pluginEntry{p, idx.Name})
