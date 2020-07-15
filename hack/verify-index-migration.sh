@@ -34,12 +34,13 @@ install_krew_0_3_4() {
   temp_dir="$(mktemp -d)"
   trap 'rm -rf "${temp_dir}"' RETURN
   (
-  set -x; cd "$(mktemp -d)" &&
-    curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/krew.{tar.gz,yaml}" &&
-    tar zxvf krew.tar.gz &&
-    KREW=./krew-"$(uname | tr '[:upper:]' '[:lower:]')_amd64" &&
-    "$KREW" install --manifest=krew.yaml --archive=krew.tar.gz &&
-    "$KREW" update
+    set -x
+    cd "$(mktemp -d)" &&
+      curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/krew.{tar.gz,yaml}" &&
+      tar zxvf krew.tar.gz &&
+      KREW=./krew-"$(uname | tr '[:upper:]' '[:lower:]')_amd64" &&
+      "$KREW" install --manifest=krew.yaml --archive=krew.tar.gz &&
+      "$KREW" update
   )
 }
 
@@ -70,7 +71,7 @@ run_krew() {
     kubectl krew "$@"
 }
 
-# run_krew runs 'krew' with the specified KREW_ROOT and arguments.
+# TODO(chriskim06): remove this after multi index flag is removed
 run_krew_with_multi_index_flag() {
   krew_root="${1}"
   shift
@@ -101,6 +102,7 @@ main() {
   install_plugin "${krew_root}" "get-all"
   echo >&2 "Swapping krew binary"
   patch_krew_bin "${krew_root}" "${new_krew}"
+  # TODO(chriskim06): replace with run_krew after multi index flag is removed
   run_krew_with_multi_index_flag "${krew_root}" list || (
     echo >&2 "krew list is failing"
     exit 1
