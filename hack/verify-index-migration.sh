@@ -65,16 +65,7 @@ run_krew() {
   krew_root="${1}"
   shift
 
-  env KREW_ROOT="${krew_root}" \
-    PATH="${krew_root}/bin:$PATH" \
-    kubectl krew "$@"
-}
-
-# TODO(chriskim06): remove this after multi index flag is removed
-run_krew_with_multi_index_flag() {
-  krew_root="${1}"
-  shift
-
+  # TODO(chriskim06): remove multi index flag once feature gate is removed
   env KREW_ROOT="${krew_root}" \
     PATH="${krew_root}/bin:$PATH" \
     X_KREW_ENABLE_MULTI_INDEX=1 \
@@ -101,8 +92,7 @@ main() {
   install_plugin "${krew_root}" "get-all"
   echo >&2 "Swapping krew binary"
   patch_krew_bin "${krew_root}" "${new_krew}"
-  # TODO(chriskim06): replace with run_krew after multi index flag is removed
-  run_krew_with_multi_index_flag "${krew_root}" list || (
+  run_krew "${krew_root}" list || (
     echo >&2 "krew list is failing"
     exit 1
   )
