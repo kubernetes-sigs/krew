@@ -39,20 +39,18 @@ install_krew_0_3_4() {
       curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/download/v0.3.4/krew.{tar.gz,yaml}" &&
       tar zxvf krew.tar.gz &&
       KREW=./krew-"$(uname | tr '[:upper:]' '[:lower:]')_amd64" &&
-      env KREW_ROOT="${krew_root}" &&
-      "$KREW" install --manifest=krew.yaml --archive=krew.tar.gz &&
-      "$KREW" update
+      env KREW_ROOT="${krew_root}" "$KREW" install --manifest=krew.yaml --archive=krew.tar.gz &&
+      env KREW_ROOT="${krew_root}" "$KREW" update
   )
 }
 
 install_plugin() {
-  krew_root="${1}"
   plugin="${2}"
 
   run_krew "${1}" install "${plugin}" 1>/dev/null
 }
 
-# patch_krew_bin replaces the installed krew 0.2.x binary with the specified
+# patch_krew_bin replaces the installed krew binary with the new version
 patch_krew_bin() {
   krew_root="${1}"
   new_binary="${2}"
