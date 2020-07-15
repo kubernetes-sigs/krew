@@ -108,7 +108,6 @@ main() {
   )
   verify_index_migrated "${krew_root}" || (
     echo >&2 "index was not migrated"
-    ls -la "${krew_root}/index"
     exit 1
   )
 }
