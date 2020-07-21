@@ -56,24 +56,12 @@ func TestPaths(t *testing.T) {
 		t.Errorf("BinPath()=%s; expected=%s", got, expected)
 	}
 
-	t.Run("with EnableMultiIndexSwitch", func(t *testing.T) {
-		os.Setenv(constants.EnableMultiIndexSwitch, "1")
-		defer os.Unsetenv(constants.EnableMultiIndexSwitch)
-		if got, expected := p.IndexPath(constants.DefaultIndexName), filepath.FromSlash("/foo/index/default"); got != expected {
-			t.Errorf("IndexPath(\"%s\")=%s; expected=%s", constants.DefaultIndexName, got, expected)
-		}
-		if got, expected := p.IndexPluginsPath(constants.DefaultIndexName), filepath.FromSlash("/foo/index/default/plugins"); got != expected {
-			t.Errorf("IndexPluginsPath(\"%s\")=%s; expected=%s", constants.DefaultIndexName, got, expected)
-		}
-	})
-	t.Run("without EnableMultiIndexSwitch", func(t *testing.T) {
-		if got, expected := p.IndexPath(constants.DefaultIndexName), filepath.FromSlash("/foo/index"); got != expected {
-			t.Errorf("IndexPath(\"%s\")=%s; expected=%s", constants.DefaultIndexName, got, expected)
-		}
-		if got, expected := p.IndexPluginsPath(constants.DefaultIndexName), filepath.FromSlash("/foo/index/plugins"); got != expected {
-			t.Errorf("IndexPluginsPath(\"%s\")=%s; expected=%s", constants.DefaultIndexName, got, expected)
-		}
-	})
+	if got, expected := p.IndexPath(constants.DefaultIndexName), filepath.FromSlash("/foo/index/default"); got != expected {
+		t.Errorf("IndexPath(\"%s\")=%s; expected=%s", constants.DefaultIndexName, got, expected)
+	}
+	if got, expected := p.IndexPluginsPath(constants.DefaultIndexName), filepath.FromSlash("/foo/index/default/plugins"); got != expected {
+		t.Errorf("IndexPluginsPath(\"%s\")=%s; expected=%s", constants.DefaultIndexName, got, expected)
+	}
 
 	if got, expected := p.InstallPath(), filepath.FromSlash("/foo/store"); got != expected {
 		t.Errorf("InstallPath()=%s; expected=%s", got, expected)

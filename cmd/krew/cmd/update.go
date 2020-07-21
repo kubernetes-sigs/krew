@@ -121,11 +121,9 @@ func loadPlugins(indexes []indexoperations.Index) []pluginEntry {
 }
 
 func ensureIndexes(_ *cobra.Command, _ []string) error {
-	if os.Getenv(constants.EnableMultiIndexSwitch) != "" {
-		klog.V(3).Infof("Will check if there are any indexes added.")
-		if err := ensureDefaultIndexIfNoneExist(); err != nil {
-			return err
-		}
+	klog.V(3).Infof("Will check if there are any indexes added.")
+	if err := ensureDefaultIndexIfNoneExist(); err != nil {
+		return err
 	}
 	return ensureIndexesUpdated()
 }
@@ -173,7 +171,7 @@ func ensureIndexesUpdated() error {
 			continue
 		}
 
-		if os.Getenv(constants.EnableMultiIndexSwitch) == "" || isDefaultIndex(idx.Name) {
+		if isDefaultIndex(idx.Name) {
 			fmt.Fprintln(os.Stderr, "Updated the local copy of plugin index.")
 		} else {
 			fmt.Fprintf(os.Stderr, "Updated the local copy of plugin index %q.\n", idx.Name)

@@ -53,7 +53,7 @@ func TestKrewUninstallPluginsFromCustomIndex(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex().WithCustomIndexFromDefault("foo")
+	test.WithDefaultIndex().WithCustomIndexFromDefault("foo")
 	test.Krew("install", "foo/"+validPlugin).RunOrFail()
 
 	test.Krew("uninstall", validPlugin).RunOrFail()
@@ -66,7 +66,7 @@ func TestKrewUninstall_CannotUseIndexSyntax(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex()
+	test.WithDefaultIndex()
 	out, err := test.Krew("uninstall", "foo/"+validPlugin).Run()
 	if err == nil {
 		t.Error("expected error when uninstalling by canonical name")
@@ -110,7 +110,7 @@ func TestKrewRemove_Unsafe(t *testing.T) {
 	skipShort(t)
 	test, cleanup := NewTest(t)
 	defer cleanup()
-	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex()
+	test.WithDefaultIndex()
 	test.Krew("install", validPlugin).RunOrFailOutput()
 
 	cases := []string{

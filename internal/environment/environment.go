@@ -61,19 +61,12 @@ func (p Paths) IndexBase() string {
 }
 
 // IndexPath returns the directory where a plugin index repository is cloned.
-// When constants.EnableMultiIndexSwitch var is unset it just returns the krew
-// index base.
 // e.g. {BasePath}/index/default or {BasePath}/index
 func (p Paths) IndexPath(name string) string {
-	if _, ok := os.LookupEnv(constants.EnableMultiIndexSwitch); ok {
-		return filepath.Join(p.base, "index", name)
-	}
-	return p.IndexBase()
+	return filepath.Join(p.base, "index", name)
 }
 
 // IndexPluginsPath returns the plugins directory of an index repository.
-// When constants.EnableMultiIndexSwitch var is unset it just returns the old
-// structure krew-index plugins.
 // e.g. {BasePath}/index/default/plugins/ or {BasePath}/index/plugins/
 func (p Paths) IndexPluginsPath(name string) string {
 	return filepath.Join(p.IndexPath(name), "plugins")

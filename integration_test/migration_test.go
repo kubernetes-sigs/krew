@@ -19,8 +19,6 @@ import (
 	"os"
 	"strings"
 	"testing"
-
-	"sigs.k8s.io/krew/pkg/constants"
 )
 
 func TestKrewIndexAutoMigration(t *testing.T) {
@@ -29,7 +27,7 @@ func TestKrewIndexAutoMigration(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex()
+	test.WithDefaultIndex()
 	prepareOldIndexLayout(test)
 
 	// any command here should cause the index migration to occur

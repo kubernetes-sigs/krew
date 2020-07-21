@@ -149,15 +149,13 @@ func preRun(cmd *cobra.Command, _ []string) error {
 		return errors.New("krew home outdated")
 	}
 
-	if _, ok := os.LookupEnv(constants.EnableMultiIndexSwitch); ok {
-		isMigrated, err := indexmigration.Done(paths)
-		if err != nil {
-			return errors.Wrap(err, "failed to check if index migration is complete")
-		}
-		if !isMigrated {
-			if err := indexmigration.Migrate(paths); err != nil {
-				return errors.Wrap(err, "index migration failed")
-			}
+	isMigrated, err = indexmigration.Done(paths)
+	if err != nil {
+		return errors.Wrap(err, "failed to check if index migration is complete")
+	}
+	if !isMigrated {
+		if err := indexmigration.Migrate(paths); err != nil {
+			return errors.Wrap(err, "index migration failed")
 		}
 	}
 

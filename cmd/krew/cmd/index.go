@@ -142,8 +142,5 @@ func init() {
 	indexCmd.AddCommand(indexAddCmd)
 	indexCmd.AddCommand(indexListCmd)
 	indexCmd.AddCommand(indexDeleteCmd)
-
-	if _, ok := os.LookupEnv(constants.EnableMultiIndexSwitch); ok {
-		rootCmd.AddCommand(indexCmd)
-	}
+	rootCmd.AddCommand(indexCmd)
 }

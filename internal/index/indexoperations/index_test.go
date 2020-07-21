@@ -23,14 +23,9 @@ import (
 
 	"sigs.k8s.io/krew/internal/environment"
 	"sigs.k8s.io/krew/internal/testutil"
-	"sigs.k8s.io/krew/pkg/constants"
 )
 
 func TestListIndexes(t *testing.T) {
-	// TODO remove after index integration feature gate is no longer neeeded
-	os.Setenv(constants.EnableMultiIndexSwitch, "1")
-	defer os.Unsetenv(constants.EnableMultiIndexSwitch)
-
 	tmpDir, cleanup := testutil.NewTempDir(t)
 	defer cleanup()
 
@@ -61,10 +56,6 @@ func TestListIndexes(t *testing.T) {
 }
 
 func TestAddIndexSuccess(t *testing.T) {
-	// TODO remove after index integration feature gate is no longer neeeded
-	os.Setenv(constants.EnableMultiIndexSwitch, "1")
-	defer os.Unsetenv(constants.EnableMultiIndexSwitch)
-
 	tmpDir, cleanup := testutil.NewTempDir(t)
 	defer cleanup()
 
@@ -92,10 +83,6 @@ func TestAddIndexSuccess(t *testing.T) {
 }
 
 func TestAddIndexFailure(t *testing.T) {
-	// TODO remove after index integration feature gate is no longer neeeded
-	os.Setenv(constants.EnableMultiIndexSwitch, "1")
-	defer os.Unsetenv(constants.EnableMultiIndexSwitch)
-
 	tmpDir, cleanup := testutil.NewTempDir(t)
 	defer cleanup()
 
@@ -119,10 +106,6 @@ func TestAddIndexFailure(t *testing.T) {
 }
 
 func TestDeleteIndex(t *testing.T) {
-	// TODO(ahmetb) remove multi-index gate once it's fully integrated
-	os.Setenv(constants.EnableMultiIndexSwitch, "1")
-	defer os.Unsetenv(constants.EnableMultiIndexSwitch)
-
 	// root directory does not exist
 	if err := DeleteIndex(environment.NewPaths(filepath.FromSlash("/tmp/does-not-exist/foo")), "bar"); err == nil {
 		t.Fatal("expected error")

@@ -54,10 +54,7 @@ func TestKrewUpdateMultipleIndexes(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex().WithCustomIndexFromDefault("foo")
-	// to enable new paths in environment.NewPaths()
-	os.Setenv(constants.EnableMultiIndexSwitch, "1")
-	defer os.Unsetenv(constants.EnableMultiIndexSwitch)
+	test = test.WithDefaultIndex().WithCustomIndexFromDefault("foo")
 
 	paths := environment.NewPaths(test.Root())
 	if err := os.RemoveAll(paths.IndexPluginsPath("foo")); err != nil {
@@ -78,9 +75,7 @@ func TestKrewUpdateFailedIndex(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex()
-	os.Setenv(constants.EnableMultiIndexSwitch, "1")
-	defer os.Unsetenv(constants.EnableMultiIndexSwitch)
+	test = test.WithDefaultIndex()
 
 	paths := environment.NewPaths(test.Root())
 	test.TempDir().InitEmptyGitRepo(paths.IndexPath("foo"), "invalid-git")

@@ -15,8 +15,11 @@
 package integrationtest
 
 import (
+	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -41,6 +44,8 @@ func TestKrewUpgrade(t *testing.T) {
 	test.WithDefaultIndex().
 		Krew("install", "--manifest", filepath.Join("testdata", validPlugin+constants.ManifestExtension)).
 		RunOrFail()
+	receipt := environment.NewPaths(test.Root()).PluginInstallReceiptPath(validPlugin)
+	modifyReceiptIndex(t, receipt, "default")
 	initialLocation := resolvePluginSymlink(test, validPlugin)
 
 	test.Krew("upgrade").RunOrFail()
@@ -57,7 +62,7 @@ func TestKrewUpgradePluginsFromCustomIndex(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex().WithCustomIndexFromDefault("foo")
+	test.WithDefaultIndex().WithCustomIndexFromDefault("foo")
 	test.Krew("install", "foo/"+validPlugin).RunOrFail()
 
 	receipt := environment.NewPaths(test.Root()).PluginInstallReceiptPath(validPlugin)
@@ -80,7 +85,7 @@ func TestKrewUpgradeNoSecurityWarningForCustomIndex(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex().WithCustomIndexFromDefault("foo")
+	test.WithDefaultIndex().WithCustomIndexFromDefault("foo")
 	test.Krew("install", "foo/"+validPlugin).RunOrFail()
 
 	receipt := environment.NewPaths(test.Root()).PluginInstallReceiptPath(validPlugin)
@@ -110,7 +115,7 @@ func TestKrewUpgradeUnsafe(t *testing.T) {
 	skipShort(t)
 	test, cleanup := NewTest(t)
 	defer cleanup()
-	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex()
+	test.WithDefaultIndex()
 
 	cases := []string{
 		`../index/` + validPlugin,
@@ -166,7 +171,7 @@ func TestKrewUpgrade_ValidPluginInstalledFromManifest(t *testing.T) {
 		Krew("install", validPlugin).
 		RunOrFail()
 
-	validPluginPath := filepath.Join(test.Root(), "index", "plugins", validPlugin+constants.ManifestExtension)
+	validPluginPath := filepath.Join(test.Root(), "index", "default", "plugins", validPlugin+constants.ManifestExtension)
 	if err := os.Remove(validPluginPath); err != nil {
 		t.Fatalf("can't remove valid plugin from index: %q", validPluginPath)
 	}
@@ -197,4 +202,16 @@ func resolvePluginSymlink(test *ITest, plugin string) string {
 	}
 
 	return realLocation
+}
+
+func modifyReceiptIndex(t *testing.T, file, index string) {
+	b, err := ioutil.ReadFile(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := regexp.MustCompile(`(?m)(\bstatus:\n\s+source:\n\s+name:\s)(.*)$`) // patch index name
+	b = r.ReplaceAll(b, []byte(fmt.Sprintf("${1}%s", index)))
+	if err := ioutil.WriteFile(file, b, 0); err != nil {
+		t.Fatal(err)
+	}
 }
