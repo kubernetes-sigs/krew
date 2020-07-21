@@ -44,13 +44,15 @@ func TestKrewUpgrade(t *testing.T) {
 	test.WithDefaultIndex().
 		Krew("install", "--manifest", filepath.Join("testdata", validPlugin+constants.ManifestExtension)).
 		RunOrFail()
+
+	// plugins installed via manifest get the special "detached" index so this needs to
+	// be changed to default in order for it to be upgraded here
 	receipt := environment.NewPaths(test.Root()).PluginInstallReceiptPath(validPlugin)
 	modifyReceiptIndex(t, receipt, "default")
-	initialLocation := resolvePluginSymlink(test, validPlugin)
 
+	initialLocation := resolvePluginSymlink(test, validPlugin)
 	test.Krew("upgrade").RunOrFail()
 	eventualLocation := resolvePluginSymlink(test, validPlugin)
-
 	if initialLocation == eventualLocation {
 		t.Errorf("Expecting the plugin path to change but was the same.")
 	}
