@@ -51,8 +51,11 @@ func init() {
 		Long: `Install one or multiple kubectl plugins.
 
 Examples:
-  To install one or multiple plugins, run:
+  To install one or multiple plugins from the default index, run:
     kubectl krew install NAME [NAME...]
+
+  To install one or multiple plugins from a custom index named "foo", run:
+    kubectl krew install foo/NAME [foo/NAME...]
 
   To install plugins from a newline-delimited file, run:
     kubectl krew install < file.txt
