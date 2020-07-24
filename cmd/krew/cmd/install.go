@@ -54,11 +54,11 @@ Examples:
   To install one or multiple plugins from the default index, run:
     kubectl krew install NAME [NAME...]
 
-  To install one or multiple plugins from a custom index, run:
-    kubectl krew install INDEX/NAME [INDEX/NAME...]
-
   To install plugins from a newline-delimited file, run:
     kubectl krew install < file.txt
+
+  To install one or multiple plugins from a custom index, run:
+    kubectl krew install INDEX/NAME [INDEX/NAME...]
 
   (For developers) To provide a custom plugin manifest, use the --manifest or
   --manifest-url arguments. Similarly, instead of downloading files from a URL,
