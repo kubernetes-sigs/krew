@@ -65,10 +65,8 @@ run_krew() {
   krew_root="${1}"
   shift
 
-  # TODO(chriskim06): remove multi index flag once feature gate is removed
   env KREW_ROOT="${krew_root}" \
     PATH="${krew_root}/bin:$PATH" \
-    X_KREW_ENABLE_MULTI_INDEX=1 \
     kubectl krew "$@"
 }
 

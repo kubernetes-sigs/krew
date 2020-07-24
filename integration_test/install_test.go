@@ -62,7 +62,7 @@ func TestKrewInstallUnsafe(t *testing.T) {
 	skipShort(t)
 	test, cleanup := NewTest(t)
 	defer cleanup()
-	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex()
+	test.WithDefaultIndex()
 
 	cases := []string{
 		`../index/` + validPlugin,
@@ -138,7 +138,7 @@ func TestKrewInstall_CustomIndex(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex().WithCustomIndexFromDefault("foo")
+	test.WithDefaultIndex().WithCustomIndexFromDefault("foo")
 	test.Krew("install", "foo/"+validPlugin).RunOrFail()
 	test.AssertExecutableInPATH("kubectl-" + validPlugin)
 	test.AssertPluginFromIndex(validPlugin, "foo")
@@ -155,7 +155,7 @@ func TestKrewInstallNoSecurityWarningForCustomIndex(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex().WithCustomIndexFromDefault("foo")
+	test.WithDefaultIndex().WithCustomIndexFromDefault("foo")
 	out := string(test.Krew("install", "foo/"+validPlugin).RunOrFailOutput())
 	if strings.Contains(out, "Run them at your own risk") {
 		t.Errorf("expected install of custom plugin to not show security warning: %v", out)

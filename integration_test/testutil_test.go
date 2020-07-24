@@ -31,7 +31,6 @@ import (
 	"github.com/pkg/errors"
 
 	"sigs.k8s.io/krew/internal/environment"
-	"sigs.k8s.io/krew/internal/indexmigration"
 	"sigs.k8s.io/krew/internal/installation/receipt"
 	"sigs.k8s.io/krew/internal/testutil"
 	"sigs.k8s.io/krew/pkg/constants"
@@ -193,10 +192,6 @@ func (it *ITest) WithDefaultIndex() *ITest {
 // to be called before this function. This is a helper function for working with custom indexes in the
 // integration tests so that developers don't need to alias the cloned default index each time.
 func (it *ITest) WithCustomIndexFromDefault(name string) *ITest {
-	// TODO(chriskim06) remove this once index migration happens
-	if !isMultiIndexEnabled(it.env) {
-		it.t.Fatalf("Cannot add a custom index without %s set", constants.EnableMultiIndexSwitch)
-	}
 	it.Krew("index", "add", name, it.TempDir().Path("index/"+constants.DefaultIndexName)).RunOrFail()
 	return it
 }
@@ -295,8 +290,8 @@ func (it *ITest) initializeIndex() {
 		}
 	})
 
-	indexDir := filepath.Join(it.Root(), "index")
-	if err := os.Mkdir(indexDir, 0777); err != nil {
+	indexDir := filepath.Join(it.Root(), "index", "default")
+	if err := os.MkdirAll(indexDir, 0777); err != nil {
 		if os.IsExist(err) {
 			it.t.Log("initializeIndex should only be called once")
 			return
@@ -309,22 +304,6 @@ func (it *ITest) initializeIndex() {
 	if err := cmd.Run(); err != nil {
 		it.t.Fatalf("cannot restore index from cache: %s", err)
 	}
-
-	// TODO(chriskim06) simplify once multi-index is enabled
-	if isMultiIndexEnabled(it.env) {
-		if err := indexmigration.Migrate(environment.NewPaths(it.Root())); err != nil {
-			it.t.Fatalf("error migrating index: %s", err)
-		}
-	}
-}
-
-func isMultiIndexEnabled(env []string) bool {
-	for _, e := range env {
-		if strings.Contains(e, constants.EnableMultiIndexSwitch) {
-			return true
-		}
-	}
-	return false
 }
 
 func initFromGitClone(t *testing.T) ([]byte, error) {

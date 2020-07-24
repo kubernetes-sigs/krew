@@ -28,16 +28,16 @@ import (
 	"sigs.k8s.io/krew/internal/index/indexscanner"
 	"sigs.k8s.io/krew/internal/installation"
 	"sigs.k8s.io/krew/internal/pathutil"
-	"sigs.k8s.io/krew/pkg/constants"
 	"sigs.k8s.io/krew/pkg/index"
 )
 
 // infoCmd represents the info command
 var infoCmd = &cobra.Command{
-	Use:     "info",
-	Short:   "Show information about an available plugin",
-	Long:    `Show detailed information about an available plugin.`,
-	Example: "kubectl krew info PLUGIN",
+	Use:   "info",
+	Short: "Show information about an available plugin",
+	Long:  `Show detailed information about an available plugin.`,
+	Example: `  kubectl krew info PLUGIN
+  kubectl krew info INDEX/PLUGIN`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		index, plugin := pathutil.CanonicalPluginName(args[0])
 
@@ -95,10 +95,5 @@ func indent(s string) string {
 }
 
 func init() {
-	if os.Getenv(constants.EnableMultiIndexSwitch) != "" {
-		// TODO(ahmetb) move back into Example field above (with 2-space indent) once feature gate is removed.
-		infoCmd.Example += "\n  kubectl krew info INDEX/PLUGIN"
-	}
-
 	rootCmd.AddCommand(infoCmd)
 }

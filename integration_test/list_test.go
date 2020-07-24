@@ -15,7 +15,6 @@
 package integrationtest
 
 import (
-	"os"
 	"sort"
 	"strings"
 	"testing"
@@ -36,7 +35,7 @@ func TestKrewList(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex().WithCustomIndexFromDefault("foo")
+	test = test.WithDefaultIndex().WithCustomIndexFromDefault("foo")
 	initialList := test.Krew("list").RunOrFailOutput()
 	initialOut := []byte{'\n'}
 
@@ -66,9 +65,7 @@ func TestKrewListSorted(t *testing.T) {
 	test, cleanup := NewTest(t)
 	defer cleanup()
 
-	test = test.WithEnv(constants.EnableMultiIndexSwitch, 1).WithDefaultIndex()
-	os.Setenv(constants.EnableMultiIndexSwitch, "1")
-	defer os.Unsetenv(constants.EnableMultiIndexSwitch)
+	test = test.WithDefaultIndex()
 
 	paths := environment.NewPaths(test.Root())
 	ps, err := indexscanner.LoadPluginListFromFS(paths.IndexPluginsPath(constants.DefaultIndexName))

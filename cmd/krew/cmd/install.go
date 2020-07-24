@@ -51,16 +51,19 @@ func init() {
 		Long: `Install one or multiple kubectl plugins.
 
 Examples:
-  To install one or multiple plugins, run:
+  To install one or multiple plugins from the default index, run:
     kubectl krew install NAME [NAME...]
 
   To install plugins from a newline-delimited file, run:
     kubectl krew install < file.txt
 
+  To install one or multiple plugins from a custom index, run:
+    kubectl krew install INDEX/NAME [INDEX/NAME...]
+
   (For developers) To provide a custom plugin manifest, use the --manifest or
   --manifest-url arguments. Similarly, instead of downloading files from a URL,
   you can specify a local --archive file:
-	kubectl krew install --manifest=FILE [--archive=FILE]
+    kubectl krew install --manifest=FILE [--archive=FILE]
 
 Remarks:
   If a plugin is already installed, it will be skipped.

@@ -35,11 +35,10 @@ var (
 
 // indexCmd represents the index command
 var indexCmd = &cobra.Command{
-	Use:    "index",
-	Short:  "Manage custom plugin indexes",
-	Long:   "Manage which repositories are used to discover and install plugins from.",
-	Args:   cobra.NoArgs,
-	Hidden: true, // TODO(chriskim06) remove this once multi-index is enabled
+	Use:   "index",
+	Short: "Manage custom plugin indexes",
+	Long:  "Manage which repositories are used to discover and install plugins from.",
+	Args:  cobra.NoArgs,
 }
 
 var indexListCmd = &cobra.Command{
@@ -142,8 +141,5 @@ func init() {
 	indexCmd.AddCommand(indexAddCmd)
 	indexCmd.AddCommand(indexListCmd)
 	indexCmd.AddCommand(indexDeleteCmd)
-
-	if _, ok := os.LookupEnv(constants.EnableMultiIndexSwitch); ok {
-		rootCmd.AddCommand(indexCmd)
-	}
+	rootCmd.AddCommand(indexCmd)
 }
