@@ -20,6 +20,7 @@ import (
 	"strings"
 	"testing"
 
+	"sigs.k8s.io/krew/internal/environment"
 	"sigs.k8s.io/krew/pkg/constants"
 )
 
@@ -39,10 +40,11 @@ func TestKrewIndexAdd(t *testing.T) {
 	if err := test.Krew("index", "add", "../../usr/bin", constants.DefaultIndexURI); err == nil {
 		t.Fatal("expected index add with path characters to fail")
 	}
-	if _, err := test.Krew("index", "add", "foo", test.TempDir().Path("index/"+constants.DefaultIndexName)).Run(); err != nil {
+	index := environment.NewPaths(test.Root()).IndexPath(constants.DefaultIndexName)
+	if _, err := test.Krew("index", "add", "foo", index).Run(); err != nil {
 		t.Fatalf("error adding new index: %v", err)
 	}
-	if _, err := test.Krew("index", "add", "foo", test.TempDir().Path("index/"+constants.DefaultIndexName)).Run(); err == nil {
+	if _, err := test.Krew("index", "add", "foo", index).Run(); err == nil {
 		t.Fatal("expected adding same index to fail")
 	}
 }
@@ -73,7 +75,8 @@ func TestKrewIndexAddShowsSecurityWarning(t *testing.T) {
 	defer cleanup()
 
 	test.WithDefaultIndex()
-	out := string(test.Krew("index", "add", "foo", test.TempDir().Path("index/"+constants.DefaultIndexName)).RunOrFailOutput())
+	index := environment.NewPaths(test.Root()).IndexPath(constants.DefaultIndexName)
+	out := string(test.Krew("index", "add", "foo", index).RunOrFailOutput())
 	if !strings.Contains(out, "WARNING: You have added a new index") {
 		t.Errorf("expected output to contain warning when adding custom index: %v", out)
 	}
@@ -107,7 +110,7 @@ func TestKrewIndexList_NoIndexes(t *testing.T) {
 	defer cleanup()
 
 	test.WithDefaultIndex()
-	index := test.TempDir().Path("index")
+	index := environment.NewPaths(test.Root()).IndexBase()
 	if err := os.RemoveAll(index); err != nil {
 		t.Fatalf("error removing default index: %v", err)
 	}

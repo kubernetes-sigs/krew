@@ -19,6 +19,9 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"sigs.k8s.io/krew/internal/environment"
+	"sigs.k8s.io/krew/pkg/constants"
 )
 
 func TestKrewIndexAutoMigration(t *testing.T) {
@@ -59,16 +62,17 @@ func TestKrewUnsupportedVersion(t *testing.T) {
 }
 
 func isIndexMigrated(it *ITest) bool {
-	indexPath := it.TempDir().Path("index/default")
+	indexPath := environment.NewPaths(it.Root()).IndexPath(constants.DefaultIndexName)
 	_, err := os.Stat(indexPath)
 	return err == nil
 }
 
 // TODO remove when testing indexmigration is no longer necessary
 func prepareOldIndexLayout(it *ITest) {
-	indexPath := it.TempDir().Path("index/default")
+	paths := environment.NewPaths(it.Root())
+	indexPath := paths.IndexPath(constants.DefaultIndexName)
 	tmpPath := it.TempDir().Path("tmp_index")
-	newPath := it.TempDir().Path("index")
+	newPath := paths.IndexBase()
 	if err := os.Rename(indexPath, tmpPath); err != nil {
 		it.t.Fatal(err)
 	}
