@@ -81,6 +81,22 @@ func TestKrewUpgradePluginsFromCustomIndex(t *testing.T) {
 	}
 }
 
+func TestKrewUpgradeSkipsManifestPlugin(t *testing.T) {
+	skipShort(t)
+
+	test, cleanup := NewTest(t)
+	defer cleanup()
+
+	test.WithDefaultIndex().
+		Krew("install", "--manifest", filepath.Join("testdata", validPlugin+constants.ManifestExtension)).
+		RunOrFail()
+
+	out := string(test.Krew("upgrade").RunOrFailOutput())
+	if !strings.Contains(out, "Skipping upgrade") {
+		t.Errorf("expected plugin %q to be skipped during upgrade", validPlugin)
+	}
+}
+
 func TestKrewUpgradeNoSecurityWarningForCustomIndex(t *testing.T) {
 	skipShort(t)
 
