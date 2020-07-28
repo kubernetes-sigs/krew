@@ -192,7 +192,8 @@ func (it *ITest) WithDefaultIndex() *ITest {
 // to be called before this function. This is a helper function for working with custom indexes in the
 // integration tests so that developers don't need to alias the cloned default index each time.
 func (it *ITest) WithCustomIndexFromDefault(name string) *ITest {
-	it.Krew("index", "add", name, it.TempDir().Path("index/"+constants.DefaultIndexName)).RunOrFail()
+	indexPath := environment.NewPaths(it.Root()).IndexPath(constants.DefaultIndexName)
+	it.Krew("index", "add", name, indexPath).RunOrFail()
 	return it
 }
 

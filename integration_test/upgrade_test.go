@@ -189,7 +189,8 @@ func TestKrewUpgrade_ValidPluginInstalledFromManifest(t *testing.T) {
 		Krew("install", validPlugin).
 		RunOrFail()
 
-	validPluginPath := filepath.Join(test.Root(), "index", "default", "plugins", validPlugin+constants.ManifestExtension)
+	pluginPath := environment.NewPaths(test.Root()).IndexPluginsPath(constants.DefaultIndexName)
+	validPluginPath := filepath.Join(pluginPath, validPlugin+constants.ManifestExtension)
 	if err := os.Remove(validPluginPath); err != nil {
 		t.Fatalf("can't remove valid plugin from index: %q", validPluginPath)
 	}
