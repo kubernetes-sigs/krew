@@ -79,7 +79,7 @@ kubectl krew upgrade foo bar"`,
 			for _, name := range pluginNames {
 				indexName, pluginName := pathutil.CanonicalPluginName(name)
 				if indexName == "detached" {
-					fmt.Fprintf(os.Stderr, "Skipping upgrade for %q because it was installed via manifest\n", pluginName)
+					klog.Warningf("Skipping upgrade for %q because it was installed via manifest\n", pluginName)
 					continue
 				}
 
