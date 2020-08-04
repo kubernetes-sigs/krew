@@ -2,7 +2,6 @@
 title: Hosting Custom Plugin Indexes
 slug: custom-indexes
 weight: 500
-draft: true
 ---
 
 Krew comes with a plugin index named `default` that points to the
