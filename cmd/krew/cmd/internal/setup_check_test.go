@@ -45,7 +45,7 @@ func TestIsBinDirInPATH_secondRun(t *testing.T) {
 }
 
 func TestSetupInstructions_windows(t *testing.T) {
-	const instructionsContain = "add the\n\"%USERPROFILE%\\.krew\\bin\" directory to your PATH environment variable"
+	const instructionsContain = `USERPROFILE`
 	os.Setenv("KREW_OS", "windows")
 	defer func() { os.Unsetenv("KREW_OS") }()
 	instructions := SetupInstructions()

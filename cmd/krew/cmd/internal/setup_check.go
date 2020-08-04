@@ -28,7 +28,7 @@ import (
 
 const (
 	instructionWindows = `To be able to run kubectl plugins, you need to add the
-"%USERPROFILE%\.krew\bin" directory to your PATH environment variable
+"%%USERPROFILE%%\.krew\bin" directory to your PATH environment variable
 and restart your shell.`
 	instructionUnixTemplate = `To be able to run kubectl plugins, you need to add
 the following to your %s
