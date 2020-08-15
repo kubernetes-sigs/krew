@@ -32,8 +32,8 @@ type TempDir struct {
 	root string
 }
 
-// NewTempDir creates a temporary directory and a cleanup function.
-// It is the responsibility of calling code to call cleanup when done.
+// NewTempDir creates a temporary directory which is automatically cleaned up
+// when the test exits.
 func NewTempDir(t *testing.T) *TempDir {
 	t.Helper()
 	root, err := ioutil.TempDir("", "krew-test")
