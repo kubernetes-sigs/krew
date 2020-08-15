@@ -27,8 +27,7 @@ import (
 func TestKrewIndexAdd(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	test.WithDefaultIndex()
 	if _, err := test.Krew("index", "add").Run(); err == nil {
@@ -51,8 +50,7 @@ func TestKrewIndexAdd(t *testing.T) {
 
 func TestKrewIndexAddUnsafe(t *testing.T) {
 	skipShort(t)
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 	test.WithDefaultIndex()
 
 	cases := []string{"a/b", `a\b`, "../a", `..\a`}
@@ -71,8 +69,7 @@ func TestKrewIndexAddUnsafe(t *testing.T) {
 func TestKrewIndexAddShowsSecurityWarning(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	test.WithDefaultIndex()
 	index := environment.NewPaths(test.Root()).IndexPath(constants.DefaultIndexName)
@@ -85,8 +82,7 @@ func TestKrewIndexAddShowsSecurityWarning(t *testing.T) {
 func TestKrewIndexList(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	test.WithDefaultIndex()
 	out := test.Krew("index", "list").RunOrFailOutput()
@@ -106,8 +102,7 @@ func TestKrewIndexList(t *testing.T) {
 func TestKrewIndexList_NoIndexes(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	test.WithDefaultIndex()
 	index := environment.NewPaths(test.Root()).IndexBase()
@@ -124,8 +119,7 @@ func TestKrewIndexList_NoIndexes(t *testing.T) {
 
 func TestKrewIndexRemove_nonExisting(t *testing.T) {
 	skipShort(t)
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	_, err := test.Krew("index", "remove", "non-existing").Run()
 	if err == nil {
@@ -135,18 +129,16 @@ func TestKrewIndexRemove_nonExisting(t *testing.T) {
 
 func TestKrewIndexRemove_ok(t *testing.T) {
 	skipShort(t)
-	test, cleanup := NewTest(t)
+	test := NewTest(t)
 	test.WithDefaultIndex().WithCustomIndexFromDefault("foo")
-	defer cleanup()
 
 	test.Krew("index", "remove", "foo").RunOrFail()
 }
 
 func TestKrewIndexRemove_unsafe(t *testing.T) {
 	skipShort(t)
-	test, cleanup := NewTest(t)
+	test := NewTest(t)
 	test.WithDefaultIndex()
-	defer cleanup()
 
 	expected := "invalid index name"
 	cases := []string{"a/b", `a\b`, "../a", `..\a`}
@@ -162,9 +154,8 @@ func TestKrewIndexRemove_unsafe(t *testing.T) {
 
 func TestKrewIndexRemoveFailsWhenPluginsInstalled(t *testing.T) {
 	skipShort(t)
-	test, cleanup := NewTest(t)
+	test := NewTest(t)
 	test.WithDefaultIndex()
-	defer cleanup()
 
 	test.Krew("install", validPlugin).RunOrFailOutput()
 	if _, err := test.Krew("index", "remove", "default").Run(); err == nil {
@@ -177,8 +168,7 @@ func TestKrewIndexRemoveFailsWhenPluginsInstalled(t *testing.T) {
 
 func TestKrewIndexRemoveForce_nonExisting(t *testing.T) {
 	skipShort(t)
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	// --force returns success for non-existing indexes
 	test.Krew("index", "remove", "--force", "non-existing").RunOrFail()
@@ -186,8 +176,7 @@ func TestKrewIndexRemoveForce_nonExisting(t *testing.T) {
 
 func TestKrewDefaultIndex_notAutomaticallyAdded(t *testing.T) {
 	skipShort(t)
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	test.Krew("help").RunOrFail()
 	out, err := test.Krew("search").Run()
@@ -202,8 +191,7 @@ func TestKrewDefaultIndex_notAutomaticallyAdded(t *testing.T) {
 
 func TestKrewDefaultIndex_AutoAddedOnInstall(t *testing.T) {
 	skipShort(t)
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	test.Krew("install", validPlugin).RunOrFail()
 	ensureIndexListHasDefaultIndex(t, string(test.Krew("index", "list").RunOrFailOutput()))
@@ -211,8 +199,7 @@ func TestKrewDefaultIndex_AutoAddedOnInstall(t *testing.T) {
 
 func TestKrewDefaultIndex_AutoAddedOnUpdate(t *testing.T) {
 	skipShort(t)
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	test.Krew("update").RunOrFail()
 	ensureIndexListHasDefaultIndex(t, string(test.Krew("index", "list").RunOrFailOutput()))
@@ -220,8 +207,7 @@ func TestKrewDefaultIndex_AutoAddedOnUpdate(t *testing.T) {
 
 func TestKrewDefaultIndex_AutoAddedOnUpgrade(t *testing.T) {
 	skipShort(t)
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	test.Krew("upgrade").RunOrFail()
 	ensureIndexListHasDefaultIndex(t, string(test.Krew("index", "list").RunOrFailOutput()))

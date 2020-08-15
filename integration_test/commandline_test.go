@@ -19,8 +19,7 @@ import "testing"
 func TestUnknownCommand(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	if _, err := test.Krew("foobar").Run(); err == nil {
 		t.Errorf("Expected `krew foobar` to fail")

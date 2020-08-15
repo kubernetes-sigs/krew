@@ -26,8 +26,7 @@ import (
 )
 
 func TestStore(t *testing.T) {
-	tmpDir, cleanup := testutil.NewTempDir(t)
-	defer cleanup()
+	tmpDir := testutil.NewTempDir(t)
 
 	testPlugin := testutil.NewPlugin().WithName("some-plugin").WithPlatforms(testutil.NewPlatform().V()).V()
 	testReceipt := testutil.NewReceipt().WithPlugin(testPlugin).V()
@@ -48,8 +47,7 @@ func TestStore(t *testing.T) {
 }
 
 func TestLoad(t *testing.T) {
-	tmpDir, cleanup := testutil.NewTempDir(t)
-	defer cleanup()
+	tmpDir := testutil.NewTempDir(t)
 
 	testPlugin := testutil.NewPlugin().WithName("foo").WithPlatforms(testutil.NewPlatform().V()).V()
 	testPluginReceipt := testutil.NewReceipt().WithPlugin(testPlugin).V()

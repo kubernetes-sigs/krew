@@ -34,20 +34,19 @@ type TempDir struct {
 
 // NewTempDir creates a temporary directory and a cleanup function.
 // It is the responsibility of calling code to call cleanup when done.
-func NewTempDir(t *testing.T) (tmpDir *TempDir, cleanup func()) {
+func NewTempDir(t *testing.T) *TempDir {
 	t.Helper()
 	root, err := ioutil.TempDir("", "krew-test")
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	tmpDir = &TempDir{t: t, root: root}
-
-	return tmpDir, func() {
+	t.Cleanup(func() {
 		if err := os.RemoveAll(root); err != nil {
 			t.Logf("warning: failed to remove tempdir %s: %+v", root, err)
 		}
-	}
+	})
+
+	return &TempDir{t: t, root: root}
 }
 
 // Root returns the root of the temporary directory.

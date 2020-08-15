@@ -27,8 +27,7 @@ import (
 func TestKrewIndexAutoMigration(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	test.WithDefaultIndex()
 	prepareOldIndexLayout(test)
@@ -43,8 +42,7 @@ func TestKrewIndexAutoMigration(t *testing.T) {
 func TestKrewUnsupportedVersion(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	test.WithDefaultIndex().Krew("install", validPlugin).RunOrFail()
 

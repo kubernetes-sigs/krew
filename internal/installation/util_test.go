@@ -56,8 +56,7 @@ func TestGetInstalledPluginReceipts(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			tempDir, cleanup := testutil.NewTempDir(t)
-			defer cleanup()
+			tempDir := testutil.NewTempDir(t)
 
 			for _, plugin := range test.receipts {
 				tempDir.WriteYAML(plugin.Name+constants.ManifestExtension, plugin)
@@ -75,8 +74,7 @@ func TestGetInstalledPluginReceipts(t *testing.T) {
 }
 
 func TestInstalledPluginsFromIndex(t *testing.T) {
-	tempDir, cleanup := testutil.NewTempDir(t)
-	defer cleanup()
+	tempDir := testutil.NewTempDir(t)
 
 	indexA := index.ReceiptStatus{Source: index.SourceIndex{Name: "a"}}
 	var indexNone index.ReceiptStatus

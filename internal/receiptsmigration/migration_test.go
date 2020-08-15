@@ -52,8 +52,7 @@ func TestIsMigrated(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			tmpDir, cleanup := testutil.NewTempDir(t)
-			defer cleanup()
+			tmpDir := testutil.NewTempDir(t)
 
 			newPaths := environment.NewPaths(tmpDir.Root())
 

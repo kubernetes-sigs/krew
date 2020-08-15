@@ -133,8 +133,7 @@ func TestReadReceiptFromFile(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tmpDir, cleanup := testutil.NewTempDir(t)
-			defer cleanup()
+			tmpDir := testutil.NewTempDir(t)
 
 			plugin := "plugin" + constants.ManifestExtension
 			testReceipt := testutil.NewReceipt().WithPlugin(testutil.NewPlugin().V()).WithStatus(tt.args.status).V()

@@ -81,8 +81,7 @@ func TestPaths(t *testing.T) {
 }
 
 func TestRealpath(t *testing.T) {
-	tmpDir, cleanup := testutil.NewTempDir(t)
-	defer cleanup()
+	tmpDir := testutil.NewTempDir(t)
 
 	// create regular file
 	tmpDir.Write("regular-file", nil)

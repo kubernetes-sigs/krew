@@ -30,8 +30,7 @@ import (
 func TestKrewUpdate(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	// nb do not call WithDefaultIndex() here
 	updateOut := string(test.Krew("update").RunOrFailOutput())
@@ -51,8 +50,7 @@ func TestKrewUpdate(t *testing.T) {
 
 func TestKrewUpdateMultipleIndexes(t *testing.T) {
 	skipShort(t)
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	test = test.WithDefaultIndex().WithCustomIndexFromDefault("foo")
 
@@ -72,8 +70,7 @@ func TestKrewUpdateMultipleIndexes(t *testing.T) {
 
 func TestKrewUpdateFailedIndex(t *testing.T) {
 	skipShort(t)
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	test = test.WithDefaultIndex()
 
@@ -91,8 +88,7 @@ func TestKrewUpdateFailedIndex(t *testing.T) {
 
 func TestKrewUpdateListsNewPlugins(t *testing.T) {
 	skipShort(t)
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	test = test.WithDefaultIndex()
 
@@ -113,8 +109,7 @@ func TestKrewUpdateListsNewPlugins(t *testing.T) {
 func TestKrewUpdateListsUpgradesAvailable(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 	test = test.WithDefaultIndex()
 
 	// set version of some manifests to v0.0.0

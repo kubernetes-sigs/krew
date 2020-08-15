@@ -24,8 +24,7 @@ import (
 func TestKrewSearchAll(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	output := test.WithDefaultIndex().Krew("search").RunOrFailOutput()
 	if plugins := lines(output); len(plugins) < 10 {
@@ -37,8 +36,7 @@ func TestKrewSearchAll(t *testing.T) {
 func TestKrewSearchOne(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	plugins := lines(test.WithDefaultIndex().Krew("search", "krew").RunOrFailOutput())
 	if len(plugins) < 2 {
@@ -51,9 +49,8 @@ func TestKrewSearchOne(t *testing.T) {
 
 func TestKrewSearchMultiIndex(t *testing.T) {
 	skipShort(t)
-	test, cleanup := NewTest(t)
+	test := NewTest(t)
 	test = test.WithDefaultIndex().WithCustomIndexFromDefault("foo")
-	defer cleanup()
 
 	test.Krew("install", validPlugin).RunOrFail()
 	test.Krew("install", "foo/"+validPlugin2).RunOrFail()
@@ -74,9 +71,8 @@ func TestKrewSearchMultiIndex(t *testing.T) {
 
 func TestKrewSearchMultiIndexSortedByDisplayName(t *testing.T) {
 	skipShort(t)
-	test, cleanup := NewTest(t)
+	test := NewTest(t)
 	test = test.WithDefaultIndex().WithCustomIndexFromDefault("foo")
-	defer cleanup()
 
 	output := string(test.Krew("search").RunOrFailOutput())
 

@@ -22,8 +22,7 @@ import (
 func TestKrewInfo(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	out := string(test.WithDefaultIndex().Krew("info", validPlugin).RunOrFailOutput())
 	expected := `INDEX: default`
@@ -35,8 +34,7 @@ func TestKrewInfo(t *testing.T) {
 func TestKrewInfoInvalidPlugin(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	plugin := "invalid-plugin"
 	_, err := test.WithDefaultIndex().Krew("info", plugin).Run()
@@ -48,8 +46,7 @@ func TestKrewInfoInvalidPlugin(t *testing.T) {
 func TestKrewInfoCustomIndex(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	test = test.WithDefaultIndex().WithCustomIndexFromDefault("foo")
 	test.Krew("install", "foo/"+validPlugin).RunOrFail()

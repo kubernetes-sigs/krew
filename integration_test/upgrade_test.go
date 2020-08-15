@@ -30,16 +30,14 @@ import (
 func TestKrewUpgrade_WithoutIndexInitialized(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 	test.Krew("upgrade").RunOrFailOutput()
 }
 
 func TestKrewUpgrade(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	test.WithDefaultIndex().
 		Krew("install", "--manifest", filepath.Join("testdata", validPlugin+constants.ManifestExtension)).
@@ -61,8 +59,7 @@ func TestKrewUpgrade(t *testing.T) {
 func TestKrewUpgradePluginsFromCustomIndex(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	test.WithDefaultIndex().WithCustomIndexFromDefault("foo")
 	test.Krew("install", "foo/"+validPlugin).RunOrFail()
@@ -84,8 +81,7 @@ func TestKrewUpgradePluginsFromCustomIndex(t *testing.T) {
 func TestKrewUpgradeSkipsManifestPlugin(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	test.WithDefaultIndex().
 		Krew("install", "--manifest", filepath.Join("testdata", validPlugin+constants.ManifestExtension)).
@@ -100,8 +96,7 @@ func TestKrewUpgradeSkipsManifestPlugin(t *testing.T) {
 func TestKrewUpgradeNoSecurityWarningForCustomIndex(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	test.WithDefaultIndex().WithCustomIndexFromDefault("foo")
 	test.Krew("install", "foo/"+validPlugin).RunOrFail()
@@ -117,8 +112,7 @@ func TestKrewUpgradeNoSecurityWarningForCustomIndex(t *testing.T) {
 func TestKrewUpgrade_CannotUseIndexSyntax(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	b, err := test.Krew("upgrade", "foo/"+validPlugin).Run()
 	if err == nil {
@@ -131,8 +125,7 @@ func TestKrewUpgrade_CannotUseIndexSyntax(t *testing.T) {
 
 func TestKrewUpgradeUnsafe(t *testing.T) {
 	skipShort(t)
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 	test.WithDefaultIndex()
 
 	cases := []string{
@@ -157,8 +150,7 @@ func TestKrewUpgradeUnsafe(t *testing.T) {
 func TestKrewUpgradeWhenPlatformNoLongerMatches(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	test.WithDefaultIndex().
 		Krew("install", validPlugin).
@@ -182,8 +174,7 @@ func TestKrewUpgradeWhenPlatformNoLongerMatches(t *testing.T) {
 func TestKrewUpgrade_ValidPluginInstalledFromManifest(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	test.WithDefaultIndex().
 		Krew("install", validPlugin).

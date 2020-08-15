@@ -42,8 +42,7 @@ func TestIsMigrated(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			tmpDir, cleanup := testutil.NewTempDir(t)
-			defer cleanup()
+			tmpDir := testutil.NewTempDir(t)
 
 			err := os.MkdirAll(tmpDir.Path(test.dirPath), os.ModePerm)
 			if err != nil {
@@ -63,8 +62,7 @@ func TestIsMigrated(t *testing.T) {
 }
 
 func TestMigrate(t *testing.T) {
-	tmpDir, cleanup := testutil.NewTempDir(t)
-	defer cleanup()
+	tmpDir := testutil.NewTempDir(t)
 
 	tmpDir.Write("index/.git", nil)
 

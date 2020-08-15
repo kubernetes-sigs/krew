@@ -26,8 +26,7 @@ import (
 )
 
 func TestListIndexes(t *testing.T) {
-	tmpDir, cleanup := testutil.NewTempDir(t)
-	defer cleanup()
+	tmpDir := testutil.NewTempDir(t)
 
 	wantIndexes := []Index{
 		{
@@ -56,8 +55,7 @@ func TestListIndexes(t *testing.T) {
 }
 
 func TestAddIndexSuccess(t *testing.T) {
-	tmpDir, cleanup := testutil.NewTempDir(t)
-	defer cleanup()
+	tmpDir := testutil.NewTempDir(t)
 
 	indexName := "foo"
 	localRepo := tmpDir.Path("local/" + indexName)
@@ -83,8 +81,7 @@ func TestAddIndexSuccess(t *testing.T) {
 }
 
 func TestAddIndexFailure(t *testing.T) {
-	tmpDir, cleanup := testutil.NewTempDir(t)
-	defer cleanup()
+	tmpDir := testutil.NewTempDir(t)
 
 	indexName := "foo"
 	paths := environment.NewPaths(tmpDir.Root())
@@ -113,8 +110,7 @@ func TestDeleteIndex(t *testing.T) {
 		t.Fatalf("not ENOENT error: %v", err)
 	}
 
-	tmpDir, cleanup := testutil.NewTempDir(t)
-	defer cleanup()
+	tmpDir := testutil.NewTempDir(t)
 	p := environment.NewPaths(tmpDir.Root())
 
 	// index does not exist
