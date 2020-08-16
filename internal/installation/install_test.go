@@ -106,8 +106,7 @@ func Test_createOrUpdateLink(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tmpDir, cleanup := testutil.NewTempDir(t)
-			defer cleanup()
+			tmpDir := testutil.NewTempDir(t)
 
 			if err := createOrUpdateLink(tmpDir.Root(), tt.binary, tt.pluginName); (err != nil) != tt.wantErr {
 				t.Errorf("createOrUpdateLink() error = %v, wantErr %v", err, tt.wantErr)
@@ -143,8 +142,7 @@ func Test_removeLink_notExists(t *testing.T) {
 }
 
 func TestUninstall_cantUninstallItself(t *testing.T) {
-	tempDir, cleanup := testutil.NewTempDir(t)
-	defer cleanup()
+	tempDir := testutil.NewTempDir(t)
 	envPath := environment.NewPaths(tempDir.Root())
 	expectedErrorMessagePart := "not allowed"
 	if err := Uninstall(envPath, "krew"); !strings.Contains(err.Error(), expectedErrorMessagePart) {
@@ -154,8 +152,7 @@ func TestUninstall_cantUninstallItself(t *testing.T) {
 }
 
 func Test_removeLink_linkExists(t *testing.T) {
-	tmpDir, cleanup := testutil.NewTempDir(t)
-	defer cleanup()
+	tmpDir := testutil.NewTempDir(t)
 
 	link := filepath.Join(tmpDir.Root(), "some-symlink")
 	if err := os.Symlink(os.TempDir(), link); err != nil {
@@ -168,8 +165,7 @@ func Test_removeLink_linkExists(t *testing.T) {
 }
 
 func Test_removeLink_fails(t *testing.T) {
-	tmpDir, cleanup := testutil.NewTempDir(t)
-	defer cleanup()
+	tmpDir := testutil.NewTempDir(t)
 
 	// create an unreadable directory and trigger "permission denied" error
 	unreadableDir := filepath.Join(tmpDir.Root(), "unreadable")
@@ -220,8 +216,7 @@ func TestIsWindows_envOverride(t *testing.T) {
 }
 
 func Test_downloadAndExtract(t *testing.T) {
-	tmpDir, cleanup := testutil.NewTempDir(t)
-	defer cleanup()
+	tmpDir := testutil.NewTempDir(t)
 
 	// start a local http server to serve the test archive from pkg/download/testdata
 	testdataDir := filepath.Join(testdataPath(t), "..", "..", "download", "testdata")
@@ -244,8 +239,7 @@ func Test_downloadAndExtract(t *testing.T) {
 }
 
 func Test_downloadAndExtract_fileOverride(t *testing.T) {
-	tmpDir, cleanup := testutil.NewTempDir(t)
-	defer cleanup()
+	tmpDir := testutil.NewTempDir(t)
 
 	testFile := filepath.Join(testdataPath(t), "..", "..", "download", "testdata", "test-without-directory.tar.gz")
 	checksum := "433b9e0b6cb9f064548f451150799daadcc70a3496953490c5148c8e550d2f4e"
@@ -301,8 +295,7 @@ func Test_applyDefaults(t *testing.T) {
 }
 
 func TestCleanupStaleKrewInstallations(t *testing.T) {
-	dir, cleanup := testutil.NewTempDir(t)
-	defer cleanup()
+	dir := testutil.NewTempDir(t)
 
 	testFiles := []string{
 		"dir1/f1.txt",

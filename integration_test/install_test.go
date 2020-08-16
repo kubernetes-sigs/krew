@@ -30,8 +30,7 @@ const (
 
 func TestKrewInstall(t *testing.T) {
 	skipShort(t)
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	if err := test.Krew("install", validPlugin); err == nil {
 		t.Fatal("expected to fail without initializing the index")
@@ -49,8 +48,7 @@ func TestKrewInstall(t *testing.T) {
 
 func TestKrewInstallReRun(t *testing.T) {
 	skipShort(t)
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	test = test.WithDefaultIndex()
 	test.Krew("install", validPlugin).RunOrFail()
@@ -60,8 +58,7 @@ func TestKrewInstallReRun(t *testing.T) {
 
 func TestKrewInstallUnsafe(t *testing.T) {
 	skipShort(t)
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 	test.WithDefaultIndex()
 
 	cases := []string{
@@ -86,8 +83,7 @@ func TestKrewInstallUnsafe(t *testing.T) {
 func TestKrewInstall_MultiplePositionalArgs(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	test.WithDefaultIndex().Krew("install", validPlugin, validPlugin2).RunOrFailOutput()
 	test.AssertExecutableInPATH("kubectl-" + validPlugin)
@@ -97,8 +93,7 @@ func TestKrewInstall_MultiplePositionalArgs(t *testing.T) {
 func TestKrewInstall_Stdin(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	test.WithDefaultIndex().WithStdin(strings.NewReader(validPlugin + "\n" + validPlugin2)).
 		Krew("install").RunOrFailOutput()
@@ -110,8 +105,7 @@ func TestKrewInstall_Stdin(t *testing.T) {
 func TestKrewInstall_StdinAndPositionalArguments(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	// when stdin is detected, it's ignored in favor of positional arguments
 	test.WithDefaultIndex().
@@ -124,8 +118,7 @@ func TestKrewInstall_StdinAndPositionalArguments(t *testing.T) {
 func TestKrewInstall_ExplicitDefaultIndex(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	test.Krew("install", "default/"+validPlugin).RunOrFail()
 	test.AssertExecutableInPATH("kubectl-" + validPlugin)
@@ -135,8 +128,7 @@ func TestKrewInstall_ExplicitDefaultIndex(t *testing.T) {
 func TestKrewInstall_CustomIndex(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	test.WithDefaultIndex().WithCustomIndexFromDefault("foo")
 	test.Krew("install", "foo/"+validPlugin).RunOrFail()
@@ -152,8 +144,7 @@ func TestKrewInstall_CustomIndex(t *testing.T) {
 func TestKrewInstallNoSecurityWarningForCustomIndex(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	test.WithDefaultIndex().WithCustomIndexFromDefault("foo")
 	out := string(test.Krew("install", "foo/"+validPlugin).RunOrFailOutput())
@@ -165,8 +156,7 @@ func TestKrewInstallNoSecurityWarningForCustomIndex(t *testing.T) {
 func TestKrewInstall_Manifest(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	test.Krew("install",
 		"--manifest", filepath.Join("testdata", validPlugin+constants.ManifestExtension)).
@@ -178,8 +168,7 @@ func TestKrewInstall_Manifest(t *testing.T) {
 func TestKrewInstall_ManifestURL(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 	srv, shutdown := localTestServer()
 	defer shutdown()
 
@@ -193,8 +182,7 @@ func TestKrewInstall_ManifestURL(t *testing.T) {
 func TestKrewInstall_ManifestAndArchive(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	test.Krew("install",
 		"--manifest", filepath.Join("testdata", fooPlugin+constants.ManifestExtension),
@@ -207,8 +195,7 @@ func TestKrewInstall_ManifestAndArchive(t *testing.T) {
 func TestKrewInstall_OnlyArchive(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	_, err := test.Krew("install",
 		"--archive", filepath.Join("testdata", fooPlugin+".tar.gz")).
@@ -221,8 +208,7 @@ func TestKrewInstall_OnlyArchive(t *testing.T) {
 func TestKrewInstall_ManifestArgsAreMutuallyExclusive(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 	srv, shutdown := localTestServer()
 	defer shutdown()
 
@@ -237,8 +223,7 @@ func TestKrewInstall_ManifestArgsAreMutuallyExclusive(t *testing.T) {
 func TestKrewInstall_NoManifestArgsWhenPositionalArgsSpecified(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	_, err := test.Krew("install", validPlugin,
 		"--manifest", filepath.Join("testdata", fooPlugin+constants.ManifestExtension),

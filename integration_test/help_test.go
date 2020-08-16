@@ -22,8 +22,7 @@ import (
 func TestKrewHelp(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	test.Krew().RunOrFail() // no args
 	test.Krew("help").RunOrFail()
@@ -33,8 +32,7 @@ func TestKrewHelp(t *testing.T) {
 
 func TestRootHelpShowsKubectlPrefix(t *testing.T) {
 	skipShort(t)
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	out := string(test.Krew("help").RunOrFailOutput())
 

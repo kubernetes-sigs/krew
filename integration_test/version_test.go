@@ -24,8 +24,7 @@ import (
 func TestKrewVersion(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	stdOut := string(test.Krew("version").RunOrFailOutput())
 

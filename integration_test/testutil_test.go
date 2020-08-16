@@ -60,8 +60,8 @@ type ITest struct {
 }
 
 // NewTest creates a fluent krew ITest.
-func NewTest(t *testing.T) (*ITest, func()) {
-	tempDir, cleanup := testutil.NewTempDir(t)
+func NewTest(t *testing.T) *ITest {
+	tempDir := testutil.NewTempDir(t)
 	binDir := setupKrewBin(t, tempDir)
 
 	return &ITest{
@@ -75,7 +75,7 @@ func NewTest(t *testing.T) (*ITest, func()) {
 			"KREW_NO_UPGRADE_CHECK=1",
 		},
 		tempDir: tempDir,
-	}, cleanup
+	}
 }
 
 // setupKrewBin symlinks the $KREW_BINARY to $tempDir/bin and returns the path
@@ -309,8 +309,7 @@ func (it *ITest) initializeIndex() {
 
 func initFromGitClone(t *testing.T) ([]byte, error) {
 	const tarName = "index.tar"
-	indexDir, cleanup := testutil.NewTempDir(t)
-	defer cleanup()
+	indexDir := testutil.NewTempDir(t)
 	indexRoot := indexDir.Root()
 
 	cmd := exec.Command("git", "clone", "--depth=1", "--single-branch", "--no-tags", constants.DefaultIndexURI)

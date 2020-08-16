@@ -82,8 +82,7 @@ func TestValidateManifestFile(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			tmp, cleanup := testutil.NewTempDir(t)
-			defer cleanup()
+			tmp := testutil.NewTempDir(t)
 
 			if test.writeManifest {
 				content, err := yaml.Marshal(test.plugin)

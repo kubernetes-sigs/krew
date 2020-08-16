@@ -63,8 +63,7 @@ func Test_extractZIP(t *testing.T) {
 	for _, tt := range tests {
 		// Zip has just one file named 'foo'
 		zipSrc := filepath.Join(testdataPath(), tt.in)
-		tmpDir, cleanup := testutil.NewTempDir(t)
-		defer cleanup()
+		tmpDir := testutil.NewTempDir(t)
 
 		zipReader, err := os.Open(zipSrc)
 		if err != nil {
@@ -110,8 +109,7 @@ func Test_extractTARGZ(t *testing.T) {
 
 	for _, tt := range tests {
 		tarSrc := filepath.Join(testdataPath(), tt.in)
-		tmpDir, cleanup := testutil.NewTempDir(t)
-		defer cleanup()
+		tmpDir := testutil.NewTempDir(t)
 
 		tf, err := os.Open(tarSrc)
 		if err != nil {
@@ -192,8 +190,7 @@ func TestDownloader_Get(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tmpDir, cleanup := testutil.NewTempDir(t)
-			defer cleanup()
+			tmpDir := testutil.NewTempDir(t)
 
 			d := NewDownloader(tt.fields.verifier, tt.fields.fetcher)
 			if err := d.Get(tt.uri, tmpDir.Root()); (err != nil) != tt.wantErr {
@@ -541,8 +538,7 @@ func Test_extractMaliciousArchive(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run("tar.gz  "+tt.name, func(t *testing.T) {
-			tmpDir, cleanup := testutil.NewTempDir(t)
-			defer cleanup()
+			tmpDir := testutil.NewTempDir(t)
 
 			// do not use filepath.Join here, because it calls filepath.Clean on the result
 			reader, err := tarGZArchiveForTesting(map[string]string{tt.path: testContent})
@@ -561,8 +557,7 @@ func Test_extractMaliciousArchive(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run("zip  "+tt.name, func(t *testing.T) {
-			tmpDir, cleanup := testutil.NewTempDir(t)
-			defer cleanup()
+			tmpDir := testutil.NewTempDir(t)
 
 			// do not use filepath.Join here, because it calls filepath.Clean on the result
 			reader, err := zipArchiveReaderForTesting(map[string]string{tt.path: testContent})

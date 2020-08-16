@@ -186,13 +186,11 @@ func Test_getDirectMove(t *testing.T) {
 }
 
 func Test_moveOrCopyDir_canMoveToNonExistingDir(t *testing.T) {
-	srcDir, cleanupSrc := testutil.NewTempDir(t)
-	defer cleanupSrc()
+	srcDir := testutil.NewTempDir(t)
 
 	srcDir.Write("some-file", nil)
 
-	dstDir, cleanupDst := testutil.NewTempDir(t)
-	defer cleanupDst()
+	dstDir := testutil.NewTempDir(t)
 
 	dst := dstDir.Path("non-existing-dir")
 
@@ -213,13 +211,11 @@ func Test_moveOrCopyDir_canMoveToNonExistingDir(t *testing.T) {
 }
 
 func Test_moveOrCopyDir_removesExistingTarget(t *testing.T) {
-	srcDir, cleanupSrc := testutil.NewTempDir(t)
-	defer cleanupSrc()
+	srcDir := testutil.NewTempDir(t)
 
 	srcDir.Write("some-file", nil)
 
-	dstDir, cleanupDst := testutil.NewTempDir(t)
-	defer cleanupDst()
+	dstDir := testutil.NewTempDir(t)
 
 	for i := 0; i < 3; i++ { // write some files
 		dstDir.Write(fmt.Sprintf("file-%d", i), nil)

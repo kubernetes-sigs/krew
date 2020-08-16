@@ -27,8 +27,7 @@ import (
 func TestKrewUninstall(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	test = test.WithDefaultIndex()
 
@@ -50,8 +49,7 @@ func TestKrewUninstall(t *testing.T) {
 func TestKrewUninstallPluginsFromCustomIndex(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	test.WithDefaultIndex().WithCustomIndexFromDefault("foo")
 	test.Krew("install", "foo/"+validPlugin).RunOrFail()
@@ -63,8 +61,7 @@ func TestKrewUninstallPluginsFromCustomIndex(t *testing.T) {
 func TestKrewUninstall_CannotUseIndexSyntax(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	test.WithDefaultIndex()
 	out, err := test.Krew("uninstall", "foo/"+validPlugin).Run()
@@ -79,8 +76,7 @@ func TestKrewUninstall_CannotUseIndexSyntax(t *testing.T) {
 func TestKrewRemove_AliasSupported(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	test.WithDefaultIndex().Krew("install", validPlugin).RunOrFailOutput()
 	test.Krew("remove", validPlugin).RunOrFailOutput()
@@ -90,8 +86,7 @@ func TestKrewRemove_AliasSupported(t *testing.T) {
 func TestKrewRemove_ManifestRemovedFromIndex(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	test = test.WithDefaultIndex()
 	manifestDir := environment.NewPaths(test.Root()).IndexPluginsPath(constants.DefaultIndexName)
@@ -108,8 +103,7 @@ func TestKrewRemove_ManifestRemovedFromIndex(t *testing.T) {
 
 func TestKrewRemove_Unsafe(t *testing.T) {
 	skipShort(t)
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 	test.WithDefaultIndex()
 	test.Krew("install", validPlugin).RunOrFailOutput()
 

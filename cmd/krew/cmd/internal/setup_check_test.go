@@ -24,8 +24,7 @@ import (
 )
 
 func TestIsBinDirInPATH_firstRun(t *testing.T) {
-	tempDir, cleanup := testutil.NewTempDir(t)
-	defer cleanup()
+	tempDir := testutil.NewTempDir(t)
 
 	paths := environment.NewPaths(tempDir.Path("does-not-exist"))
 	res := IsBinDirInPATH(paths)
@@ -35,8 +34,8 @@ func TestIsBinDirInPATH_firstRun(t *testing.T) {
 }
 
 func TestIsBinDirInPATH_secondRun(t *testing.T) {
-	tempDir, cleanup := testutil.NewTempDir(t)
-	defer cleanup()
+	tempDir := testutil.NewTempDir(t)
+
 	paths := environment.NewPaths(tempDir.Root())
 	res := IsBinDirInPATH(paths)
 	if res == true {

@@ -32,8 +32,7 @@ import (
 func TestKrewList(t *testing.T) {
 	skipShort(t)
 
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	test = test.WithDefaultIndex().WithCustomIndexFromDefault("foo")
 	initialList := test.Krew("list").RunOrFailOutput()
@@ -62,8 +61,7 @@ func TestKrewList(t *testing.T) {
 
 func TestKrewListSorted(t *testing.T) {
 	skipShort(t)
-	test, cleanup := NewTest(t)
-	defer cleanup()
+	test := NewTest(t)
 
 	test = test.WithDefaultIndex()
 
