@@ -23,7 +23,7 @@ This data is obtained by scraping the downloads count of your plugin assets on
 - does not distinguish between installs, reinstalls and upgrades
 - is purely a tracking of download counts of your release assets over time.
 
-> Note: Krew plugin stats dashboard is provided as a best effort by Krew
+> **Note:** Krew plugin stats dashboard is provided as a best effort by Krew
 > maintainers to measure success of Krew and its plugins. We cannot guarantee
 > its availability and accuracy.
 >

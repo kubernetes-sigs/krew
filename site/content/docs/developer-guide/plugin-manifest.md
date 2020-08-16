@@ -146,14 +146,15 @@ files out of archive.
 The `files:` list specifies the copy operations (like `mv <from> <to>`) to
 the files `from` the archive `to` the installation destination.
 
-* **Example:** Extract all files (default behavior, you can omit `files:` altogether)
+* **Example:** Extract all files: If the `files:` list is unspecified, it defaults to:
 
-> If the `files:` list is unspecified, it defaults to:
-> ```yaml
-> files:
-> - from: *
->   to: .
-> ```
+  ```yaml
+  files:
+  - from: *
+    to: .
+  ```
+
+  > **Note:** If applicable, it is best practice to skip the `files:` list altogether.
 
 * **Example:** Copy specific files:
 
@@ -195,8 +196,9 @@ after installation is complete. The name of the symbolic link comes from the
 plugin name (i.e. the `metadata.name` field).
 
 > **Note on underscore conversion:** If your plugin name contains dashes, krew
-> will automatically convert them to underscores for kubectl to be able to find
-> your plugin.
+> will automatically convert them to underscores for
+> [kubectl](https://kubernetes.io/docs/tasks/extend-kubectl/kubectl-plugins/#names-with-dashes-and-underscores)
+> to be able to find your plugin.
 >
 > For example, if your plugin name is `view-logs` and your plugin binary is named
 > `run.sh`, krew will create a symbolic named `kubectl-view_logs` automatically.
