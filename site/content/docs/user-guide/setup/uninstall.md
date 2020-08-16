@@ -12,5 +12,5 @@ To remove Krew and plugins installed altogether, run this on your Linux/macOS ma
 
 On Windows, remove directory: `%USERPROFILE%\.krew`.
 
-> Note: If you installed Krew with another package manager (e.g. Homebrew),
+> **Note:** If you installed Krew with another package manager (e.g. Homebrew),
 > follow their installations in addition to instructions above.
