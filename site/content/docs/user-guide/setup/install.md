@@ -22,11 +22,11 @@ Krew self-hosts).
     ```sh
     (
       set -x; cd "$(mktemp -d)" &&
-      curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/krew.{tar.gz,yaml}" &&
+      curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/krew.tar.gz" &&
       tar zxvf krew.tar.gz &&
       KREW=./krew-"$(uname | tr '[:upper:]' '[:lower:]')_amd64" &&
       "$KREW" install --manifest=krew.yaml --archive=krew.tar.gz &&
-      "$KREW" update
+      "$KREW" install krew
     )
     ```
 
@@ -49,11 +49,10 @@ Krew self-hosts).
     ```fish
     begin
       set -x; set temp_dir (mktemp -d); cd "$temp_dir" &&
-      curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/krew.{tar.gz,yaml}" &&
+      curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/krew.tar.gz" &&
       tar zxvf krew.tar.gz &&
       set KREWNAME krew-(uname | tr '[:upper:]' '[:lower:]')_amd64 &&
-      ./$KREWNAME install \
-        --manifest=krew.yaml --archive=krew.tar.gz &&
+      ./$KREWNAME install krew &&
       set -e KREWNAME; set -e temp_dir
     end
     ```
@@ -72,14 +71,12 @@ Krew self-hosts).
 ## Windows {#windows}
 
 1. Make sure `git` is installed on your system.
-1. Download `krew.exe` and `krew.yaml` from the [Releases][releases] page to
-   a directory.
+1. Download `krew.exe` from the [Releases][releases] page to a directory.
 1. Launch a command-line window (`cmd.exe`) and navigate to that directory.
-1. Run the following command to install krew (pass the correct
-   paths to `krew.yaml` and `krew.zip` below):
+1. Run the following command to install krew:
 
     ```sh
-    krew install --manifest=krew.yaml
+    krew install krew
     ```
 
 1. Add `%USERPROFILE%\.krew\bin` directory to your `PATH` environment variable
