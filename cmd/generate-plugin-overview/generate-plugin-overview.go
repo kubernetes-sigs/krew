@@ -34,7 +34,7 @@ const (
 
 To install these kubectl plugins:
 
-1. [Install Krew](https://github.com/kubernetes-sigs/krew#installation)
+1. [Install Krew](https://krew.sigs.k8s.io/docs/user-guide/quickstart/)
 2. Run ` + "`kubectl krew install PLUGIN_NAME`" + ` to install a plugin via Krew.
 
 The following kubectl plugins are currently available on
