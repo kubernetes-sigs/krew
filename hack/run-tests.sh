@@ -40,6 +40,9 @@ trap print_status EXIT
 print_with_color "$color_blue" 'Checking boilerplate'
 "$SCRIPTDIR"/verify-boilerplate.sh
 
+print_with_color "$color_blue" 'Checking Vet'
+"$SCRIPTDIR"/verify-govet.sh
+
 print_with_color "$color_blue" 'Running tests'
 go test -short -race sigs.k8s.io/krew/...
 
