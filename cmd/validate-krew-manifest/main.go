@@ -165,11 +165,12 @@ func installPlatformSpec(manifestFile string, p index.Platform) error {
 	return errors.Wrap(err, "LICENSE (or alike) file is not extracted from the archive as part of installation")
 }
 
-var licenseFiles = []string{
-	"license",
-	"license.txt",
-	"copying",
-	"copying.txt",
+var licenseFiles = map[string]struct{}{
+	"license":     {},
+	"license.txt": {},
+	"license.md":  {},
+	"copying":     {},
+	"copying.txt": {},
 }
 
 func validateLicenseFileExists(krewRoot string) error {
@@ -190,11 +191,9 @@ func validateLicenseFileExists(krewRoot string) error {
 
 	for _, f := range files {
 		klog.V(8).Infof("found installed file: %s", f)
-		f = strings.ToLower(filepath.Base(f))
-		for _, lf := range licenseFiles {
-			if lf == f {
-				return nil
-			}
+		if _, ok := licenseFiles[strings.ToLower(filepath.Base(f))]; ok {
+			klog.V(8).Infof("found license file %q", f)
+			return nil
 		}
 	}
 	return errors.Errorf("could not find license file among [%s]", strings.Join(files, ", "))
