@@ -30,6 +30,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/klog"
 
+	"sigs.k8s.io/krew/internal/environment"
 	"sigs.k8s.io/krew/internal/index/indexscanner"
 	"sigs.k8s.io/krew/internal/index/validation"
 	"sigs.k8s.io/krew/internal/installation"
@@ -159,7 +160,43 @@ func installPlatformSpec(manifestFile string, p index.Platform) error {
 		output := strings.ReplaceAll(string(b), "\n", "\n\t")
 		return errors.Wrapf(err, "plugin install command failed: %s", output)
 	}
-	return nil
+
+	err = validateLicenseFileExists(tmpDir)
+	return errors.Wrap(err, "LICENSE (or alike) file is not extracted from the archive as part of installation")
+}
+
+var licenseFiles = map[string]struct{}{
+	"license":     {},
+	"license.txt": {},
+	"license.md":  {},
+	"copying":     {},
+	"copying.txt": {},
+}
+
+func validateLicenseFileExists(krewRoot string) error {
+	dir := environment.NewPaths(krewRoot).InstallPath()
+	var files []string
+	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.Mode().IsRegular() {
+			files = append(files, info.Name())
+		}
+		return nil
+	})
+	if err != nil {
+		return errors.Wrap(err, "failed to walk installation directory")
+	}
+
+	for _, f := range files {
+		klog.V(8).Infof("found installed file: %s", f)
+		if _, ok := licenseFiles[strings.ToLower(filepath.Base(f))]; ok {
+			klog.V(8).Infof("found license file %q", f)
+			return nil
+		}
+	}
+	return errors.Errorf("could not find license file among [%s]", strings.Join(files, ", "))
 }
 
 // findAnyMatchingPlatform finds an <os,arch> pair matches to given selector
