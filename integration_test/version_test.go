@@ -27,7 +27,19 @@ func TestKrewVersion(t *testing.T) {
 	test := NewTest(t)
 
 	stdOut := string(test.Krew("version").RunOrFailOutput())
+	checkRequiredSubstrings(test, "https://github.com/kubernetes-sigs/krew-index.git", stdOut)
+}
 
+func TestKrewVersionWithCustomDefaultIndex(t *testing.T) {
+	skipShort(t)
+
+	test := NewTest(t)
+
+	stdOut := string(test.WithEnv("KREW_DEFAULT_INDEX_URI", "abc").Krew("version").RunOrFailOutput())
+	checkRequiredSubstrings(test, "abc", stdOut)
+}
+
+func checkRequiredSubstrings(test *ITest, index, stdOut string) {
 	lineSplit := regexp.MustCompile(`\s+`)
 	actual := make(map[string]string)
 	for _, line := range strings.Split(stdOut, "\n") {
@@ -36,7 +48,7 @@ func TestKrewVersion(t *testing.T) {
 		}
 		optionValue := lineSplit.Split(line, 2)
 		if len(optionValue) < 2 {
-			t.Errorf("Expect `krew version` to output `OPTION VALUE` pair separated by spaces, got: %v", optionValue)
+			test.t.Errorf("Expect `krew version` to output `OPTION VALUE` pair separated by spaces, got: %v", optionValue)
 		}
 		actual[optionValue[0]] = optionValue[1]
 	}
@@ -46,7 +58,7 @@ func TestKrewVersion(t *testing.T) {
 		"BasePath":         test.Root(),
 		"GitTag":           "",
 		"GitCommit":        "",
-		"IndexURI":         "https://github.com/kubernetes-sigs/krew-index.git",
+		"IndexURI":         index,
 		"IndexPath":        path.Join(test.Root(), "index"),
 		"InstallPath":      path.Join(test.Root(), "store"),
 		"BinPath":          path.Join(test.Root(), "bin"),
@@ -56,9 +68,9 @@ func TestKrewVersion(t *testing.T) {
 	for k, v := range requiredSubstrings {
 		got, ok := actual[k]
 		if !ok {
-			t.Errorf("`krew version` output doesn't contain field %q", k)
+			test.t.Errorf("`krew version` output doesn't contain field %q", k)
 		} else if !strings.Contains(got, v) {
-			t.Errorf("`krew version` %q field doesn't contain string %q (got: %q)", k, v, got)
+			test.t.Errorf("`krew version` %q field doesn't contain string %q (got: %q)", k, v, got)
 		}
 	}
 }

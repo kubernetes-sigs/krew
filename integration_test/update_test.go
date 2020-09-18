@@ -48,6 +48,17 @@ func TestKrewUpdate(t *testing.T) {
 	}
 }
 
+// func TestKrewUpdateCustomDefaultIndex(t *testing.T) {
+//     skipShort(t)
+//     test := NewTest(t)
+//
+//     index := filepath.Join(test.Root(), "custom")
+//     test.WithEnv("KREW_DEFAULT_INDEX_URI", index).WithDefaultIndex()
+//     test.Krew("update").RunOrFail()
+//     out := string(test.Krew("search").RunOrFailOutput())
+//     t.Error(out)
+// }
+
 func TestKrewUpdateMultipleIndexes(t *testing.T) {
 	skipShort(t)
 	test := NewTest(t)

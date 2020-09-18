@@ -183,7 +183,29 @@ func (it *ITest) Root() string {
 }
 
 // WithDefaultIndex initializes the index with the actual krew-index from github/kubernetes-sigs/krew-index.
+// If KREW_DEFAULT_INDEX_URI is passed then that will be used to create a git repo at the tempdir root.
 func (it *ITest) WithDefaultIndex() *ITest {
+	//         for _, e := range it.env {
+	//             if strings.Contains(e, "KREW_DEFAULT_INDEX_URI") {
+	//                 val := strings.Split(e, "=")[1]
+	//                 it.TempDir().InitEmptyGitRepo(val, val)
+	//                 pluginsDir := filepath.Join(val, "plugins")
+	//                 if err := os.MkdirAll(pluginsDir, 0777); err != nil {
+	//                     it.t.Errorf("failed to create plugins directory at %s", pluginsDir)
+	//                 }
+	//                 plugin, err := ioutil.ReadFile(filepath.Join("testdata", validPlugin+constants.ManifestExtension))
+	//                 if err != nil {
+	//                     it.t.Error("failed to read valid plugin")
+	//                 }
+	//                 manifest := filepath.Join(val, "plugins", validPlugin+constants.ManifestExtension)
+	//                 if err := ioutil.WriteFile(manifest, plugin, 0); err != nil {
+	//                     it.t.Errorf("failed to write plugin to %s", manifest)
+	//                 }
+	//                 gitutil.Exec(val, "commit", "-am", "'test'")
+	//                 it.Krew("index", "add", "default", val).RunOrFail()
+	//                 return it
+	//             }
+	//         }
 	it.initializeIndex()
 	return it
 }

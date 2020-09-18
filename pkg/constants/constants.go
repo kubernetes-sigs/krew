@@ -14,14 +14,24 @@
 
 package constants
 
+import "os"
+
 const (
 	CurrentAPIVersion = "krew.googlecontainertools.github.com/v1alpha2"
 	PluginKind        = "Plugin"
 	ManifestExtension = ".yaml"
 	KrewPluginName    = "krew" // plugin name of krew itself
 
-	// DefaultIndexURI points to the upstream index.
-	DefaultIndexURI = "https://github.com/kubernetes-sigs/krew-index.git"
 	// DefaultIndexName is a magic string that's used for a plugin name specified without an index.
 	DefaultIndexName = "default"
 )
+
+// DefaultIndexURI points to the upstream index.
+var DefaultIndexURI = getDefaultIndexURI()
+
+func getDefaultIndexURI() string {
+	if uri := os.Getenv("KREW_DEFAULT_INDEX_URI"); uri != "" {
+		return uri
+	}
+	return "https://github.com/kubernetes-sigs/krew-index.git"
+}
