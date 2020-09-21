@@ -48,7 +48,7 @@ Remarks:
 			if err := installation.Uninstall(paths, name); err != nil {
 				return errors.Wrapf(err, "failed to uninstall plugin %s", name)
 			}
-			fmt.Fprintf(os.Stderr, "Uninstalled plugin %s\n", name)
+			fmt.Fprintf(os.Stderr, "Uninstalled plugin: %s\n", name)
 		}
 		return nil
 	},
