@@ -81,6 +81,7 @@ func TestLess(t *testing.T) {
 		{"v1.0.1", "v1.2.0", false},
 		{"v1.0.1", "v2.1.0", false},
 		{"v1.0.0-alpha.2", "v1.0.1-alpha.1", false},
+		{"v1.0.1-rc1", "v1.0.1", false},
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("%s<%s", tt.a, tt.b), func(t *testing.T) {
