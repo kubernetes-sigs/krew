@@ -3,7 +3,7 @@
 
 # Krew
 
-[![Build Status](https://travis-ci.org/kubernetes-sigs/krew.svg?branch=master)](https://travis-ci.org/kubernetes-sigs/krew)
+[![Build Status](https://github.com/kubernetes-sigs/krew/workflows/Kubernetes-sigs/krew%20CI/badge.svg)](https://github.com/kubernetes-sigs/krew/actions)
 [![Go Report Card](https://goreportcard.com/badge/kubernetes-sigs/krew)](https://goreportcard.com/report/kubernetes-sigs/krew)
 [![LICENSE](https://img.shields.io/github/license/kubernetes-sigs/krew.svg)](https://github.com/kubernetes-sigs/krew/blob/master/LICENSE)
 [![Releases](https://img.shields.io/github/release-pre/kubernetes-sigs/krew.svg)](https://github.com/kubernetes-sigs/krew/releases)
