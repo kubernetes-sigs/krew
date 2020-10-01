@@ -27,7 +27,7 @@ kubectl plugins][list] are available on Krew.
 ## [Documentation][website]
 
 Visit the [**Krew documentation**][website] to find **Installation**
-instructions, **User Guide** and **Developer` Guide**.
+instructions, **User Guide** and **Developer Guide**.
 
 You can follow the [**Quickstart**][quickstart] to get started with Krew.
 
