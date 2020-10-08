@@ -71,7 +71,7 @@ Krew self-hosts).
 
 1. Make sure `git` is installed on your system.
 1. Download `krew.exe` from the [Releases][releases] page to a directory.
-1. Launch a command-line window (`cmd.exe`) with elevated privileges (to update symbolic link) and navigate to that directory.
+1. Launch a command-line window (`cmd.exe`) with elevated privileges (since the installation requires use of symbolic links) and navigate to that directory.
 1. Run the following command to install krew:
 
     ```sh
