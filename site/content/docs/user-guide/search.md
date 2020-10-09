@@ -59,5 +59,4 @@ DESCRIPTION:
 ...{{</output>}}
 ```
 
-
-[list]: https://github.com/kubernetes-sigs/krew-index/blob/master/plugins.md
+[list]: {{< relref "docs/plugins.md" >}}

@@ -44,5 +44,77 @@
     </script>
     {{ end }}
 
+    <script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+        var pluginCountElem = document.getElementById("krew-plugin-count");
+        if (!pluginCountElem){
+            return;
+        }
+        fetch('/.netlify/functions/api/pluginCount')
+            .then(response => response.json())
+            .then(response => {
+                console.log(`${response.data.count} plugins found`);
+                pluginCountElem.innerText=response.data?.count || 0;
+            }).catch((error) => {
+                console.error('Error:', error);
+            });;
+    });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            var pluginTableElem = document.getElementById("krew-plugins-list");
+            if (!pluginTableElem){
+                return;
+            }
+            fetch('/.netlify/functions/api/plugins')
+                .then(response => response.json())
+                .then(response => {
+                    var count = response.data?.plugins?.length || 0;
+                    console.log(`${count} plugins loaded`);
+
+                    response.data.plugins.sort((a,b) => a.name.localeCompare(b.name));
+
+                    while (pluginTableElem.firstChild) {
+                        pluginTableElem.removeChild(pluginTableElem.firstChild);
+                    }
+
+                    response.data?.plugins?.forEach(plugin => {
+                        var tr = document.createElement("tr");
+
+                        var nameCol = document.createElement("td");
+                        var homeLink = document.createElement("a");
+                        homeLink.innerText = plugin.name;
+                        homeLink.setAttribute("href", plugin.homepage)
+                        homeLink.setAttribute("rel", "nofollow");
+                        nameCol.appendChild(homeLink);
+
+                        var descriptionCol = document.createElement("td");
+                        var description = document.createTextNode(plugin.short_description);
+                        descriptionCol.appendChild(description);
+
+                        var repoCol = document.createElement("td");
+                        if (plugin.github_repo) {
+                            var badgeLink = document.createElement("a");
+                            badgeLink.setAttribute("href", `https:\/\/github.com/${plugin.github_repo}`);
+                            badgeLink.setAttribute("rel", "nofollow");
+
+                            var badgeImg = document.createElement("img");
+                            badgeImg.setAttribute("src", `https:\/\/img.shields.io/github/stars/${plugin.github_repo}.svg?label=stars&logo=github`);
+                            badgeLink.appendChild(badgeImg);
+                            repoCol.appendChild(badgeLink);
+                        }
+
+                        tr.appendChild(nameCol);
+                        tr.appendChild(descriptionCol);
+                        tr.appendChild(repoCol);
+
+                        pluginTableElem.appendChild(tr);
+                    })
+                }).catch((error) => {
+                    console.error('Error:', error);
+                });;
+        });
+        </script>
 </body>
 </html>

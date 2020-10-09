@@ -9,3 +9,6 @@ disableKinds:
 markup:
   highlight:
     style: dracula
+  goldmark:
+    renderer:
+      unsafe: true # required for dynamic JS content editing
