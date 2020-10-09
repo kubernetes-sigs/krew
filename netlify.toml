@@ -2,9 +2,11 @@
 base = "site/"
 publish = "public/"
 command = "hugo"
+functions = "functions/"
 
 [build.environment]
 HUGO_VERSION = "0.65.1"
+GO_IMPORT_PATH = "sigs.k8s.io/krew"
 
 [context.production.environment]
 HUGO_ENV = "production"
