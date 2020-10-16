@@ -35,6 +35,7 @@ import (
 	"github.com/google/go-github/v32/github"
 	"github.com/pkg/errors"
 	"golang.org/x/oauth2"
+	"golang.org/x/sync/errgroup"
 	"sigs.k8s.io/krew/pkg/constants"
 	krew "sigs.k8s.io/krew/pkg/index"
 	"sigs.k8s.io/yaml"
@@ -45,8 +46,8 @@ const (
 	repoName   = "krew-index"
 	pluginsDir = "plugins"
 
-	urlFetchBatchSize = 40
-	cacheSeconds      = 60 * 60
+	pluginFetchWorkers = 40
+	cacheSeconds       = 60 * 60
 )
 
 var (
@@ -177,42 +178,27 @@ func pluginsHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func fetchPlugins(ctx context.Context, entries []*github.RepositoryContent) ([]*krew.Plugin, error) {
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
 	var (
-		mu     sync.Mutex
-		out    []*krew.Plugin
-		retErr error
+		mu  sync.Mutex
+		out []*krew.Plugin
 	)
 
 	queue := make(chan string)
-	var wg sync.WaitGroup
+	g, ctx := errgroup.WithContext(ctx)
 
-	for i := 0; i < urlFetchBatchSize; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for {
-				select {
-				case <-ctx.Done():
-					return
-				case url, ok := <-queue:
-					if !ok {
-						return
-					}
-					p, err := readPlugin(url)
-					if err != nil {
-						retErr = err
-						cancel()
-						return
-					}
-					mu.Lock()
-					out = append(out, p)
-					mu.Unlock()
+	for i := 0; i < pluginFetchWorkers; i++ {
+		g.Go(func() error {
+			for url := range queue {
+				p, err := readPlugin(url)
+				if err != nil {
+					return err
 				}
+				mu.Lock()
+				out = append(out, p)
+				mu.Unlock()
 			}
-		}()
+			return nil
+		})
 	}
 
 	for _, v := range entries {
@@ -225,9 +211,8 @@ func fetchPlugins(ctx context.Context, entries []*github.RepositoryContent) ([]*
 	}
 
 	close(queue)
-	wg.Wait()
 
-	return out, retErr
+	return out, g.Wait()
 }
 
 func readPlugin(url string) (*krew.Plugin, error) {
