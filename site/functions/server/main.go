@@ -113,7 +113,6 @@ func pluginCountHandler(w http.ResponseWriter, req *http.Request) {
 
 func writeJSON(w io.Writer, v interface{}) {
 	e := json.NewEncoder(w)
-	e.SetIndent("", "  ")
 	if err := e.Encode(v); err != nil {
 		log.Printf("json write error: %v", err)
 	}
@@ -144,8 +143,9 @@ func loggingHandler(f http.Handler) http.Handler {
 }
 
 func pluginsHandler(w http.ResponseWriter, req *http.Request) {
-	_, dir, resp, err := githubClient(req.Context()).
-		Repositories.GetContents(req.Context(), orgName, repoName, pluginsDir, &github.RepositoryContentGetOptions{})
+	ctx := req.Context()
+	_, dir, resp, err := githubClient(ctx).
+		Repositories.GetContents(ctx, orgName, repoName, pluginsDir, &github.RepositoryContentGetOptions{})
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		writeJSON(w, PluginsResponse{Error: ErrorResponse{Message: fmt.Sprintf("error retrieving repo contents: %v", err)}})
@@ -155,7 +155,7 @@ func pluginsHandler(w http.ResponseWriter, req *http.Request) {
 		resp.Status, resp.Rate.Limit, resp.Rate.Remaining)
 	var out PluginsResponse
 
-	plugins, err := fetchPlugins(filterYAMLs(dir))
+	plugins, err := fetchPlugins(ctx, filterYAMLs(dir))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		writeJSON(w, PluginsResponse{Error: ErrorResponse{Message: fmt.Sprintf("failed to fetch plugins: %v", err)}})
@@ -176,8 +176,7 @@ func pluginsHandler(w http.ResponseWriter, req *http.Request) {
 	writeJSON(w, out)
 }
 
-func fetchPlugins(entries []*github.RepositoryContent) ([]*krew.Plugin, error) {
-	ctx := context.Background()
+func fetchPlugins(ctx context.Context, entries []*github.RepositoryContent) ([]*krew.Plugin, error) {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
@@ -192,7 +191,7 @@ func fetchPlugins(entries []*github.RepositoryContent) ([]*krew.Plugin, error) {
 
 	for i := 0; i < urlFetchBatchSize; i++ {
 		wg.Add(1)
-		go func(j int) {
+		go func() {
 			defer wg.Done()
 			for {
 				select {
@@ -213,7 +212,7 @@ func fetchPlugins(entries []*github.RepositoryContent) ([]*krew.Plugin, error) {
 					mu.Unlock()
 				}
 			}
-		}(i)
+		}()
 	}
 
 	for _, v := range entries {
@@ -234,20 +233,18 @@ func fetchPlugins(entries []*github.RepositoryContent) ([]*krew.Plugin, error) {
 func readPlugin(url string) (*krew.Plugin, error) {
 	resp, err := http.Get(url)
 	if err != nil {
-		return nil, errors.Wrapf(err,"failed to get %s", url)
+		return nil, errors.Wrapf(err, "failed to get %s", url)
 	}
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
-	var v krew.Plugin
+	defer resp.Body.Close()
 
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, errors.Wrapf(err,"failed to read file %s: %w", url)
+		return nil, errors.Wrapf(err, "failed to read file %s: %w", url)
 	}
 
+	var v krew.Plugin
 	if err = yaml.Unmarshal(b, &v); err != nil {
-		return nil, errors.Wrapf(err,"failed to parse plugin manifest for %s", url)
+		return nil, errors.Wrapf(err, "failed to parse plugin manifest for %s", url)
 	}
 	return &v, nil
 }
@@ -270,18 +267,20 @@ func findRepo(homePage string) string {
 }
 
 func main() {
-	port := flag.Int("port", -1, "specify a port to use http rather than AWS Lambda")
+	port := flag.Int("port", -1, `To debug locally set --port=8080 and run "hugo serve"`)
 	flag.Parse()
+	local := *port != -1
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/.netlify/functions/api/pluginCount", pluginCountHandler)
 	mux.HandleFunc("/.netlify/functions/api/plugins", pluginsHandler)
-	// To debug locally, you can run this server with -port=:8080 and run "hugo serve" and uncomment this:
-	mux.Handle("/", httputil.NewSingleHostReverseProxy(&url.URL{Scheme: "http", Host: "localhost:1313"}))
+	if local {
+		mux.Handle("/", httputil.NewSingleHostReverseProxy(&url.URL{Scheme: "http", Host: "localhost:1313"}))
+	}
 
 	handler := loggingHandler(mux)
-	if *port == -1 {
-		log.Fatal(gateway.ListenAndServe("n/a", handler))
+	if local {
+		log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", *port), handler))
 	}
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", *port), handler))
+	log.Fatal(gateway.ListenAndServe("n/a", handler))
 }
