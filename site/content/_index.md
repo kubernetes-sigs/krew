@@ -11,7 +11,7 @@ Krew helps you:
 - install them on your machine,
 - and keep the installed plugins up-to-date.
 
-There are [<span id="krew-plugin-count">...</span> kubectl plugins][list]
+There are [<span class="krew-plugin-count">⌛</span> kubectl plugins][list]
 currently distributed on Krew.
 
 Krew works across all major platforms, like macOS, Linux and Windows.
