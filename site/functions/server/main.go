@@ -36,10 +36,10 @@ import (
 	"github.com/pkg/errors"
 	"golang.org/x/oauth2"
 	"golang.org/x/sync/errgroup"
+	"sigs.k8s.io/yaml"
 
 	"sigs.k8s.io/krew/pkg/constants"
 	krew "sigs.k8s.io/krew/pkg/index"
-	"sigs.k8s.io/yaml"
 )
 
 const (
