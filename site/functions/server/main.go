@@ -253,7 +253,7 @@ func findRepo(homePage string) string {
 }
 
 func main() {
-	port := flag.Int("port", -1, `To debug locally set --port=8080 and run "hugo serve"`)
+	port := flag.Int("port", -1, `"to debug locally, set a port number"`)
 	flag.Parse()
 	local := *port != -1
 
