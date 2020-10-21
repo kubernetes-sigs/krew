@@ -21,4 +21,4 @@ plugins on multiple platforms easily and makes them discoverable through a
 centralized plugin repository with Krew.
 
 [kpl]: https://kubernetes.io/docs/tasks/extend-kubectl/kubectl-plugins/
-[list]: {{< relref "docs/plugins.md" >}}
+[list]: {{< relref "plugins.md" >}}

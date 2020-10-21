@@ -59,4 +59,4 @@ DESCRIPTION:
 ...{{</output>}}
 ```
 
-[list]: {{< relref "docs/plugins.md" >}}
+[list]: {{< relref "plugins.md" >}}

@@ -7,7 +7,7 @@ Below you will find the list of kubectl plugins distributed on the centralized
 [krew-index](https://sigs.k8s.io/krew-index). To install these plugins on
 your machine:
 
-1. [Install Krew]({{< relref "user-guide/setup/install.md" >}})
+1. [Install Krew]({{< relref "docs/user-guide/setup/install.md" >}})
 2. Run `kubectl krew install <PLUGIN_NAME>` to install a plugin via Krew.
 
 

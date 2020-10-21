@@ -57,4 +57,4 @@ auth-proxy                      Authentication proxy to a pod or service        
 This is pretty much all you need to know as a user to use Krew.
 
 [kpl]: https://kubernetes.io/docs/tasks/extend-kubectl/kubectl-plugins/
-[list]: {{< relref "docs/plugins.md" >}}
+[list]: {{< relref "plugins.md" >}}
