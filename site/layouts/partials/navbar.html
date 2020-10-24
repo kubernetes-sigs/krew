@@ -16,6 +16,7 @@
 
             {{ $isQuickstart := (eq .Slug "quickstart") }}
             {{ $isDocs := (and (eq .Section "docs") (ne .Slug "quickstart")) }}
+            {{ $isPlugins := (and (not .Section) (eq .Slug "plugins"))}}
 
             <a class="nav-item nav-link {{if $isQuickstart}}active{{end}}" href="{{ "/docs/user-guide/quickstart/" | relURL}}">
                 Quickstart
@@ -24,6 +25,10 @@
             <a class="nav-item nav-link {{if $isDocs}}active{{end}}" href="{{ "/docs/" | relURL}}">
                 Documentation
                 {{if $isDocs}}<span class="sr-only">(current)</span>{{end}}
+            </a>
+            <a class="nav-item nav-link {{if $isPlugins}}active{{end}}" href="{{ "/plugins/" | relURL}}">
+                Plugins
+                {{if $isPlugins}}<span class="sr-only">(current)</span>{{end}}
             </a>
             <a class="nav-item nav-link" href="https://sigs.k8s.io/krew">GitHub</a>
         </div>

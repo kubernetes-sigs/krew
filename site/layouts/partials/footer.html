@@ -44,5 +44,58 @@
     </script>
     {{ end }}
 
+    <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const elems = document.querySelectorAll(".krew-plugin-count");
+        if (elems.length === 0){
+            return;
+        }
+        let count = '<error>';
+        try {
+            const resp = await fetch('/.netlify/functions/api/pluginCount');
+            const json = await resp.json();
+            count = json.data?.count ?? '<error>';
+        } catch (e) {
+            console.warn(e);
+        }
+        elems.forEach(elem => elem.innerText=count);
+    });
+    </script>
+
+    <script type="module">
+    import {html, render} from 'https://unpkg.com/lit-html?module';
+    const repoLink = repo => repo
+        ? html`<a href="${repo}" rel="nofollow"><img src="https://img.shields.io/github/stars/${repo}.svg?label=stars&logo=github"/></a>`
+        : html``;
+    const row = plugin => html`<tr>
+        <td><a rel="nofollow" href="${plugin.homepage}">${plugin.name}</a></td>
+        <td>${plugin.short_description}</td>
+        <td>${repoLink(plugin.github_repo)}</td>
+    </tr>`;
+    const tableRows = plugins => plugins.map(p => html`${row(p)}`);
+    const error = e => e
+        ? html`<tr><td/><td>failed to load plugins: ${e}<td><td/></tr>`
+        : html`<tr><td/><td>failed to load plugins<td><td/></tr>`
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        const pluginTableElem = document.querySelector("#krew-plugins-list");
+        if (!pluginTableElem){
+            return;
+        }
+        try {
+            const resp = await fetch('/.netlify/functions/api/plugins');
+            const json = await resp.json()
+            const plugins = json.data?.plugins;
+            if (!Boolean(plugins?.length)) {
+                render(error(), pluginTableElem);
+                return;
+            }
+            plugins.sort((a,b) => a.name.localeCompare(b.name));
+            render(tableRows(plugins), pluginTableElem);
+        } catch (e) {
+            render(error(e), pluginTableElem);
+        }
+    });
+    </script>
 </body>
 </html>
