@@ -183,29 +183,7 @@ func (it *ITest) Root() string {
 }
 
 // WithDefaultIndex initializes the index with the actual krew-index from github/kubernetes-sigs/krew-index.
-// If KREW_DEFAULT_INDEX_URI is passed then that will be used to create a git repo at the tempdir root.
 func (it *ITest) WithDefaultIndex() *ITest {
-	//         for _, e := range it.env {
-	//             if strings.Contains(e, "KREW_DEFAULT_INDEX_URI") {
-	//                 val := strings.Split(e, "=")[1]
-	//                 it.TempDir().InitEmptyGitRepo(val, val)
-	//                 pluginsDir := filepath.Join(val, "plugins")
-	//                 if err := os.MkdirAll(pluginsDir, 0777); err != nil {
-	//                     it.t.Errorf("failed to create plugins directory at %s", pluginsDir)
-	//                 }
-	//                 plugin, err := ioutil.ReadFile(filepath.Join("testdata", validPlugin+constants.ManifestExtension))
-	//                 if err != nil {
-	//                     it.t.Error("failed to read valid plugin")
-	//                 }
-	//                 manifest := filepath.Join(val, "plugins", validPlugin+constants.ManifestExtension)
-	//                 if err := ioutil.WriteFile(manifest, plugin, 0); err != nil {
-	//                     it.t.Errorf("failed to write plugin to %s", manifest)
-	//                 }
-	//                 gitutil.Exec(val, "commit", "-am", "'test'")
-	//                 it.Krew("index", "add", "default", val).RunOrFail()
-	//                 return it
-	//             }
-	//         }
 	it.initializeIndex()
 	return it
 }
@@ -291,7 +269,9 @@ func (it *ITest) TempDir() *testutil.TempDir {
 }
 
 // InitializeIndex initializes the krew index in `$root/index` with the actual krew-index.
-// It caches the index tree as in-memory tar after the first run.
+// It caches the index tree as in-memory tar after the first run. If KREW_DEFAULT_INDEX_URI
+// is set then the krew-index tar will be extracted at the target directory to simulate a
+// custom default index.
 func (it *ITest) initializeIndex() {
 	initIndexOnce.Do(func() {
 		persistentCacheFile := filepath.Join(os.TempDir(), persistentIndexCache)
@@ -313,16 +293,29 @@ func (it *ITest) initializeIndex() {
 		}
 	})
 
+	// check for KREW_DEFAULT_INDEX_URI
+	for _, e := range it.env {
+		if strings.Contains(e, "KREW_DEFAULT_INDEX_URI") {
+			val := strings.Split(e, "=")[1]
+			it.extractKrewIndexTar(val)
+			it.Krew("index", "add", "default", val).RunOrFail()
+			return
+		}
+	}
+
 	indexDir := filepath.Join(it.Root(), "index", "default")
-	if err := os.MkdirAll(indexDir, 0777); err != nil {
+	it.extractKrewIndexTar(indexDir)
+}
+
+func (it *ITest) extractKrewIndexTar(targetDir string) {
+	if err := os.MkdirAll(targetDir, 0777); err != nil {
 		if os.IsExist(err) {
 			it.t.Log("initializeIndex should only be called once")
 			return
 		}
 		it.t.Fatal(err)
 	}
-
-	cmd := exec.Command("tar", "xzf", "-", "-C", indexDir)
+	cmd := exec.Command("tar", "xzf", "-", "-C", targetDir)
 	cmd.Stdin = bytes.NewReader(indexTar)
 	if err := cmd.Run(); err != nil {
 		it.t.Fatalf("cannot restore index from cache: %s", err)
