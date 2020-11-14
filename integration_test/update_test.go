@@ -48,15 +48,6 @@ func TestKrewUpdate(t *testing.T) {
 	}
 }
 
-func TestKrewUpdate_CustomDefaultIndexURI(t *testing.T) {
-	skipShort(t)
-	test := NewTest(t)
-
-	index := filepath.Join(test.Root(), "custom")
-	test.WithEnv("KREW_DEFAULT_INDEX_URI", index).WithDefaultIndex()
-	test.Krew("update").RunOrFail()
-}
-
 func TestKrewUpdateMultipleIndexes(t *testing.T) {
 	skipShort(t)
 	test := NewTest(t)
@@ -74,6 +65,20 @@ func TestKrewUpdateMultipleIndexes(t *testing.T) {
 	}
 	if !strings.Contains(out, "foo/ctx") {
 		t.Error("expected plugin foo/ctx in list of plugins")
+	}
+}
+
+func TestKrewUpdate_CustomDefaultIndexURI(t *testing.T) {
+	skipShort(t)
+	test := NewTest(t)
+
+	index := filepath.Join(test.Root(), "custom")
+	test.extractKrewIndexTar(index)
+	test.WithEnv("KREW_DEFAULT_INDEX_URI", index)
+
+	updateOut := string(test.Krew("update").RunOrFailOutput())
+	if strings.Contains(updateOut, "New plugins available:") {
+		t.Fatalf("clean index fetch should not show 'new plugins available': %s", updateOut)
 	}
 }
 
