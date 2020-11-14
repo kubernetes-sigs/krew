@@ -30,7 +30,7 @@ func TestKrewVersion(t *testing.T) {
 	checkRequiredSubstrings(test, "https://github.com/kubernetes-sigs/krew-index.git", stdOut)
 }
 
-func TestKrewVersionWithCustomDefaultIndex(t *testing.T) {
+func TestKrewVersion_CustomDefaultIndexURI(t *testing.T) {
 	skipShort(t)
 
 	test := NewTest(t)

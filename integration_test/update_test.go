@@ -48,7 +48,7 @@ func TestKrewUpdate(t *testing.T) {
 	}
 }
 
-func TestKrewUpdateCustomDefaultIndex(t *testing.T) {
+func TestKrewUpdate_CustomDefaultIndexURI(t *testing.T) {
 	skipShort(t)
 	test := NewTest(t)
 
