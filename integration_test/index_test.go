@@ -16,6 +16,7 @@ package integrationtest
 
 import (
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
@@ -96,6 +97,19 @@ func TestKrewIndexList(t *testing.T) {
 	if indexes := lines(out); len(indexes) < 3 {
 		// the first line is the header
 		t.Fatal("expected 2 indexes in output")
+	}
+}
+
+func TestKrewIndexList_CustomDefaultIndexURI(t *testing.T) {
+	skipShort(t)
+	test := NewTest(t)
+
+	index := filepath.Join(test.Root(), "custom")
+	test.WithEnv("KREW_DEFAULT_INDEX_URI", index).WithDefaultIndex()
+
+	out := test.Krew("index", "list").RunOrFailOutput()
+	if !strings.Contains(string(out), index) {
+		t.Errorf("expected default index to have %q URI", index)
 	}
 }
 

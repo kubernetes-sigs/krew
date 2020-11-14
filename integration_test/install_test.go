@@ -141,6 +141,18 @@ func TestKrewInstall_CustomIndex(t *testing.T) {
 	test.AssertExecutableNotInPATH("kubectl-" + validPlugin2)
 }
 
+func TestKrewInstall_CustomDefaultIndexURI(t *testing.T) {
+	skipShort(t)
+	test := NewTest(t)
+
+	index := filepath.Join(test.Root(), "custom")
+	test.WithEnv("KREW_DEFAULT_INDEX_URI", index).WithDefaultIndex()
+
+	test.Krew("install", validPlugin).RunOrFail()
+	test.AssertExecutableInPATH("kubectl-" + validPlugin)
+	test.AssertPluginFromIndex(validPlugin, "default")
+}
+
 func TestKrewInstallNoSecurityWarningForCustomIndex(t *testing.T) {
 	skipShort(t)
 
