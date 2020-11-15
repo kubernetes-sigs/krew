@@ -269,9 +269,7 @@ func (it *ITest) TempDir() *testutil.TempDir {
 }
 
 // InitializeIndex initializes the krew index in `$root/index` with the actual krew-index.
-// It caches the index tree as in-memory tar after the first run. If KREW_DEFAULT_INDEX_URI
-// is set then the krew-index tar will be extracted at the target directory to simulate a
-// custom default index.
+// It caches the index tree as in-memory tar after the first run.
 func (it *ITest) initializeIndex() {
 	initIndexOnce.Do(func() {
 		persistentCacheFile := filepath.Join(os.TempDir(), persistentIndexCache)
