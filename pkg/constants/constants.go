@@ -24,14 +24,16 @@ const (
 
 	// DefaultIndexName is a magic string that's used for a plugin name specified without an index.
 	DefaultIndexName = "default"
+
+	// defaultIndexURI is the default krew-index URI that gets used unless it's overridden
+	defaultIndexURI = "https://github.com/kubernetes-sigs/krew-index.git"
 )
 
 // DefaultIndexURI points to the upstream index.
-var DefaultIndexURI = getDefaultIndexURI()
+var DefaultIndexURI = defaultIndexURI
 
-func getDefaultIndexURI() string {
+func init() {
 	if uri := os.Getenv("KREW_DEFAULT_INDEX_URI"); uri != "" {
-		return uri
+		DefaultIndexURI = uri
 	}
-	return "https://github.com/kubernetes-sigs/krew-index.git"
 }

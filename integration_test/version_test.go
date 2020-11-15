@@ -15,6 +15,7 @@
 package integrationtest
 
 import (
+	"fmt"
 	"path"
 	"regexp"
 	"strings"
@@ -27,7 +28,10 @@ func TestKrewVersion(t *testing.T) {
 	test := NewTest(t)
 
 	stdOut := string(test.Krew("version").RunOrFailOutput())
-	checkRequiredSubstrings(test, "https://github.com/kubernetes-sigs/krew-index.git", stdOut)
+	err := checkRequiredSubstrings(test, "https://github.com/kubernetes-sigs/krew-index.git", stdOut)
+	if err != nil {
+		t.Error(err)
+	}
 }
 
 func TestKrewVersion_CustomDefaultIndexURI(t *testing.T) {
@@ -35,11 +39,14 @@ func TestKrewVersion_CustomDefaultIndexURI(t *testing.T) {
 
 	test := NewTest(t)
 
-	stdOut := string(test.WithEnv("KREW_DEFAULT_INDEX_URI", "abc").Krew("version").RunOrFailOutput())
-	checkRequiredSubstrings(test, "abc", stdOut)
+	stdOut := string(test.WithEnv("KREW_DEFAULT_INDEX_URI", "foo").Krew("version").RunOrFailOutput())
+	err := checkRequiredSubstrings(test, "foo", stdOut)
+	if err != nil {
+		t.Error(err)
+	}
 }
 
-func checkRequiredSubstrings(test *ITest, index, stdOut string) {
+func checkRequiredSubstrings(test *ITest, index, stdOut string) error {
 	lineSplit := regexp.MustCompile(`\s+`)
 	actual := make(map[string]string)
 	for _, line := range strings.Split(stdOut, "\n") {
@@ -48,7 +55,7 @@ func checkRequiredSubstrings(test *ITest, index, stdOut string) {
 		}
 		optionValue := lineSplit.Split(line, 2)
 		if len(optionValue) < 2 {
-			test.t.Errorf("Expect `krew version` to output `OPTION VALUE` pair separated by spaces, got: %v", optionValue)
+			return fmt.Errorf("Expected `krew version` to output `OPTION VALUE` pair separated by spaces, got: %v", optionValue)
 		}
 		actual[optionValue[0]] = optionValue[1]
 	}
@@ -68,9 +75,11 @@ func checkRequiredSubstrings(test *ITest, index, stdOut string) {
 	for k, v := range requiredSubstrings {
 		got, ok := actual[k]
 		if !ok {
-			test.t.Errorf("`krew version` output doesn't contain field %q", k)
+			return fmt.Errorf("`krew version` output doesn't contain field %q", k)
 		} else if !strings.Contains(got, v) {
-			test.t.Errorf("`krew version` %q field doesn't contain string %q (got: %q)", k, v, got)
+			return fmt.Errorf("`krew version` %q field doesn't contain string %q (got: %q)", k, v, got)
 		}
 	}
+
+	return nil
 }
