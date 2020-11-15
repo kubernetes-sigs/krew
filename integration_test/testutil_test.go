@@ -293,29 +293,16 @@ func (it *ITest) initializeIndex() {
 		}
 	})
 
-	// check for KREW_DEFAULT_INDEX_URI
-	for _, e := range it.env {
-		if strings.Contains(e, "KREW_DEFAULT_INDEX_URI") {
-			val := strings.Split(e, "=")[1]
-			it.extractKrewIndexTar(val)
-			it.Krew("index", "add", "default", val).RunOrFail()
-			return
-		}
-	}
-
 	indexDir := filepath.Join(it.Root(), "index", "default")
-	it.extractKrewIndexTar(indexDir)
-}
-
-func (it *ITest) extractKrewIndexTar(targetDir string) {
-	if err := os.MkdirAll(targetDir, 0777); err != nil {
+	if err := os.MkdirAll(indexDir, 0777); err != nil {
 		if os.IsExist(err) {
 			it.t.Log("initializeIndex should only be called once")
 			return
 		}
 		it.t.Fatal(err)
 	}
-	cmd := exec.Command("tar", "xzf", "-", "-C", targetDir)
+
+	cmd := exec.Command("tar", "xzf", "-", "-C", indexDir)
 	cmd.Stdin = bytes.NewReader(indexTar)
 	if err := cmd.Run(); err != nil {
 		it.t.Fatalf("cannot restore index from cache: %s", err)
