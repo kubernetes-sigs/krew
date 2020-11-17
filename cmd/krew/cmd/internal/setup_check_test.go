@@ -23,6 +23,8 @@ import (
 	"sigs.k8s.io/krew/internal/testutil"
 )
 
+const environmentPath = "/home/../home/user//./.krew"
+
 func TestIsBinDirInPATH_firstRun(t *testing.T) {
 	tempDir := testutil.NewTempDir(t)
 
@@ -40,6 +42,35 @@ func TestIsBinDirInPATH_secondRun(t *testing.T) {
 	res := IsBinDirInPATH(paths)
 	if res == true {
 		t.Errorf("expected negative result on second run")
+	}
+}
+
+// TestIsBinDirInPATH_NonNormalized case when PATH content is not well normalized
+func TestIsBinDirInPATH_NonNormalized(t *testing.T) {
+	tempDir := testutil.NewTempDir(t)
+
+	// backup and restore initial PATH value
+	defer func(backupPath string) {
+		err := os.Setenv("PATH", backupPath)
+		if err != nil {
+			t.Fatalf(`os.Setenv("PATH", %s) failed with %v`, backupPath, err)
+		}
+	}(os.Getenv("PATH"))
+
+	// set PATH with non-normalized folder path
+	err := os.Setenv("PATH", tempDir.Path(environmentPath+"/bin"))
+	if err != nil {
+		t.Fatalf(`os.Setenv("PATH", %s/bin) failed with %v`, environmentPath, err)
+	}
+	paths := environment.NewPaths(tempDir.Path(environmentPath))
+	err = os.MkdirAll(paths.BasePath(), os.ModePerm)
+	if err != nil {
+		t.Fatalf("os.MkdirAll(%s) failed with %v", paths.BasePath(), err)
+	}
+
+	got := IsBinDirInPATH(paths)
+	if got == false {
+		t.Errorf("IsBinDirPATH(%v) = %t, want true", paths, got)
 	}
 }
 

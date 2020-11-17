@@ -58,7 +58,12 @@ func IsBinDirInPATH(paths environment.Paths) bool {
 
 	binPath := paths.BinPath()
 	for _, dirInPATH := range filepath.SplitList(os.Getenv("PATH")) {
-		if dirInPATH == binPath {
+		normalizedDirInPATH, err := filepath.Abs(dirInPATH)
+		if err != nil {
+			klog.Warningf("Cannot get absolute path: %v, %v", normalizedDirInPATH, err)
+			continue
+		}
+		if normalizedDirInPATH == binPath {
 			return true
 		}
 	}
