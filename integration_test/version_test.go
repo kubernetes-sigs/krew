@@ -56,7 +56,7 @@ func checkRequiredSubstrings(test *ITest, index, stdOut string) error {
 		}
 		optionValue := lineSplit.Split(line, 2)
 		if len(optionValue) < 2 {
-			return errors.Errorf("Expected `krew version` to output `OPTION VALUE` pair separated by spaces, got: %v", optionValue)
+			return errors.Errorf("`%v` is not an `OPTION VALUE` pair separated by spaces", optionValue)
 		}
 		actual[optionValue[0]] = optionValue[1]
 	}
