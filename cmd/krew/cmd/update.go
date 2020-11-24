@@ -142,8 +142,9 @@ func ensureDefaultIndexIfNoneExist() error {
 	}
 
 	klog.V(3).Infof("No index found, add default index.")
-	fmt.Fprintf(os.Stderr, "Adding \"default\" plugin index from %s.\n", index.DefaultIndex())
-	return errors.Wrap(indexoperations.AddIndex(paths, constants.DefaultIndexName, index.DefaultIndex()),
+	defaultIndex := index.DefaultIndex()
+	fmt.Fprintf(os.Stderr, "Adding \"default\" plugin index from %s.\n", defaultIndex)
+	return errors.Wrap(indexoperations.AddIndex(paths, constants.DefaultIndexName, defaultIndex),
 		"failed to add default plugin index in absence of no indexes")
 }
 
