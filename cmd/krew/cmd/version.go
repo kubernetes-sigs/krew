@@ -22,6 +22,7 @@ import (
 	"sigs.k8s.io/krew/internal/installation"
 	"sigs.k8s.io/krew/internal/version"
 	"sigs.k8s.io/krew/pkg/constants"
+	"sigs.k8s.io/krew/pkg/index"
 )
 
 // versionCmd represents the version command
@@ -42,7 +43,7 @@ Remarks:
 		conf := [][]string{
 			{"GitTag", version.GitTag()},
 			{"GitCommit", version.GitCommit()},
-			{"IndexURI", constants.DefaultIndexURI},
+			{"IndexURI", index.DefaultIndex()},
 			{"BasePath", paths.BasePath()},
 			{"IndexPath", paths.IndexPath(constants.DefaultIndexName)},
 			{"InstallPath", paths.InstallPath()},

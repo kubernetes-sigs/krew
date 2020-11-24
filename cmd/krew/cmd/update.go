@@ -30,6 +30,7 @@ import (
 	"sigs.k8s.io/krew/internal/index/indexscanner"
 	"sigs.k8s.io/krew/internal/installation"
 	"sigs.k8s.io/krew/pkg/constants"
+	"sigs.k8s.io/krew/pkg/index"
 )
 
 // updateCmd represents the update command
@@ -141,8 +142,8 @@ func ensureDefaultIndexIfNoneExist() error {
 	}
 
 	klog.V(3).Infof("No index found, add default index.")
-	fmt.Fprintf(os.Stderr, "Adding \"default\" plugin index from %s.\n", constants.DefaultIndexURI)
-	return errors.Wrap(indexoperations.AddIndex(paths, constants.DefaultIndexName, constants.DefaultIndexURI),
+	fmt.Fprintf(os.Stderr, "Adding \"default\" plugin index from %s.\n", index.DefaultIndex())
+	return errors.Wrap(indexoperations.AddIndex(paths, constants.DefaultIndexName, index.DefaultIndex()),
 		"failed to add default plugin index in absence of no indexes")
 }
 
