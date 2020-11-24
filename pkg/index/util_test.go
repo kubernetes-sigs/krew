@@ -23,7 +23,7 @@ import (
 
 func TestDefaultIndex(t *testing.T) {
 	if got := DefaultIndex(); got != constants.DefaultIndexURI {
-		t.Errorf("expected DefaultIndex() to be %q; got=%q", constants.DefaultIndexURI, got)
+		t.Errorf("DefaultIndex() = %q, want %q", got, constants.DefaultIndexURI)
 	}
 
 	want := "foo"
@@ -31,6 +31,6 @@ func TestDefaultIndex(t *testing.T) {
 	defer os.Unsetenv("KREW_DEFAULT_INDEX_URI")
 
 	if got := DefaultIndex(); got != want {
-		t.Errorf("expected DefaultIndex() to be %q; got=%q", want, got)
+		t.Errorf("DefaultIndex() = %q, want %q", got, want)
 	}
 }
