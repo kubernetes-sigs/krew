@@ -1,4 +1,4 @@
-// Copyright 2019 The Kubernetes Authors.
+// Copyright 2020 The Kubernetes Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,16 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package constants
+package index
 
-const (
-	CurrentAPIVersion = "krew.googlecontainertools.github.com/v1alpha2"
-	PluginKind        = "Plugin"
-	ManifestExtension = ".yaml"
-	KrewPluginName    = "krew" // plugin name of krew itself
+import (
+	"os"
+	"testing"
 
-	// DefaultIndexURI points to the upstream index.
-	DefaultIndexURI = "https://github.com/kubernetes-sigs/krew-index.git"
-	// DefaultIndexName is a magic string that's used for a plugin name specified without an index.
-	DefaultIndexName = "default"
+	"sigs.k8s.io/krew/pkg/constants"
 )
+
+func TestDefaultIndex(t *testing.T) {
+	if got := DefaultIndex(); got != constants.DefaultIndexURI {
+		t.Errorf("DefaultIndex() = %q, want %q", got, constants.DefaultIndexURI)
+	}
+
+	want := "foo"
+	os.Setenv("KREW_DEFAULT_INDEX_URI", want)
+	defer os.Unsetenv("KREW_DEFAULT_INDEX_URI")
+
+	if got := DefaultIndex(); got != want {
+		t.Errorf("DefaultIndex() = %q, want %q", got, want)
+	}
+}
