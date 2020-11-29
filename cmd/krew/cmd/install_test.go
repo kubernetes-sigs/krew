@@ -22,7 +22,7 @@ import (
 )
 
 func Test_readPluginFromURL(t *testing.T) {
-	server := httptest.NewServer(http.FileServer(http.Dir(filepath.Join("../../../integration_test/testdata"))))
+	server := httptest.NewServer(http.FileServer(http.Dir(filepath.FromSlash("../../../integration_test/testdata"))))
 	defer server.Close()
 
 	tests := []struct {

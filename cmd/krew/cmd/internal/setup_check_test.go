@@ -77,7 +77,7 @@ func TestIsBinDirInPATH_NonNormalized(t *testing.T) {
 func TestSetupInstructions_windows(t *testing.T) {
 	const instructionsContain = `USERPROFILE`
 	os.Setenv("KREW_OS", "windows")
-	defer func() { os.Unsetenv("KREW_OS") }()
+	defer os.Unsetenv("KREW_OS")
 	instructions := SetupInstructions()
 	if !strings.Contains(instructions, instructionsContain) {
 		t.Errorf("expected %q\nto contain %q", instructions, instructionsContain)

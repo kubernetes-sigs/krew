@@ -45,6 +45,8 @@ linters:
     - goimports
     - golint
     - gosimple
+    - govet
+    - ineffassign
     - interfacer
     - maligned
     - misspell
