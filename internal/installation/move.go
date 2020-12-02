@@ -178,6 +178,10 @@ func moveToInstallDir(srcDir, installDir string, fos []index.FileOperation) erro
 		}()
 		return errors.Wrapf(err, "could not rename/copy directory %q to %q", tmp, installDir)
 	}
+
+	if err = os.Chmod(installDir, 0755); err != nil {
+		return errors.Wrapf(err, "could not change rights on directory %q", installDir)
+	}
 	return nil
 }
 
