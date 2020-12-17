@@ -4,7 +4,28 @@ slug: advanced-configuration
 weight: 900
 ---
 
-### Use a different default index
+{{< toc >}}
+
+## Customize installation directory {#custom-install-dir}
+
+By default, Krew installs itself and plugins to `$HOME/.krew`. This means
+Krew itself and the installed plugins will be visible only to your user.
+
+To customize this installation path, set the `KREW_ROOT` environment variable
+while [installing Krew]({{< relref "setup/install.md" >}}). After Krew is
+installed, you still need to set `KREW_ROOT` in your environment for Krew
+to be able to find its installation directory.
+
+For example, add this to your `~/.bashrc` or `~/.zshrc` file:
+
+```shell
+export KREW_ROOT="/usr/local/krew"
+```
+
+Note that you still need to add `$KREW_ROOT/bin` to your `PATH` variable
+for `kubectl` to be able to find installed plugins.
+
+## Use a different default index {#custom-default-index}
 
 When Krew is installed, it automatically initializes an index named `default`
 pointing to the [krew-index][ki] repository. You can force Krew to use a
