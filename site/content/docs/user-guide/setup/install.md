@@ -33,7 +33,7 @@ Krew self-hosts).
    this, update your `.bashrc` or `.zshrc` file and append the following line:
 
      ```sh
-     export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
+     export PATH="$PATH:${KREW_ROOT:-$HOME/.krew}/bin"
      ```
 
    and restart your shell.
