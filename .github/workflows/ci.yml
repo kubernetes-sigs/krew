@@ -77,7 +77,7 @@ jobs:
 
     - name: Upload binaries to the new release
       if: contains(github.ref, 'tags')
-      uses: svenstaro/upload-release-action@v1-release
+      uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         file: out/krew.*
