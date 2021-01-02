@@ -189,7 +189,7 @@ func showUpgradeNotification(*cobra.Command, []string) {
 	if semver.Less(currentVer, latestVer) {
 		color.New(color.Bold).Fprintf(os.Stderr, upgradeNotification, version.GitTag(), latestTag)
 	} else {
-		klog.V(4).Infof("upgrade check found no new versions (%s>=%s", currentVer, latestVer)
+		klog.V(4).Infof("upgrade check found no new versions (%s>=%s)", currentVer, latestVer)
 	}
 }
 
