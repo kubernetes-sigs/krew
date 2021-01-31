@@ -9,7 +9,8 @@ weight: 900
 ## Customize installation directory {#custom-install-dir}
 
 By default, Krew installs itself and plugins to `$HOME/.krew`. This means
-Krew itself and the installed plugins will be visible only to your user.
+Krew itself and the installed plugins will be visible only to the user who
+installed it.
 
 To customize this installation path, set the `KREW_ROOT` environment variable
 while [installing Krew]({{< relref "setup/install.md" >}}). After Krew is
@@ -32,7 +33,7 @@ pointing to the [krew-index][ki] repository. You can force Krew to use a
 different repository by setting `KREW_DEFAULT_INDEX_URI` before running the
 [installation instructions]({{<ref "setup/install.md">}}) or after [removing the
 default index]({{<ref "using-custom-indexes.md#the-default-index">}}).
-`KREW_DEFAULT_INDEX_URI` should point to a git repository URI that uses a valid
+`KREW_DEFAULT_INDEX_URI` must point to a git repository URI that uses a valid
 git remote protocol.
 
 To use a different default index, set the `KREW_DEFAULT_INDEX_URI` environment

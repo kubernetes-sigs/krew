@@ -6,7 +6,7 @@ weight: 100
 
 Krew helps you discover and install [`kubectl` plugins][kpl] on your machine.
 
-There are [a lot of][list] `kubectl` plugins you can install and use to enhance
+You can install and use [a wide variety of][list] `kubectl` plugins to enhance
 your Kubernetes experience.
 
 Let's get started:
@@ -54,7 +54,7 @@ auth-proxy                      Authentication proxy to a pod or service        
     {{<prompt>}}kubectl krew uninstall access-matrix
     ```
 
-This is pretty much all you need to know as a user to use Krew.
+This is practically all you need to know to start using Krew.
 
 [kpl]: https://kubernetes.io/docs/tasks/extend-kubectl/kubectl-plugins/
 [list]: {{< relref "plugins.md" >}}

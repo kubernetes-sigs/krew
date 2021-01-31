@@ -4,7 +4,7 @@ slug: custom-indexes
 weight: 800
 ---
 
-Plugin indexes contain plugin manifests, which are documents that describe
+Plugin indexes contain plugin manifests, which are documents that describe the
 installation procedure for a plugin. For discovery purposes, Krew comes with a
 `default` plugin index, plugins hosted in the [`krew-index` repository][ki].
 
@@ -25,7 +25,7 @@ The URI you use can be any [git remote](https://git-scm.com/docs/git-remote)
 ## Removing a custom index
 
 You can remove a custom plugin index by passing the name it was added with to
-the remove command:
+the `index remove` command:
 
 ```sh
 {{<prompt>}}kubectl krew index remove foo
@@ -33,7 +33,7 @@ the remove command:
 
 ## Listing indexes
 
-To see what indexes you have added run the list command:
+To see what indexes you have added run the `index list` command:
 
 ```sh
 {{<prompt>}}kubectl krew index list
@@ -78,7 +78,7 @@ Similarly:
     ```
 
 
-> **Caveat:** If two indexes offer a plugin with the same name, only one can
+> **Note:** If two indexes each include a plugin with the same name, only one can
 > be installed at any time.
 
 ## The default index
@@ -89,7 +89,7 @@ them in Krew commands. The `INDEX_NAME` prefix is used to differentiate plugins
 with the same name across different indexes.
 
 Krew ships with [`krew-index`][ki] as the `default` index, but this can be
-removed using the `kubectl krew index remove default` command. Once this is
+removed using the `kubectl krew index remove default` command. Once it is
 removed, you can add another index with the name `default` and plugins from it
 will not require the `INDEX_NAME` prefix in commands.
 
