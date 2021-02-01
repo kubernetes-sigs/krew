@@ -83,10 +83,9 @@ Similarly:
 
 ## The default index
 
-When a plugin doesn't have an explicit `INDEX_NAME` prefix, it refers to a plugin
-from the `default` index. These plugins have an implicit `default/` prepended to
-them in Krew commands. The `INDEX_NAME` prefix is used to differentiate plugins
-with the same name across different indexes.
+When you don't include an explicit `INDEX_NAME` prefix in your Krew command, the
+command will refer to a plugin from the default index. The `INDEX_NAME` prefix is
+used to differentiate plugins with the same name across different indexes.
 
 Krew ships with [`krew-index`][ki] as the `default` index, but this can be
 removed using the `kubectl krew index remove default` command. Once it is

@@ -38,7 +38,7 @@ Krew self-hosts).
 
    and restart your shell.
 
-1. Verify running `kubectl krew` works.
+1. Run `kubectl krew` to check the installation.
 
 #### Fish shell {#fish}
 
@@ -65,7 +65,7 @@ Krew self-hosts).
 
    and restart your shell.
 
-1. Verify running `kubectl krew` works.
+1. Run `kubectl krew` to check the installation.
 
 ## Windows {#windows}
 
@@ -82,7 +82,7 @@ Krew self-hosts).
    ([how?](https://java.com/en/download/help/path.xml))
 
 1. Launch a new command-line window.
-1. Verify running `kubectl krew` works.
+1. Run `kubectl krew` to check the installation.
 
 [releases]: https://github.com/kubernetes-sigs/krew/releases
 
