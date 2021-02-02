@@ -4,7 +4,7 @@ slug: installing-plugins
 weight: 400
 ---
 
-Plugins can be installed with `kubectl krew install` command:
+Plugins can be installed with the `kubectl krew install` command:
 
 ```text
 {{<prompt>}}kubectl krew install ca-cert

@@ -5,7 +5,7 @@ weight: 300
 ---
 
 You can find a list of `kubectl` plugins distributed via Krew [here][list].
-However, you can achieve this using the command-line as well.
+However, you can find plugins using the command line as well.
 
 ## Search available plugins
 
