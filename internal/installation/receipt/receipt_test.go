@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"sigs.k8s.io/krew/internal/index/indexscanner"
 	"sigs.k8s.io/krew/internal/testutil"
@@ -72,10 +73,12 @@ func TestLoad_preservesNonExistsError(t *testing.T) {
 }
 
 func TestNew(t *testing.T) {
+	timestamp := metav1.Now()
 	testPlugin := testutil.NewPlugin().WithName("foo").WithPlatforms(testutil.NewPlatform().V()).V()
 	wantReceipt := testutil.NewReceipt().WithPlugin(testPlugin).V()
+	wantReceipt.CreationTimestamp = timestamp
 
-	gotReceipt := New(testPlugin, constants.DefaultIndexName)
+	gotReceipt := New(testPlugin, constants.DefaultIndexName, timestamp)
 	if diff := cmp.Diff(gotReceipt, wantReceipt); diff != "" {
 		t.Fatalf("expected receipts to match: %s", diff)
 	}

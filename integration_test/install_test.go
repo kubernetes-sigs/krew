@@ -21,6 +21,7 @@ import (
 	"strings"
 	"testing"
 
+	"sigs.k8s.io/krew/internal/environment"
 	"sigs.k8s.io/krew/pkg/constants"
 )
 
@@ -44,6 +45,12 @@ func TestKrewInstall(t *testing.T) {
 	test.Krew("install", validPlugin).RunOrFailOutput()
 	test.AssertExecutableInPATH("kubectl-" + validPlugin)
 	test.AssertPluginFromIndex(validPlugin, "default")
+
+	receiptPath := environment.NewPaths(test.Root()).PluginInstallReceiptPath(validPlugin)
+	pluginReceipt := test.loadReceipt(receiptPath)
+	if pluginReceipt.CreationTimestamp.Time.IsZero() {
+		t.Fatal("expected receipt to have a valid creationTimestamp")
+	}
 }
 
 func TestKrewInstallReRun(t *testing.T) {

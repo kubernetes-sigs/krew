@@ -45,14 +45,22 @@ func TestKrewUpgrade(t *testing.T) {
 
 	// plugins installed via manifest get the special "detached" index so this needs to
 	// be changed to default in order for it to be upgraded here
-	receipt := environment.NewPaths(test.Root()).PluginInstallReceiptPath(validPlugin)
-	modifyReceiptIndex(t, receipt, "default")
+	receiptPath := environment.NewPaths(test.Root()).PluginInstallReceiptPath(validPlugin)
+	modifyReceiptIndex(t, receiptPath, "default")
+	pluginReceipt := test.loadReceipt(receiptPath)
+	initialCreationTimestamp := pluginReceipt.CreationTimestamp
 
 	initialLocation := resolvePluginSymlink(test, validPlugin)
 	test.Krew("upgrade").RunOrFail()
 	eventualLocation := resolvePluginSymlink(test, validPlugin)
 	if initialLocation == eventualLocation {
 		t.Errorf("Expecting the plugin path to change but was the same.")
+	}
+
+	pluginReceipt = test.loadReceipt(receiptPath)
+	eventualCreationTimestamp := pluginReceipt.CreationTimestamp
+	if initialCreationTimestamp != eventualCreationTimestamp {
+		t.Errorf("expected the receipt creationTimestamp to remain unchanged after upgrade")
 	}
 }
 
@@ -64,14 +72,14 @@ func TestKrewUpgradePluginsFromCustomIndex(t *testing.T) {
 	test.WithDefaultIndex().WithCustomIndexFromDefault("foo")
 	test.Krew("install", "foo/"+validPlugin).RunOrFail()
 
-	receipt := environment.NewPaths(test.Root()).PluginInstallReceiptPath(validPlugin)
-	modifyManifestVersion(t, receipt, "v0.0.0")
+	receiptPath := environment.NewPaths(test.Root()).PluginInstallReceiptPath(validPlugin)
+	modifyManifestVersion(t, receiptPath, "v0.0.0")
 	out := string(test.Krew("upgrade").RunOrFailOutput())
 	if !strings.Contains(out, "Upgrading plugin: foo/"+validPlugin) {
 		t.Errorf("expected plugin foo/%s to be upgraded", validPlugin)
 	}
 
-	modifyManifestVersion(t, receipt, "v0.0.0")
+	modifyManifestVersion(t, receiptPath, "v0.0.0")
 	out = string(test.Krew("upgrade", validPlugin).RunOrFailOutput())
 	if !strings.Contains(out, "Upgrading plugin: foo/"+validPlugin) {
 		t.Errorf("expected plugin foo/%s to be upgraded", validPlugin)
@@ -101,8 +109,8 @@ func TestKrewUpgradeNoSecurityWarningForCustomIndex(t *testing.T) {
 	test.WithDefaultIndex().WithCustomIndexFromDefault("foo")
 	test.Krew("install", "foo/"+validPlugin).RunOrFail()
 
-	receipt := environment.NewPaths(test.Root()).PluginInstallReceiptPath(validPlugin)
-	modifyManifestVersion(t, receipt, "v0.0.1")
+	pluginReceipt := environment.NewPaths(test.Root()).PluginInstallReceiptPath(validPlugin)
+	modifyManifestVersion(t, pluginReceipt, "v0.0.1")
 	out := string(test.Krew("upgrade").RunOrFailOutput())
 	if strings.Contains(out, "Run them at your own risk") {
 		t.Errorf("expected install of custom plugin to not show security warning: %v", out)

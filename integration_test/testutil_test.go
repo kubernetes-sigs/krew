@@ -34,6 +34,7 @@ import (
 	"sigs.k8s.io/krew/internal/installation/receipt"
 	"sigs.k8s.io/krew/internal/testutil"
 	"sigs.k8s.io/krew/pkg/constants"
+	"sigs.k8s.io/krew/pkg/index"
 )
 
 const (
@@ -161,12 +162,9 @@ func (it *ITest) AssertPluginFromIndex(plugin, indexName string) {
 	it.t.Helper()
 
 	receiptPath := environment.NewPaths(it.Root()).PluginInstallReceiptPath(plugin)
-	r, err := receipt.Load(receiptPath)
-	if err != nil {
-		it.t.Fatalf("error loading receipt: %v", err)
-	}
-	if r.Status.Source.Name != indexName {
-		it.t.Errorf("wanted index '%s', got: '%s'", indexName, r.Status.Source.Name)
+	pluginReceipt := it.loadReceipt(receiptPath)
+	if pluginReceipt.Status.Source.Name != indexName {
+		it.t.Errorf("wanted index '%s', got: '%s'", indexName, pluginReceipt.Status.Source.Name)
 	}
 }
 
@@ -266,6 +264,14 @@ func (it *ITest) cmd(ctx context.Context) *exec.Cmd {
 
 func (it *ITest) TempDir() *testutil.TempDir {
 	return it.tempDir
+}
+
+func (it *ITest) loadReceipt(path string) index.Receipt {
+	pluginReceipt, err := receipt.Load(path)
+	if err != nil {
+		it.t.Fatalf("error loading receipt: %v", err)
+	}
+	return pluginReceipt
 }
 
 // InitializeIndex initializes the krew index in `$root/index` with the actual krew-index.
