@@ -6,11 +6,11 @@ weight: 300
 
 {{< toc >}}
 
-This guide lists practices to use while developing `kubectl` plugins. Before
-submitting your plugin to Krew, please review these
+This guide describes practices to use when developing `kubectl` plugins. Before
+submitting your plugin to Krew, please review these practices.
 
-While Krew project does not enforce any strict guidelines about how a plugin
-works, using some of these practices can help your plugin work for more users
+While the Krew project team does not strictly enforce guidelines about how a plugin
+works, abiding by these practices can help your plugin work for more users
 and behave more predictably.
 
 ## Choosing a language
@@ -20,17 +20,17 @@ Most `kubectl` plugins are written in Go or as bash scripts.
 If you are planning to write a plugin with Go, check out:
 
 - [client-go]: a Go SDK to work with Kubernetes API and kubeconfig files
-- [cli-runtime]: Provides packages to share code with `kubectl` for printing output or [sharing command-line options][cli-opts]
-- [sample-cli-plugin]: An example plugin implementation in Go
+- [cli-runtime]: a set of packages to share code with `kubectl` for printing output or [sharing command-line options][cli-opts]
+- [sample-cli-plugin]: an example plugin implementation in Go
 
 ## Consistency with kubectl {#kubectl-options}
 
-Krew does not try to impose any rules in terms of the shape of your plugin.
+Krew does not impose any rules in terms of the shape of your plugin.
 
-However, if you use the command-line options with `kubectl`, you can make your
+However, if you support the common command-line options with `kubectl`, you can make your
 users’ lives easier.
 
-For example, it is recommended you use the following command line flags used by
+For example, it is recommended that you support the following command-line flags used by
 `kubectl`:
 
 - `-h`/`--help`
@@ -44,8 +44,8 @@ support the global command-line flags listed in `kubectl options` (e.g.
 ## Import authentication plugins (Go) {#auth-plugins}
 
 By default, plugins that use [client-go]
-cannot authenticate to Kubernetes clusters on many cloud providers. To overcome
-this, add the following import to somewhere in your binary:
+cannot authenticate to Kubernetes clusters on many cloud providers. To address
+this, include the following import in your plugin:
 
 ```go
 import _ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -56,12 +56,12 @@ import _ "k8s.io/client-go/plugin/pkg/client/auth"
 [cli-opts]: https://godoc.org/k8s.io/cli-runtime/pkg/genericclioptions
 [sample-cli-plugin]: https://github.com/kubernetes/sample-cli-plugin
 
-## Revise usage/help messages with `kubectl` prefix {#help-messages}
+## Revise usage and help messages with the `kubectl` prefix {#help-messages}
 
-Users discover how to use your plugin by calling it without any arguments (which
-might trigger a help message), or `-h`/`--help` options.
+Many users will discover how to use your plugin by calling it without any arguments (which
+might trigger a help message), or with `-h`/`--help` arguments.
 
-Therefore, change your usage strings to show `kubectl ` prefix before the plugin
+Therefore, it is helpful to change your usage strings to show the `kubectl ` prefix before the plugin
 name. For example
 
 ```text
@@ -69,9 +69,8 @@ Usage:
   kubectl popeye [flags]
 ```
 
-To determine whether an executable is running as a plugin or not, you can look
-at argv[0], which would have the `kubectl-` prefix. To determine whether your
-program is running as a kubectl plugin or not:
+To determine if your executable is running as a `kubectl` plugin, you can look
+at `argv[0]`, which will include the `kubectl-` prefix
 
 - **Go:**
 

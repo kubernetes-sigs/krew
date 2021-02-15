@@ -3,37 +3,37 @@ title: Distributing plugins on Krew
 weight: 110
 ---
 
-## Why Krew? {#why}
+## Why use Krew for distribution? {#why}
 
-To install a kubectl plugin to a user’s machine, all you need to do is to place
-an executable in user’s `PATH` prefixed with `kubectl-` name. At this point, you
-might consider some other options such as:
+On the surface, installing a kubectl plugin seems simple enough -- all you need to do is to place
+an executable in the user’s `PATH` prefixed with `kubectl-` -- that you may be
+considering some other alternatives to Krew, such as:
 
-- have the user manually download the plugin binary and set up somewhere in
-  `PATH`
-- distribute the plugin executable using an OS package manager, like Homebrew
-  (macOS), apt/yum (Linux) or Chocolatey (Windows)
-- distribute the plugin executable using a language package manager (e.g. npm,
+- Having the user manually download the plugin executable and move it to some directory in
+  the `PATH`
+- Distributing the plugin executable using an OS package manager, like Homebrew
+  (macOS), apt/yum (Linux), or Chocolatey (Windows)
+- Distributing the plugin executable using a language package manager (e.g. npm or
   go get)
 
-While these approaches might work some shortcomings to think about are:
+While these approaches are not necessarily unworkable, potential drawbacks to consider include:
 
-- how to ship updates to users (in case of manual installation)
-- need to package a plugin for multiple platforms (macOS, Linux, Windows)
-- your users need to download the language package manager (go, npm)
-- what if you change the implementation language (e.g. move from npm to another package manager)
+- How to get updates to users (in the case of manual installation)
+- How to package a plugin for multiple platforms (macOS, Linux, and Windows)
+- How to ensure your users have the appropriate language package manager (go, npm)
+- How to handle a change to the implementation language (e.g. a move from npm to another package manager)
 
 Krew solves these problems cleanly for all kubectl plugins, since it's designed
-**specifically to address these shortcomings**: With Krew, you write a plugin
-manifest once and have a plugin that can be installed on all platforms
+**specifically to address these shortcomings**. With Krew, after you write a plugin
+manifest once your plugin can be installed on all platforms
 without having to deal with their package managers.
 
 ## Steps to get started
 
 Once you [develop]({{< ref "develop/plugin-development.md" >}}) a `kubectl`
-plugin, here are the steps you need to follow to distribute your plugin on Krew:
+plugin, follow these steps to distribute your plugin on Krew:
 
 1. Package your plugin into an archive file (`.tar.gz` or `.zip`).
 1. Make the archive file publicly available (e.g. as GitHub release files).
-1. Write [Krew plugin manifest]({{< ref "plugin-manifest.md" >}}) file.
+1. Write a [Krew plugin manifest]({{< ref "plugin-manifest.md" >}}) file.
 1. [Submit your plugin to krew-index]({{< ref "release/../release/submitting-to-krew.md" >}}).

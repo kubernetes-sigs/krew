@@ -5,12 +5,12 @@ weight: 100
 ---
 
 Krew maintains a centralized plugin index at the [krew-index] repository.
-Since this repository is cloned on Krew user’s machine, it helps them find
+This repository is cloned on each Krew user’s machine to help them find
 existing plugins.
 
 ## Pre-submit checklist
 
-1. Familiarize yourself with [Krew plugin naming guide]({{< ref
+1. Review the [Krew plugin naming guide]({{< ref
    "../develop/naming-guide.md" >}}).
 1. Read the [plugin development best practices]({{< ref
    "../develop/best-practices.md" >}}).
@@ -19,15 +19,15 @@ existing plugins.
 1. Make sure to extract the LICENSE file during the plugin installation.
 1. Tag a git release with a [semantic
    version](https://semver.org) (e.g. `v1.0.0`).
-1. [Test plugin installation locally]({{< ref "../installing-locally.md" >}}).
+1. [Test your plugin installation locally]({{< ref "../installing-locally.md" >}}).
 
 ## Submitting a plugin to krew-index
 
-Once you followed the checklist above, create a **pull request** to the
-[krew-index] repository with your plugin manifest (e.g. `example.yaml`) file to
+Once you've run through the checklist above, create a **pull request** to the
+[krew-index] repository with your plugin manifest file (e.g. `example.yaml`) to
 the `plugins/` directory.
 
-After your pull request is merged, users can now find and [install]({{< ref
+After your pull request is merged, users will be able to find and [install]({{< ref
 "../../user-guide/install.md" >}}) your plugin through Krew.
 
 [krew-index]: https://sigs.k8s.io/krew-index

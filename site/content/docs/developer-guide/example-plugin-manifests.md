@@ -5,11 +5,11 @@ weight: 200
 ---
 
 Learning how to [write plugin manifests]({{< ref "plugin-manifest.md" >}})
-can be a time-consuming tasks.
+can be a time-consuming task.
 
-Krew encourages you to copy and adapt plugin manifests of [existing
-plugins][list]. Since these are already reviewed and approved, your plugin can
-be accepted more quickly.
+The Krew team encourages you to copy and adapt plugin manifests of [existing
+plugins][list]. Since these are already reviewed and approved, your plugin is
+likely to be accepted more quickly.
 
 * **Go:**
   - [tree](https://github.com/kubernetes-sigs/krew-index/blob/master/plugins/tree.yaml):

@@ -12,19 +12,19 @@ time.
 
 To see your plugin’s download statistics over time:
 
-1. Head to [stats.krew.dev] dashboard,
-2. Click the “Individual Plugin Stats” reporting
-3. Choose your plugin from dropdown and browse the data for your plugin.
+1. Visit the [stats.krew.dev] dashboard.
+2. Click “Individual Plugin Stats”.
+3. Choose your plugin from the dropdown and browse the data for your plugin.
 
-This data is obtained by scraping the downloads count of your plugin assets on
-[GitHub API] regularly. Since Krew does not track its users, this data:
+This data is obtained by scraping the downloads count of your plugin assets via
+the [GitHub API] regularly. Since Krew does not track its users, this data:
 
 - does not reflect active installations
-- does not distinguish between installs, reinstalls and upgrades
-- is purely a tracking of download counts of your release assets over time.
+- does not distinguish between installs, reinstalls, and upgrades
+- is purely a tracking of download counts of your release assets over time
 
-> **Note:** Krew plugin stats dashboard is provided as a best effort by Krew
-> maintainers to measure success of Krew and its plugins. We cannot guarantee
+> **Note:** The Krew plugin stats dashboard is provided as a best effort by Krew
+> maintainers to measure the success of Krew and its plugins. We cannot guarantee
 > its availability and accuracy.
 >
 > The scraping code can be found
