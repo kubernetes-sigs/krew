@@ -13,7 +13,7 @@ time.
 To see your plugin’s download statistics over time:
 
 1. Visit the [stats.krew.dev] dashboard.
-2. Click “Individual Plugin Stats”.
+2. Click the “Individual Plugin Stats” report.
 3. Choose your plugin from the dropdown and browse the data for your plugin.
 
 This data is obtained by scraping the downloads count of your plugin assets via
