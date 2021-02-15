@@ -7,18 +7,18 @@ weight: 150
 {{<toc>}}
 
 Each Krew plugin has a "plugin manifest", which is a YAML file that describes
-the plugin, how it can be downloaded and installed on a machine.
+the plugin, how it can be downloaded, and how it is installed on a machine.
 
 Plugin manifests must have the same name as the plugin (e.g. plugin `foo` has a
 manifest file named `foo.yaml`).
 
 It is **highly recommended** you look at [example plugin manifests]({{< ref
-"example-plugin-manifests.md" >}}) to copy from an existing plugin and adapt to
-your needs instead of learning everything in this page.
+"example-plugin-manifests.md" >}}), copy an existing plugin manifest, and adapt it
+to your needs rather than starting from scratch.
 
 ## Sample plugin manifest
 
-Here's a sample manifest file that installs a bash-based plugin that supports
+Here's a sample manifest file for a bash-based plugin that supports
 only Linux and macOS:
 
 ```yaml
@@ -62,25 +62,25 @@ spec:
 
 ## Documentation fields
 
-- `shortDescription:` (required): Punchline for your plugin. It should not exceed
+- `shortDescription:` (required): Tagline for your plugin. It should not exceed
   a few words (to be properly shown in `kubectl krew search` output). **Avoid**
   using redundant words.
 
-- `description:` (required): Explain what your plugin does at a high-level to help users
-  choose whether they should install the plugin. **Avoid** including list of
-  commands/options for your plugin, implement `-h`/`--help` in your plugin
+- `description:` (required): Explain what your plugin does at a high level to help users
+  decide if they want to install the plugin. **Avoid** including a list of
+  commands or options for your plugin; implement `-h`/`--help` in your plugin
   instead.
 
-- `caveats:` If your plugin needs an extra step to work, for example, if you
-  need certain programs to be installed on user’s system, list them here.
-  **Avoid** using this field as documentation field.
+- `caveats:` Use this field if your plugin needs an extra step to work; for example, if it
+  needs certain programs to be installed on a user’s system, list them here.
+  **Avoid** using this field as a documentation field.
 
   `caveats` are shown to the user after installing the plugin for the first time.
 
 ## Specifying plugin download options
 
-Krew plugins must be packaged as `.zip` or `.tar.gz` archives, and should
-accessible to download from user’s machine. The relevant fields are:
+Krew plugins must be packaged as `.zip` or `.tar.gz` archives, and should be
+accessible to download from a user’s machine. The relevant fields are:
 
 - `uri`: URL to the archive file (`.zip` or `.tar.gz`)
 - `sha256`: sha256 sum of the archive file
@@ -95,8 +95,8 @@ accessible to download from user’s machine. The relevant fields are:
 ## Specifying platform-specific instructions
 
 Krew makes it possible to install the same plugin on different operating systems
-(like `windows`, `darwin` (macOS), and `linux`) and different architectures
-(like `amd64`, `386`, `arm`).
+(e.g., Windows, macOS, and Linux) and different architectures
+(e.g., `amd64`, `386`, and `arm`).
 
 To support multiple platforms, you may need to define multiple `platforms` in
 the plugin manifest. The `selector` field matches to operating systems and
@@ -112,7 +112,7 @@ architectures using the keys `os` and `arch` respectively.
       - {key: "os", operator: "In", values: [darwin, linux]}
 ```
 
-**Example:** Match to Windows 64-bit:
+**Example:** Match to Windows, 64-bit:
 
 ```yaml
   platforms:
@@ -131,7 +131,7 @@ architectures using the keys `os` and `arch` respectively.
         os: linux
 ```
 
-The possible values for `os` and `arch`  come from the Go runtime. Run
+The possible values for `os` and `arch` come from the Go runtime. Run
 `go tool dist list` to see all possible platforms and architectures.
 
 ## Specifying files to install
@@ -140,13 +140,10 @@ Each operating system may require a different set of files from the archive to
 be installed.
 
 You can use the `files` field to specify
-which files should be copied into the plugin directory while extracting the
-files out of archive.
+the files that should be copied into the plugin directory while extracting the
+files from the archive.
 
-The `files:` list specifies the copy operations (like `mv <from> <to>`) to
-the files `from` the archive `to` the installation destination.
-
-* **Example:** Extract all files: If the `files:` list is unspecified, it defaults to:
+* **Example:** Extract all files. If the `files:` list is unspecified, it defaults to:
 
   ```yaml
   files:
@@ -154,9 +151,9 @@ the files `from` the archive `to` the installation destination.
     to: .
   ```
 
-  > **Note:** If applicable, it is best practice to skip the `files:` list altogether.
+  > **Note:** If applicable, it is a best practice to skip the `files:` list altogether.
 
-* **Example:** Copy specific files:
+* **Example:** Copy specific files.
 
   ```yaml
   files:
@@ -166,7 +163,7 @@ the files `from` the archive `to` the installation destination.
     to: foo.exe
   ```
 
-* **Example:** Use wildcards to match multiple files:
+* **Example:** Use wildcards to match multiple files.
 
   ```yaml
   files:
@@ -174,10 +171,9 @@ the files `from` the archive `to` the installation destination.
     to: "."
   ```
 
-  As a result of this operation, the copied out files will preserve their
-  directory structure in the extracted directory.
+  This operation preserves the files' directory structure in the destination directory.
 
-## Specifying plugin executable
+## Specifying the plugin executable
 
 Each `platform` field requires a path to the plugin executable in the plugin's
 installation directory.
@@ -190,15 +186,15 @@ platforms:
     ...
 ```
 
-Krew will create a [symbolic link](https://en.wikipedia.org/wiki/Symbolic_link)
+Krew creates a [symbolic link](https://en.wikipedia.org/wiki/Symbolic_link)
 named `kubectl-foo` (and `kubectl-foo.exe` on Windows) to your plugin executable
 after installation is complete. The name of the symbolic link comes from the
-plugin name (i.e. the `metadata.name` field).
+plugin name (specifically the `metadata.name` field).
 
-> **Note on underscore conversion:** If your plugin name contains dashes, krew
-> will automatically convert them to underscores for
+> **Note on underscore conversion:** If your plugin name contains dashes, Krew
+> will automatically convert them to underscores to enable
 > [kubectl](https://kubernetes.io/docs/tasks/extend-kubectl/kubectl-plugins/#names-with-dashes-and-underscores)
-> to be able to find your plugin.
+> to find your plugin.
 >
 > For example, if your plugin name is `view-logs` and your plugin binary is named
-> `run.sh`, krew will create a symbolic named `kubectl-view_logs` automatically.
+> `run.sh`, Krew will create a symbolic link named `kubectl-view_logs` automatically.
