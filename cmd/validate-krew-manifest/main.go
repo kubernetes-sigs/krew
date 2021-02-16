@@ -166,11 +166,14 @@ func installPlatformSpec(manifestFile string, p index.Platform) error {
 }
 
 var licenseFiles = map[string]struct{}{
-	"license":     {},
-	"license.txt": {},
-	"license.md":  {},
-	"copying":     {},
-	"copying.txt": {},
+	"license":      {},
+	"license.txt":  {},
+	"license.md":   {},
+	"licenses":     {},
+	"licenses.txt": {},
+	"licenses.md":  {},
+	"copying":      {},
+	"copying.txt":  {},
 }
 
 func validateLicenseFileExists(krewRoot string) error {
