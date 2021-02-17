@@ -42,6 +42,18 @@ spec:
     sha256: KREW_TAR_CHECKSUM
     bin: krew
     files:
+    - from: ./krew-darwin_arm64
+      to: krew
+    - from: ./LICENSE
+      to: .
+    selector:
+      matchLabels:
+        os: darwin
+        arch: arm64
+  - uri: https://github.com/kubernetes-sigs/krew/releases/download/KREW_TAG/krew.tar.gz
+    sha256: KREW_TAR_CHECKSUM
+    bin: krew
+    files:
     - from: ./krew-linux_amd64
       to: krew
     - from: ./LICENSE
