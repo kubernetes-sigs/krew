@@ -22,9 +22,11 @@ Krew self-hosts).
     ```sh
     (
       set -x; cd "$(mktemp -d)" &&
+      OS="$(uname | tr '[:upper:]' '[:lower:]')" &&
+      ARCH=`case "${OS}" in "darwin") uname -m | sed -e 's/x86_64/amd64/' ;; *) uname -m | sed -e 's/x86_64/amd64/' -e 's/arm.*$/arm/' -e 's/aarch64$/arm64/' ;; esac` &&
       curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/krew.tar.gz" &&
       tar zxvf krew.tar.gz &&
-      KREW=./krew-"$(uname | tr '[:upper:]' '[:lower:]')_$(uname -m | sed -e 's/x86_64/amd64/' -e 's/arm.*$/arm/' -e 's/aarch64$/arm64/')" &&
+      KREW=./krew-"${OS}_${ARCH}" &&
       "$KREW" install krew
     )
     ```
@@ -48,9 +50,11 @@ Krew self-hosts).
     ```fish
     begin
       set -x; set temp_dir (mktemp -d); cd "$temp_dir" &&
+      set OS (uname | tr '[:upper:]' '[:lower:]') &&
+      set ARCH (switch $OS; case 'darwin'; uname -m | sed -e 's/x86_64/amd64/'; case '*'; uname -m | sed -e 's/x86_64/amd64/' -e 's/arm.*$/arm/' -e 's/aarch64$/arm64/'; end ) &&
       curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/krew.tar.gz" &&
       tar zxvf krew.tar.gz &&
-      set KREWNAME krew-(uname | tr '[:upper:]' '[:lower:]')_(uname -m | sed -e 's/x86_64/amd64/' -e 's/arm.*$/arm/' -e 's/aarch64$/arm64/' ) &&
+      set KREWNAME krew-$OS"_"$ARCH &&
       ./$KREWNAME install krew &&
       set -e KREWNAME; set -e temp_dir
     end

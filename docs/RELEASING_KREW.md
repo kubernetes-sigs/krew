@@ -11,7 +11,7 @@
 2. Try krew installation on each platform:
 
     ```sh
-    krew=out/bin/krew-darwin_amd64 # assuming macOS
+    krew=out/bin/krew-darwin_amd64 # assuming macOS amd64
 
     KREW_ROOT="$(mktemp -d --tmpdir krew-XXXXXXXXXX)" KREW_OS=darwin \
         $krew install --manifest=out/krew.yaml --archive=out/krew.tar.gz && \
