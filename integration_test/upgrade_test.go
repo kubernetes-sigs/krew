@@ -45,7 +45,7 @@ func TestKrewUpgrade(t *testing.T) {
 
 	// plugins installed via manifest get the special "detached" index so this needs to
 	// be changed to default in order for it to be upgraded here
-	receiptPath := environment.NewPaths(test.Root()).PluginInstallReceiptPath(validPlugin)
+	receipt := environment.NewPaths(test.Root()).PluginInstallReceiptPath(validPlugin)
 	modifyReceiptIndex(t, receiptPath, "default")
 	pluginReceipt := test.loadReceipt(receiptPath)
 	initialCreationTimestamp := pluginReceipt.CreationTimestamp
