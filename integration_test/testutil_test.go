@@ -163,8 +163,8 @@ func (it *ITest) AssertPluginFromIndex(plugin, indexName string) {
 
 	receiptPath := environment.NewPaths(it.Root()).PluginInstallReceiptPath(plugin)
 	r := it.loadReceipt(receiptPath)
-	if pluginReceipt.Status.Source.Name != indexName {
-		it.t.Errorf("wanted index '%s', got: '%s'", indexName, pluginReceipt.Status.Source.Name)
+	if r.Status.Source.Name != indexName {
+		it.t.Errorf("wanted index '%s', got: '%s'", indexName, r.Status.Source.Name)
 	}
 }
 
