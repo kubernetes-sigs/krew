@@ -47,8 +47,7 @@ func TestKrewInstall(t *testing.T) {
 	test.AssertPluginFromIndex(validPlugin, "default")
 
 	receiptPath := environment.NewPaths(test.Root()).PluginInstallReceiptPath(validPlugin)
-	pluginReceipt := test.loadReceipt(receiptPath)
-	if pluginReceipt.CreationTimestamp.Time.IsZero() {
+	if r := test.loadReceipt(receiptPath); r.CreationTimestamp.Time.IsZero() {
 		t.Fatal("expected receipt to have a valid creationTimestamp")
 	}
 }
