@@ -18,6 +18,7 @@ import (
 	"io/ioutil"
 
 	"github.com/pkg/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/yaml"
 
 	"sigs.k8s.io/krew/internal/index/indexscanner"
@@ -43,7 +44,8 @@ func Load(path string) (index.Receipt, error) {
 }
 
 // New returns a new receipt with the given plugin and index name.
-func New(plugin index.Plugin, indexName string) index.Receipt {
+func New(plugin index.Plugin, indexName string, timestamp metav1.Time) index.Receipt {
+	plugin.CreationTimestamp = timestamp
 	return index.Receipt{
 		Plugin: plugin,
 		Status: index.ReceiptStatus{

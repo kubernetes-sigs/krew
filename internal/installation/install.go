@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog"
 
 	"sigs.k8s.io/krew/internal/download"
@@ -84,8 +85,9 @@ func Install(p environment.Paths, plugin index.Plugin, indexName string, opts In
 	}, opts); err != nil {
 		return errors.Wrap(err, "install failed")
 	}
+
 	klog.V(3).Infof("Storing install receipt for plugin %s", plugin.Name)
-	err = receipt.Store(receipt.New(plugin, indexName), p.PluginInstallReceiptPath(plugin.Name))
+	err = receipt.Store(receipt.New(plugin, indexName, metav1.Now()), p.PluginInstallReceiptPath(plugin.Name))
 	return errors.Wrap(err, "installation receipt could not be stored, uninstall may fail")
 }
 

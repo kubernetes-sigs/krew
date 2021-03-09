@@ -78,7 +78,7 @@ func Upgrade(p environment.Paths, plugin index.Plugin, indexName string) error {
 	}
 
 	klog.V(2).Infof("Upgrading install receipt for plugin %s", plugin.Name)
-	if err = receipt.Store(receipt.New(plugin, indexName), p.PluginInstallReceiptPath(plugin.Name)); err != nil {
+	if err = receipt.Store(receipt.New(plugin, indexName, installReceipt.CreationTimestamp), p.PluginInstallReceiptPath(plugin.Name)); err != nil {
 		return errors.Wrap(err, "installation receipt could not be stored, uninstall may fail")
 	}
 
