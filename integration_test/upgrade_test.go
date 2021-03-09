@@ -47,8 +47,7 @@ func TestKrewUpgrade(t *testing.T) {
 	// be changed to default in order for it to be upgraded here
 	receipt := environment.NewPaths(test.Root()).PluginInstallReceiptPath(validPlugin)
 	modifyReceiptIndex(t, receiptPath, "default")
-	pluginReceipt := test.loadReceipt(receiptPath)
-	initialCreationTimestamp := pluginReceipt.CreationTimestamp
+	initialTimestamp := test.loadReceipt(receiptPath).CreationTimestamp
 
 	initialLocation := resolvePluginSymlink(test, validPlugin)
 	test.Krew("upgrade").RunOrFail()
