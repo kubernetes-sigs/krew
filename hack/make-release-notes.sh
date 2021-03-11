@@ -20,7 +20,7 @@
 
 set -euo pipefail
 
-SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+gopath="$(go env GOPATH)"
 
 TAG="${TAG:?TAG environment variable must be set for this script}"
 if ! [[ "$TAG" =~ v.* ]]; then
@@ -38,20 +38,10 @@ download_assets=(
   krew.yaml
 )
 
-install_release_notes() {
-  relnotes_dir="$(mktemp -d)"
-  trap 'rm -rf -- ${relnotes_dir}' EXIT
-
-  cd "$relnotes_dir"
-  go mod init foo
-  GOBIN="${SCRIPTDIR}" go get github.com/corneliusweig/release-notes@v0.1.0
-  cd -
-}
-
-# install release-notes if not present in the hack folder
-if ! [[ -x "${SCRIPTDIR}/release-notes" ]]; then
-  echo >&2 'Installing release-notes'
-  install_release_notes
+# install release-notes tool if not present
+if [[ ! -f "${gopath}/bin/release-notes" ]]; then
+  echo >&2 'Installing release-notes tool...'
+  go install github.com/corneliusweig/release-notes@v0.1.0
 fi
 
 echo "Installation"
@@ -79,6 +69,7 @@ echo '<details>'
 echo '<summary>Merged pull requests</summary>'
 echo # this empty line is important for correct markdown rendering
 # you can pass your github token with --token here if you run out of requests
-"${SCRIPTDIR}/release-notes" kubernetes-sigs krew
+
+"${gopath}/bin/release-notes" kubernetes-sigs krew
 echo '</details>'
 echo
