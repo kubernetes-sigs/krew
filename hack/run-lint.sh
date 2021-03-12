@@ -29,13 +29,6 @@ fi
 # configured by .golangci.yml
 "$gopath/bin/golangci-lint" run
 
-if ! [[ -x "${gopath}/bin/impi" ]]; then
-  echo >&2 'Installing impi'
-  go install github.com/pavius/impi/cmd/impi@c1cbdcb
-fi
-
-"$gopath/bin/impi" --local sigs.k8s.io/krew --scheme stdThirdPartyLocal ./...
-
 # install shfmt that ensures consistent format in shell scripts
 if ! [[ -x "${gopath}/bin/shfmt" ]]; then
   echo >&2 'Installing shfmt'
