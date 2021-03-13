@@ -26,8 +26,8 @@ spec:
       https://krew.sigs.k8s.io/docs/user-guide/quickstart/.
 
   platforms:
-  - uri: https://github.com/kubernetes-sigs/krew/releases/download/KREW_TAG/krew.tar.gz
-    sha256: KREW_TAR_CHECKSUM
+  - uri: https://github.com/kubernetes-sigs/krew/releases/download/KREW_TAG/krew-darwin_amd64.tar.gz
+    sha256: KREW_DARWIN_AMD64_CHECKSUM
     bin: krew
     files:
     - from: ./krew-darwin_amd64
@@ -38,8 +38,8 @@ spec:
       matchLabels:
         os: darwin
         arch: amd64
-  - uri: https://github.com/kubernetes-sigs/krew/releases/download/KREW_TAG/krew.tar.gz
-    sha256: KREW_TAR_CHECKSUM
+  - uri: https://github.com/kubernetes-sigs/krew/releases/download/KREW_TAG/krew-darwin_arm64.tar.gz
+    sha256: KREW_DARWIN_ARM64_CHECKSUM
     bin: krew
     files:
     - from: ./krew-darwin_arm64
@@ -50,8 +50,8 @@ spec:
       matchLabels:
         os: darwin
         arch: arm64
-  - uri: https://github.com/kubernetes-sigs/krew/releases/download/KREW_TAG/krew.tar.gz
-    sha256: KREW_TAR_CHECKSUM
+  - uri: https://github.com/kubernetes-sigs/krew/releases/download/KREW_TAG/krew-linux_amd64.tar.gz
+    sha256: KREW_LINUX_AMD64_CHECKSUM
     bin: krew
     files:
     - from: ./krew-linux_amd64
@@ -62,8 +62,8 @@ spec:
       matchLabels:
         os: linux
         arch: amd64
-  - uri: https://github.com/kubernetes-sigs/krew/releases/download/KREW_TAG/krew.tar.gz
-    sha256: KREW_TAR_CHECKSUM
+  - uri: https://github.com/kubernetes-sigs/krew/releases/download/KREW_TAG/krew-linux_arm.tar.gz
+    sha256: KREW_LINUX_ARM_CHECKSUM
     bin: krew
     files:
     - from: ./krew-linux_arm
@@ -74,8 +74,8 @@ spec:
       matchLabels:
         os: linux
         arch: arm
-  - uri: https://github.com/kubernetes-sigs/krew/releases/download/KREW_TAG/krew.tar.gz
-    sha256: KREW_TAR_CHECKSUM
+  - uri: https://github.com/kubernetes-sigs/krew/releases/download/KREW_TAG/krew-linux_arm64.tar.gz
+    sha256: KREW_LINUX_ARM64_CHECKSUM
     bin: krew
     files:
     - from: ./krew-linux_arm64
@@ -86,8 +86,8 @@ spec:
       matchLabels:
         os: linux
         arch: arm64
-  - uri: https://github.com/kubernetes-sigs/krew/releases/download/KREW_TAG/krew.tar.gz
-    sha256: KREW_TAR_CHECKSUM
+  - uri: https://github.com/kubernetes-sigs/krew/releases/download/KREW_TAG/krew-windows_amd64.tar.gz
+    sha256: KREW_WINDOWS_AMD64_CHECKSUM
     bin: krew.exe
     files:
     - from: ./krew-windows_amd64.exe

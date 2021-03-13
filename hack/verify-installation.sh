@@ -33,7 +33,7 @@ if [[ ! -f "${krew_manifest}" ]]; then
   exit 1
 fi
 
-krew_archive="${build_dir}/krew.tar.gz"
+krew_archive="${build_dir}/krew-${goos}_${goarch}.tar.gz"
 if [[ ! -f "${krew_archive}" ]]; then
   echo >&2 "Could not find archive ${krew_archive}."
   echo >&2 "Did you run hack/make-all.sh?"
