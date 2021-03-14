@@ -16,7 +16,7 @@ To summarize the documentation, the procedure is to:
   variable. (You don't have to do this for plugins distributed with Krew).
 - You can't overwrite a built-in `kubectl` command with a plugin.
 
-> **Note:** If you are writing a plugin in Go, consider using the [cli-runtime] project
+> **Note:** If you are writing a plugin in Go, consider using the [cli-runtime] project,
 > which is designed to provide the same command-line arguments, kubeconfig
 > parser, Kubernetes API REST client, and printing logic. Look at
 > [sample-cli-plugin] for an example of a kubectl plugin.

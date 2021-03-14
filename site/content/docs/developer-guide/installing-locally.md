@@ -31,7 +31,7 @@ After you have tested your plugin installation, uninstall it with `kubectl krew 
 ### Testing other platforms
 
 If you need to test other `platforms` definitions that don't match your current machine,
-you can use `KREW_OS` and `KREW_ARCH` environment variables to override the
+you can use the `KREW_OS` and `KREW_ARCH` environment variables to override the
 OS and architecture that Krew thinks it's running on.
 
 For example, if you're on a Linux machine, you can test Windows installation
@@ -40,3 +40,5 @@ with:
 ```sh
 {{<prompt>}}KREW_OS=windows KREW_ARCH=amd64 krew install --manifest=[...]
 ```
+
+[index]: https://github.com/kubernetes-sigs/krew-index

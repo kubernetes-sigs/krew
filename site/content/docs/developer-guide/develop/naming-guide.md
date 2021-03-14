@@ -59,12 +59,11 @@ easier to search/group plugins that are about a specific vendor.
 
 - **NO:** `kubectl ui-gke` (Makes it harder to search or locate in a
   plugin list)
-- **YES:** `kubectl gke-ui` (Will show up next to other gke-* plugins)
+- **YES:** `kubectl gke-ui` (Will show up together with other gke-* plugins)
 
 ##### _Avoid repeating kube[rnetes]_
 
-Plugin names should not include "kube-" or "kubernetes-" prefixes to avoid
-stuttering.
+Plugin names should not include "kube-" or "kubernetes-" prefixes.
 
 - **NO:** `kubectl kube-node-admin` ("kubectl " already has "kube" in it)
 - **YES:** `kubectl node-admin`

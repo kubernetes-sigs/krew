@@ -15,7 +15,7 @@ have a use case that specifically calls for it, such as:
 - Your plugin is not accepted to `krew-index`
 - You want full control over the distribution lifecycle of your own plugin
 - You want to run a _private_ plugin index in your organization (e.g.
-  installations on developer machines)
+  for installations on developer machines)
 
 Hosting your own custom index is simple:
 

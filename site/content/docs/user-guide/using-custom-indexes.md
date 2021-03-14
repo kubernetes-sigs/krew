@@ -47,7 +47,7 @@ foo      https://github.com/foo/custom-index.git{{</output>}}
 Commands for managing plugins (e.g. `install`, `upgrade`) work with custom
 indexes as well.
 
-By default, Krew prefixes plugins with a `default/` prefix. So to install
+By default, Krew prefixes plugins with a `default/` prefix. So, to install
 a plugin from a custom index, you need to specify it in the format
 `INDEX_NAME/PLUGIN_NAME`.
 

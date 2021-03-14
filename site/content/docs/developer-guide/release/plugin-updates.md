@@ -17,8 +17,8 @@ This manual operation looks like:
 of the plugin. This helps users and maintainers to easily identify which
 version of the plugin they have installed.
 
-If you only change `version`, `uri` and `sha256` fields of your plugin manifest,
-your pull request will be automatically approved, tested and merged ([see an
+If you only change the `version`, `uri` and `sha256` fields of your plugin manifest,
+your pull request will be automatically approved, tested, and merged ([see an
 example](https://github.com/kubernetes-sigs/krew-index/pull/508)).
 
 You can [**automate releasing plugin updates**]({{< ref
