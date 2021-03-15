@@ -36,14 +36,17 @@ type Index struct {
 // ListIndexes returns a slice of Index objects. The path argument is used as
 // the base path of the index.
 func ListIndexes(paths environment.Paths) ([]Index, error) {
-	dirs, err := ioutil.ReadDir(paths.IndexBase())
+	entries, err := ioutil.ReadDir(paths.IndexBase())
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to list directory")
 	}
 
 	indexes := []Index{}
-	for _, dir := range dirs {
-		indexName := dir.Name()
+	for _, e := range entries {
+		if !e.IsDir() {
+			continue
+		}
+		indexName := e.Name()
 		remote, err := gitutil.GetRemoteURL(paths.IndexPath(indexName))
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to list the remote URL for index %s", indexName)
