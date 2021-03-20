@@ -62,7 +62,7 @@ Many users will discover how to use your plugin by calling it without any argume
 might trigger a help message), or with `-h`/`--help` arguments.
 
 Therefore, it is helpful to change your usage strings to show the `kubectl ` prefix before the plugin
-name. For example
+name. For example:
 
 ```text
 Usage:
@@ -70,7 +70,7 @@ Usage:
 ```
 
 To determine if your executable is running as a `kubectl` plugin, you can look
-at `argv[0]`, which will include the `kubectl-` prefix
+at `argv[0]`, which will include the `kubectl-` prefix:
 
 - **Go:**
 
