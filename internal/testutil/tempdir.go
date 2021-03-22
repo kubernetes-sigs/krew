@@ -36,15 +36,7 @@ type TempDir struct {
 // when the test exits.
 func NewTempDir(t *testing.T) *TempDir {
 	t.Helper()
-	root, err := ioutil.TempDir("", "krew-test")
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() {
-		if err := os.RemoveAll(root); err != nil {
-			t.Logf("warning: failed to remove tempdir %s: %+v", root, err)
-		}
-	})
+	root := t.TempDir()
 
 	return &TempDir{t: t, root: root}
 }
