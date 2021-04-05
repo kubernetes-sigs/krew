@@ -25,7 +25,8 @@ only Linux and macOS:
 apiVersion: krew.googlecontainertools.github.com/v1alpha2
 kind: Plugin
 metadata:
-  # 'name' must match the filename of the manifest.
+  # 'name' must match the filename of the manifest. The name defines how
+  # the plugin is invoked, for example: `kubectl restart`
   name: restart
 spec:
   # 'version' is a valid semantic version string (see semver.org)
