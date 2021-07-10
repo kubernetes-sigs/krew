@@ -20,7 +20,7 @@ import (
 	"os"
 
 	"github.com/pkg/errors"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // Fetcher is used to get files from a URI.

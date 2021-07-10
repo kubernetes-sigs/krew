@@ -22,7 +22,7 @@ import (
 	"io"
 
 	"github.com/pkg/errors"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // Verifier can check a reader against it's correctness.

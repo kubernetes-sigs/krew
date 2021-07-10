@@ -27,7 +27,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 
 	"sigs.k8s.io/krew/cmd/krew/cmd/internal"
 	"sigs.k8s.io/krew/internal/environment"
@@ -73,7 +73,7 @@ You can invoke krew through kubectl: "kubectl krew [command]..."`,
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		if klog.V(1) {
+		if klog.V(1).Enabled() {
 			klog.Fatalf("%+v", err) // with stack trace
 		} else {
 			klog.Fatal(err) // just error message

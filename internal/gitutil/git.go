@@ -23,7 +23,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // EnsureCloned will clone into the destination path, otherwise will return no error.
@@ -81,7 +81,7 @@ func Exec(pwd string, args ...string) (string, error) {
 	cmd.Dir = pwd
 	buf := bytes.Buffer{}
 	var w io.Writer = &buf
-	if klog.V(2) {
+	if klog.V(2).Enabled() {
 		w = io.MultiWriter(w, os.Stderr)
 	}
 	cmd.Stdout, cmd.Stderr = w, w

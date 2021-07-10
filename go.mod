@@ -15,7 +15,7 @@ require (
 	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c // indirect
 	k8s.io/apimachinery v0.21.2
 	k8s.io/client-go v11.0.0+incompatible
-	k8s.io/klog v1.0.0
+	k8s.io/klog/v2 v2.8.0
 	sigs.k8s.io/structured-merge-diff/v4 v4.1.2 // indirect
 	sigs.k8s.io/yaml v1.2.0
 )

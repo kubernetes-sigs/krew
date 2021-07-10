@@ -19,7 +19,7 @@ import (
 	"net/http"
 
 	"github.com/pkg/errors"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 const (
