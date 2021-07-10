@@ -20,7 +20,7 @@ import (
 
 	"github.com/pkg/errors"
 	"k8s.io/client-go/util/homedir"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 
 	"sigs.k8s.io/krew/pkg/constants"
 )

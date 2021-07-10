@@ -27,7 +27,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // download gets a file from the internet in memory and writes it content

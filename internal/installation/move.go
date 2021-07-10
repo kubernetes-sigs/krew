@@ -22,7 +22,7 @@ import (
 	"syscall"
 
 	"github.com/pkg/errors"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 
 	"sigs.k8s.io/krew/internal/pathutil"
 	"sigs.k8s.io/krew/pkg/index"
