@@ -46,16 +46,23 @@ func Test_extractZIP(t *testing.T) {
 		files []string
 	}{
 		{
-			in: "test-with-directory.zip",
+			in: "test-flat-hierarchy.zip",
+			files: []string{
+				"/foo",
+			},
+		},
+		{
+			in: "test-with-directory-entry.zip",
 			files: []string{
 				"/test/",
 				"/test/foo",
 			},
 		},
 		{
-			in: "test-without-directory.zip",
+			in: "test-with-no-directory-entry.zip",
 			files: []string{
-				"/foo",
+				"/test/",
+				"/test/foo",
 			},
 		},
 	}
@@ -88,18 +95,18 @@ func Test_extractTARGZ(t *testing.T) {
 		files []string
 	}{
 		{
-			in:    "test-without-directory.tar.gz",
+			in:    "test-flat-hierarchy.tar.gz",
 			files: []string{"/foo"},
 		},
 		{
-			in: "test-with-nesting-with-directory-entries.tar.gz",
+			in: "test-with-directory-entry.tar.gz",
 			files: []string{
 				"/test/",
 				"/test/foo",
 			},
 		},
 		{
-			in: "test-with-nesting-without-directory-entries.tar.gz",
+			in: "test-with-no-directory-entry.tar.gz",
 			files: []string{
 				"/test/",
 				"/test/foo",
@@ -173,9 +180,9 @@ func TestDownloader_Get(t *testing.T) {
 			name: "successful get",
 			fields: fields{
 				verifier: newTrueVerifier(),
-				fetcher:  NewFileFetcher(filepath.Join(testdataPath(), "test-with-directory.zip")),
+				fetcher:  NewFileFetcher(filepath.Join(testdataPath(), "test-with-directory-entry.zip")),
 			},
-			uri:     "foo/bar/test-with-directory.zip",
+			uri:     "foo/bar/test-with-directory-entry.zip",
 			wantErr: false,
 		},
 		{
@@ -184,7 +191,7 @@ func TestDownloader_Get(t *testing.T) {
 				verifier: newTrueVerifier(),
 				fetcher:  errorFetcher{},
 			},
-			uri:     "foo/bar/test-with-directory.zip",
+			uri:     "foo/bar/test-with-directory-entry.zip",
 			wantErr: true,
 		},
 	}
@@ -201,7 +208,7 @@ func TestDownloader_Get(t *testing.T) {
 }
 
 func Test_download(t *testing.T) {
-	filePath := filepath.Join(testdataPath(), "test-with-directory.zip")
+	filePath := filepath.Join(testdataPath(), "test-with-directory-entry.zip")
 	downloadOriginal, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		t.Fatal(err)
@@ -302,7 +309,7 @@ func Test_detectMIMEType(t *testing.T) {
 		{
 			name: "type zip",
 			args: args{
-				file: filepath.Join(testdataPath(), "test-with-directory.zip"),
+				file: filepath.Join(testdataPath(), "test-with-directory-entry.zip"),
 			},
 			want:    "application/zip",
 			wantErr: false,
@@ -310,7 +317,7 @@ func Test_detectMIMEType(t *testing.T) {
 		{
 			name: "type tar.gz",
 			args: args{
-				file: filepath.Join(testdataPath(), "test-with-nesting-with-directory-entries.tar.gz"),
+				file: filepath.Join(testdataPath(), "test-with-directory-entry.tar.gz"),
 			},
 			want:    "application/x-gzip",
 			wantErr: false,
@@ -434,7 +441,7 @@ func Test_extractArchive(t *testing.T) {
 			args: args{
 				filename: "",
 				dst:      "",
-				file:     filepath.Join(testdataPath(), "test-with-nesting-with-directory-entries.tar.gz"),
+				file:     filepath.Join(testdataPath(), "test-with-directory-entry.tar.gz"),
 			},
 			wantErr: true,
 		},

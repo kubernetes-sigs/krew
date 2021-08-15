@@ -223,7 +223,7 @@ func Test_downloadAndExtract(t *testing.T) {
 	server := httptest.NewServer(http.FileServer(http.Dir(testdataDir)))
 	defer server.Close()
 
-	url := server.URL + "/test-without-directory.tar.gz"
+	url := server.URL + "/test-flat-hierarchy.tar.gz"
 	checksum := "433b9e0b6cb9f064548f451150799daadcc70a3496953490c5148c8e550d2f4e"
 
 	if err := downloadAndExtract(tmpDir.Root(), url, checksum, ""); err != nil {
@@ -241,7 +241,7 @@ func Test_downloadAndExtract(t *testing.T) {
 func Test_downloadAndExtract_fileOverride(t *testing.T) {
 	tmpDir := testutil.NewTempDir(t)
 
-	testFile := filepath.Join(testdataPath(t), "..", "..", "download", "testdata", "test-without-directory.tar.gz")
+	testFile := filepath.Join(testdataPath(t), "..", "..", "download", "testdata", "test-flat-hierarchy.tar.gz")
 	checksum := "433b9e0b6cb9f064548f451150799daadcc70a3496953490c5148c8e550d2f4e"
 
 	if err := downloadAndExtract(tmpDir.Root(), "", checksum, testFile); err != nil {
