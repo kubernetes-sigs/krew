@@ -107,7 +107,7 @@ Examples:
 			} else if ok {
 				status = "no"
 			} else {
-				status =  fmt.Sprintf("unavailable on %v/%v", runtime.GOOS, runtime.GOARCH)
+				status = fmt.Sprintf("unavailable on %v/%v", runtime.GOOS, runtime.GOARCH)
 			}
 
 			rows = append(rows, []string{displayName(v.p, v.indexName), limitString(v.p.Spec.ShortDescription, 50), status})
