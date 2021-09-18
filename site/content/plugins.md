@@ -15,6 +15,7 @@ your machine:
     <thead>
         <tr>
             <th>Name</th>
+            <th>Version</th>
             <th>Description</th>
             <th>Repository</th>
         </tr>

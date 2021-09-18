@@ -64,6 +64,7 @@ type PluginCountResponse struct {
 
 type pluginInfo struct {
 	Name             string `json:"name,omitempty"`
+	Version          string `json:"version,omitempty"`
 	Homepage         string `json:"homepage,omitempty"`
 	ShortDescription string `json:"short_description,omitempty"`
 	GithubRepo       string `json:"github_repo,omitempty"`
@@ -167,6 +168,7 @@ func pluginsHandler(w http.ResponseWriter, req *http.Request) {
 	for _, v := range plugins {
 		pi := pluginInfo{
 			Name:             v.Name,
+			Version:          v.Spec.Version,
 			Homepage:         v.Spec.Homepage,
 			ShortDescription: v.Spec.ShortDescription,
 			GithubRepo:       findRepo(v.Spec.Homepage),

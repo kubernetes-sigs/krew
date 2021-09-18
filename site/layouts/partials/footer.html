@@ -69,6 +69,7 @@
         : html``;
     const row = plugin => html`<tr>
         <td><a rel="nofollow" href="${plugin.homepage}">${plugin.name}</a></td>
+        <td>${plugin.version}</td>
         <td>${plugin.short_description}</td>
         <td>${repoLink(plugin.github_repo)}</td>
     </tr>`;
