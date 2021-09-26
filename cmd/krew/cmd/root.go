@@ -76,7 +76,8 @@ func Execute() {
 		if klog.V(1).Enabled() {
 			klog.Fatalf("%+v", err) // with stack trace
 		} else {
-			klog.Fatal(err) // just error message
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
 		}
 	}
 }
