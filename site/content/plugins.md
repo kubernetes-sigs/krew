@@ -22,7 +22,7 @@ your machine:
     </thead>
     <tbody id="krew-plugins-list">
         <tr>
-            <td colspan="3">Loading...</td>
+            <td colspan="4">Loading...</td>
         </tr>
     </tbody>
 </table>
