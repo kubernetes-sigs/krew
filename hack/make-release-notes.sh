@@ -30,13 +30,14 @@ fi
 
 readme="https://github.com/kubernetes-sigs/krew/blob/${TAG}/README.md"
 download_base="https://github.com/kubernetes-sigs/krew/releases/download"
-download_assets=(
-  krew.tar.gz
-  krew.tar.gz.sha256
-  krew.exe
-  krew.exe.sha256
-  krew.yaml
-)
+download_assets=()
+for osarch in darwin_amd64 darwin_arm64 linux_amd64 linux_arm linux_arm64 windows_amd64; do
+  download_assets[${#download_assets[@]}]="krew-${osarch}.tar.gz"
+  download_assets[${#download_assets[@]}]="krew-${osarch}.tar.gz.sha256"
+done
+download_assets[${#download_assets[@]}]="krew.exe"
+download_assets[${#download_assets[@]}]="krew.exe.sha256"
+download_assets[${#download_assets[@]}]="krew.yaml"
 
 # install release-notes tool if not present
 if [[ ! -f "${gopath}/bin/release-notes" ]]; then
