@@ -28,15 +28,30 @@ if ! [[ "$TAG" =~ v.* ]]; then
   exit 1
 fi
 
+SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "${SCRIPTDIR}/.."
+
+archive_dir="out"
+if [[ ! -d "${archive_dir}" ]]; then
+  echo >&2 "Archive dir is not created (${archive_dir}), run hack/make-all.sh"
+  exit 1
+fi
+
+cd "${archive_dir}"
+
+download_assets=()
+for entry in *; do
+  if [[ -f "${entry}" ]]; then
+    download_assets[${#download_assets[@]}]="${entry}"
+  fi
+done
+if [[ ${#download_assets[@]} == 0 ]]; then
+  echo >&2 "Archives are not created, run hack/make-release-artifacts.sh"
+  exit 1
+fi
+
 readme="https://github.com/kubernetes-sigs/krew/blob/${TAG}/README.md"
 download_base="https://github.com/kubernetes-sigs/krew/releases/download"
-download_assets=(
-  krew.tar.gz
-  krew.tar.gz.sha256
-  krew.exe
-  krew.exe.sha256
-  krew.yaml
-)
 
 # install release-notes tool if not present
 if [[ ! -f "${gopath}/bin/release-notes" ]]; then
