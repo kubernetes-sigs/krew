@@ -28,16 +28,30 @@ if ! [[ "$TAG" =~ v.* ]]; then
   exit 1
 fi
 
+SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "${SCRIPTDIR}/.."
+
+archive_dir="out"
+if [[ ! -d "${archive_dir}" ]]; then
+  echo >&2 "Archive dir is not created (${archive_dir}), run hack/make-all.sh"
+  exit 1
+fi
+
+cd "${archive_dir}"
+
+download_assets=()
+for entry in *; do
+  if [[ -f "${entry}" ]]; then
+    download_assets[${#download_assets[@]}]="${entry}"
+  fi
+done
+if [[ ${#download_assets[@]} == 0 ]]; then
+  echo >&2 "Archives are not created, run hack/make-release-artifacts.sh"
+  exit 1
+fi
+
 readme="https://github.com/kubernetes-sigs/krew/blob/${TAG}/README.md"
 download_base="https://github.com/kubernetes-sigs/krew/releases/download"
-download_assets=()
-for osarch in darwin_amd64 darwin_arm64 linux_amd64 linux_arm linux_arm64 windows_amd64; do
-  download_assets[${#download_assets[@]}]="krew-${osarch}.tar.gz"
-  download_assets[${#download_assets[@]}]="krew-${osarch}.tar.gz.sha256"
-done
-download_assets[${#download_assets[@]}]="krew.exe"
-download_assets[${#download_assets[@]}]="krew.exe.sha256"
-download_assets[${#download_assets[@]}]="krew.yaml"
 
 # install release-notes tool if not present
 if [[ ! -f "${gopath}/bin/release-notes" ]]; then
