@@ -79,7 +79,7 @@ Krew self-hosts).
 1. Run the following command to install krew:
 
     ```sh
-    krew install krew
+    .\krew install krew
     ```
 
 1. Add the `%USERPROFILE%\.krew\bin` directory to your `PATH` environment variable
