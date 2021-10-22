@@ -83,12 +83,13 @@
             return;
         }
         try {
-            while (pluginTableElem.firstChild) {
-                pluginTableElem.removeChild(pluginTableElem.firstElementChild);
-            }
             const resp = await fetch('/.netlify/functions/api/plugins');
             const json = await resp.json()
             const plugins = json.data?.plugins;
+            
+            while (pluginTableElem.firstChild) {
+                pluginTableElem.removeChild(pluginTableElem.firstElementChild);
+            }
             
             if (!Boolean(plugins?.length)) {
                 render(error(), pluginTableElem);
