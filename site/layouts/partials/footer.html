@@ -88,7 +88,7 @@
             const plugins = json.data?.plugins;
             
             while (pluginTableElem.firstChild) {
-                pluginTableElem.removeChild(pluginTableElem.firstElementChild);
+                pluginTableElem.removeChild(pluginTableElem.firstChild);
             }
             
             if (!Boolean(plugins?.length)) {
