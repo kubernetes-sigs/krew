@@ -63,7 +63,7 @@
     </script>
 
     <script type="module">
-    import {html, render} from 'https://unpkg.com/lit-html?module';
+    import {html, render} from 'https://unpkg.com/lit-html@2.0.1?module';
     const repoLink = repo => repo
         ? html`<a href="${repo}" rel="nofollow"><img src="https://img.shields.io/github/stars/${repo}.svg?label=stars&logo=github"/></a>`
         : html``;
@@ -86,6 +86,11 @@
             const resp = await fetch('/.netlify/functions/api/plugins');
             const json = await resp.json()
             const plugins = json.data?.plugins;
+            
+            while (pluginTableElem.firstChild) {
+                pluginTableElem.removeChild(pluginTableElem.firstChild);
+            }
+            
             if (!Boolean(plugins?.length)) {
                 render(error(), pluginTableElem);
                 return;
