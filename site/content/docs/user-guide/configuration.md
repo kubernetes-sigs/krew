@@ -43,4 +43,17 @@ variable in your `~/.bashrc`, `~/.bash_profile`, or `~/.zshrc`:
 export KREW_DEFAULT_INDEX_URI='git@github.com:foo/custom-index.git'
 ```
 
+## Configure network proxy {#custom-network-proxy}
+
+If you want to use Krew with an HTTP proxy, you can configure environment 
+variables HTTP_PROXY, HTTPS_PROXY and NO_PROXY. Behavior of these 
+environment variables are explained [here][httpproxy].
+
+```shell
+export HTTP_PROXY="proxy-ip:port"
+export HTTPS_PROXY="proxy-ip:port"
+export NO_PROXY="ip1,ip2:port2,.example.com"
+```
+
 [ki]: https://github.com/kubernetes-sigs/krew-index
+[httpproxy]: https://pkg.go.dev/golang.org/x/net/http/httpproxy#Config
