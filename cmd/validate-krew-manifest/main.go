@@ -39,9 +39,11 @@ import (
 )
 
 var flManifest string
+var flInstall bool
 
 func init() {
 	flag.StringVar(&flManifest, "manifest", "", "path to plugin manifest file")
+	flag.BoolVar(&flInstall, "install", true, "install the plugin as part of the validation")
 }
 
 func main() {
@@ -97,15 +99,17 @@ func validateManifestFile(path string) error {
 	}
 	klog.Infof("no overlapping spec.platform[].selector")
 
-	// exercise "install" for all platforms
-	for i, p := range p.Spec.Platforms {
-		klog.Infof("installing spec.platform[%d]", i)
-		if err := installPlatformSpec(path, p); err != nil {
-			return errors.Wrapf(err, "spec.platforms[%d] failed to install", i)
+	if flInstall {
+		// exercise "install" for all platforms
+		for i, p := range p.Spec.Platforms {
+			klog.Infof("installing spec.platform[%d]", i)
+			if err := installPlatformSpec(path, p); err != nil {
+				return errors.Wrapf(err, "spec.platforms[%d] failed to install", i)
+			}
+			klog.Infof("installed  spec.platforms[%d]", i)
 		}
-		klog.Infof("installed  spec.platforms[%d]", i)
+		log.Printf("all %d spec.platforms installed fine", len(p.Spec.Platforms))
 	}
-	log.Printf("all %d spec.platforms installed fine", len(p.Spec.Platforms))
 	return nil
 }
 
