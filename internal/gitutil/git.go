@@ -20,6 +20,7 @@ import (
 	"os"
 	osexec "os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -54,7 +55,11 @@ func updateAndCleanUntracked(destinationPath string) error {
 		return errors.Wrapf(err, "fetch index at %q failed", destinationPath)
 	}
 
-	if _, err := Exec(destinationPath, "reset", "--hard", "@{upstream}"); err != nil {
+	upstream := "@{upstream}"
+	if runtime.GOOS == "windows" {
+		upstream = `@\{upstream\}`
+	}
+	if _, err := Exec(destinationPath, "reset", "--hard", upstream); err != nil {
 		return errors.Wrapf(err, "reset index at %q failed", destinationPath)
 	}
 
