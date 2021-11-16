@@ -15,8 +15,7 @@
 package internal
 
 import (
-	"os"
-
+	"github.com/fatih/color"
 	"sigs.k8s.io/krew/pkg/constants"
 )
 
@@ -28,5 +27,5 @@ func PrintSecurityNotice(plugin string) {
 	if plugin == constants.KrewPluginName {
 		return // do not warn for krew itself
 	}
-	PrintWarning(os.Stderr, securityNoticeFmt+"\n", plugin)
+	PrintWarning(color.Error, securityNoticeFmt+"\n", plugin)
 }

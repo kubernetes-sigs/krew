@@ -18,6 +18,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/fatih/color"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"k8s.io/klog/v2"
@@ -78,7 +79,7 @@ var indexAddCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		internal.PrintWarning(os.Stderr, `You have added a new index from %q
+		internal.PrintWarning(color.Error, `You have added a new index from %q
 The plugins in this index are not audited for security by the Krew maintainers.
 Install them at your own risk.
 `, args[1])
@@ -117,7 +118,7 @@ func indexDelete(_ *cobra.Command, args []string) error {
 			names = append(names, pl.Name)
 		}
 
-		internal.PrintWarning(os.Stderr, `Plugins [%s] are still installed from index %q!
+		internal.PrintWarning(color.Error, `Plugins [%s] are still installed from index %q!
 Removing indexes while there are plugins installed from is not recommended
 (you can use --force to ignore this check).`+"\n", strings.Join(names, ", "), name)
 		return errors.Errorf("there are still plugins installed from this index")
