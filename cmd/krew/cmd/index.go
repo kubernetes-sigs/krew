@@ -32,6 +32,7 @@ import (
 var (
 	forceIndexDelete    *bool
 	errInvalidIndexName = errors.New("invalid index name")
+	stderr              = color.Error
 )
 
 // indexCmd represents the index command
@@ -79,7 +80,7 @@ var indexAddCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		internal.PrintWarning(color.Error, `You have added a new index from %q
+		internal.PrintWarning(stderr, `You have added a new index from %q
 The plugins in this index are not audited for security by the Krew maintainers.
 Install them at your own risk.
 `, args[1])
@@ -118,7 +119,7 @@ func indexDelete(_ *cobra.Command, args []string) error {
 			names = append(names, pl.Name)
 		}
 
-		internal.PrintWarning(color.Error, `Plugins [%s] are still installed from index %q!
+		internal.PrintWarning(stderr, `Plugins [%s] are still installed from index %q!
 Removing indexes while there are plugins installed from is not recommended
 (you can use --force to ignore this check).`+"\n", strings.Join(names, ", "), name)
 		return errors.Errorf("there are still plugins installed from this index")
