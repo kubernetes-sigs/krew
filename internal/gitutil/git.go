@@ -80,7 +80,8 @@ func Exec(pwd string, args ...string) (string, error) {
 	klog.V(4).Infof("Going to run git %s", strings.Join(args, " "))
 	cmd := osexec.Command("git", args...)
 
-	// NOTE: https://github.com/kubernetes-sigs/krew/pull/739
+	// NOTE: on windows, msys2 and cygwin interpret args e.g. @{upstream} and therefore
+	// acts differently than git-for-windows. see #739
 	if runtime.GOOS == "windows" {
 		environ := os.Environ()
 
