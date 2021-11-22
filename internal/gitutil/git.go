@@ -79,9 +79,26 @@ func GetRemoteURL(dir string) (string, error) {
 func Exec(pwd string, args ...string) (string, error) {
 	klog.V(4).Infof("Going to run git %s", strings.Join(args, " "))
 	cmd := osexec.Command("git", args...)
+
+	// NOTE: https://github.com/kubernetes-sigs/krew/pull/739
 	if runtime.GOOS == "windows" {
-		cmd.Env = append(os.Environ(), "MSYS=noglob")
+		environ := os.Environ()
+
+		env := "MSYS=noglob"
+		if v := os.Getenv("MSYS"); v != "" {
+			env += " " + v
+		}
+		environ = append(environ, env)
+
+		env = "CYGWIN=noglob"
+		if v := os.Getenv("CYGWIN"); v != "" {
+			env += " " + v
+		}
+		environ = append(environ, env)
+
+		cmd.Env = environ
 	}
+
 	cmd.Dir = pwd
 	buf := bytes.Buffer{}
 	var w io.Writer = &buf
