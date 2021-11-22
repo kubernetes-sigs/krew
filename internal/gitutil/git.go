@@ -55,11 +55,7 @@ func updateAndCleanUntracked(destinationPath string) error {
 		return errors.Wrapf(err, "fetch index at %q failed", destinationPath)
 	}
 
-	upstream := "@{upstream}"
-	if runtime.GOOS == "windows" {
-		upstream = `@\{upstream\}`
-	}
-	if _, err := Exec(destinationPath, "reset", "--hard", upstream); err != nil {
+	if _, err := Exec(destinationPath, "reset", "--hard", "@{upstream}"); err != nil {
 		return errors.Wrapf(err, "reset index at %q failed", destinationPath)
 	}
 
@@ -83,6 +79,9 @@ func GetRemoteURL(dir string) (string, error) {
 func Exec(pwd string, args ...string) (string, error) {
 	klog.V(4).Infof("Going to run git %s", strings.Join(args, " "))
 	cmd := osexec.Command("git", args...)
+	if runtime.GOOS == "windows" {
+		cmd.Env = append(os.Environ(), "MSYS=noglob")
+	}
 	cmd.Dir = pwd
 	buf := bytes.Buffer{}
 	var w io.Writer = &buf
