@@ -82,8 +82,8 @@ func Exec(pwd string, args ...string) (string, error) {
 
 	// NOTE: on windows, msys2 and cygwin interpret args e.g. @{upstream} and therefore
 	// acts differently than git-for-windows. see #739
+	environ := os.Environ()
 	if runtime.GOOS == "windows" {
-		environ := os.Environ()
 
 		env := "MSYS=noglob"
 		if v := os.Getenv("MSYS"); v != "" {
@@ -96,9 +96,8 @@ func Exec(pwd string, args ...string) (string, error) {
 			env += " " + v
 		}
 		environ = append(environ, env)
-
-		cmd.Env = environ
 	}
+	cmd.Env = environ
 
 	cmd.Dir = pwd
 	buf := bytes.Buffer{}
