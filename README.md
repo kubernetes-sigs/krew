@@ -16,7 +16,7 @@ Krew is the package manager for kubectl plugins.
 Krew is a tool that makes it easy to use [kubectl
 plugins](https://kubernetes.io/docs/tasks/extend-kubectl/kubectl-plugins/). Krew
 helps you discover plugins, install and manage them on your machine. It is
-similar to tools like apt, dnf or [brew](http://brew.sh). Today, over [130
+similar to tools like apt, dnf or [brew](https://brew.sh). Today, over [130
 kubectl plugins][list] are available on Krew.
 
 - **For kubectl users:** Krew helps you find, install and manage kubectl plugins
@@ -69,7 +69,7 @@ record for new features and changes.
 * Slack: [#krew](https://kubernetes.slack.com/messages/krew) or
   [#sig-cli](https://kubernetes.slack.com/messages/sig-cli)
 * [Mailing List](https://groups.google.com/forum/#!forum/kubernetes-sig-cli)
-* [Kubernetes Community site](http://kubernetes.io/community/)
+* [Kubernetes Community site](https://kubernetes.io/community/)
 
 ### Contributing
 
