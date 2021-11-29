@@ -81,10 +81,10 @@ func Exec(pwd string, args ...string) (string, error) {
 	cmd := osexec.Command("git", args...)
 
 	// NOTE: on windows, msys2 and cygwin interpret args e.g. @{upstream} and therefore
-	// acts differently than git-for-windows. see #739
+	// acts differently than git-for-windows.
+	// see https://github.com/kubernetes-sigs/krew/pull/739
 	environ := os.Environ()
 	if runtime.GOOS == "windows" {
-
 		env := "MSYS=noglob"
 		if v := os.Getenv("MSYS"); v != "" {
 			env += " " + v
