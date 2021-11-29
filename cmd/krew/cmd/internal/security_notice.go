@@ -23,11 +23,9 @@ const securityNoticeFmt = `You installed plugin %q from the krew-index plugin re
    These plugins are not audited for security by the Krew maintainers.
    Run them at your own risk.`
 
-var stderr = color.Error
-
 func PrintSecurityNotice(plugin string) {
 	if plugin == constants.KrewPluginName {
 		return // do not warn for krew itself
 	}
-	PrintWarning(stderr, securityNoticeFmt+"\n", plugin)
+	PrintWarning(color.Error, securityNoticeFmt+"\n", plugin)
 }

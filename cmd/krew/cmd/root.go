@@ -111,7 +111,7 @@ func init() {
 func preRun(cmd *cobra.Command, _ []string) error {
 	// check must be done before ensureDirs, to detect krew's self-installation
 	if !internal.IsBinDirInPATH(paths) {
-		internal.PrintWarning(stderr, internal.SetupInstructions()+"\n\n")
+		internal.PrintWarning(color.Error, internal.SetupInstructions()+"\n\n")
 	}
 
 	if err := ensureDirs(paths.BasePath(),
@@ -188,7 +188,7 @@ func showUpgradeNotification(*cobra.Command, []string) {
 		return
 	}
 	if semver.Less(currentVer, latestVer) {
-		color.New(color.Bold).Fprintf(stderr, upgradeNotification, version.GitTag(), latestTag)
+		color.New(color.Bold).Fprintf(color.Error, upgradeNotification, version.GitTag(), latestTag)
 	} else {
 		klog.V(4).Infof("upgrade check found no new versions (%s>=%s)", currentVer, latestVer)
 	}
