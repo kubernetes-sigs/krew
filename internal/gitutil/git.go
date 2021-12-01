@@ -97,7 +97,8 @@ func Exec(pwd string, args ...string) (string, error) {
 			env += " " + v
 		}
 
-		cmd.Env = append(environ, env)
+		environ = append(environ, env)
+		cmd.Env = environ
 	}
 
 	cmd.Dir = pwd
