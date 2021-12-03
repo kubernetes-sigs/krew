@@ -65,7 +65,7 @@
     <script type="module">
     import {html, render} from 'https://unpkg.com/lit-html@2.0.1?module';
     const repoLink = repo => repo
-        ? html`<a href="${repo}" rel="nofollow"><img src="https://img.shields.io/github/stars/${repo}.svg?label=stars&logo=github"/></a>`
+        ? html`<a href="https://github.com/${repo}" rel="nofollow"><img src="https://img.shields.io/github/stars/${repo}.svg?label=stars&logo=github"/></a>`
         : html``;
     const row = plugin => html`<tr>
         <td><a rel="nofollow" href="${plugin.homepage}">${plugin.name}</a></td>
