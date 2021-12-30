@@ -17,6 +17,7 @@ package cmd
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"os"
 	"strings"
@@ -209,10 +210,23 @@ func cleanupStaleKrewInstallations() error {
 }
 
 func checkIndex(_ *cobra.Command, _ []string) error {
-	if ok, err := gitutil.IsGitCloned(paths.IndexPath(constants.DefaultIndexName)); err != nil {
-		return errors.Wrap(err, "failed to check local index git repository")
-	} else if !ok {
+	entries, err := ioutil.ReadDir(paths.IndexBase())
+	if err != nil {
+		return errors.Wrap(err, "failed to list directory")
+	}
+	if len(entries) == 0 {
 		return errors.New(`krew local plugin index is not initialized (run "kubectl krew update")`)
+	}
+	for _, e := range entries {
+		if !e.IsDir() {
+			continue
+		}
+		indexPath := paths.IndexPath(e.Name())
+		if ok, err := gitutil.IsGitCloned(indexPath); err != nil {
+			return errors.Wrap(err, "failed to check local index git repository")
+		} else if !ok {
+			return errors.New(`krew local plugin index is not initialized (run "kubectl krew update")`)
+		}
 	}
 	return nil
 }
