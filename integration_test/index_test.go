@@ -213,6 +213,17 @@ func TestKrewDefaultIndex_AutoAddedOnUpgrade(t *testing.T) {
 	ensureIndexListHasDefaultIndex(t, string(test.Krew("index", "list").RunOrFailOutput()))
 }
 
+func TestKrewOnlyCustomIndex(t *testing.T) {
+	skipShort(t)
+	test := NewTest(t)
+	out, err := test.Krew("list").Run()
+	if err == nil {
+		t.Fatalf("list should've failed without default index output=%s", string(out))
+	}
+	test.Krew("index", "add", "custom-index", constants.DefaultIndexURI).RunOrFail()
+	test.Krew("list").RunOrFail()
+}
+
 func ensureIndexListHasDefaultIndex(t *testing.T, output string) {
 	t.Helper()
 	if !regexp.MustCompile(`(?m)^default\b`).MatchString(output) {
