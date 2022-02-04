@@ -13,7 +13,7 @@
     ```sh
     krew=out/bin/krew-darwin_amd64 # assuming macOS amd64
 
-    for osarch in darwin_amd64 darwin_arm64 linux_amd64 linux_arm linux_arm64 windows_amd64; do
+    for osarch in darwin_amd64 darwin_arm64 linux_amd64 linux_arm linux_arm64 linux_ppc64le windows_amd64; do
       KREW_ROOT="$(mktemp -d --tmpdir krew-XXXXXXXXXX)" KREW_OS="${osarch%_*}" KREW_ARCH="${osarch#*_}" \
           $krew install --manifest=out/krew.yaml --archive="out/krew-${osarch}.tar.gz"
     done

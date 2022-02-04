@@ -97,7 +97,7 @@ accessible to download from a user’s machine. The relevant fields are:
 
 Krew makes it possible to install the same plugin on different operating systems
 (e.g., `windows`, `darwin` (macOS), and `linux`) and different architectures
-(e.g., `amd64`, `386`, `arm`, and `arm64`).
+(e.g., `amd64`, `386`, `arm`, `arm64` and `ppc64le`).
 
 To support multiple platforms, you may need to define multiple `platforms` in
 the plugin manifest. The `selector` field matches to operating systems and
