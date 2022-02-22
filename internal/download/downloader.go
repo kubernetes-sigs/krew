@@ -20,7 +20,6 @@ import (
 	"bytes"
 	"compress/gzip"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -40,7 +39,7 @@ func download(url string, verifier Verifier, fetcher Fetcher) (io.ReaderAt, int6
 	defer body.Close()
 
 	klog.V(3).Infof("Reading archive file into memory")
-	data, err := ioutil.ReadAll(io.TeeReader(body, verifier))
+	data, err := io.ReadAll(io.TeeReader(body, verifier))
 	if err != nil {
 		return nil, 0, errors.Wrap(err, "could not read archive")
 	}
@@ -72,7 +71,7 @@ func extractZIP(targetDir string, read io.ReaderAt, size int64) error {
 
 		dir := filepath.Dir(path)
 		klog.V(4).Infof("zip: ensuring parent dirs exist for regular file, dir=%s", dir)
-		if err := os.MkdirAll(dir, 0755); err != nil {
+		if err := os.MkdirAll(dir, 0o755); err != nil {
 			return errors.Wrap(err, "failed to create directory for zip entry")
 		}
 		src, err := f.Open()
@@ -140,7 +139,7 @@ func extractTARGZ(targetDir string, at io.ReaderAt, size int64) error {
 		case tar.TypeReg:
 			dir := filepath.Dir(path)
 			klog.V(4).Infof("tar: ensuring parent dirs exist for regular file, dir=%s", dir)
-			if err := os.MkdirAll(dir, 0755); err != nil {
+			if err := os.MkdirAll(dir, 0o755); err != nil {
 				return errors.Wrap(err, "failed to create directory for tar")
 			}
 			f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY, os.FileMode(hdr.Mode))

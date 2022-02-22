@@ -15,7 +15,6 @@
 package index
 
 import (
-	"os"
 	"testing"
 
 	"sigs.k8s.io/krew/pkg/constants"
@@ -27,8 +26,7 @@ func TestDefaultIndex(t *testing.T) {
 	}
 
 	want := "foo"
-	os.Setenv("KREW_DEFAULT_INDEX_URI", want)
-	defer os.Unsetenv("KREW_DEFAULT_INDEX_URI")
+	t.Setenv("KREW_DEFAULT_INDEX_URI", want)
 
 	if got := DefaultIndex(); got != want {
 		t.Errorf("DefaultIndex() = %q, want %q", got, want)

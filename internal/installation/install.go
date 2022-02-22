@@ -15,7 +15,6 @@
 package installation
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -94,7 +93,7 @@ func Install(p environment.Paths, plugin index.Plugin, indexName string, opts In
 func install(op installOperation, opts InstallOpts) error {
 	// Download and extract
 	klog.V(3).Infof("Creating download staging directory")
-	downloadStagingDir, err := ioutil.TempDir("", "krew-downloads")
+	downloadStagingDir, err := os.MkdirTemp("", "krew-downloads")
 	if err != nil {
 		return errors.Wrapf(err, "could not create staging dir %q", downloadStagingDir)
 	}
@@ -250,13 +249,13 @@ func pluginNameToBin(name string, isWindows bool) string {
 
 // CleanupStaleKrewInstallations removes the versions that aren't the current version.
 func CleanupStaleKrewInstallations(dir, currentVersion string) error {
-	ls, err := ioutil.ReadDir(dir)
+	ls, err := os.ReadDir(dir)
 	if err != nil {
 		return errors.Wrap(err, "failed to read krew store directory")
 	}
 	klog.V(2).Infof("Found %d entries in krew store directory", len(ls))
 	for _, d := range ls {
-		klog.V(2).Infof("Found a krew installation: %s (%s)", d.Name(), d.Mode())
+		klog.V(2).Infof("Found a krew installation: %s (%s)", d.Name(), d.Type())
 		if d.IsDir() && d.Name() != currentVersion {
 			klog.V(1).Infof("Deleting stale krew install directory: %s", d.Name())
 			p := filepath.Join(dir, d.Name())

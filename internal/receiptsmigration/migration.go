@@ -16,7 +16,7 @@
 package receiptsmigration
 
 import (
-	"io/ioutil"
+	"os"
 
 	"sigs.k8s.io/krew/internal/environment"
 )
@@ -24,11 +24,11 @@ import (
 // Done checks if the krew installation requires a migration.
 // It considers a migration necessary when plugins are installed, but no receipts are present.
 func Done(newPaths environment.Paths) (bool, error) {
-	receipts, err := ioutil.ReadDir(newPaths.InstallReceiptsPath())
+	receipts, err := os.ReadDir(newPaths.InstallReceiptsPath())
 	if err != nil {
 		return false, err
 	}
-	plugins, err := ioutil.ReadDir(newPaths.BinPath())
+	plugins, err := os.ReadDir(newPaths.BinPath())
 	if err != nil {
 		return false, err
 	}

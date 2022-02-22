@@ -17,7 +17,6 @@ package cmd
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"os"
 	"strings"
@@ -210,7 +209,7 @@ func cleanupStaleKrewInstallations() error {
 }
 
 func checkIndex(_ *cobra.Command, _ []string) error {
-	entries, err := ioutil.ReadDir(paths.IndexBase())
+	entries, err := os.ReadDir(paths.IndexBase())
 	if err != nil {
 		return errors.Wrap(err, "failed to list directory")
 	}
@@ -234,7 +233,7 @@ func checkIndex(_ *cobra.Command, _ []string) error {
 func ensureDirs(paths ...string) error {
 	for _, p := range paths {
 		klog.V(4).Infof("Ensure creating dir: %q", p)
-		if err := os.MkdirAll(p, 0755); err != nil {
+		if err := os.MkdirAll(p, 0o755); err != nil {
 			return errors.Wrapf(err, "failed to ensure create directory %q", p)
 		}
 	}

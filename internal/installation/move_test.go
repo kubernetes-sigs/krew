@@ -16,7 +16,7 @@ package installation
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"reflect"
 	"testing"
@@ -198,7 +198,7 @@ func Test_moveOrCopyDir_canMoveToNonExistingDir(t *testing.T) {
 		t.Fatalf("move failed: %+v", err)
 	}
 
-	items, err := ioutil.ReadDir(dst)
+	items, err := os.ReadDir(dst)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -225,7 +225,7 @@ func Test_moveOrCopyDir_removesExistingTarget(t *testing.T) {
 		t.Fatalf("move failed: %+v", err)
 	}
 
-	items, err := ioutil.ReadDir(dstDir.Root())
+	items, err := os.ReadDir(dstDir.Root())
 	if err != nil {
 		t.Fatal(err)
 	}

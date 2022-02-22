@@ -16,7 +16,6 @@ package integrationtest
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -221,13 +220,13 @@ func resolvePluginSymlink(test *ITest, plugin string) string {
 }
 
 func modifyReceiptIndex(t *testing.T, file, index string) {
-	b, err := ioutil.ReadFile(file)
+	b, err := os.ReadFile(file)
 	if err != nil {
 		t.Fatal(err)
 	}
 	r := regexp.MustCompile(`(?m)(\bstatus:\n\s+source:\n\s+name:\s)(.*)$`) // patch index name
 	b = r.ReplaceAll(b, []byte(fmt.Sprintf("${1}%s", index)))
-	if err := ioutil.WriteFile(file, b, 0); err != nil {
+	if err := os.WriteFile(file, b, 0); err != nil {
 		t.Fatal(err)
 	}
 }

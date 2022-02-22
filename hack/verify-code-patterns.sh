@@ -16,10 +16,10 @@
 
 set -euo pipefail
 
-# Disallow usage of ioutil.TempDir in tests in favor of testutil.
-out="$(grep --include '*_test.go' --exclude-dir 'vendor/' -EIrn 'ioutil.\TempDir' || true)"
+# Disallow usage of os.MkdirTemp in tests in favor of testutil.
+out="$(grep --include '*_test.go' --exclude-dir 'vendor/' -EIrn 'os\.MkdirTemp' || true)"
 if [[ -n "$out" ]]; then
-  echo >&2 "You used ioutil.TempDir in tests, use 'testutil.NewTempDir()' instead:"
+  echo >&2 "You used os.MkdirTemp in tests, use 'testutil.NewTempDir()' instead:"
   echo >&2 "$out"
   exit 1
 fi

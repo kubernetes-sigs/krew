@@ -15,7 +15,7 @@
 package receipt
 
 import (
-	"io/ioutil"
+	"os"
 
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -33,7 +33,7 @@ func Store(receipt index.Receipt, dest string) error {
 		return errors.Wrapf(err, "convert to yaml")
 	}
 
-	err = ioutil.WriteFile(dest, yamlBytes, 0644)
+	err = os.WriteFile(dest, yamlBytes, 0o644)
 	return errors.Wrapf(err, "write plugin receipt %q", dest)
 }
 

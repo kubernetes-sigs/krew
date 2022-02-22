@@ -120,7 +120,7 @@ func TestDeleteIndex(t *testing.T) {
 		t.Fatalf("not ENOENT error: %v", err)
 	}
 
-	if err := os.MkdirAll(p.IndexPath("some-index"), 0755); err != nil {
+	if err := os.MkdirAll(p.IndexPath("some-index"), 0o755); err != nil {
 		t.Fatalf("err creating test index: %v", err)
 	}
 

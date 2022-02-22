@@ -15,7 +15,6 @@
 package indexoperations
 
 import (
-	"io/ioutil"
 	"os"
 	"regexp"
 
@@ -36,7 +35,7 @@ type Index struct {
 // ListIndexes returns a slice of Index objects. The path argument is used as
 // the base path of the index.
 func ListIndexes(paths environment.Paths) ([]Index, error) {
-	entries, err := ioutil.ReadDir(paths.IndexBase())
+	entries, err := os.ReadDir(paths.IndexBase())
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to list directory")
 	}

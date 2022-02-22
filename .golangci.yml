@@ -44,14 +44,12 @@ linters:
     - gocritic
     - gofmt
     - goimports
-    - golint
     - gosimple
     - govet
     - ineffassign
-    - interfacer
-    - maligned
     - misspell
     - prealloc
+    - revive
     - staticcheck
     - structcheck
     - stylecheck

@@ -15,7 +15,6 @@
 package installation
 
 import (
-	"os"
 	"runtime"
 	"testing"
 
@@ -35,12 +34,8 @@ func Test_osArch(t *testing.T) {
 
 func Test_osArch_override(t *testing.T) {
 	customGoOSArch := OSArchPair{OS: "dragons", Arch: "metav1"}
-	os.Setenv("KREW_OS", customGoOSArch.OS)
-	os.Setenv("KREW_ARCH", customGoOSArch.Arch)
-	defer func() {
-		os.Unsetenv("KREW_ARCH")
-		os.Unsetenv("KREW_OS")
-	}()
+	t.Setenv("KREW_OS", customGoOSArch.OS)
+	t.Setenv("KREW_ARCH", customGoOSArch.Arch)
 
 	if diff := cmp.Diff(customGoOSArch, OSArch()); diff != "" {
 		t.Errorf("os/arch override got a different result:\n%s", diff)
