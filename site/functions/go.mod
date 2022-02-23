@@ -29,4 +29,4 @@ require (
 	k8s.io/klog v1.0.0 // indirect
 )
 
-replace sigs.k8s.io/krew => ../../
+// replace sigs.k8s.io/krew => ../../
