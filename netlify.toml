@@ -5,7 +5,7 @@ command = "hugo && cd ./functions && go build -o api ./server"
 functions = "functions/"
 
 [build.environment]
-HUGO_VERSION = "0.65.1"
+HUGO_VERSION = "0.92.2"
 
 [context.production.environment]
 HUGO_ENV = "production"
@@ -13,7 +13,5 @@ HUGO_ENV = "production"
 [context.deploy-preview]
 command = "hugo --buildFuture -b $DEPLOY_PRIME_URL && cd ./functions &&  go build -o api ./server"
 
-
 [context.branch-deploy]
 command = "hugo --buildFuture -b $DEPLOY_PRIME_URL && cd ./functions && go build -o api ./server"
-
