@@ -1,19 +1,22 @@
 [build]
+GO_VERSION = "1.17"
 base = "site/"
 publish = "public/"
 command = "hugo && cd ./functions && go build -o api ./server"
 functions = "functions/"
 
 [build.environment]
-HUGO_VERSION = "0.65.1"
+GO_VERSION = "1.17"
+HUGO_VERSION = "0.92.2"
 
 [context.production.environment]
+GO_VERSION = "1.17"
 HUGO_ENV = "production"
 
 [context.deploy-preview]
+GO_VERSION = "1.17"
 command = "hugo --buildFuture -b $DEPLOY_PRIME_URL && cd ./functions &&  go build -o api ./server"
 
-
 [context.branch-deploy]
+GO_VERSION = "1.17"
 command = "hugo --buildFuture -b $DEPLOY_PRIME_URL && cd ./functions && go build -o api ./server"
-

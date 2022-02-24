@@ -193,7 +193,7 @@ func ensureIndexesUpdated() error {
 		}
 		showUpdatedPlugins(os.Stderr, preUpdatePlugins, postUpdatePlugins, installedPlugins)
 	}
-	return errors.Wrapf(returnErr, "failed to update the following indexes: %s\n", strings.Join(failed, ", "))
+	return errors.Wrapf(returnErr, "failed to update the following indexes: %s", strings.Join(failed, ", "))
 }
 
 func init() {

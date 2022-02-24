@@ -16,7 +16,6 @@ package integrationtest
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -132,13 +131,13 @@ func TestKrewUpdateListsUpgradesAvailable(t *testing.T) {
 }
 
 func modifyManifestVersion(t *testing.T, file, version string) {
-	b, err := ioutil.ReadFile(file)
+	b, err := os.ReadFile(file)
 	if err != nil {
 		t.Fatal(err)
 	}
 	r := regexp.MustCompile(`(?m)(\bversion:\s)(.*)$`) // patch "version:" field
 	b = r.ReplaceAll(b, []byte(fmt.Sprintf("${1}%s", version)))
-	if err := ioutil.WriteFile(file, b, 0); err != nil {
+	if err := os.WriteFile(file, b, 0); err != nil {
 		t.Fatal(err)
 	}
 }

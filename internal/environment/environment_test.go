@@ -37,8 +37,7 @@ func TestMustGetKrewPaths_resolvesToHomeDir(t *testing.T) {
 
 func TestMustGetKrewPaths_envOverride(t *testing.T) {
 	custom := filepath.FromSlash("/custom/krew/path")
-	os.Setenv("KREW_ROOT", custom)
-	defer os.Unsetenv("KREW_ROOT")
+	t.Setenv("KREW_ROOT", custom)
 
 	p := MustGetKrewPaths()
 	if expected, got := custom, p.BasePath(); got != expected {

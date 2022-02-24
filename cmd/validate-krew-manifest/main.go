@@ -18,7 +18,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -139,7 +138,7 @@ func installPlatformSpec(manifestFile string, p index.Platform) error {
 		return errors.Errorf("no supported platform matched platform selector: %+v", p.Selector)
 	}
 
-	tmpDir, err := ioutil.TempDir(os.TempDir(), "krew-test")
+	tmpDir, err := os.MkdirTemp(os.TempDir(), "krew-test")
 	if err != nil {
 		return errors.Wrap(err, "failed to create temp dir for plugin install")
 	}

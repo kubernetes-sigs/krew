@@ -49,21 +49,11 @@ func TestIsBinDirInPATH_secondRun(t *testing.T) {
 func TestIsBinDirInPATH_NonNormalized(t *testing.T) {
 	tempDir := testutil.NewTempDir(t)
 
-	// backup and restore initial PATH value
-	defer func(backupPath string) {
-		err := os.Setenv("PATH", backupPath)
-		if err != nil {
-			t.Fatalf(`os.Setenv("PATH", %s) failed with %v`, backupPath, err)
-		}
-	}(os.Getenv("PATH"))
-
 	// set PATH with non-normalized folder path
-	err := os.Setenv("PATH", tempDir.Path(environmentPath+"/bin"))
-	if err != nil {
-		t.Fatalf(`os.Setenv("PATH", %s/bin) failed with %v`, environmentPath, err)
-	}
+	t.Setenv("PATH", tempDir.Path(environmentPath+"/bin"))
+
 	paths := environment.NewPaths(tempDir.Path(environmentPath))
-	err = os.MkdirAll(paths.BasePath(), os.ModePerm)
+	err := os.MkdirAll(paths.BasePath(), os.ModePerm)
 	if err != nil {
 		t.Fatalf("os.MkdirAll(%s) failed with %v", paths.BasePath(), err)
 	}
@@ -76,8 +66,7 @@ func TestIsBinDirInPATH_NonNormalized(t *testing.T) {
 
 func TestSetupInstructions_windows(t *testing.T) {
 	const instructionsContain = `USERPROFILE`
-	os.Setenv("KREW_OS", "windows")
-	defer os.Unsetenv("KREW_OS")
+	t.Setenv("KREW_OS", "windows")
 	instructions := SetupInstructions()
 	if !strings.Contains(instructions, instructionsContain) {
 		t.Errorf("expected %q\nto contain %q", instructions, instructionsContain)
@@ -113,15 +102,10 @@ func TestSetupInstructions_unix(t *testing.T) {
 	}
 
 	// always set KREW_OS, so that tests succeed on windows
-	os.Setenv("KREW_OS", "linux")
-	defer func(origShell string) {
-		os.Unsetenv("KREW_OS")
-		os.Setenv("SHELL", origShell)
-	}(os.Getenv("SHELL"))
-
+	t.Setenv("KREW_OS", "linux")
 	for _, test := range tests {
 		t.Run(test.name, func(tt *testing.T) {
-			os.Setenv("SHELL", test.shell)
+			tt.Setenv("SHELL", test.shell)
 			instructions := SetupInstructions()
 			if !strings.Contains(instructions, test.instructionsContain) {
 				tt.Errorf("expected %q\nto contain %q", instructions, test.instructionsContain)

@@ -16,7 +16,6 @@
 package testutil
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -62,7 +61,7 @@ func (td *TempDir) Write(file string, content []byte) *TempDir {
 	if err := os.MkdirAll(filepath.Dir(path), os.ModePerm); err != nil {
 		td.t.Fatalf("cannot create directory %q: %s", filepath.Dir(path), err)
 	}
-	if err := ioutil.WriteFile(path, content, os.ModePerm); err != nil {
+	if err := os.WriteFile(path, content, os.ModePerm); err != nil {
 		td.t.Fatalf("cannot write to file %q: %s", path, err)
 	}
 	return td

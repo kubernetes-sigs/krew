@@ -19,7 +19,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -87,7 +86,7 @@ func setupKrewBin(t *testing.T, tempDir *testutil.TempDir) string {
 		t.Fatalf("%s environment variable pointing to krew binary not set", krewBinaryEnv)
 	}
 	binPath := tempDir.Path("bin")
-	if err := os.MkdirAll(binPath, 0755); err != nil {
+	if err := os.MkdirAll(binPath, 0o755); err != nil {
 		t.Fatal(err)
 	}
 
@@ -283,7 +282,7 @@ func (it *ITest) initializeIndex() {
 
 		if err == nil && fileInfo.Mode().IsRegular() {
 			it.t.Logf("Using persistent index cache from file %q", persistentCacheFile)
-			if indexTar, err = ioutil.ReadFile(persistentCacheFile); err == nil {
+			if indexTar, err = os.ReadFile(persistentCacheFile); err == nil {
 				return
 			}
 		}
@@ -292,13 +291,13 @@ func (it *ITest) initializeIndex() {
 			it.t.Fatalf("cannot clone repository: %s", err)
 		}
 
-		if err = ioutil.WriteFile(persistentCacheFile, indexTar, 0600); err != nil {
+		if err = os.WriteFile(persistentCacheFile, indexTar, 0o600); err != nil {
 			it.t.Fatalf("cannot write persistent cache file: %s", err)
 		}
 	})
 
 	indexDir := filepath.Join(it.Root(), "index", "default")
-	if err := os.MkdirAll(indexDir, 0777); err != nil {
+	if err := os.MkdirAll(indexDir, 0o777); err != nil {
 		if os.IsExist(err) {
 			it.t.Log("initializeIndex should only be called once")
 			return
@@ -330,5 +329,5 @@ func initFromGitClone(t *testing.T) ([]byte, error) {
 		return nil, err
 	}
 
-	return ioutil.ReadFile(filepath.Join(indexRoot, tarName))
+	return os.ReadFile(filepath.Join(indexRoot, tarName))
 }

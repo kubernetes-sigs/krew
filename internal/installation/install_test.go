@@ -15,7 +15,6 @@
 package installation
 
 import (
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -180,7 +179,7 @@ func Test_removeLink_fails(t *testing.T) {
 }
 
 func Test_removeLink_regularFileExists(t *testing.T) {
-	f, err := ioutil.TempFile("", "some-regular-file")
+	f, err := os.CreateTemp("", "some-regular-file")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -202,14 +201,12 @@ func TestIsWindows(t *testing.T) {
 }
 
 func TestIsWindows_envOverride(t *testing.T) {
-	defer os.Unsetenv("KREW_OS")
-
-	os.Setenv("KREW_OS", "windows")
+	t.Setenv("KREW_OS", "windows")
 	if !IsWindows() {
 		t.Fatalf("IsWindows()=false when KREW_OS=windows")
 	}
 
-	os.Setenv("KREW_OS", "not-windows")
+	t.Setenv("KREW_OS", "not-windows")
 	if IsWindows() {
 		t.Fatalf("IsWindows()=true when KREW_OS != windows")
 	}
@@ -229,7 +226,7 @@ func Test_downloadAndExtract(t *testing.T) {
 	if err := downloadAndExtract(tmpDir.Root(), url, checksum, ""); err != nil {
 		t.Fatal(err)
 	}
-	files, err := ioutil.ReadDir(tmpDir.Root())
+	files, err := os.ReadDir(tmpDir.Root())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -247,7 +244,7 @@ func Test_downloadAndExtract_fileOverride(t *testing.T) {
 	if err := downloadAndExtract(tmpDir.Root(), "", checksum, testFile); err != nil {
 		t.Fatal(err)
 	}
-	files, err := ioutil.ReadDir(tmpDir.Root())
+	files, err := os.ReadDir(tmpDir.Root())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -313,7 +310,7 @@ func TestCleanupStaleKrewInstallations(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ls, err := ioutil.ReadDir(dir.Root())
+	ls, err := os.ReadDir(dir.Root())
 	if err != nil {
 		t.Fatal(err)
 	}

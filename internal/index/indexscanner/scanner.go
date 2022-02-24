@@ -16,7 +16,6 @@ package indexscanner
 
 import (
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -32,12 +31,12 @@ import (
 
 func findPluginManifestFiles(indexDir string) ([]string, error) {
 	var out []string
-	files, err := ioutil.ReadDir(indexDir)
+	files, err := os.ReadDir(indexDir)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to open index dir")
 	}
 	for _, file := range files {
-		if file.Mode().IsRegular() && filepath.Ext(file.Name()) == constants.ManifestExtension {
+		if file.Type().IsRegular() && filepath.Ext(file.Name()) == constants.ManifestExtension {
 			out = append(out, file.Name())
 		}
 	}
@@ -123,7 +122,7 @@ func readFromFile(path string, as interface{}) error {
 // decodeFile tries to decode a plugin/receipt
 func decodeFile(r io.ReadCloser, as interface{}) error {
 	defer r.Close()
-	b, err := ioutil.ReadAll(r)
+	b, err := io.ReadAll(r)
 	if err != nil {
 		return err
 	}
