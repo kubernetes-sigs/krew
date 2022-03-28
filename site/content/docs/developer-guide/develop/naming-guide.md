@@ -67,6 +67,10 @@ Plugin names should not include "kube-" or "kubernetes-" prefixes.
 
 - **NO:** `kubectl kube-node-admin` ("kubectl " already has "kube" in it)
 - **YES:** `kubectl node-admin`
+  
+While it is not recommended to include "kube*" in the plugin command name it
+is recommended that the code repository starts with "kubectl-" so plugin
+source code can be found outside of krew and the intended use is clear.
 
 ##### _Avoid Resource Acronyms and Abbreviations_
 
