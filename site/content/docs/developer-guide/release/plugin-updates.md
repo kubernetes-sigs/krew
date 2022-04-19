@@ -15,7 +15,7 @@ This manual operation looks like:
 
 > **Note:** Ideally, the specified `version:` field should match the release tag
 of the plugin. This helps users and maintainers to easily identify which
-version of the plugin they have installed. Also, the prefix 'v' is required.
+version of the plugin they have installed.
 
 If you only change the `version`, `uri` and `sha256` fields of your plugin manifest,
 your pull request will be automatically approved, tested, and merged ([see an
