@@ -29,7 +29,7 @@ metadata:
   # the plugin is invoked, for example: `kubectl restart`
   name: restart
 spec:
-  # 'version' is a valid semantic version string (see semver.org)
+  # 'version' is a valid semantic version string (see semver.org). Note the prefix 'v' is required.
   version: "v0.0.1"
   # 'homepage' usually links to the GitHub repository of the plugin
   homepage: https://github.com/achanda/kubectl-restart
