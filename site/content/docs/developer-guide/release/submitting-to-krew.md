@@ -19,7 +19,6 @@ existing plugins.
 1. Make sure to extract the LICENSE file during the plugin installation.
 1. Tag a git release with a [semantic
    version](https://semver.org) (e.g. `v1.0.0`).
-   > **Note:** the 'v' is required and will be linted against
 1. [Test your plugin installation locally]({{< ref "../installing-locally.md" >}}).
 
 ## Submitting a plugin to krew-index
