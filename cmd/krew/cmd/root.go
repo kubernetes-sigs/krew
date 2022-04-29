@@ -67,6 +67,9 @@ You can invoke krew through kubectl: "kubectl krew [command]..."`,
 	SilenceErrors:     true,
 	PersistentPreRunE: preRun,
 	PersistentPostRun: showUpgradeNotification,
+	CompletionOptions: cobra.CompletionOptions{
+		DisableDefaultCmd: true,
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
