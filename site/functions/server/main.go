@@ -224,7 +224,7 @@ func readPlugin(url string) (*krew.Plugin, error) {
 
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to read file %s: %w", url)
+		return nil, errors.Wrapf(err, "failed to read file %s", url)
 	}
 
 	var v krew.Plugin
