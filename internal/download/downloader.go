@@ -196,10 +196,6 @@ var defaultExtractors = map[string]extractor{
 }
 
 func extractArchive(dst string, at io.ReaderAt, size int64) error {
-	// TODO(ahmetb) This package is not architected well, this method should not
-	// be receiving this many args. Primary problem is at GetInsecure and
-	// GetWithSha256 methods that embed extraction in them, which is orthogonal.
-
 	t, err := detectMIMEType(at)
 	if err != nil {
 		return errors.Wrap(err, "failed to determine content type")
@@ -210,7 +206,6 @@ func extractArchive(dst string, at io.ReaderAt, size int64) error {
 		return errors.Errorf("mime type %q for archive file is not a supported archive format", t)
 	}
 	return errors.Wrap(exf(dst, at, size), "failed to extract file")
-
 }
 
 // Downloader is responsible for fetching, verifying and extracting a binary.
