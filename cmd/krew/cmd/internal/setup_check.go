@@ -36,16 +36,16 @@ the following to your %s
 and restart your shell.`
 	instructionZsh = `~/.zshrc:
 
-    export PATH="${PATH}:${HOME}/.krew/bin"`
+    export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"`
 	instructionBash = `~/.bash_profile or ~/.bashrc:
 
-    export PATH="${PATH}:${HOME}/.krew/bin"`
+    export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"`
 	instructionFish = `config.fish:
 
-    set -gx PATH $PATH $HOME/.krew/bin`
+    set -q KREW_ROOT; and set -gx PATH $PATH $KREW_ROOT/.krew/bin; or set -gx PATH $PATH $HOME/.krew/bin`
 	instructionGeneric = `~/.bash_profile, ~/.bashrc, or ~/.zshrc:
 
-    export PATH="${PATH}:${HOME}/.krew/bin"`
+    export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"`
 )
 
 func IsBinDirInPATH(paths environment.Paths) bool {
