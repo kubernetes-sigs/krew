@@ -89,7 +89,7 @@ Install them at your own risk.
 var indexDeleteCmd = &cobra.Command{
 	Use:   "remove",
 	Short: "Remove a configured index",
-	Long: `Removes a configured plugin index
+	Long: `Remove a configured plugin index.
 
 It is only safe to remove indexes without installed plugins. Removing an index
 while there are plugins installed will result in an error, unless the --force
