@@ -66,21 +66,7 @@ jobs:
     - name: Create a new release
       if: contains(github.ref, 'tags')
       id: create_release
-      uses: actions/create-release@v1.0.0
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v1
       with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        draft: false
-        prerelease: false
-
-    - name: Upload binaries to the new release
-      if: contains(github.ref, 'tags')
-      uses: svenstaro/upload-release-action@v2
-      with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: out/krew*
-        tag: ${{ github.ref }}
-        overwrite: true
-        file_glob: true
+        name: Release ${{ github.ref_name }}
+        files: out/krew*
