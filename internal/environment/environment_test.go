@@ -27,6 +27,8 @@ import (
 )
 
 func TestMustGetKrewPaths_resolvesToHomeDir(t *testing.T) {
+	// reset KREW_ROOT to ensure the default location
+	os.Unsetenv("KREW_ROOT")
 	home := homedir.HomeDir()
 	expectedBase := filepath.Join(home, ".krew")
 	p := MustGetKrewPaths()
