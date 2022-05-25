@@ -63,6 +63,13 @@ jobs:
     - name: Verify index migration from 0.3.x to 0.4.x
       run: hack/verify-index-migration.sh
 
+    - name: Make release notes
+      if: contains(github.ref, 'tags')
+      run: |
+        echo 'RELEASE_NOTES<<EOF' >> $GITHUB_ENV
+        TAG=$GITHUB_REF_NAME hack/make-release-notes.sh >> $GITHUB_ENV
+        echo 'EOF' >> $GITHUB_ENV
+
     - name: Create a new release
       if: contains(github.ref, 'tags')
       id: create_release
@@ -70,3 +77,4 @@ jobs:
       with:
         name: Release ${{ github.ref_name }}
         files: out/krew*
+        body: ${{ env.RELEASE_NOTES }}
