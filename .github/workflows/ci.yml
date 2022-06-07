@@ -78,3 +78,4 @@ jobs:
         name: Release ${{ github.ref_name }}
         files: out/krew*
         body: ${{ env.RELEASE_NOTES }}
+        fail_on_unmatched_files: true
