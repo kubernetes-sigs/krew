@@ -57,7 +57,7 @@ Krew self-hosts).
       tar zxvf $KREW.tar.gz &&
       ./$KREW install krew &&
       cd "$current_path" &&
-      set -e KREW; set -e temp_dir; set -e current_path
+      set -e KREW temp_dir current_path
     end
     ```
 
