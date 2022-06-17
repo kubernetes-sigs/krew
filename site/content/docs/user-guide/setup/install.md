@@ -56,7 +56,8 @@ Krew self-hosts).
       curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/$KREW.tar.gz" &&
       tar zxvf $KREW.tar.gz &&
       ./$KREW install krew &&
-      set -e KREW; set -e temp_dir
+      set -e KREW temp_dir &&
+      cd -
     end
     ```
 
