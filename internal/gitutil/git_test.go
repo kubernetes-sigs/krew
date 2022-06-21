@@ -15,7 +15,6 @@
 package gitutil
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -34,12 +33,12 @@ const (
 )
 
 // setupGitRepo is a helper function used to setup the test git repo
-func setupRemoteRepos(t *testing.T, localRepo, newCloneRepo string) {
+func setupRemoteRepos(t *testing.T) {
 	t.Helper()
 	// get the pwd
 	pwd := os.Getenv("PWD")
-	pathToLocalRepo := filepath.Join(pwd, localRepo)
-	pathToNewCloneRepo := filepath.Join(pwd, newCloneRepo)
+	pathToLocalRepo := filepath.Join(pwd, testRemoteRepo)
+	pathToNewCloneRepo := filepath.Join(pwd, testClonedRepo)
 	// create the git repo
 	if err := createGitRepo(t, pathToLocalRepo); err != nil {
 		t.Fatalf("failed to create test repo: %v", err)
@@ -61,7 +60,7 @@ func createGitRepo(t *testing.T, localRepo string) error {
 	}
 	// add a file to the repo
 	filename := filepath.Join(localRepo, testNewFile)
-	if err := ioutil.WriteFile(filename, []byte("this is a test repo for gitutil package"), 0644); err != nil {
+	if err := os.WriteFile(filename, []byte("this is a test repo for gitutil package"), 0644); err != nil {
 		t.Error("error while creating test file")
 		return err
 	}
@@ -173,7 +172,7 @@ func TestEnsureCloned(t *testing.T) {
 // TestIsGitCloned tests IsGitCloned function
 func TestIsGitCloned(t *testing.T) {
 	// setup local git repositories in testdata
-	setupRemoteRepos(t, testRemoteRepo, testClonedRepo)
+	setupRemoteRepos(t)
 	type args struct {
 		gitPath string
 	}
@@ -232,7 +231,7 @@ func TestIsGitCloned(t *testing.T) {
 // Test_updateAndCleanUntracked tests the updateAndCleanUntracked function
 func Test_updateAndCleanUntracked(t *testing.T) {
 	// setup local git repositories in testdata
-	setupRemoteRepos(t, testRemoteRepo, testClonedRepo)
+	setupRemoteRepos(t)
 	type args struct {
 		destinationPath string
 	}
@@ -289,7 +288,7 @@ func Test_updateAndCleanUntracked(t *testing.T) {
 // TestEnsureUpdated tests the EnsureUpdated function
 func TestEnsureUpdated(t *testing.T) {
 	// setup local git repositories in testdata
-	setupRemoteRepos(t, testRemoteRepo, testClonedRepo)
+	setupRemoteRepos(t)
 	type args struct {
 		uri             string
 		destinationPath string
@@ -351,7 +350,7 @@ func TestEnsureUpdated(t *testing.T) {
 // TestGetRemoteURL tests the GetRemoteURL function
 func TestGetRemoteURL(t *testing.T) {
 	// setup the git repositories for the testing in testdata
-	setupRemoteRepos(t, testRemoteRepo, testClonedRepo)
+	setupRemoteRepos(t)
 	type args struct {
 		dir string
 	}
