@@ -39,13 +39,15 @@ const (
 // setupGitRepo is a helper function used to setup the test git repo
 func setupRemoteRepos(t *testing.T, localRepo, newCloneRepo string) {
 	t.Helper()
+	// get the pwd
 	pwd := os.Getenv("PWD")
 	pathToLocalRepo := filepath.Join(pwd, localRepo)
 	pathToNewCloneRepo := filepath.Join(pwd, newCloneRepo)
+	// create the git repo
 	if err := createGitRepo(t, pathToLocalRepo); err != nil {
 		t.Fatalf("failed to create test repo: %v", err)
 	}
-
+	// clone the existing repo
 	if err := cloneGitRepo(t, pathToLocalRepo, pathToNewCloneRepo); err != nil {
 		t.Fatalf("failed to clone test repo: %v", err)
 	}
@@ -97,6 +99,7 @@ func cloneGitRepo(t *testing.T, existingRemoteRepo, newCloneRepo string) error {
 	if err != nil {
 		return err
 	}
+	// add upstream remote
 	if _, err := r.CreateRemote(&config.RemoteConfig{
 		Name: "upstream",
 		URLs: []string{newCloneRepo},
@@ -122,6 +125,7 @@ func initLogging(t *testing.T, enable bool) {
 
 // TestEnsureCloned tests the EnsureCloned function
 func TestEnsureCloned(t *testing.T) {
+	// create a local git repository in testdata
 	if err := createGitRepo(t, testRemoteRepo); err != nil {
 		t.Fatalf("failed to create test repo: %v", err)
 	}
@@ -146,7 +150,7 @@ func TestEnsureCloned(t *testing.T) {
 			name: "test where uri is invalid",
 			args: args{
 				uri:             testUnknownRepo,
-				destinationPath: testEmptyRepo, // here i changed the clone
+				destinationPath: testEmptyRepo,
 			},
 			wantErr: true,
 		},
@@ -174,7 +178,7 @@ func TestEnsureCloned(t *testing.T) {
 			}
 		})
 	}
-	// cleanup the git repositories used for the testing
+	// cleanup the git testdata repositories used for the testing in this package.
 	t.Run("cleanup test git repos", func(t *testing.T) {
 		t.Cleanup(func() {
 			os.RemoveAll(testRemoteRepo)
@@ -185,7 +189,7 @@ func TestEnsureCloned(t *testing.T) {
 
 // TestIsGitCloned tests IsGitCloned function
 func TestIsGitCloned(t *testing.T) {
-	// setupRemoteRepos for the testing
+	// setup local git repositories in testdata
 	setupRemoteRepos(t, testRemoteRepo, testClonedRepo)
 	type args struct {
 		gitPath string
@@ -233,7 +237,7 @@ func TestIsGitCloned(t *testing.T) {
 			}
 		})
 	}
-	// cleanup the git repositories used for the testing
+	// cleanup the git testdata repositories used for the testing in this package.
 	t.Run("cleanup test git repos", func(t *testing.T) {
 		t.Cleanup(func() {
 			os.RemoveAll(testRemoteRepo)
@@ -244,6 +248,7 @@ func TestIsGitCloned(t *testing.T) {
 
 // Test_updateAndCleanUntracked tests the updateAndCleanUntracked function
 func Test_updateAndCleanUntracked(t *testing.T) {
+	// setup local git repositories in testdata
 	setupRemoteRepos(t, testRemoteRepo, testClonedRepo)
 	type args struct {
 		destinationPath string
@@ -289,7 +294,7 @@ func Test_updateAndCleanUntracked(t *testing.T) {
 			}
 		})
 	}
-	// cleanup the git repositories used for the testing
+	// cleanup the git testdata repositories used for the testing in this package.
 	t.Run("cleanup test git repos", func(t *testing.T) {
 		t.Cleanup(func() {
 			os.RemoveAll(testRemoteRepo)
@@ -298,7 +303,9 @@ func Test_updateAndCleanUntracked(t *testing.T) {
 	})
 }
 
+// TestEnsureUpdated tests the EnsureUpdated function
 func TestEnsureUpdated(t *testing.T) {
+	// setup local git repositories in testdata
 	setupRemoteRepos(t, testRemoteRepo, testClonedRepo)
 	type args struct {
 		uri             string
@@ -349,7 +356,7 @@ func TestEnsureUpdated(t *testing.T) {
 			}
 		})
 	}
-	// cleanup the git repositories used for the testing
+	// cleanup the git testdata repositories used for the testing in this package.
 	t.Run("cleanup test git repos", func(t *testing.T) {
 		t.Cleanup(func() {
 			os.RemoveAll(testRemoteRepo)
@@ -360,7 +367,7 @@ func TestEnsureUpdated(t *testing.T) {
 
 // TestGetRemoteURL tests the GetRemoteURL function
 func TestGetRemoteURL(t *testing.T) {
-	// setup the git repositories for the testing
+	// setup the git repositories for the testing in testdata
 	setupRemoteRepos(t, testRemoteRepo, testClonedRepo)
 	type args struct {
 		dir string
@@ -408,7 +415,7 @@ func TestGetRemoteURL(t *testing.T) {
 			}
 		})
 	}
-	// cleanup the git repositories used for the testing
+	// cleanup the git testdata repositories used for the testing in this package.
 	t.Run("cleanup test git repos", func(t *testing.T) {
 		t.Cleanup(func() {
 			os.RemoveAll(testRemoteRepo)
@@ -419,6 +426,7 @@ func TestGetRemoteURL(t *testing.T) {
 
 // TestExec tests the Exec function
 func TestExec(t *testing.T) {
+	// create a local git repository in testdata
 	if err := createGitRepo(t, testRemoteRepo); err != nil {
 		t.Fatalf("failed to create git repo: %v", err)
 	}
@@ -465,7 +473,7 @@ func TestExec(t *testing.T) {
 			}
 		})
 	}
-	// cleanup the git repositories used for the testing
+	// cleanup the git testdata repositories used for the testing in this package.
 	t.Run("cleanup test git repos", func(t *testing.T) {
 		t.Cleanup(func() {
 			os.RemoveAll(testRemoteRepo)
