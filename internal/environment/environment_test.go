@@ -26,9 +26,15 @@ import (
 	"sigs.k8s.io/krew/pkg/constants"
 )
 
+func setKrewRootEnv(t *testing.T, value string) {
+	t.Helper()
+	oldKrewRoot := os.Getenv("KREW_ROOT")
+	os.Setenv("KREW_ROOT", value)
+	t.Cleanup(func() { os.Setenv("KREW_ROOT", oldKrewRoot) })
+}
+
 func TestMustGetKrewPaths_resolvesToHomeDir(t *testing.T) {
-	// reset KREW_ROOT to ensure the default location
-	os.Unsetenv("KREW_ROOT")
+	setKrewRootEnv(t, "")
 	home := homedir.HomeDir()
 	expectedBase := filepath.Join(home, ".krew")
 	p := MustGetKrewPaths()
@@ -39,7 +45,7 @@ func TestMustGetKrewPaths_resolvesToHomeDir(t *testing.T) {
 
 func TestMustGetKrewPaths_envOverride(t *testing.T) {
 	custom := filepath.FromSlash("/custom/krew/path")
-	t.Setenv("KREW_ROOT", custom)
+	setKrewRootEnv(t, custom)
 
 	p := MustGetKrewPaths()
 	if expected, got := custom, p.BasePath(); got != expected {
