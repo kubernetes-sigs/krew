@@ -15,7 +15,6 @@
 package gitutil
 
 import (
-	"flag"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -24,8 +23,6 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing/object"
-	"k8s.io/klog/v2"
-	"k8s.io/klog/v2/klogr"
 )
 
 const (
@@ -107,19 +104,6 @@ func cloneGitRepo(t *testing.T, existingRemoteRepo, newCloneRepo string) error {
 		return err
 	}
 	return nil
-}
-
-// initLogging initializes the logging with klog.
-func initLogging(enable bool) {
-	if enable {
-		klog.InitFlags(nil)
-		flag.Set("v", "3")
-		flag.Parse()
-		log := klogr.New().WithName("test").WithValues("gitutil", "pkg")
-		log.Info("testexec", "withlogging", 1, "withinfo", map[string]int{"k": 1})
-		log.V(3).Info("testing gitutil package")
-		klog.Flush()
-	}
 }
 
 // TestEnsureCloned tests the EnsureCloned function
@@ -429,7 +413,6 @@ func TestExec(t *testing.T) {
 	if err := createGitRepo(t, testRemoteRepo); err != nil {
 		t.Fatalf("failed to create git repo: %v", err)
 	}
-	initLogging(true)
 
 	type args struct {
 		pwd  string
