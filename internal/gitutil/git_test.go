@@ -60,7 +60,7 @@ func createGitRepo(t *testing.T, localRepo string) error {
 	}
 	// add a file to the repo
 	filename := filepath.Join(localRepo, testNewFile)
-	if err := os.WriteFile(filename, []byte("this is a test repo for gitutil package"), 0644); err != nil {
+	if err := os.WriteFile(filename, []byte("this is a test repo for gitutil package"), 0o644); err != nil {
 		t.Error("error while creating test file")
 		return err
 	}
