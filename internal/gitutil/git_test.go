@@ -110,8 +110,7 @@ func cloneGitRepo(t *testing.T, existingRemoteRepo, newCloneRepo string) error {
 }
 
 // initLogging initializes the logging with klog.
-func initLogging(t *testing.T, enable bool) {
-	t.Helper()
+func initLogging(enable bool) {
 	if enable {
 		klog.InitFlags(nil)
 		flag.Set("v", "3")
@@ -430,7 +429,7 @@ func TestExec(t *testing.T) {
 	if err := createGitRepo(t, testRemoteRepo); err != nil {
 		t.Fatalf("failed to create git repo: %v", err)
 	}
-	initLogging(t, true)
+	initLogging(true)
 
 	type args struct {
 		pwd  string
