@@ -15,102 +15,106 @@
 package gitutil
 
 import (
+	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
-
-	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/config"
-	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
 const (
-	testRemoteRepo  = "./testdata/test-remote-repo"
-	testClonedRepo  = "./testdata/test-cloned-repo"
 	testUnknownRepo = "./testdata/unknown-repo"
-	testEmptyRepo   = "./testdata/test-folder"
-	testNewFile     = "example-git-file"
 )
 
-// setupGitRepo is a helper function used to setup the test git repo
-func setupRemoteRepos(t *testing.T) {
+// createEmptyDir creates a temporary empty dir
+func createEmptyDir(t *testing.T) string {
 	t.Helper()
-	// get the pwd
-	pwd := os.Getenv("PWD")
-	pathToLocalRepo := filepath.Join(pwd, testRemoteRepo)
-	pathToNewCloneRepo := filepath.Join(pwd, testClonedRepo)
-	// create the git repo
-	if err := createGitRepo(t, pathToLocalRepo); err != nil {
-		t.Fatalf("failed to create test repo: %v", err)
+	testDir, err := ioutil.TempDir("", "test-empty-dir")
+	if err != nil {
+		t.Fatalf("failed to create test-empty-dir: %s", err.Error())
 	}
+	t.Cleanup(func() {
+		os.RemoveAll(testDir)
+	})
+	return testDir
+}
+
+// setupGitRepo is a helper function used to setup the test git repo
+func setupRemoteRepos(t *testing.T) (string, string) {
+	const (
+		testRemoteRepo = "git-remote-repo"
+		testClonedRepo = "git-cloned-repo"
+	)
+	t.Helper()
+	// create the git repo
+	pathToLocalRepo, err := ioutil.TempDir("", testRemoteRepo)
+	if err != nil {
+		t.Fatalf("failed to create remote repo %s: %s", testRemoteRepo, err.Error())
+	}
+	createGitRepo(t, pathToLocalRepo)
 	// clone the existing repo
-	if err := cloneGitRepo(t, pathToLocalRepo, pathToNewCloneRepo); err != nil {
-		t.Fatalf("failed to clone test repo: %v", err)
+	pathToNewCloneRepo, err := ioutil.TempDir("", testClonedRepo)
+	if err != nil {
+		t.Fatalf("failed to create clone repo %s: %s", testClonedRepo, err.Error())
+	}
+	cloneGitRepo(t, pathToLocalRepo, pathToNewCloneRepo)
+	t.Cleanup(func() {
+		os.RemoveAll(pathToLocalRepo)
+		os.RemoveAll(pathToNewCloneRepo)
+	})
+	return pathToLocalRepo, pathToNewCloneRepo
+}
+
+// execute the git commands
+func execute(t *testing.T, dir string, args ...string) {
+	t.Helper()
+	cmd := exec.Command("git", args...)
+	if dir != "" {
+		cmd.Dir = dir
+	}
+	_, err := cmd.Output()
+	if err != nil {
+		command := []string{"git"}
+		command = append(command, args...)
+		t.Fatalf("error while executing command %s: %s", strings.Join(command, " "), err.Error())
 	}
 }
 
 // createGitRepo is a helper function used to create a git repo for local testing
-func createGitRepo(t *testing.T, localRepo string) error {
+func createGitRepo(t *testing.T, localRepo string) {
+	const (
+		testNewFile = "example-git-file"
+	)
 	t.Helper()
 	// create a git local repo
-	r, err := git.PlainInit(localRepo, false)
-	if err != nil {
-		t.Error("error while initializing git repo")
-		return err
-	}
+	execute(t, localRepo, "init")
 	// add a file to the repo
 	filename := filepath.Join(localRepo, testNewFile)
 	if err := os.WriteFile(filename, []byte("this is a test repo for gitutil package"), 0o644); err != nil {
-		t.Error("error while creating test file")
-		return err
+		t.Fatalf("error while creating test file: %s", err.Error())
 	}
-	// get the reference of the local repo via Worktree
-	w, err := r.Worktree()
-	if err != nil {
-		t.Error("error while getting worktree")
-		return err
-	}
-	// git add the file
-	if err := w.AddGlob("."); err != nil {
-		t.Error("error while adding file to git repo")
-		return err
-	}
-	// git commit the file
-	if _, err := w.Commit("init commit", &git.CommitOptions{
-		Author: &object.Signature{},
-	}); err != nil {
-		t.Error("error while committing file to git repo")
-		return err
-	}
-
-	return nil
+	// git add command
+	execute(t, localRepo, "add", ".")
+	// git commit command
+	execute(t, localRepo, "commit", "-m", "\"init\"")
 }
 
 // cloneGitRepo is a helper function used to clone the local repo to a new path
-func cloneGitRepo(t *testing.T, existingRemoteRepo, newCloneRepo string) error {
+func cloneGitRepo(t *testing.T, existingRemoteRepo, newCloneRepo string) {
 	t.Helper()
-	// git clone using the local repo
-	r, err := git.PlainClone(newCloneRepo, false,
-		&git.CloneOptions{URL: existingRemoteRepo})
-	if err != nil {
-		return err
-	}
-	// add upstream remote
-	if _, err := r.CreateRemote(&config.RemoteConfig{
-		Name: "upstream",
-		URLs: []string{newCloneRepo},
-	}); err != nil {
-		return err
-	}
-	return nil
+	// git clone command
+	execute(t, "", "clone", existingRemoteRepo, newCloneRepo)
+	// git remote add upstream command
+	execute(t, newCloneRepo, "remote", "add", "upstream", newCloneRepo)
 }
 
 // TestEnsureCloned tests the EnsureCloned function
 func TestEnsureCloned(t *testing.T) {
 	// create a local git repository in testdata
-	if err := createGitRepo(t, testRemoteRepo); err != nil {
-		t.Fatalf("failed to create test repo: %v", err)
-	}
+	testRemoteRepo, testClonedRepo := setupRemoteRepos(t)
+	testEmptyRepo := createEmptyDir(t)
+
 	type args struct {
 		uri             string
 		destinationPath string
@@ -121,7 +125,7 @@ func TestEnsureCloned(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "test clone existing repo",
+			name: "clone existing repo",
 			args: args{
 				uri:             testRemoteRepo,
 				destinationPath: testClonedRepo,
@@ -129,7 +133,7 @@ func TestEnsureCloned(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "test where uri is invalid",
+			name: "uri is invalid",
 			args: args{
 				uri:             testUnknownRepo,
 				destinationPath: testEmptyRepo,
@@ -137,7 +141,7 @@ func TestEnsureCloned(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "test where destination path is invalid",
+			name: "destination path is invalid",
 			args: args{
 				uri:             testUnknownRepo,
 				destinationPath: testEmptyRepo,
@@ -145,7 +149,7 @@ func TestEnsureCloned(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "test where repo is not cloned and not a git repo",
+			name: "repo is not cloned and not a git repo",
 			args: args{
 				uri:             testEmptyRepo,
 				destinationPath: testUnknownRepo,
@@ -160,19 +164,15 @@ func TestEnsureCloned(t *testing.T) {
 			}
 		})
 	}
-	// cleanup the git testdata repositories used for the testing in this package.
-	t.Run("cleanup test git repos", func(t *testing.T) {
-		t.Cleanup(func() {
-			os.RemoveAll(testRemoteRepo)
-			os.RemoveAll(testClonedRepo)
-		})
-	})
+
 }
 
 // TestIsGitCloned tests IsGitCloned function
 func TestIsGitCloned(t *testing.T) {
 	// setup local git repositories in testdata
-	setupRemoteRepos(t)
+	_, testClonedRepo := setupRemoteRepos(t)
+	testEmptyRepo := createEmptyDir(t)
+
 	type args struct {
 		gitPath string
 	}
@@ -183,7 +183,7 @@ func TestIsGitCloned(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "test if the test-cloned-repo is cloned",
+			name: "check if the test-cloned-repo is cloned",
 			args: args{
 				gitPath: testClonedRepo,
 			},
@@ -191,7 +191,7 @@ func TestIsGitCloned(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "test check for unknown repo",
+			name: "unknown repo",
 			args: args{
 				gitPath: testUnknownRepo,
 			},
@@ -199,7 +199,7 @@ func TestIsGitCloned(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "test check for git repo",
+			name: "empty git repo",
 			args: args{
 				gitPath: testEmptyRepo,
 			},
@@ -219,19 +219,14 @@ func TestIsGitCloned(t *testing.T) {
 			}
 		})
 	}
-	// cleanup the git testdata repositories used for the testing in this package.
-	t.Run("cleanup test git repos", func(t *testing.T) {
-		t.Cleanup(func() {
-			os.RemoveAll(testRemoteRepo)
-			os.RemoveAll(testClonedRepo)
-		})
-	})
 }
 
 // Test_updateAndCleanUntracked tests the updateAndCleanUntracked function
 func Test_updateAndCleanUntracked(t *testing.T) {
 	// setup local git repositories in testdata
-	setupRemoteRepos(t)
+	testRemoteRepo, testClonedRepo := setupRemoteRepos(t)
+	testEmptyRepo := createEmptyDir(t)
+
 	type args struct {
 		destinationPath string
 	}
@@ -241,28 +236,28 @@ func Test_updateAndCleanUntracked(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "test where destination path is invalid",
+			name: "destination path is invalid",
 			args: args{
 				destinationPath: testEmptyRepo,
 			},
 			wantErr: true,
 		},
 		{
-			name: "test where destination path is invalid - unknown repo",
+			name: "destination path is invalid - unknown repo",
 			args: args{
 				destinationPath: testUnknownRepo,
 			},
 			wantErr: true,
 		},
 		{
-			name: "test update and clean untracked",
+			name: "update and clean untracked",
 			args: args{
 				destinationPath: testClonedRepo,
 			},
 			wantErr: false,
 		},
 		{
-			name: "test upstream is not configured",
+			name: "upstream is not configured",
 			args: args{
 				destinationPath: testRemoteRepo,
 			},
@@ -276,19 +271,14 @@ func Test_updateAndCleanUntracked(t *testing.T) {
 			}
 		})
 	}
-	// cleanup the git testdata repositories used for the testing in this package.
-	t.Run("cleanup test git repos", func(t *testing.T) {
-		t.Cleanup(func() {
-			os.RemoveAll(testRemoteRepo)
-			os.RemoveAll(testClonedRepo)
-		})
-	})
 }
 
 // TestEnsureUpdated tests the EnsureUpdated function
 func TestEnsureUpdated(t *testing.T) {
 	// setup local git repositories in testdata
-	setupRemoteRepos(t)
+	testRemoteRepo, testClonedRepo := setupRemoteRepos(t)
+	testEmptyRepo := createEmptyDir(t)
+
 	type args struct {
 		uri             string
 		destinationPath string
@@ -299,7 +289,7 @@ func TestEnsureUpdated(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "test update and clean untracked - no clone",
+			name: "update and clean untracked - no clone",
 			args: args{
 				uri:             testEmptyRepo,
 				destinationPath: testRemoteRepo,
@@ -307,7 +297,7 @@ func TestEnsureUpdated(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "test update and clean untracked - unknown repo",
+			name: "update and clean untracked - unknown repo",
 			args: args{
 				uri:             testUnknownRepo,
 				destinationPath: testRemoteRepo,
@@ -315,7 +305,7 @@ func TestEnsureUpdated(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "test update and clean untracked - empty repo",
+			name: "update and clean untracked - empty repo",
 			args: args{
 				uri:             testUnknownRepo,
 				destinationPath: testEmptyRepo,
@@ -323,7 +313,7 @@ func TestEnsureUpdated(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "test update and clean untracked",
+			name: "ensure updated",
 			args: args{
 				uri:             testRemoteRepo,
 				destinationPath: testClonedRepo,
@@ -338,19 +328,13 @@ func TestEnsureUpdated(t *testing.T) {
 			}
 		})
 	}
-	// cleanup the git testdata repositories used for the testing in this package.
-	t.Run("cleanup test git repos", func(t *testing.T) {
-		t.Cleanup(func() {
-			os.RemoveAll(testRemoteRepo)
-			os.RemoveAll(testClonedRepo)
-		})
-	})
 }
 
 // TestGetRemoteURL tests the GetRemoteURL function
 func TestGetRemoteURL(t *testing.T) {
 	// setup the git repositories for the testing in testdata
-	setupRemoteRepos(t)
+	testRemoteRepo, testClonedRepo := setupRemoteRepos(t)
+
 	type args struct {
 		dir string
 	}
@@ -361,15 +345,15 @@ func TestGetRemoteURL(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "test get remote url for existing repo",
+			name: "get remote url for existing repo",
 			args: args{
 				dir: testClonedRepo,
 			},
-			want:    filepath.Join(os.Getenv("PWD"), "/"+testRemoteRepo),
+			want:    testRemoteRepo,
 			wantErr: false,
 		},
 		{
-			name: "test get remote url for existing repo - remote not set",
+			name: "remote not set",
 			args: args{
 				dir: testRemoteRepo,
 			},
@@ -377,7 +361,7 @@ func TestGetRemoteURL(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "test get remote url for existing repo - repo does not exists",
+			name: "repo does not exists",
 			args: args{
 				dir: testUnknownRepo,
 			},
@@ -397,21 +381,12 @@ func TestGetRemoteURL(t *testing.T) {
 			}
 		})
 	}
-	// cleanup the git testdata repositories used for the testing in this package.
-	t.Run("cleanup test git repos", func(t *testing.T) {
-		t.Cleanup(func() {
-			os.RemoveAll(testRemoteRepo)
-			os.RemoveAll(testClonedRepo)
-		})
-	})
 }
 
 // TestExec tests the Exec function
 func TestExec(t *testing.T) {
 	// create a local git repository in testdata
-	if err := createGitRepo(t, testRemoteRepo); err != nil {
-		t.Fatalf("failed to create git repo: %v", err)
-	}
+	testRemoteRepo, _ := setupRemoteRepos(t)
 
 	type args struct {
 		pwd  string
@@ -424,7 +399,7 @@ func TestExec(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "test exec command",
+			name: "exec command",
 			args: args{
 				pwd:  testRemoteRepo,
 				args: []string{"status"},
@@ -433,7 +408,7 @@ func TestExec(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "test exec command - bad command",
+			name: "exec bad command",
 			args: args{
 				pwd:  testRemoteRepo,
 				args: []string{"unknown", "command"},
@@ -454,11 +429,4 @@ func TestExec(t *testing.T) {
 			}
 		})
 	}
-	// cleanup the git testdata repositories used for the testing in this package.
-	t.Run("cleanup test git repos", func(t *testing.T) {
-		t.Cleanup(func() {
-			os.RemoveAll(testRemoteRepo)
-			os.RemoveAll(testClonedRepo)
-		})
-	})
 }
