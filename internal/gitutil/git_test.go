@@ -97,7 +97,7 @@ func createGitRepo(t *testing.T, localRepo string) {
 	// git add command
 	execute(t, localRepo, "add", ".")
 	// git commit command
-	execute(t, localRepo, "commit", "-m", "\"init\"")
+	execute(t, localRepo, "-c", "user.name='test'", "-c", "user.email='test@example.com'", "commit", "-m", "\"init\"")
 }
 
 // cloneGitRepo is a helper function used to clone the local repo to a new path
