@@ -4,7 +4,7 @@
 
 ### Build/Test the release locally
 
-1. Build krew reelase assets locally:
+1. Build krew release assets locally:
 
        hack/make-all.sh
 
