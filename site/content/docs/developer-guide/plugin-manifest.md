@@ -39,6 +39,7 @@ spec:
     Restarts a pod with the given name. The existing pod
     will be deleted and created again, not a true restart.
   # 'platforms' specify installation methods for various platforms (os/arch)
+  # See all supported platforms below.
   platforms:
   - selector:
       matchExpressions:
@@ -49,7 +50,7 @@ spec:
         - linux
     # 'uri' specifies .zip or .tar.gz archive URL of a plugin
     uri: https://github.com/achanda/kubectl-restart/archive/v0.0.3.zip
-    # 'sha256' is the sha256sum of the url above
+    # 'sha256' is the sha256sum of the url (archive file) above
     sha256: d7079b79bf4e10e55ded435a2e862efe310e019b6c306a8ff04191238ef4b2b4
     # 'files' lists which files should be extracted out from downloaded archive
     files:
@@ -98,6 +99,11 @@ accessible to download from a user’s machine. The relevant fields are:
 Krew makes it possible to install the same plugin on different operating systems
 (e.g., `windows`, `darwin` (macOS), and `linux`) and different architectures
 (e.g., `amd64`, `386`, `arm`, `arm64` and `ppc64le`).
+
+**All supported platforms:**
+
+The supported platforms for plugins are the ones that Krew itself is distributed in.
+See all supported platforms on the [releases page](https://github.com/kubernetes-sigs/krew/releases).
 
 To support multiple platforms, you may need to define multiple `platforms` in
 the plugin manifest. The `selector` field matches to operating systems and
