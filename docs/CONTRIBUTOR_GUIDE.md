@@ -6,7 +6,7 @@ Guide](https://krew.sigs.k8s.io/docs/developer-guide/) instead.
 
 ## Setting up the environment
 
-Krew is built with go 1.10, but newer versions will do as well.
+Krew is built with go 1.19, but newer versions will do as well.
 Most toolchains will expect that the krew repository is on the `GOPATH`.
 To set it up correctly, do
 
