@@ -1,5 +1,12 @@
 # all available settings of specific linters
 linters-settings:
+  gci:
+    sections:
+      - standard # Standard section: captures all standard packages.
+      - default # Default section: contains all imports that could not be matched to another section type.
+      - prefix(sigs.k8s.io/krew) # Custom section: groups all imports with the specified Prefix.
+      - blank # Blank section: contains all blank imports. This section is not present unless explicitly enabled.
+      - dot # Dot section: contains all dot imports. This section is not present unless explicitly enabled.
   gocritic:
     enabled-tags:
       - performance
@@ -51,7 +58,6 @@ linters:
     - prealloc
     - revive
     - staticcheck
-    - structcheck
     - stylecheck
     - unconvert
     - unparam

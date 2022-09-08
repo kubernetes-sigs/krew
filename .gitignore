@@ -13,3 +13,6 @@
 
 out/
 build/
+
+# Editors
+.vscode/

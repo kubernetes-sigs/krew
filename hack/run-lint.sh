@@ -23,7 +23,7 @@ gopath="$(go env GOPATH)"
 if ! [[ -x "$gopath/bin/golangci-lint" ]]; then
   echo >&2 'Installing golangci-lint'
   curl --silent --fail --location \
-    https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b "$gopath/bin" v1.44.0
+    https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b "$gopath/bin" v1.49.0
 fi
 
 # configured by .golangci.yml
@@ -32,7 +32,7 @@ fi
 # install shfmt that ensures consistent format in shell scripts
 if ! [[ -x "${gopath}/bin/shfmt" ]]; then
   echo >&2 'Installing shfmt'
-  go install mvdan.cc/sh/v3/cmd/shfmt@v3.0.0
+  go install mvdan.cc/sh/v3/cmd/shfmt@v3.5.1
 fi
 
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
