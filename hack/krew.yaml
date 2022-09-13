@@ -25,6 +25,8 @@ spec:
     You can find documentation at
       https://krew.sigs.k8s.io/docs/user-guide/quickstart/.
 
+  # The supported platforms for plugins are the ones that Krew itself is distributed in.
+  # See all supported platforms on the [releases page](https://github.com/kubernetes-sigs/krew/releases).
   platforms:
   - uri: https://github.com/kubernetes-sigs/krew/releases/download/KREW_TAG/krew-darwin_amd64.tar.gz
     sha256: KREW_DARWIN_AMD64_CHECKSUM
