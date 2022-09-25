@@ -17,7 +17,7 @@ Krew self-hosts).
 #### Bash or ZSH shells {#bash}
 
 1. Make sure that `git` is installed.
-1. Run this command to download and install `krew`:
+2. Run this command to download and install `krew`:
 
     ```sh
     (
@@ -31,21 +31,26 @@ Krew self-hosts).
     )
     ```
 
-1. Add the `$HOME/.krew/bin` directory to your PATH environment variable. To do
+3. Add the `$HOME/.krew/bin` directory to your PATH environment variable. To do
    this, update your `.bashrc` or `.zshrc` file and append the following line:
 
      ```sh
      export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
      ```
 
-   and restart your shell.
+4. Reload your profile and you're done:
+   
 
-1. Run `kubectl krew` to check the installation.
+     ```sh
+       source .profile
+     ```
+       
+5. Run `kubectl krew` to check the installation.
 
 #### Fish shell {#fish}
 
 1. Make sure that `git` is installed.
-1. Run this command in your terminal to download and install `krew`:
+2. Run this command in your terminal to download and install `krew`:
 
     ```fish
     begin
@@ -61,7 +66,7 @@ Krew self-hosts).
     end
     ```
 
-1. Add the `$HOME/.krew/bin` directory to your PATH environment variable. To do
+3. Add the `$HOME/.krew/bin` directory to your PATH environment variable. To do
    this, update your `config.fish` file and append the following line:
 
      ```fish
@@ -70,7 +75,7 @@ Krew self-hosts).
 
    and restart your shell.
 
-1. Run `kubectl krew` to check the installation.
+4. Run `kubectl krew` to check the installation.
 
 ## Windows {#windows}
 
