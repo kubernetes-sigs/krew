@@ -72,6 +72,13 @@ Krew self-hosts).
 
 1. Run `kubectl krew` to check the installation.
 
+1. Activate `krew` shell completion ([not yet working for `kubectl krew`](https://github.com/kubernetes-sigs/krew/issues/810)):
+
+     ```fish
+     $HOME/.krew/bin/kubectl-krew completion fish > $HOME/.config/fish/completions/kubectl-krew.fish
+     ln -s $HOME/.krew/bin/kubectl-krew $HOME/.krew/bin/krew
+     ```
+
 ## Windows {#windows}
 
 1. Make sure `git` is installed.
