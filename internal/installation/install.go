@@ -140,7 +140,7 @@ func applyDefaults(platform *index.Platform) {
 // while validating its checksum with the provided sha256sum, and extracts its contents to extractDir that must be.
 // created.
 func downloadAndExtract(extractDir, uri, sha256sum, overrideFile string) error {
-	var fetcher download.Fetcher = download.HTTPFetcher{}
+	var fetcher download.Fetcher = uriFetcherSelector(uri)
 	if overrideFile != "" {
 		fetcher = download.NewFileFetcher(overrideFile)
 	}
@@ -148,6 +148,33 @@ func downloadAndExtract(extractDir, uri, sha256sum, overrideFile string) error {
 	verifier := download.NewSha256Verifier(sha256sum)
 	err := download.NewDownloader(verifier, fetcher).Get(uri, extractDir)
 	return errors.Wrap(err, "failed to unpack the plugin archive")
+}
+
+// uriFetcherSelector returns a Fetcher based on uri scheme
+// HACK Do not ship, strictly for testing. This was a dummy implementation to
+// select the "Fetcher" interface based on the contents of `uri` spec key. An
+// alternative approach would be to have another key like `downloadCommand` or
+// even a more deep spec which could include things like environment vars, etc.
+// Alternatively, if this is a desirable pattern, you could add real schemes
+// like gs:// and s3:// which could invoke supported upstream cloud provider
+// SDKs.
+func uriFetcherSelector(uri string) (f download.Fetcher) {
+	switch {
+	case strings.HasPrefix(uri, "http://"):
+		f = download.HTTPFetcher{}
+	case strings.HasPrefix(uri, "https://"):
+		f = download.HTTPFetcher{}
+	case strings.HasPrefix(uri, "cmd://"):
+		f = download.CommandFetcher{}
+	case strings.HasPrefix(uri, "file://"):
+		// HACK This is just an example of natively supporting a local file
+		// artifact in the uri field.
+		f = download.NewFileFetcher(strings.Replace(uri, "file://", "", 1))
+	default:
+		// Alternatives could be to send a user error here
+		f = download.HTTPFetcher{}
+	}
+	return f
 }
 
 // Uninstall will uninstall a plugin.

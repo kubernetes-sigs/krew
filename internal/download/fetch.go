@@ -18,6 +18,8 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"os/exec"
+	"strings"
 
 	"github.com/pkg/errors"
 	"k8s.io/klog/v2"
@@ -56,3 +58,63 @@ func (f fileFetcher) Get(_ string) (io.ReadCloser, error) {
 
 // NewFileFetcher returns a local file reader.
 func NewFileFetcher(path string) Fetcher { return fileFetcher{f: path} }
+
+var _ Fetcher = CommandFetcher{}
+
+// CommandFetcher is used to run a command to receive a file as stdout
+type CommandFetcher struct{}
+
+func (CommandFetcher) Get(cmd string) (io.ReadCloser, error) {
+	var stream io.ReadCloser
+
+	// Create tempFile for loading the plugin artifact
+	tempFile, err := os.CreateTemp("", "")
+	if err != nil {
+		return stream, err
+	}
+	defer klog.V(2).Infof("Removed temp file at %q", tempFile.Name())
+	defer os.Remove(tempFile.Name())
+
+	klog.V(2).Infof("Created temp file for command output at %q", tempFile.Name())
+
+	// Intentionally not closing the stream object in this function!
+	// The open file to tempFile will remain readable until the last process
+	// releases it. Another function is responsible for closing the
+	// io.ReaderCloser.
+	stream, err = os.Open(tempFile.Name())
+	if err != nil {
+		return stream, err
+	}
+
+	// HACK REMOVEME TESTING ONLY
+	// This is a workaround to accept command within the `uri` key of the krew
+	// plugin spec. An alternative solution, which is likely more optimal, is
+	// adding a new field to the spec for `downloadCommand` or similarly named
+	// key which would contain a command to run. This hack was put in place to
+	// test the rough implementation of loading a plugin from the stdout of a
+	// command.
+	cmd = strings.Replace(cmd, "cmd://", "", 1)
+
+	// TODO Improve splitting, this implementation has issues with newlines and
+	// qoutes in the cmd string.
+	c := strings.Split(cmd, " ")
+	runner := exec.Command(c[0], c[1:]...)
+
+	// NOTE Attempted to pass runner.Stdout() as an io.ReaderCloser but the io
+	// closes as soon as the application finishes running, which cannot extend
+	// reading beyond this function. Instead opted to push this into a tempFile
+	// on the local filesystem.
+	// Send stdout to tempFile for later ingestion
+	runner.Stdout = tempFile
+
+	klog.V(2).Infof("Running command %q", cmd)
+	if err := runner.Run(); err != nil {
+		// TODO It would be helpful to have more diagnostic information like the
+		// stdout and stderr of the command if Run() fails to exit 0. Right now the
+		// Command err just says things like `exited code 1` or similarly vague
+		// output. Could use klog.V(N)... to log output with verbosity.
+		return stream, errors.Wrapf(err, "failed to run command: %s", cmd)
+	}
+
+	return stream, err
+}
