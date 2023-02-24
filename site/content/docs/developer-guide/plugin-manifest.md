@@ -205,3 +205,6 @@ plugin name (specifically the `metadata.name` field).
 >
 > For example, if your plugin name is `view-logs` and your plugin binary is named
 > `run.sh`, Krew will create a symbolic link named `kubectl-view_logs` automatically.
+
+> **Note on Windows entrypoints:** Currently only `.exe` entrypoints are supported
+> on Windows, `.bat` and `.ps1` are not supported, refer to [this issue](https://github.com/kubernetes-sigs/krew/issues/131).
