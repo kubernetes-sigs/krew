@@ -30,6 +30,29 @@ import (
 	"sigs.k8s.io/krew/internal/installation"
 )
 
+type searchItem struct {
+	name        string
+	description string
+}
+
+type searchCorpus []searchItem
+
+func (s searchCorpus) descriptions() []string {
+	var res = make([]string, len(s))
+	for _, corpus := range s {
+		res = append(res, corpus.description)
+	}
+	return res
+}
+
+func (s searchCorpus) names() []string {
+	var res = make([]string, len(s))
+	for _, corpus := range s {
+		res = append(res, corpus.name)
+	}
+	return res
+}
+
 // searchCmd represents the search command
 var searchCmd = &cobra.Command{
 	Use:   "search",
@@ -62,11 +85,14 @@ Examples:
 			}
 		}
 
-		pluginCanonicalNames := make([]string, len(plugins))
+		searchTarget := make([]searchItem, len(plugins))
 		pluginCanonicalNameMap := make(map[string]pluginEntry, len(plugins))
 		for i, p := range plugins {
 			cn := canonicalName(p.p, p.indexName)
-			pluginCanonicalNames[i] = cn
+			searchTarget[i] = searchItem{
+				name:        cn,
+				description: p.p.Spec.ShortDescription,
+			}
 			pluginCanonicalNameMap[cn] = p
 		}
 
@@ -80,15 +106,8 @@ Examples:
 			installed[cn] = true
 		}
 
-		var searchResults []string
-		if len(args) > 0 {
-			matches := fuzzy.Find(strings.Join(args, ""), pluginCanonicalNames)
-			for _, m := range matches {
-				searchResults = append(searchResults, m.Str)
-			}
-		} else {
-			searchResults = pluginCanonicalNames
-		}
+		keyword := strings.Join(args, "")
+		searchResults := searchByNameAndDesc(keyword, searchTarget)
 
 		// No plugins found
 		if len(searchResults) == 0 {
@@ -116,6 +135,33 @@ Examples:
 		return printTable(os.Stdout, cols, rows)
 	},
 	PreRunE: checkIndex,
+}
+
+func searchByNameAndDesc(keyword string, targets searchCorpus) []string {
+	if keyword == "" {
+		return targets.names()
+	}
+
+	var searchResults = make([]string, 0, len(targets))
+
+	// find by names
+	matches := fuzzy.Find(keyword, targets.names())
+	searchResultsMap := make(map[int]bool)
+	for _, m := range matches {
+		searchResults = append(searchResults, m.Str)
+		searchResultsMap[m.Index] = true
+	}
+
+	// find by short descriptions
+	matches = fuzzy.Find(keyword, targets.descriptions())
+	for _, m := range matches {
+		// use map to deduplicate and score > 0 to match more accurately
+		if _, exist := searchResultsMap[m.Index]; !exist && m.Score > 0 {
+			searchResults = append(searchResults, targets.names()[m.Index])
+		}
+	}
+
+	return searchResults
 }
 
 func limitString(s string, length int) string {
