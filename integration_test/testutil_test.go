@@ -111,7 +111,7 @@ func augmentPATH(t *testing.T, v string) string {
 }
 
 // skipShort is a test helper for skipping tests in -test.short runs.
-func skipShort(t *testing.T) {
+func skipShort(t *testing.T) { //nolint:gocritic
 	t.Helper()
 	if testing.Short() {
 		t.Skip("skipping integration test")

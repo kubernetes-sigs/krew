@@ -111,7 +111,7 @@ func init() {
 		"{{.CommandPath}}", "kubectl {{.CommandPath}}").Replace(rootCmd.UsageTemplate()))
 }
 
-func preRun(cmd *cobra.Command, _ []string) error {
+func preRun(_ *cobra.Command, _ []string) error {
 	// check must be done before ensureDirs, to detect krew's self-installation
 	if !internal.IsBinDirInPATH(paths) {
 		internal.PrintWarning(os.Stderr, internal.SetupInstructions()+"\n\n")

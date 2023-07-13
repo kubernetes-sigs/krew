@@ -20,6 +20,11 @@ linters-settings:
   errcheck:
     check-type-assertions: false
     check-blank: false
+  staticcheck:
+    checks:
+    - all
+    - "-SA1019" # allow usage of global rand.Seed
+
 
 # options for analysis running
 run:
@@ -38,7 +43,6 @@ run:
 linters:
   disable-all: true
   enable:
-    - deadcode
     - errcheck
     - gci
     - gocritic
@@ -51,8 +55,7 @@ linters:
     - prealloc
     - revive
     - staticcheck
-    - structcheck
     - stylecheck
     - unconvert
     - unparam
-    - varcheck
+    - unused
