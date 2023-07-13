@@ -41,6 +41,9 @@ func (HTTPFetcher) Get(uri string) (io.ReadCloser, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to download %q", uri)
 	}
+	if resp.StatusCode > 200 {
+		return nil, errors.Errorf("failed to download %q, status code %d", uri, resp.StatusCode)
+	}
 	return resp.Body, nil
 }
 
