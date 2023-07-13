@@ -588,10 +588,11 @@ func Test_extractMaliciousArchive(t *testing.T) {
 // tarGZArchiveForTesting creates an in-memory zip archive with entries from
 // the files map, where keys are the paths and values are the contents.
 // For example, to create an empty file `a` and another file `b/c`:
-//  tarGZArchiveForTesting(map[string]string{
-//     "a": "",
-//     "b/c": "nested content",
-//  })
+//
+//	tarGZArchiveForTesting(map[string]string{
+//	   "a": "",
+//	   "b/c": "nested content",
+//	})
 func tarGZArchiveForTesting(files map[string]string) (*bytes.Reader, error) {
 	archiveBuffer := &bytes.Buffer{}
 	gzArchiveBuffer := gzip.NewWriter(archiveBuffer)
@@ -624,7 +625,8 @@ func tarGZArchiveForTesting(files map[string]string) (*bytes.Reader, error) {
 // entries with empty content just create a directory. The zip spec requires that
 // parent directories are explicitly listed in the archive, so this must be done
 // for nested entries. For example, to create a file at `a/b/c`, you must pass:
-//  map[string]string{"a": "", "a/b": "", "a/b/c": "nested content"}
+//
+//	map[string]string{"a": "", "a/b": "", "a/b/c": "nested content"}
 func zipArchiveReaderForTesting(files map[string]string) (*bytes.Reader, error) {
 	archiveBuffer := &bytes.Buffer{}
 	zw := zip.NewWriter(archiveBuffer)
