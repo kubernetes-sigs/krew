@@ -74,7 +74,7 @@ for f in "${download_assets[@]}"; do
 done
 echo
 echo "Thanks to our contributors for helping out with ${TAG}:"
-git log "$(git describe --tags --abbrev=0)..HEAD" --format=%an |
+git log "$(git describe --tags --match 'v*' --abbrev=0 "${TAG}^")..${TAG}" --format=%an |
   sort | uniq -c | sort -rn |
   sed -E 's,^(\s+[0-9]+\s),- ,g'
 echo
