@@ -30,7 +30,19 @@ Krew tags versions starting with `v`. Example: `v0.2.0-rc.1`.
     TAG=v0.3.2-rc.1 # <- change this
     ```
 
-1. **Create a tag for the release:**
+1. **Create a release commit:**
+
+    ```sh
+    git commit -am "Release ${TAG:?TAG required}" --allow-empty
+    git push origin master
+    ```
+
+   (Only repository administrators can directly push to master branch.)
+
+1. **Wait until the build succeeds:** Wait for CI to show green for the
+   build of the commit you just pushed to master branch.
+
+1. **Tag the release:**
 
        git tag "${TAG:?TAG required}"
 
