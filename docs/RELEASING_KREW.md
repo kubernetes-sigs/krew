@@ -32,13 +32,10 @@ Krew tags versions starting with `v`. Example: `v0.2.0-rc.1`.
 
 1. **Create a release commit:**
 
-       git commit -am "Release ${TAG:?TAG required}" --allow-empty
-
-1. **Push PR and merge changes**: The repository hooks forbid direct pushes to
-   master, so the changes from the previous step need to be pushed and merged
-   as a regular PR.
-
-       git push origin master
+    ```sh
+    git commit -am "Release ${TAG:?TAG required}" --allow-empty
+    git push origin master
+    ```
 
    (Only repository administrators can directly push to master branch.)
 
@@ -47,16 +44,7 @@ Krew tags versions starting with `v`. Example: `v0.2.0-rc.1`.
 
 1. **Tag the release:**
 
-    ```sh
-    git fetch origin
-    git reset --hard origin/master    # when the previous merge is done
-    release_notes="$(TAG=$TAG hack/make-release-notes.sh)"
-    git tag -a "${TAG:?TAG required}" -m "${release_notes}"
-    ```
-
-1. **Verify the release instructions:**
-
-       git show "${TAG:?TAG required}"
+       git tag "${TAG:?TAG required}"
 
 1. **Push the tag:**
 
@@ -76,7 +64,7 @@ Krew tags versions starting with `v`. Example: `v0.2.0-rc.1`.
 
 1. **Update krew-index CI**: The CI tests for `krew-index` repository relies on
    tools from main `krew` repository, and they should use the latest version.
-   When there's a new version, update the `.travis.yml` in `krew-index` repo.
+   When there's a new version, update `.github/workflows/ci.yml` in `krew-index` repo.
 
 ## Release artifacts
 

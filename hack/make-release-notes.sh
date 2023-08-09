@@ -74,17 +74,18 @@ for f in "${download_assets[@]}"; do
 done
 echo
 echo "Thanks to our contributors for helping out with ${TAG}:"
-git log "$(git describe --tags --abbrev=0)..HEAD" --format=%an |
+previous_version="$(git describe --tags --match 'v*' --abbrev=0 "${TAG}^")"
+git log "${previous_version}..${TAG}" --format=%an |
   sort | uniq -c | sort -rn |
   sed -E 's,^(\s+[0-9]+\s),- ,g'
 echo
-echo "(krew ${TAG} is tagged on $(date -u).)"
+echo "(krew ${TAG} was tagged on $(date -u).)"
 echo
 echo '<details>'
 echo '<summary>Merged pull requests</summary>'
 echo # this empty line is important for correct markdown rendering
 # you can pass your github token with --token here if you run out of requests
 
-"${gopath}/bin/release-notes" kubernetes-sigs krew
+"${gopath}/bin/release-notes" kubernetes-sigs krew --since "${previous_version}"
 echo '</details>'
 echo
