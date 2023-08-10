@@ -64,9 +64,13 @@ each configured index in table format.`,
 }
 
 var indexAddCmd = &cobra.Command{
-	Use:     "add",
-	Short:   "Add a new index",
-	Long:    "Configure a new index to install plugins from.",
+	Use:   "add",
+	Short: "Add a new index",
+	Long: `Configure a new index to install plugins from.
+
+This command also supports alternative branch other than the default one
+by appending the branch name to the end of git url with # symbol
+(e.g. /kubernetes-sigs/krew-index.git#another_branch).`,
 	Example: "kubectl krew index add default " + constants.DefaultIndexURI,
 	Args:    cobra.ExactArgs(2),
 	RunE: func(_ *cobra.Command, args []string) error {

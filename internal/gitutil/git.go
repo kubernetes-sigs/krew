@@ -31,7 +31,12 @@ func EnsureCloned(uri, destinationPath string) error {
 	if ok, err := IsGitCloned(destinationPath); err != nil {
 		return err
 	} else if !ok {
-		_, err = Exec("", "clone", "-v", uri, destinationPath)
+		parsedURI := strings.Split(uri, "#")
+		if len(parsedURI) > 1 {
+			_, err = Exec("", "clone", "-v", "--single-branch", "--branch", parsedURI[1], parsedURI[0], destinationPath)
+		} else {
+			_, err = Exec("", "clone", "-v", uri, destinationPath)
+		}
 		return err
 	}
 	return nil

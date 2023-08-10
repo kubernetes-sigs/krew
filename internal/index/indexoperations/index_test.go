@@ -102,6 +102,21 @@ func TestAddIndexFailure(t *testing.T) {
 	}
 }
 
+func TestAddIndexFailureWithCustomBranch(t *testing.T) {
+	tmpDir := testutil.NewTempDir(t)
+
+	indexName := "foo"
+	localRepo := tmpDir.Path("local/" + indexName)
+	tmpDir.InitEmptyGitRepo(localRepo, "")
+
+	paths := environment.NewPaths(tmpDir.Root())
+
+	localRepoWithBranch := localRepo + "#test_branch"
+	if err := AddIndex(paths, indexName, localRepoWithBranch); err == nil {
+		t.Errorf("expected error test_branch not found")
+	}
+}
+
 func TestDeleteIndex(t *testing.T) {
 	// root directory does not exist
 	if err := DeleteIndex(environment.NewPaths(filepath.FromSlash("/tmp/does-not-exist/foo")), "bar"); err == nil {
