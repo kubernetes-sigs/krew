@@ -81,10 +81,10 @@ spec:
 
 ## Specifying plugin download options
 
-Krew plugins must be packaged as `.zip` or `.tar.gz` archives, and should be
+Krew plugins must be packaged as `.zip` or `.tar.gz` archives, or as a binary, and should be
 accessible to download from a user’s machine. The relevant fields are:
 
-- `uri`: URL to the archive file (`.zip` or `.tar.gz`)
+- `uri`: URL to the archive file (`.zip`, `.bin` or `.tar.gz`)
 - `sha256`: sha256 sum of the archive file
 
 ```yaml
@@ -92,6 +92,16 @@ accessible to download from a user’s machine. The relevant fields are:
   - uri: https://github.com/foo/bar/archive/v1.2.3.zip
     sha256: "29C9C411AF879AB85049344B81B8E8A9FBC1D657D493694E2783A2D0DB240775"
     ...
+```
+
+If you are specifying a binary, you will have the option to also specify a license that krew
+will install with your binary
+
+```yaml
+  platforms:
+  - uri: https://github.com/foo/bar/archive/v1.2.3.zip
+    sha256: "29C9C411AF879AB85049344B81B8E8A9FBC1D657D493694E2783A2D0DB240775"
+    license: https://raw.githubusercontent.com/foo/bar/v1.0.1/LICENSE
 ```
 
 ## Specifying platform-specific instructions
