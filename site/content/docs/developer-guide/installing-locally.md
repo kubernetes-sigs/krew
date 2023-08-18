@@ -5,7 +5,7 @@ weight: 300
 ---
 
 After you have written your [plugin manifest]({{< ref "plugin-manifest.md" >}})
-and archived your plugin into a `.zip` or `.tar.gz` file, you can verify that
+and archived your plugin into a `.zip` or `.tar.gz` or a raw binary file, you can verify that
 your plugin installs correctly with Krew by running:
 
 ```sh
@@ -15,7 +15,7 @@ your plugin installs correctly with Krew by running:
 - The `--manifest` flag specifies a custom manifest rather than using
   the default [krew index][index]
 - `--archive` overrides the download `uri:` specified in the plugin manifest and
-  uses a local `.zip` or `.tar.gz` file instead.
+  uses a local `.bin`, `.zip` or `.tar.gz` file instead.
 
 If the installation **fails**, run the command again with `-v=4` flag to see the
 verbose logs and examine what went wrong.
