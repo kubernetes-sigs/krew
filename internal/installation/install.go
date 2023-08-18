@@ -15,6 +15,7 @@
 package installation
 
 import (
+	"io"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -108,6 +109,16 @@ func install(op installOperation, opts InstallOpts) error {
 		return errors.Wrap(err, "failed to unpack into staging dir")
 	}
 
+	// Download Liscense file from given URI and rename downloaded binary to plugin name
+	if op.platform.License != "" {
+		if err:= downloadLicenseFile(downloadStagingDir, op.platform.License); err != nil {
+			return errors.Wrap(err, "failed downloading license file to installation directory")
+		}
+		if err := renameBinary(downloadStagingDir, op.platform.Bin); err != nil {
+			return errors.Wrap(err, "failed renaming binary in installation directory")
+		}
+	}
+
 	applyDefaults(&op.platform)
 	if err := moveToInstallDir(downloadStagingDir, op.installDir, op.platform.Files); err != nil {
 		return errors.Wrap(err, "failed while moving files to the installation directory")
@@ -137,7 +148,7 @@ func applyDefaults(platform *index.Platform) {
 }
 
 // downloadAndExtract downloads the specified archive uri (or uses the provided overrideFile, if a non-empty value)
-// while validating its checksum with the provided sha256sum, and extracts its contents to extractDir that must be.
+// while validating its checksum with the provided sha256sum, and extracts its contents to extractDir that must be
 // created.
 func downloadAndExtract(extractDir, uri, sha256sum, overrideFile string) error {
 	var fetcher download.Fetcher = download.HTTPFetcher{}
@@ -148,6 +159,33 @@ func downloadAndExtract(extractDir, uri, sha256sum, overrideFile string) error {
 	verifier := download.NewSha256Verifier(sha256sum)
 	err := download.NewDownloader(verifier, fetcher).Get(uri, extractDir)
 	return errors.Wrap(err, "failed to unpack the plugin archive")
+}
+
+// downloadLicenseFile will download the license file from the given URI and save it to the installation directory
+// of the plugin.
+func downloadLicenseFile(extractDir, uri string) error {
+	var fetcher download.Fetcher = download.HTTPFetcher{}
+
+	body, err := fetcher.Get(uri)
+	if err != nil {
+		return errors.Wrap(err, "failed to download the license file")
+	}
+	defer body.Close()
+
+	out, err := os.Create(filepath.Join(extractDir, "LICENSE"))
+	if err != nil {
+		return errors.Wrap(err, "failed to create LICENSE file")
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, body)
+
+	return err
+}
+
+// renames the binary in the installation directory to the plugin name if the binary is given temporary "binary" name
+func renameBinary(extractDir, plugin string) error {
+	return os.Rename(filepath.Join(extractDir, "binary"), filepath.Join(extractDir, plugin))
 }
 
 // Uninstall will uninstall a plugin.

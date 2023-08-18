@@ -34,7 +34,7 @@ import (
 func download(url string, verifier Verifier, fetcher Fetcher) (io.ReaderAt, int64, error) {
 	body, err := fetcher.Get(url)
 	if err != nil {
-		return nil, 0, errors.Wrapf(err, "failed to obtain plugin archive")
+		return nil, 0, errors.Wrapf(err, "failed to obtain plugin")
 	}
 	defer body.Close()
 
@@ -161,6 +161,25 @@ func extractTARGZ(targetDir string, at io.ReaderAt, size int64) error {
 	return nil
 }
 
+// Dowloads the given binary to the target directory
+func downloadBinary(targetDir string, read io.ReaderAt, size int64) error {
+	klog.V(4).Infof("Downloading binary to %q", targetDir) 
+
+	in := io.NewSectionReader(read, 0, size)
+	buf := make([]byte, size)
+
+	if _, err := in.Read(buf); err != nil {
+		return errors.Wrap(err, "failed to read binary")
+	}
+
+	if err := os.WriteFile(filepath.Join(targetDir, "binary"), buf, 0o755); err != nil {
+		return errors.Wrap(err, "failed to write binary")
+	}
+
+	klog.V(4).Infof("download of binary complete to %s complete", targetDir)
+	return nil
+}
+
 func suspiciousPath(path string) error {
 	if strings.Contains(path, "..") {
 		return errors.Errorf("refusing to unpack archive with suspicious entry %q", path)
@@ -193,6 +212,7 @@ type extractor func(targetDir string, read io.ReaderAt, size int64) error
 var defaultExtractors = map[string]extractor{
 	"application/zip":    extractZIP,
 	"application/x-gzip": extractTARGZ,
+	"application/octet-stream": downloadBinary,
 }
 
 func extractArchive(dst string, at io.ReaderAt, size int64) error {
@@ -203,7 +223,7 @@ func extractArchive(dst string, at io.ReaderAt, size int64) error {
 	klog.V(4).Infof("detected %q file type", t)
 	exf, ok := defaultExtractors[t]
 	if !ok {
-		return errors.Errorf("mime type %q for archive file is not a supported archive format", t)
+		return errors.Errorf("mime type %q for file is not a supported format", t)
 	}
 	return errors.Wrap(exf(dst, at, size), "failed to extract file")
 }
