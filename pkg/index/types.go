@@ -46,6 +46,8 @@ type Platform struct {
 	Selector *metav1.LabelSelector `json:"selector,omitempty"`
 	Files    []FileOperation       `json:"files"`
 
+	License string `json:"license,omitempty"`
+
 	// Bin specifies the path to the plugin executable.
 	// The path is relative to the root of the installation folder.
 	// The binary will be linked after all FileOperations are executed.
