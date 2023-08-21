@@ -647,3 +647,55 @@ func zipArchiveReaderForTesting(files map[string]string) (*bytes.Reader, error) 
 	}
 	return bytes.NewReader(archiveBuffer.Bytes()), nil
 }
+
+func Test_downloadBinary(t *testing.T) {
+	type args struct {
+		targetDir string
+		read     string
+		size     string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	} {
+		{
+			name: "test fail read of binary", 
+			args: args{
+				targetDir: filepath.Join(testdataPath(), "null-file"),
+				read: "",
+				size: "",
+			},
+			wantErr: true,
+		},
+		{
+			name: "test fail write of binary", 
+			args: args{
+				targetDir: filepath.Join(testdataPath(), "test/foo"),
+				read: "",
+				size: "",
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fd, err := os.Open(tt.args.targetDir)
+			if err != nil {
+				t.Errorf("failed to read file %s, err: %v", tt.args.targetDir, err)
+				return
+			}
+
+			st, err := fd.Stat()
+			if err != nil {
+				t.Errorf("failed to stat file %s, err: %v", tt.args.targetDir, err)
+				return
+			}
+
+			if err := downloadBinary(tt.args.targetDir, fd, st.Size()); (err != nil) != tt.wantErr {
+				t.Errorf("downloadBinary() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+} 
