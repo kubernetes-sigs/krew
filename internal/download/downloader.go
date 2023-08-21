@@ -223,7 +223,7 @@ func extractArchive(dst string, at io.ReaderAt, size int64) error {
 	klog.V(4).Infof("detected %q file type", t)
 	exf, ok := defaultExtractors[t]
 	if !ok {
-		return errors.Errorf("mime type %q for file is not a supported format", t)
+		return errors.Errorf("mime type %q for archive file is not a supported archive format", t)
 	}
 	return errors.Wrap(exf(dst, at, size), "failed to extract file")
 }
