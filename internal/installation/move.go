@@ -161,7 +161,12 @@ func moveToInstallDir(srcDir, installDir string, fos []index.FileOperation) erro
 	tmp, err := os.MkdirTemp("", "krew-temp-move")
 	klog.V(4).Infof("Creating temp plugin move operations dir %q", tmp)
 	if err != nil {
-		return errors.Wrap(err, "failed to find a temporary director")
+		return errors.Wrap(err, "failed to find a temporary directory")
+	}
+	klog.V(4).Infof("Chmoding tmpdir to 0755", tmp)
+	if err := os.Chmod(tmp, 0o755); err != nil {
+		// mktemp gives a 0700 directory but since we move this to KREW_ROOT, we need to make it 0755
+		return errors.Wrap(err, "failed to chmod temp directory")
 	}
 	defer os.RemoveAll(tmp)
 
