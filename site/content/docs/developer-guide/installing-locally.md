@@ -38,7 +38,7 @@ For example, if you're on a Linux machine, you can test Windows installation
 with:
 
 ```sh
-{{<prompt>}}KREW_OS=windows KREW_ARCH=amd64 krew install --manifest=[...]
+{{<prompt>}}KREW_OS=windows KREW_ARCH=amd64 kubectl krew install --manifest=[...]
 ```
 
 [index]: https://github.com/kubernetes-sigs/krew-index
