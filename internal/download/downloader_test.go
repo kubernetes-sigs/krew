@@ -651,29 +651,29 @@ func zipArchiveReaderForTesting(files map[string]string) (*bytes.Reader, error) 
 func Test_downloadBinary(t *testing.T) {
 	type args struct {
 		targetDir string
-		read     string
-		size     string
+		read      string
+		size      string
 	}
 	tests := []struct {
 		name    string
 		args    args
 		wantErr bool
-	} {
+	}{
 		{
-			name: "test fail read of binary", 
+			name: "test fail read of binary",
 			args: args{
 				targetDir: filepath.Join(testdataPath(), "null-file"),
-				read: "",
-				size: "",
+				read:      "",
+				size:      "",
 			},
 			wantErr: true,
 		},
 		{
-			name: "test fail write of binary", 
+			name: "test fail write of binary",
 			args: args{
 				targetDir: filepath.Join(testdataPath(), "test", "foo"),
-				read: "",
-				size: "",
+				read:      "",
+				size:      "",
 			},
 			wantErr: true,
 		},
@@ -698,4 +698,4 @@ func Test_downloadBinary(t *testing.T) {
 			}
 		})
 	}
-} 
+}
