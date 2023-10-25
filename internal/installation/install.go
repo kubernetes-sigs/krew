@@ -109,7 +109,7 @@ func install(op installOperation, opts InstallOpts) error {
 		return errors.Wrap(err, "failed to unpack into staging dir")
 	}
 
-	// Download Liscense file from given URI and rename downloaded binary to plugin name
+	// Download License file from given URI and rename downloaded binary to plugin name
 	if op.platform.License != "" {
 		if err:= downloadLicenseFile(downloadStagingDir, op.platform.License); err != nil {
 			return errors.Wrap(err, "failed downloading license file to installation directory")

@@ -671,7 +671,7 @@ func Test_downloadBinary(t *testing.T) {
 		{
 			name: "test fail write of binary", 
 			args: args{
-				targetDir: filepath.Join(testdataPath(), "test/foo"),
+				targetDir: filepath.Join(testdataPath(), "test", "foo"),
 				read: "",
 				size: "",
 			},

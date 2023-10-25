@@ -161,7 +161,7 @@ func extractTARGZ(targetDir string, at io.ReaderAt, size int64) error {
 	return nil
 }
 
-// Dowloads the given binary to the target directory
+// Downloads the given binary to the target directory
 func downloadBinary(targetDir string, read io.ReaderAt, size int64) error {
 	klog.V(4).Infof("Downloading binary to %q", targetDir) 
 
