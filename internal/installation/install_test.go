@@ -370,7 +370,7 @@ func Test_renameBinary(t *testing.T) {
 		{
 			name:       "with valid plugin name",
 			extractDir: testFile,
-			plugin:     "test",
+			plugin:     "testerBin",
 			wantErr:    false,
 		},
 		{
