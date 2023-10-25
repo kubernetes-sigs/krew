@@ -343,16 +343,16 @@ func Test_downloadLicenseFile(t *testing.T) {
 		wantErr    bool
 	}{
 		{
-			name: "with valid uri",
+			name:       "with valid uri",
 			extractDir: tmpDir.Root(),
-			uri: url,
+			uri:        url,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := downloadLicenseFile(tt.extractDir, tt.uri); err != nil {
-					t.Error(err)
+				t.Error(err)
 			}
 		})
 	}
@@ -368,29 +368,29 @@ func Test_renameBinary(t *testing.T) {
 		wantErr    bool
 	}{
 		{
-			name: "with valid plugin name",
+			name:       "with valid plugin name",
 			extractDir: testFile,
-			plugin: "test",
-			wantErr: false,
+			plugin:     "test",
+			wantErr:    false,
 		},
 		{
-			name: "without valid plugin name",
+			name:       "without valid plugin name",
 			extractDir: tmpDir.Root(),
-			plugin: "not valid",
-			wantErr: true,
+			plugin:     "not valid",
+			wantErr:    true,
 		},
 		{
-			name: "without binary",
+			name:       "without binary",
 			extractDir: tmpDir.Root(),
-			plugin: "valid",
-			wantErr: true,
+			plugin:     "valid",
+			wantErr:    true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := renameBinary(tt.extractDir, tt.plugin); (err != nil) != tt.wantErr {
-					t.Error(err)
+				t.Error(err)
 			}
 		})
 	}

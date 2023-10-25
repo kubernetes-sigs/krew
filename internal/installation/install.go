@@ -111,7 +111,7 @@ func install(op installOperation, opts InstallOpts) error {
 
 	// Download License file from given URI and rename downloaded binary to plugin name
 	if op.platform.License != "" {
-		if err:= downloadLicenseFile(downloadStagingDir, op.platform.License); err != nil {
+		if err := downloadLicenseFile(downloadStagingDir, op.platform.License); err != nil {
 			return errors.Wrap(err, "failed downloading license file to installation directory")
 		}
 		if err := renameBinary(downloadStagingDir, op.platform.Bin); err != nil {

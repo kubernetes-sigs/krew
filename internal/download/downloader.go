@@ -163,7 +163,7 @@ func extractTARGZ(targetDir string, at io.ReaderAt, size int64) error {
 
 // Downloads the given binary to the target directory
 func downloadBinary(targetDir string, read io.ReaderAt, size int64) error {
-	klog.V(4).Infof("Downloading binary to %q", targetDir) 
+	klog.V(4).Infof("Downloading binary to %q", targetDir)
 
 	in := io.NewSectionReader(read, 0, size)
 	buf := make([]byte, size)
@@ -210,8 +210,8 @@ func detectMIMEType(at io.ReaderAt) (string, error) {
 type extractor func(targetDir string, read io.ReaderAt, size int64) error
 
 var defaultExtractors = map[string]extractor{
-	"application/zip":    extractZIP,
-	"application/x-gzip": extractTARGZ,
+	"application/zip":          extractZIP,
+	"application/x-gzip":       extractTARGZ,
 	"application/octet-stream": downloadBinary,
 }
 
