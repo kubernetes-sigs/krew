@@ -33,7 +33,7 @@ without having to deal with their package managers.
 Once you [develop]({{< ref "develop/plugin-development.md" >}}) a `kubectl`
 plugin, follow these steps to distribute your plugin on Krew:
 
-1. Package your plugin into an archive file (`.tar.gz` or `.zip`).
-1. Make the archive file publicly available (e.g. as GitHub release files).
+1. Package your plugin into an archive file or binary (`.bin`, `.tar.gz` or `.zip`).
+1. Make them publicly available (e.g. as GitHub release files).
 1. Write a [Krew plugin manifest]({{< ref "plugin-manifest.md" >}}) file.
 1. [Submit your plugin to krew-index]({{< ref "release/../release/submitting-to-krew.md" >}}).
