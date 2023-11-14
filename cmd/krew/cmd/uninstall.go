@@ -54,7 +54,7 @@ Remarks:
 	},
 	PreRunE: checkIndex,
 	Args:    cobra.MinimumNArgs(1),
-	Aliases: []string{"remove"},
+	Aliases: []string{"remove", "rm"},
 }
 
 func unsafePluginNameErr(n string) error { return errors.Errorf("plugin name %q not allowed", n) }

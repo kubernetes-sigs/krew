@@ -39,6 +39,7 @@ Remarks:
   Redirecting the output of this command to a program or file will only print
   the names of the plugins installed. This output can be piped back to the
   "install" command.`,
+		Aliases: []string{"ls"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			receipts, err := installation.GetInstalledPluginReceipts(paths.InstallReceiptsPath())
 			if err != nil {

@@ -48,7 +48,8 @@ var indexListCmd = &cobra.Command{
 
 This command prints a list of indexes. It shows the name and the remote URL for
 each configured index in table format.`,
-	Args: cobra.NoArgs,
+	Aliases: []string{"ls"},
+	Args:    cobra.NoArgs,
 	RunE: func(_ *cobra.Command, _ []string) error {
 		indexes, err := indexoperations.ListIndexes(paths)
 		if err != nil {
@@ -95,8 +96,9 @@ It is only safe to remove indexes without installed plugins. Removing an index
 while there are plugins installed will result in an error, unless the --force
 option is used (not recommended).`,
 
-	Args: cobra.ExactArgs(1),
-	RunE: indexDelete,
+	Aliases: []string{"rm"},
+	Args:    cobra.ExactArgs(1),
+	RunE:    indexDelete,
 }
 
 func indexDelete(_ *cobra.Command, args []string) error {
