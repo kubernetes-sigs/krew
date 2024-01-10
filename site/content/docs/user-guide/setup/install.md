@@ -7,10 +7,15 @@ weight: 200
 Krew itself is a `kubectl` plugin that is installed and updated via Krew (yes,
 Krew self-hosts).
 
-> ⚠️ **Warning:** krew is only compatible with `kubectl` v1.12 or later.
-
+- **brew**: [brew](#brew)
 - **macOS/Linux**: [bash/zsh](#bash), [fish](#fish)
 - **[Windows](#windows)**
+
+## brew {#brew}
+
+```
+brew install krew
+```
 
 ## macOS/Linux {#posix}
 
