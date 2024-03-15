@@ -17,17 +17,15 @@ package cmd
 import (
 	"flag"
 	"fmt"
-	"math/rand"
-	"os"
-	"strings"
-	"time"
-
 	"github.com/fatih/color"
 	"github.com/mattn/go-isatty"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"k8s.io/klog/v2"
+	"math/rand"
+	"os"
+	"strings"
 
 	"sigs.k8s.io/krew/cmd/krew/cmd/internal"
 	"sigs.k8s.io/krew/internal/environment"
@@ -87,7 +85,6 @@ func Execute() {
 
 func init() {
 	klog.InitFlags(nil)
-	rand.Seed(time.Now().UnixNano())
 
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 	_ = flag.CommandLine.Parse([]string{}) // convince pkg/flag we parsed the flags
