@@ -31,7 +31,7 @@ func EnsureCloned(uri, destinationPath string) error {
 	if ok, err := IsGitCloned(destinationPath); err != nil {
 		return err
 	} else if !ok {
-		_, err = Exec("", "clone", "-v", uri, destinationPath)
+		_, err = Exec("", "clone", "--depth=1", "--single-branch", "-v", uri, destinationPath)
 		return err
 	}
 	return nil
