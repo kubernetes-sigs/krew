@@ -182,7 +182,7 @@ var licenseFiles = map[string]struct{}{
 func validateLicenseFileExists(krewRoot string) error {
 	dir := environment.NewPaths(krewRoot).InstallPath()
 	var files []string
-	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(dir, func(_ string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}

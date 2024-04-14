@@ -43,7 +43,7 @@ This will reinstall all plugins that have a newer version in the local index.
 Use "kubectl krew update" to renew the index.
 To only upgrade single plugins provide them as arguments:
 kubectl krew upgrade foo bar"`,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			var ignoreUpgraded bool
 			var skipErrors bool
 
