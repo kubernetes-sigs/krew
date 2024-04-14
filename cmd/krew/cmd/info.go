@@ -38,7 +38,7 @@ var infoCmd = &cobra.Command{
 	Long:  `Show detailed information about an available plugin.`,
 	Example: `  kubectl krew info PLUGIN
   kubectl krew info INDEX/PLUGIN`,
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(_ *cobra.Command, args []string) error {
 		index, plugin := pathutil.CanonicalPluginName(args[0])
 
 		p, err := indexscanner.LoadPluginByName(paths.IndexPluginsPath(index), plugin)

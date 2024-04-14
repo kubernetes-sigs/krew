@@ -39,7 +39,7 @@ Remarks:
   - IndexPath is the directory that stores the local copy of the index git repository.
   - InstallPath is the directory for plugin installations.
   - BinPath is the directory for the symbolic links to the installed plugin executables.`,
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(_ *cobra.Command, _ []string) error {
 		conf := [][]string{
 			{"GitTag", version.GitTag()},
 			{"GitCommit", version.GitCommit()},

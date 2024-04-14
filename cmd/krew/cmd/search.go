@@ -66,7 +66,7 @@ Examples:
 
   To fuzzy search plugins with a keyword:
     kubectl krew search KEYWORD`,
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(_ *cobra.Command, args []string) error {
 		indexes, err := indexoperations.ListIndexes(paths)
 		if err != nil {
 			return errors.Wrap(err, "failed to list indexes")

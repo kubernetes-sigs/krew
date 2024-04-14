@@ -146,7 +146,7 @@ func Test_extractTARGZ(t *testing.T) {
 // "/" and appends "/" to directories.
 func collectFiles(t *testing.T, scanPath string) []string {
 	var outFiles []string
-	if err := filepath.Walk(scanPath, func(fp string, info os.FileInfo, err error) error {
+	if err := filepath.Walk(scanPath, func(fp string, info os.FileInfo, _ error) error {
 		if fp == scanPath {
 			return nil
 		}
@@ -417,8 +417,8 @@ func Test_extractArchive(t *testing.T) {
 		defaultExtractors = oldextractors
 	}()
 	defaultExtractors = map[string]extractor{
-		"application/octet-stream": func(targetDir string, read io.ReaderAt, size int64) error { return nil },
-		"text/plain":               func(targetDir string, read io.ReaderAt, size int64) error { return errors.New("fail test") },
+		"application/octet-stream": func(_ string, _ io.ReaderAt, _ int64) error { return nil },
+		"text/plain":               func(_ string, _ io.ReaderAt, _ int64) error { return errors.New("fail test") },
 	}
 	type args struct {
 		filename string
