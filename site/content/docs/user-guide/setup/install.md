@@ -14,6 +14,12 @@ Krew self-hosts).
 
 ## macOS/Linux {#posix}
 
+#### Homebrew
+
+```
+brew install krew
+```
+
 #### Bash or ZSH shells {#bash}
 
 1. Make sure that `git` is installed.
