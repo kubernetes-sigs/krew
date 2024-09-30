@@ -38,7 +38,7 @@ type searchItem struct {
 type searchCorpus []searchItem
 
 func (s searchCorpus) descriptions() []string {
-	var res = make([]string, len(s))
+	res := make([]string, 0, len(s))
 	for _, corpus := range s {
 		res = append(res, corpus.description)
 	}
@@ -46,7 +46,7 @@ func (s searchCorpus) descriptions() []string {
 }
 
 func (s searchCorpus) names() []string {
-	var res = make([]string, len(s))
+	res := make([]string, 0, len(s))
 	for _, corpus := range s {
 		res = append(res, corpus.name)
 	}
