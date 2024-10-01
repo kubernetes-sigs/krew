@@ -59,6 +59,16 @@ func Test_searchByNameAndDesc(t *testing.T) {
 			},
 			expected: []string{"baz"},
 		},
+    {
+      keyword: "",
+      names:   []string{"plugin1", "plugin2", "plugin3"}, // empty keyword, only names match
+      descs: []string{
+        "Description for plugin1",
+        "Description for plugin2",
+        "Description for plugin3",
+      },
+      expected: []string{"plugin1", "plugin2", "plugin3"},
+     },
 	}
 
 	for _, tp := range testPlugins {
