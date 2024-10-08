@@ -194,6 +194,21 @@ func (it *ITest) WithCustomIndexFromDefault(name string) *ITest {
 	return it
 }
 
+// IndexPluginCount returns the number of plugins available in a given index.
+func (it *ITest) IndexPluginCount(name string) int {
+	indexPath := environment.NewPaths(it.Root()).IndexPluginsPath(name)
+	indexDir, err := os.Open(indexPath)
+	if err != nil {
+		it.t.Fatal(err)
+	}
+	defer indexDir.Close()
+	plugins, err := indexDir.Readdirnames(-1)
+	if err != nil {
+		it.t.Fatal(err)
+	}
+	return len(plugins)
+}
+
 // WithEnv sets an environment variable for the krew run.
 func (it *ITest) WithEnv(key string, value interface{}) *ITest {
 	if key == "KREW_ROOT" {
