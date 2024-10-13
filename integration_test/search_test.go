@@ -19,6 +19,8 @@ import (
 	"sort"
 	"strings"
 	"testing"
+
+	"sigs.k8s.io/krew/pkg/constants"
 )
 
 func TestKrewSearchAll(t *testing.T) {
@@ -27,9 +29,10 @@ func TestKrewSearchAll(t *testing.T) {
 	test := NewTest(t)
 
 	output := test.WithDefaultIndex().Krew("search").RunOrFailOutput()
-	if plugins := lines(output); len(plugins) < 10 {
+	availablePlugins := test.IndexPluginCount(constants.DefaultIndexName)
+	if plugins := lines(output); len(plugins)-1 != availablePlugins {
 		// the first line is the header
-		t.Errorf("Expected at least %d plugins", len(plugins)-1)
+		t.Errorf("Expected %d plugins, got %d", availablePlugins, len(plugins)-1)
 	}
 }
 
