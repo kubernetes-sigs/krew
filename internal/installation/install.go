@@ -41,6 +41,8 @@ type installOperation struct {
 	pluginName string
 	platform   index.Platform
 
+	createSubCommand bool
+
 	installDir string
 	binDir     string
 }
@@ -79,8 +81,9 @@ func Install(p environment.Paths, plugin index.Plugin, indexName string, opts In
 		pluginName: plugin.Name,
 		platform:   candidate,
 
-		binDir:     p.BinPath(),
-		installDir: p.PluginVersionInstallPath(plugin.Name, plugin.Spec.Version),
+		createSubCommand: plugin.Spec.CreateSubCommand,
+		binDir:           p.BinPath(),
+		installDir:       p.PluginVersionInstallPath(plugin.Name, plugin.Spec.Version),
 	}, opts); err != nil {
 		return errors.Wrap(err, "install failed")
 	}
@@ -125,7 +128,7 @@ func install(op installOperation, opts InstallOpts) error {
 	if _, ok := pathutil.IsSubPath(subPathAbs, pathAbs); !ok {
 		return errors.Wrapf(err, "the fullPath %q does not extend the sub-fullPath %q", fullPath, op.installDir)
 	}
-	err = createOrUpdateLink(op.binDir, fullPath, op.pluginName)
+	err = createOrUpdateLink(op.binDir, fullPath, op.pluginName, op.createSubCommand)
 	return errors.Wrap(err, "failed to link installed plugin")
 }
 
@@ -170,6 +173,8 @@ func Uninstall(p environment.Paths, name string) error {
 
 	klog.V(1).Infof("Deleting plugin %s", name)
 
+	// Clarify: How can we handle this case? uninstalling a plugin does not have manifest provided.
+	// Maybe should store manifest used in binpath?
 	symlinkPath := filepath.Join(p.BinPath(), pluginNameToBin(name, IsWindows()))
 	klog.V(3).Infof("Unlink %q", symlinkPath)
 	if err := removeLink(symlinkPath); err != nil {
@@ -187,8 +192,8 @@ func Uninstall(p environment.Paths, name string) error {
 	return errors.Wrapf(err, "could not remove plugin receipt %q", pluginReceiptPath)
 }
 
-func createOrUpdateLink(binDir, binary, plugin string) error {
-	dst := filepath.Join(binDir, pluginNameToBin(plugin, IsWindows()))
+func createOrUpdateLink(binDir, binary, plugin string, createSubCommand bool) error {
+	dst := filepath.Join(binDir, pluginNameToBin(plugin, IsWindows(), createSubCommand))
 
 	if err := removeLink(dst); err != nil {
 		return errors.Wrap(err, "failed to remove old symlink")
@@ -238,7 +243,10 @@ func IsWindows() bool {
 
 // pluginNameToBin creates the name of the symlink file for the plugin name.
 // It converts dashes to underscores.
-func pluginNameToBin(name string, isWindows bool) string {
+func pluginNameToBin(name string, isWindows bool, createSubCommand bool) string {
+	if createSubCommand && !isWindows {
+		return name
+	}
 	name = strings.ReplaceAll(name, "-", "_")
 	name = "kubectl-" + name
 	if isWindows {
