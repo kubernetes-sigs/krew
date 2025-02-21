@@ -12,9 +12,8 @@ time.
 
 To see your plugin’s download statistics over time:
 
-1. Visit the [stats.krew.dev] dashboard.
-2. Click the “Individual Plugin Stats” report.
-3. Choose your plugin from the dropdown and browse the data for your plugin.
+1. Visit the [krew-index-tracker] dashboard.
+2. Choose your plugin from the dropdown and browse the data for your plugin.
 
 This data is obtained by scraping the downloads count of your plugin assets via
 the [GitHub API] regularly. Since Krew does not track its users, this data:
@@ -28,8 +27,8 @@ the [GitHub API] regularly. Since Krew does not track its users, this data:
 > its availability and accuracy.
 >
 > The scraping code can be found
-> [here](https://github.com/corneliusweig/krew-index-tracker).
+> [here](https://github.com/predatorray/krew-index-tracker).
 
 [GitHub releases]: https://help.github.com/en/github/administering-a-repository/managing-releases-in-a-repository
-[stats.krew.dev]: https://datastudio.google.com/c/reporting/f74370a0-adcf-4cec-b7bd-a58c638948f5/page/Ufl7
+[krew-index-tracker]: https://predatorray.github.io/krew-index-tracker/
 [GitHub API]: https://developer.github.com/v3/repos/releases/#list-assets-for-a-release
