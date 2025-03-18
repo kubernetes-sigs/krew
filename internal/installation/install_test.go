@@ -79,10 +79,11 @@ func Test_moveTargets(t *testing.T) {
 
 func Test_createOrUpdateLink(t *testing.T) {
 	tests := []struct {
-		name       string
-		pluginName string
-		binary     string
-		wantErr    bool
+		name             string
+		pluginName       string
+		binary           string
+		createSubCommand bool
+		wantErr          bool
 	}{
 		{
 			name:       "normal link",
@@ -107,7 +108,7 @@ func Test_createOrUpdateLink(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tmpDir := testutil.NewTempDir(t)
 
-			if err := createOrUpdateLink(tmpDir.Root(), tt.binary, tt.pluginName); (err != nil) != tt.wantErr {
+			if err := createOrUpdateLink(tmpDir.Root(), tt.binary, tt.pluginName, tt.createSubCommand); (err != nil) != tt.wantErr {
 				t.Errorf("createOrUpdateLink() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -116,18 +117,19 @@ func Test_createOrUpdateLink(t *testing.T) {
 
 func Test_pluginNameToBin(t *testing.T) {
 	tests := []struct {
-		name      string
-		isWindows bool
-		want      string
+		name             string
+		isWindows        bool
+		createSubCommand bool
+		want             string
 	}{
-		{"foo", false, "kubectl-foo"},
-		{"foo-bar", false, "kubectl-foo_bar"},
-		{"foo", true, "kubectl-foo.exe"},
-		{"foo-bar", true, "kubectl-foo_bar.exe"},
+		{"foo", false, false, "kubectl-foo"},
+		{"foo-bar", false, false, "kubectl-foo_bar"},
+		{"foo", true, false, "kubectl-foo.exe"},
+		{"foo-bar", true, false, "kubectl-foo_bar.exe"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := pluginNameToBin(tt.name, tt.isWindows); got != tt.want {
+			if got := pluginNameToBin(tt.name, tt.isWindows, tt.createSubCommand); got != tt.want {
 				t.Errorf("pluginNameToBin(%v, %v) = %v; want %v", tt.name, tt.isWindows, got, tt.want)
 			}
 		})

@@ -34,6 +34,11 @@ type PluginSpec struct {
 	Caveats          string `json:"caveats,omitempty"`
 	Homepage         string `json:"homepage,omitempty"`
 
+	// CreateSubCommand specifies whether the plugin should be installed as a
+	// create subcommand. If true, the plugin will preserve first 'create' word
+	// in the plugin name.
+	CreateSubCommand bool `json:"createSubCommand,omitempty"`
+
 	Platforms []Platform `json:"platforms,omitempty"`
 }
 
