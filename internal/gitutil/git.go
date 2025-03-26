@@ -84,8 +84,7 @@ func Exec(pwd string, args ...string) (string, error) {
 		// Workaround on windows. git for windows can't handle @{uptream} as same as
 		// given. Disable glob for this command if running on Cygwin or MSYS2.
 		envs := os.Environ()
-		envs = append(envs, "CYGWIN=noglob "+os.Getenv("CYGWIN"))
-		envs = append(envs, "MSYS=noglob "+os.Getenv("MSYS"))
+		envs = append(envs, "MSYS=noglob "+os.Getenv("MSYS"), "CYGWIN=noglob "+os.Getenv("CYGWIN"))
 		cmd.Env = envs
 	}
 	buf := bytes.Buffer{}
