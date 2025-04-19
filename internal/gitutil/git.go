@@ -20,6 +20,7 @@ import (
 	"os"
 	osexec "os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -79,6 +80,13 @@ func Exec(pwd string, args ...string) (string, error) {
 	klog.V(4).Infof("Going to run git %s", strings.Join(args, " "))
 	cmd := osexec.Command("git", args...)
 	cmd.Dir = pwd
+	if runtime.GOOS == "windows" {
+		// Workaround on windows. git for windows can't handle @{uptream} as same as
+		// given. Disable glob for this command if running on Cygwin or MSYS2.
+		envs := os.Environ()
+		envs = append(envs, "MSYS=noglob "+os.Getenv("MSYS"), "CYGWIN=noglob "+os.Getenv("CYGWIN"))
+		cmd.Env = envs
+	}
 	buf := bytes.Buffer{}
 	var w io.Writer = &buf
 	if klog.V(2).Enabled() {
