@@ -114,7 +114,7 @@ func init() {
 func preRun(_ *cobra.Command, _ []string) error {
 	// check must be done before ensureDirs, to detect krew's self-installation
 	if !internal.IsBinDirInPATH(paths) {
-		internal.PrintWarning(os.Stderr, internal.SetupInstructions()+"\n\n")
+		internal.PrintWarning(os.Stderr, "%s", internal.SetupInstructions()+"\n\n")
 	}
 
 	if err := ensureDirs(paths.BasePath(),
