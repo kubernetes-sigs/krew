@@ -36,5 +36,5 @@ func Done(newPaths environment.Paths) (bool, error) {
 	hasInstalledPlugins := len(plugins) > 0
 	hasNoReceipts := len(receipts) == 0
 
-	return !(hasInstalledPlugins && hasNoReceipts), nil
+	return !(hasInstalledPlugins && hasNoReceipts), nil //nolint:staticcheck // de morgan's law is not necessary here
 }

@@ -57,7 +57,7 @@ func NewPlugin() *P {
 	}}
 }
 
-func (p *P) WithName(s string) *P                 { p.v.ObjectMeta.Name = s; return p }
+func (p *P) WithName(s string) *P                 { p.v.Name = s; return p }
 func (p *P) WithShortDescription(v string) *P     { p.v.Spec.ShortDescription = v; return p }
 func (p *P) WithTypeMeta(v metav1.TypeMeta) *P    { p.v.TypeMeta = v; return p }
 func (p *P) WithPlatforms(v ...index.Platform) *P { p.v.Spec.Platforms = v; return p }
