@@ -16,13 +16,13 @@ jobs:
     steps:
 
     - name: Set up Go ${{ matrix.goVer }}
-      uses: actions/setup-go@v3
+      uses: actions/setup-go@v5
       with:
         go-version: '1.22'
       id: go
 
     - name: Check out code into the Go module directory
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
@@ -72,7 +72,7 @@ jobs:
     - name: Create a new release
       if: contains(github.ref, 'tags')
       id: create_release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         name: Release ${{ github.ref_name }}
         files: out/krew*
