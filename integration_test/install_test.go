@@ -26,7 +26,8 @@ import (
 )
 
 const (
-	fooPlugin = "foo"
+	fooPlugin         = "foo"
+	fooPluginFilename = "foo-bar-baz"
 )
 
 func TestKrewInstall(t *testing.T) {
@@ -194,7 +195,7 @@ func TestKrewInstall_ManifestAndArchive(t *testing.T) {
 		"--manifest", filepath.Join("testdata", fooPlugin+constants.ManifestExtension),
 		"--archive", filepath.Join("testdata", fooPlugin+".tar.gz")).
 		RunOrFail()
-	test.AssertExecutableInPATH("kubectl-" + fooPlugin)
+	test.AssertExecutableInPATH("kubectl-" + fooPluginFilename)
 	test.AssertPluginFromIndex(fooPlugin, "detached")
 }
 

@@ -107,7 +107,7 @@ func Test_createOrUpdateLink(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tmpDir := testutil.NewTempDir(t)
 
-			if err := createOrUpdateLink(tmpDir.Root(), tt.binary, tt.pluginName); (err != nil) != tt.wantErr {
+			if err := createOrUpdateLink(tmpDir.Root(), tt.binary, tt.pluginName, nil); (err != nil) != tt.wantErr {
 				t.Errorf("createOrUpdateLink() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -127,7 +127,7 @@ func Test_pluginNameToBin(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := pluginNameToBin(tt.name, tt.isWindows); got != tt.want {
+			if got := pluginNameToBin(tt.name, nil, tt.isWindows); got != tt.want {
 				t.Errorf("pluginNameToBin(%v, %v) = %v; want %v", tt.name, tt.isWindows, got, tt.want)
 			}
 		})

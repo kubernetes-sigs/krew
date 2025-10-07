@@ -69,6 +69,7 @@ func Upgrade(p environment.Paths, plugin index.Plugin, indexName string) error {
 	klog.V(1).Infof("Installing new version %s", newVersion)
 	if err := install(installOperation{
 		pluginName: plugin.Name,
+		command:    plugin.Spec.Command,
 		platform:   candidate,
 
 		installDir: p.PluginVersionInstallPath(plugin.Name, newVersion),

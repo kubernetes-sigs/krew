@@ -28,11 +28,12 @@ type Plugin struct {
 
 // PluginSpec is the plugin specification.
 type PluginSpec struct {
-	Version          string `json:"version,omitempty"`
-	ShortDescription string `json:"shortDescription,omitempty"`
-	Description      string `json:"description,omitempty"`
-	Caveats          string `json:"caveats,omitempty"`
-	Homepage         string `json:"homepage,omitempty"`
+	Version          string   `json:"version,omitempty"`
+	Command          []string `json:"command,omitempty"`
+	ShortDescription string   `json:"shortDescription,omitempty"`
+	Description      string   `json:"description,omitempty"`
+	Caveats          string   `json:"caveats,omitempty"`
+	Homepage         string   `json:"homepage,omitempty"`
 
 	Platforms []Platform `json:"platforms,omitempty"`
 }

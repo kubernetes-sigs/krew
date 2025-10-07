@@ -5,6 +5,7 @@ metadata:
 spec:
   version: "v0.1.0"
   shortDescription: A valid plugin for integration tests
+  command: ["foo", "bar", "baz"]
   platforms:
     - uri: https://foo.bar/foo.tar.gz
       sha256: 354bad230cdd0966fc8c919476c4e6c7f2078b04a6ff7dead6a811cdc101d31e

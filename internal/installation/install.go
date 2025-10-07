@@ -39,6 +39,7 @@ type InstallOpts struct {
 
 type installOperation struct {
 	pluginName string
+	command    []string
 	platform   index.Platform
 
 	installDir string
@@ -77,6 +78,7 @@ func Install(p environment.Paths, plugin index.Plugin, indexName string, opts In
 	klog.V(3).Infof("Install plugin %s at version=%s", plugin.Name, plugin.Spec.Version)
 	if err := install(installOperation{
 		pluginName: plugin.Name,
+		command:    plugin.Spec.Command,
 		platform:   candidate,
 
 		binDir:     p.BinPath(),
@@ -125,7 +127,7 @@ func install(op installOperation, opts InstallOpts) error {
 	if _, ok := pathutil.IsSubPath(subPathAbs, pathAbs); !ok {
 		return errors.Wrapf(err, "the fullPath %q does not extend the sub-fullPath %q", fullPath, op.installDir)
 	}
-	err = createOrUpdateLink(op.binDir, fullPath, op.pluginName)
+	err = createOrUpdateLink(op.binDir, fullPath, op.pluginName, op.command)
 	return errors.Wrap(err, "failed to link installed plugin")
 }
 
@@ -170,7 +172,7 @@ func Uninstall(p environment.Paths, name string) error {
 
 	klog.V(1).Infof("Deleting plugin %s", name)
 
-	symlinkPath := filepath.Join(p.BinPath(), pluginNameToBin(name, IsWindows()))
+	symlinkPath := filepath.Join(p.BinPath(), pluginNameToBin(name, nil, IsWindows()))
 	klog.V(3).Infof("Unlink %q", symlinkPath)
 	if err := removeLink(symlinkPath); err != nil {
 		return errors.Wrap(err, "could not uninstall symlink of plugin")
@@ -187,8 +189,8 @@ func Uninstall(p environment.Paths, name string) error {
 	return errors.Wrapf(err, "could not remove plugin receipt %q", pluginReceiptPath)
 }
 
-func createOrUpdateLink(binDir, binary, plugin string) error {
-	dst := filepath.Join(binDir, pluginNameToBin(plugin, IsWindows()))
+func createOrUpdateLink(binDir, binary, plugin string, command []string) error {
+	dst := filepath.Join(binDir, pluginNameToBin(plugin, command, IsWindows()))
 
 	if err := removeLink(dst); err != nil {
 		return errors.Wrap(err, "failed to remove old symlink")
@@ -238,8 +240,12 @@ func IsWindows() bool {
 
 // pluginNameToBin creates the name of the symlink file for the plugin name.
 // It converts dashes to underscores.
-func pluginNameToBin(name string, isWindows bool) string {
-	name = strings.ReplaceAll(name, "-", "_")
+func pluginNameToBin(name string, command []string, isWindows bool) string {
+	if len(command) == 0 {
+		name = strings.ReplaceAll(name, "-", "_")
+	} else {
+		name = strings.Join(command, "-")
+	}
 	name = "kubectl-" + name
 	if isWindows {
 		name += ".exe"
