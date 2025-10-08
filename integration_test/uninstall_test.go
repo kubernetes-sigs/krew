@@ -46,6 +46,44 @@ func TestKrewUninstall(t *testing.T) {
 	}
 }
 
+func TestKrewUninstallWithCommand(t *testing.T) {
+	const fooPlugin = "foo"
+
+	skipShort(t)
+
+	test := NewTest(t)
+
+	test = test.WithDefaultIndex()
+
+	if _, err := test.Krew("uninstall").Run(); err == nil {
+		t.Fatal("expected failure without no arguments")
+	}
+	if _, err := test.Krew("uninstall", fooPlugin).Run(); err == nil {
+		t.Fatal("expected failure deleting non-installed plugin")
+	}
+	test.Krew("install",
+		"--manifest", filepath.Join("testdata", fooPlugin+constants.ManifestExtension),
+		"--archive", filepath.Join("testdata", fooPlugin+".tar.gz")).
+		RunOrFail()
+
+	pluginFileLocation := test.AssertExecutableInPATH("kubectl-foo-bar-baz")
+
+	test.Krew("uninstall", fooPlugin).RunOrFailOutput()
+
+	test.AssertExecutableNotInPATH("kubectl-foo-bar-baz")
+
+	// Check explicitly to see if a symlink has been left behind
+	if _, err := os.Lstat(pluginFileLocation); err == nil {
+		t.Fatal("plugin link still exists: " + pluginFileLocation)
+	} else {
+		t.Logf("os.Stat reports error %s", err)
+	}
+
+	if _, err := test.Krew("uninstall", fooPlugin).Run(); err == nil {
+		t.Fatal("expected failure for uninstalled plugin")
+	}
+}
+
 func TestKrewUninstallPluginsFromCustomIndex(t *testing.T) {
 	skipShort(t)
 

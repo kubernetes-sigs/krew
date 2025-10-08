@@ -139,11 +139,13 @@ func (it *ITest) LookupExecutable(file string) (string, error) {
 }
 
 // AssertExecutableInPATH asserts that the executable file is in bin path.
-func (it *ITest) AssertExecutableInPATH(file string) {
+func (it *ITest) AssertExecutableInPATH(file string) string {
 	it.t.Helper()
-	if _, err := it.LookupExecutable(file); err != nil {
+	path, err := it.LookupExecutable(file)
+	if err != nil {
 		it.t.Fatalf("executable %s not in PATH: %+v", file, err)
 	}
+	return path
 }
 
 // AssertExecutableNotInPATH asserts that the executable file is not in bin
