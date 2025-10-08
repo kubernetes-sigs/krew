@@ -163,7 +163,8 @@ func Uninstall(p environment.Paths, name string) error {
 	}
 	klog.V(3).Infof("Finding installed version to delete")
 
-	if _, err := receipt.Load(p.PluginInstallReceiptPath(name)); err != nil {
+	var installReceipt, err = receipt.Load(p.PluginInstallReceiptPath(name))
+	if err != nil {
 		if os.IsNotExist(err) {
 			return ErrIsNotInstalled
 		}
@@ -172,7 +173,7 @@ func Uninstall(p environment.Paths, name string) error {
 
 	klog.V(1).Infof("Deleting plugin %s", name)
 
-	symlinkPath := filepath.Join(p.BinPath(), pluginNameToBin(name, nil, IsWindows()))
+	symlinkPath := filepath.Join(p.BinPath(), pluginNameToBin(name, installReceipt.Spec.Command, IsWindows()))
 	klog.V(3).Infof("Unlink %q", symlinkPath)
 	if err := removeLink(symlinkPath); err != nil {
 		return errors.Wrap(err, "could not uninstall symlink of plugin")
@@ -185,7 +186,7 @@ func Uninstall(p environment.Paths, name string) error {
 	}
 	pluginReceiptPath := p.PluginInstallReceiptPath(name)
 	klog.V(3).Infof("Deleting plugin receipt %q", pluginReceiptPath)
-	err := os.Remove(pluginReceiptPath)
+	err = os.Remove(pluginReceiptPath)
 	return errors.Wrapf(err, "could not remove plugin receipt %q", pluginReceiptPath)
 }
 
