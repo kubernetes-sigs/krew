@@ -81,6 +81,7 @@ func Test_createOrUpdateLink(t *testing.T) {
 	tests := []struct {
 		name       string
 		pluginName string
+		command    []string
 		binary     string
 		wantErr    bool
 	}{
@@ -97,6 +98,13 @@ func Test_createOrUpdateLink(t *testing.T) {
 			wantErr:    false,
 		},
 		{
+			name:       "command link",
+			pluginName: "foo",
+			command:    []string{"foo", "bar", "baz"},
+			binary:     filepath.Join(testdataPath(t), "plugin-foo", "kubectl-foo"),
+			wantErr:    false,
+		},
+		{
 			name:       "wrong path link",
 			pluginName: "foo",
 			binary:     filepath.Join(testdataPath(t), "plugin-foo", "foo", "not-exist"),
@@ -107,7 +115,7 @@ func Test_createOrUpdateLink(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tmpDir := testutil.NewTempDir(t)
 
-			if err := createOrUpdateLink(tmpDir.Root(), tt.binary, tt.pluginName, nil); (err != nil) != tt.wantErr {
+			if err := createOrUpdateLink(tmpDir.Root(), tt.binary, tt.pluginName, tt.command); (err != nil) != tt.wantErr {
 				t.Errorf("createOrUpdateLink() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -117,18 +125,21 @@ func Test_createOrUpdateLink(t *testing.T) {
 func Test_pluginNameToBin(t *testing.T) {
 	tests := []struct {
 		name      string
+		command   []string
 		isWindows bool
 		want      string
 	}{
-		{"foo", false, "kubectl-foo"},
-		{"foo-bar", false, "kubectl-foo_bar"},
-		{"foo", true, "kubectl-foo.exe"},
-		{"foo-bar", true, "kubectl-foo_bar.exe"},
+		{"foo", nil, false, "kubectl-foo"},
+		{"foo-bar", nil, false, "kubectl-foo_bar"},
+		{"foo", []string{"foo", "bar", "baz"}, false, "kubectl-foo-bar-baz"},
+		{"foo", nil, true, "kubectl-foo.exe"},
+		{"foo-bar", nil, true, "kubectl-foo_bar.exe"},
+		{"foo", []string{"foo", "bar", "baz"}, true, "kubectl-foo-bar-baz.exe"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := pluginNameToBin(tt.name, nil, tt.isWindows); got != tt.want {
-				t.Errorf("pluginNameToBin(%v, %v) = %v; want %v", tt.name, tt.isWindows, got, tt.want)
+			if got := pluginNameToBin(tt.name, tt.command, tt.isWindows); got != tt.want {
+				t.Errorf("pluginNameToBin(%v, %v, %v) = %v; want %v", tt.name, tt.command, tt.isWindows, got, tt.want)
 			}
 		})
 	}
