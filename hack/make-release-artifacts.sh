@@ -41,8 +41,9 @@ while IFS= read -r -d $'\0' f; do
   (
     cd "${archive_dir}"
     # consistent timestamps for files in archive dir to ensure consistent checksums
-    TZ=UTC touch -t "0001010000" ./*
-    tar --use-compress-program "gzip --no-name" -cvf "${SCRIPTDIR}/../out/${archive}" ./*
+    # use the date of the latest release tag to backdate the files
+    TZ=UTC touch --date="$(git show --no-patch --format=%ci $(git describe --tags --abbrev=0))" ./*
+    tar --use-compress-program="gzip --no-name" --no-xattrs --exclude=".*" -cvf "${SCRIPTDIR}/../out/${archive}" *
   )
 
   # create sumfile
