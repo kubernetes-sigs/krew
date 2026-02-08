@@ -197,10 +197,16 @@ func createOrUpdateLink(binDir, binary, plugin string) error {
 		return errors.Wrapf(err, "can't create symbolic link, source binary (%q) cannot be found in extracted archive", binary)
 	}
 
-	// Create new
-	klog.V(2).Infof("Creating symlink to %q at %q", binary, dst)
-	if err := os.Symlink(binary, dst); err != nil {
-		return errors.Wrapf(err, "failed to create a symlink from %q to %q", binary, dst)
+	// Compute relative path from binDir to binary for portable symlinks
+	relPath, err := filepath.Rel(binDir, binary)
+	if err != nil {
+		return errors.Wrap(err, "failed to compute relative path for symlink")
+	}
+
+	// Create new symlink with relative path
+	klog.V(2).Infof("Creating relative symlink to %q at %q", relPath, dst)
+	if err := os.Symlink(relPath, dst); err != nil {
+		return errors.Wrapf(err, "failed to create a symlink from %q to %q", relPath, dst)
 	}
 	klog.V(2).Infof("Created symlink at %q", dst)
 
