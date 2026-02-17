@@ -60,3 +60,13 @@ machine api.example.com login apiuser password apipass
 		})
 	}
 }
+
+func TestFindNetrcEntry_MissingFile(t *testing.T) {
+	tmpDir := t.TempDir()
+	nonExistentPath := filepath.Join(tmpDir, "does-not-exist")
+
+	_, err := FindNetrcEntry("https://example.com/path", nonExistentPath)
+	if err == nil {
+		t.Error("Expected error when netrc file does not exist, got nil")
+	}
+}

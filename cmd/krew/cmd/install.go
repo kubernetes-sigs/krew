@@ -225,9 +225,11 @@ func readPluginFromURL(url string, enableNetrc bool, netrcFile string) (index.Pl
 
 	// Check for netrc credentials
 	if enableNetrc {
-		if entry, err := download.FindNetrcEntry(url, netrcFile); err != nil {
-			klog.V(3).Infof("Failed to parse .netrc: %v", err)
-		} else if entry != nil {
+		entry, err := download.FindNetrcEntry(url, netrcFile)
+		if err != nil {
+			return index.Plugin{}, errors.Wrap(err, "failed to load netrc credentials")
+		}
+		if entry != nil {
 			klog.V(3).Infof("Using netrc credentials for %s", entry.Machine)
 			auth := entry.Login + ":" + entry.Password
 			req.Header.Set("Authorization", "Basic "+base64.StdEncoding.EncodeToString([]byte(auth)))

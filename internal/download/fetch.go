@@ -16,6 +16,7 @@ package download
 
 import (
 	"encoding/base64"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -49,12 +50,14 @@ func (f HTTPFetcher) Get(uri string) (io.ReadCloser, error) {
 
 	// Check for netrc credentials
 	if f.EnableNetrc {
-		if entry, err := FindNetrcEntry(uri, f.NetrcFile); err != nil {
-			klog.V(3).Infof("Failed to parse .netrc: %v", err)
-		} else if entry != nil {
+		entry, err := FindNetrcEntry(uri, f.NetrcFile)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to load netrc credentials")
+		}
+		if entry != nil {
 			klog.V(3).Infof("Using netrc credentials for %s", entry.Machine)
 			auth := entry.Login + ":" + entry.Password
-			req.Header.Set("Authorization", "Basic "+base64.StdEncoding.EncodeToString([]byte(auth)))
+			req.Header.Set("Authorization", fmt.Sprintf("Basic %s", base64.StdEncoding.EncodeToString([]byte(auth))))
 		}
 	}
 

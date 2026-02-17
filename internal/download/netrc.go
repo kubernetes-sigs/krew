@@ -49,9 +49,6 @@ func FindNetrcEntry(uri, netrcFile string) (*NetrcEntry, error) {
 
 	n, err := netrc.Parse(netrcPath)
 	if err != nil {
-		if os.IsNotExist(err) {
-			return nil, nil // no .netrc file
-		}
 		return nil, err
 	}
 
