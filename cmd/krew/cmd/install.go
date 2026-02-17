@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"bufio"
+	"encoding/base64"
 	"fmt"
 	"net/http"
 	"os"
@@ -25,6 +26,7 @@ import (
 	"k8s.io/klog/v2"
 
 	"sigs.k8s.io/krew/cmd/krew/cmd/internal"
+	"sigs.k8s.io/krew/internal/download"
 	"sigs.k8s.io/krew/internal/index/indexscanner"
 	"sigs.k8s.io/krew/internal/index/validation"
 	"sigs.k8s.io/krew/internal/installation"
@@ -42,6 +44,8 @@ func init() {
 	var (
 		manifest, manifestURL, archiveFileOverride *string
 		noUpdateIndex                              *bool
+		enableNetrc                                *bool
+		netrcFile                                  *string
 	)
 
 	// installCmd represents the install command
@@ -130,7 +134,7 @@ Remarks:
 					indexName: "detached",
 				})
 			} else if *manifestURL != "" {
-				plugin, err := readPluginFromURL(*manifestURL)
+				plugin, err := readPluginFromURL(*manifestURL, *enableNetrc, *netrcFile)
 				if err != nil {
 					return errors.Wrap(err, "failed to read plugin manifest file from url")
 				}
@@ -155,6 +159,8 @@ Remarks:
 				fmt.Fprintf(os.Stderr, "Installing plugin: %s\n", plugin.Name)
 				err := installation.Install(paths, plugin, entry.indexName, installation.InstallOpts{
 					ArchiveFileOverride: *archiveFileOverride,
+					EnableNetrc:         *enableNetrc,
+					NetrcFile:           *netrcFile,
 				})
 				if err == installation.ErrIsAlreadyInstalled {
 					klog.Warningf("Skipping plugin %q, it is already installed", plugin.Name)
@@ -203,19 +209,40 @@ Remarks:
 	manifestURL = installCmd.Flags().String("manifest-url", "", "(Development-only) specify plugin manifest file from url")
 	archiveFileOverride = installCmd.Flags().String("archive", "", "(Development-only) force all downloads to use the specified file")
 	noUpdateIndex = installCmd.Flags().Bool("no-update-index", false, "(Experimental) do not update local copy of plugin index before installing")
+	enableNetrc = installCmd.Flags().Bool("enable-netrc", false, "enable netrc authentication for downloads")
+	netrcFile = installCmd.Flags().String("netrc-file", "", "path to netrc file (default: ~/.netrc)")
 
 	rootCmd.AddCommand(installCmd)
 }
 
-func readPluginFromURL(url string) (index.Plugin, error) {
+func readPluginFromURL(url string, enableNetrc bool, netrcFile string) (index.Plugin, error) {
 	klog.V(4).Infof("downloading manifest from url %s", url)
-	resp, err := http.Get(url)
+
+	req, err := http.NewRequest("GET", url, http.NoBody)
+	if err != nil {
+		return index.Plugin{}, errors.Wrapf(err, "failed to create request for %s", url)
+	}
+
+	// Check for netrc credentials
+	if enableNetrc {
+		if entry, err := download.FindNetrcEntry(url, netrcFile); err != nil {
+			klog.V(3).Infof("Failed to parse .netrc: %v", err)
+		} else if entry != nil {
+			klog.V(3).Infof("Using netrc credentials for %s", entry.Machine)
+			auth := entry.Login + ":" + entry.Password
+			req.Header.Set("Authorization", "Basic "+base64.StdEncoding.EncodeToString([]byte(auth)))
+		}
+	}
+
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return index.Plugin{}, errors.Wrapf(err, "request to url failed (%s)", url)
 	}
 	klog.V(4).Infof("manifest downloaded from url, status=%v headers=%v", resp.Status, resp.Header)
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		resp.Body.Close()
 		return index.Plugin{}, errors.Errorf("unexpected status code (http %d) from url", resp.StatusCode)
 	}
+	defer resp.Body.Close()
 	return indexscanner.ReadPlugin(resp.Body)
 }

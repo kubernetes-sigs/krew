@@ -5,6 +5,7 @@ go 1.25
 require (
 	github.com/fatih/color v1.18.0
 	github.com/google/go-cmp v0.7.0
+	github.com/jdx/go-netrc v1.0.0
 	github.com/mattn/go-isatty v0.0.20
 	github.com/pkg/errors v0.9.1
 	github.com/sahilm/fuzzy v0.1.1

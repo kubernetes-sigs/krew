@@ -49,7 +49,7 @@ func Test_readPluginFromURL(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := readPluginFromURL(tt.url)
+			got, err := readPluginFromURL(tt.url, false, "")
 			if (err != nil) != tt.wantErr {
 				t.Fatalf("readPluginFromURL() error = %v, wantErr %v", err, tt.wantErr)
 				return

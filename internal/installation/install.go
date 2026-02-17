@@ -35,6 +35,8 @@ import (
 // InstallOpts specifies options for plugin installation operation.
 type InstallOpts struct {
 	ArchiveFileOverride string
+	EnableNetrc         bool
+	NetrcFile           string
 }
 
 type installOperation struct {
@@ -104,7 +106,7 @@ func install(op installOperation, opts InstallOpts) error {
 			klog.Warningf("failed to clean up download staging directory: %s", err)
 		}
 	}()
-	if err := downloadAndExtract(downloadStagingDir, op.platform.URI, op.platform.Sha256, opts.ArchiveFileOverride); err != nil {
+	if err := downloadAndExtract(downloadStagingDir, op.platform.URI, op.platform.Sha256, opts.ArchiveFileOverride, opts.EnableNetrc, opts.NetrcFile); err != nil {
 		return errors.Wrap(err, "failed to unpack into staging dir")
 	}
 
@@ -139,8 +141,11 @@ func applyDefaults(platform *index.Platform) {
 // downloadAndExtract downloads the specified archive uri (or uses the provided overrideFile, if a non-empty value)
 // while validating its checksum with the provided sha256sum, and extracts its contents to extractDir that must be.
 // created.
-func downloadAndExtract(extractDir, uri, sha256sum, overrideFile string) error {
-	var fetcher download.Fetcher = download.HTTPFetcher{}
+func downloadAndExtract(extractDir, uri, sha256sum, overrideFile string, enableNetrc bool, netrcFile string) error {
+	var fetcher download.Fetcher = download.HTTPFetcher{
+		EnableNetrc: enableNetrc,
+		NetrcFile:   netrcFile,
+	}
 	if overrideFile != "" {
 		fetcher = download.NewFileFetcher(overrideFile)
 	}
