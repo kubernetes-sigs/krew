@@ -29,7 +29,7 @@ import (
 
 // Upgrade will reinstall and delete the old plugin. The operation tries
 // to not get the plugin dir in a bad state if it fails during the process.
-func Upgrade(p environment.Paths, plugin index.Plugin, indexName string) error {
+func Upgrade(p environment.Paths, plugin index.Plugin, indexName string, opts InstallOpts) error {
 	installReceipt, err := receipt.Load(p.PluginInstallReceiptPath(plugin.Name))
 	if err != nil {
 		return errors.Wrapf(err, "failed to load install receipt for plugin %q", plugin.Name)
@@ -73,7 +73,7 @@ func Upgrade(p environment.Paths, plugin index.Plugin, indexName string) error {
 
 		installDir: p.PluginVersionInstallPath(plugin.Name, newVersion),
 		binDir:     p.BinPath(),
-	}, InstallOpts{}); err != nil {
+	}, opts); err != nil {
 		return errors.Wrap(err, "failed to install new version")
 	}
 

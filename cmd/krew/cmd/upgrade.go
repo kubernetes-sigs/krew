@@ -33,6 +33,8 @@ import (
 
 func init() {
 	var noUpdateIndex *bool
+	var enableNetrc *bool
+	var netrcFile *string
 
 	// upgradeCmd represents the upgrade command
 	var upgradeCmd = &cobra.Command{
@@ -95,7 +97,10 @@ kubectl krew upgrade foo bar"`,
 				pluginDisplayName := displayName(plugin, indexName)
 				if err == nil {
 					fmt.Fprintf(os.Stderr, "Upgrading plugin: %s\n", pluginDisplayName)
-					err = installation.Upgrade(paths, plugin, indexName)
+					err = installation.Upgrade(paths, plugin, indexName, installation.InstallOpts{
+						EnableNetrc: *enableNetrc,
+						NetrcFile:   *netrcFile,
+					})
 					if ignoreUpgraded && err == installation.ErrIsAlreadyUpgraded {
 						fmt.Fprintf(os.Stderr, "Skipping plugin %s, it is already on the newest version\n", pluginDisplayName)
 						continue
@@ -129,5 +134,7 @@ kubectl krew upgrade foo bar"`,
 	}
 
 	noUpdateIndex = upgradeCmd.Flags().Bool("no-update-index", false, "(Experimental) do not update local copy of plugin index before upgrading")
+	enableNetrc = upgradeCmd.Flags().Bool("enable-netrc", false, "enable .netrc file authentication for plugin downloads")
+	netrcFile = upgradeCmd.Flags().String("netrc-file", "", "path to .netrc file for authentication (defaults to ~/.netrc)")
 	rootCmd.AddCommand(upgradeCmd)
 }
