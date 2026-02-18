@@ -232,7 +232,7 @@ func readPluginFromURL(url string, enableNetrc bool, netrcFile string) (index.Pl
 		if entry != nil {
 			klog.V(3).Infof("Using netrc credentials for %s", entry.Machine)
 			auth := entry.Login + ":" + entry.Password
-			req.Header.Set("Authorization", "Basic "+base64.StdEncoding.EncodeToString([]byte(auth)))
+			req.Header.Set("Authorization", fmt.Sprintf("Basic %s", base64.StdEncoding.EncodeToString([]byte(auth))))
 		}
 	}
 
