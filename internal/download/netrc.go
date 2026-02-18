@@ -15,6 +15,7 @@
 package download
 
 import (
+	"net"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -62,26 +63,15 @@ func FindNetrcEntry(uri, netrcFile string) (*NetrcEntry, error) {
 	}
 
 	// Try without port
-	host := u.Host
-	if colonIndex := findLastColon(host); colonIndex != -1 {
-		host = host[:colonIndex]
-	}
-	if machine := n.Machine(host); machine != nil {
-		return &NetrcEntry{
-			Machine:  host,
-			Login:    machine.Get("login"),
-			Password: machine.Get("password"),
-		}, nil
+	if host, _, err := net.SplitHostPort(u.Host); err == nil {
+		if machine := n.Machine(host); machine != nil {
+			return &NetrcEntry{
+				Machine:  host,
+				Login:    machine.Get("login"),
+				Password: machine.Get("password"),
+			}, nil
+		}
 	}
 
 	return nil, nil
-}
-
-func findLastColon(s string) int {
-	for i := len(s) - 1; i >= 0; i-- {
-		if s[i] == ':' {
-			return i
-		}
-	}
-	return -1
 }
