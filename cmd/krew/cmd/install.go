@@ -16,11 +16,9 @@ package cmd
 
 import (
 	"bufio"
-	"encoding/base64"
 	"fmt"
 	"net/http"
 	"os"
-	"path/filepath"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -218,8 +216,8 @@ Remarks:
 	manifestURL = installCmd.Flags().String("manifest-url", "", "(Development-only) specify plugin manifest file from url")
 	archiveFileOverride = installCmd.Flags().String("archive", "", "(Development-only) force all downloads to use the specified file")
 	noUpdateIndex = installCmd.Flags().Bool("no-update-index", false, "(Experimental) do not update local copy of plugin index before installing")
-	enableNetrc = installCmd.Flags().Bool("enable-netrc", false, "enable netrc authentication for downloads")
-	netrcFile = installCmd.Flags().String("netrc-file", defaultNetrcFile, "path to netrc file (default: ~/.netrc or ~/_netrc on Windows)")
+	enableNetrc = installCmd.Flags().Bool("enable-netrc", false, "read .netrc file for login credentials, used for downloading plugin packages")
+	netrcFile = installCmd.Flags().String("netrc-file", defaultNetrcFile, "path to .netrc file for authentication (defaults to ~/.netrc or %HOME%/_netrc on Windows)")
 
 	rootCmd.AddCommand(installCmd)
 }
@@ -240,8 +238,7 @@ func readPluginFromURL(url string, enableNetrc bool, netrcFile string) (index.Pl
 		}
 		if entry != nil {
 			klog.V(3).Infof("Using netrc credentials for %s", entry.Machine)
-			auth := entry.Login + ":" + entry.Password
-			req.Header.Set("Authorization", fmt.Sprintf("Basic %s", base64.StdEncoding.EncodeToString([]byte(auth))))
+			req.SetBasicAuth(entry.Login, entry.Password)
 		}
 	}
 

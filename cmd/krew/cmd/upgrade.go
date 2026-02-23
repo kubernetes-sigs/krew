@@ -17,7 +17,6 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -143,7 +142,7 @@ kubectl krew upgrade foo bar"`,
 	}
 
 	noUpdateIndex = upgradeCmd.Flags().Bool("no-update-index", false, "(Experimental) do not update local copy of plugin index before upgrading")
-	enableNetrc = upgradeCmd.Flags().Bool("enable-netrc", false, "enable .netrc file authentication for plugin downloads")
-	netrcFile = upgradeCmd.Flags().String("netrc-file", defaultNetrcFile, "path to .netrc file for authentication (defaults to ~/.netrc or ~/_netrc on Windows)")
+	enableNetrc = upgradeCmd.Flags().Bool("enable-netrc", false, "read .netrc file for login credentials, used for downloading plugin packages")
+	netrcFile = upgradeCmd.Flags().String("netrc-file", defaultNetrcFile, "path to .netrc file for authentication (defaults to ~/.netrc or %HOME%/_netrc on Windows)")
 	rootCmd.AddCommand(upgradeCmd)
 }
