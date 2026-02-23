@@ -17,6 +17,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -35,6 +36,14 @@ func init() {
 	var noUpdateIndex *bool
 	var enableNetrc *bool
 	var netrcFile *string
+
+	// Resolve default netrc file path
+	defaultNetrcFile, err := resolveNetrcFile("")
+	if err != nil {
+		// If we can't resolve home directory, fall back to empty string
+		// The error will be handled later when netrc is actually used
+		defaultNetrcFile = ""
+	}
 
 	// upgradeCmd represents the upgrade command
 	var upgradeCmd = &cobra.Command{
@@ -135,6 +144,6 @@ kubectl krew upgrade foo bar"`,
 
 	noUpdateIndex = upgradeCmd.Flags().Bool("no-update-index", false, "(Experimental) do not update local copy of plugin index before upgrading")
 	enableNetrc = upgradeCmd.Flags().Bool("enable-netrc", false, "enable .netrc file authentication for plugin downloads")
-	netrcFile = upgradeCmd.Flags().String("netrc-file", "", "path to .netrc file for authentication (defaults to ~/.netrc)")
+	netrcFile = upgradeCmd.Flags().String("netrc-file", defaultNetrcFile, "path to .netrc file for authentication (defaults to ~/.netrc or ~/_netrc on Windows)")
 	rootCmd.AddCommand(upgradeCmd)
 }

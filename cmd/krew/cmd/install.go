@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -47,6 +48,14 @@ func init() {
 		enableNetrc                                *bool
 		netrcFile                                  *string
 	)
+
+	// Resolve default netrc file path
+	defaultNetrcFile, err := resolveNetrcFile("")
+	if err != nil {
+		// If we can't resolve home directory, fall back to empty string
+		// The error will be handled later when netrc is actually used
+		defaultNetrcFile = ""
+	}
 
 	// installCmd represents the install command
 	installCmd := &cobra.Command{
@@ -157,7 +166,7 @@ Remarks:
 			for _, entry := range install {
 				plugin := entry.p
 				fmt.Fprintf(os.Stderr, "Installing plugin: %s\n", plugin.Name)
-				err := installation.Install(paths, plugin, entry.indexName, installation.InstallOpts{
+				err = installation.Install(paths, plugin, entry.indexName, installation.InstallOpts{
 					ArchiveFileOverride: *archiveFileOverride,
 					EnableNetrc:         *enableNetrc,
 					NetrcFile:           *netrcFile,
@@ -210,7 +219,7 @@ Remarks:
 	archiveFileOverride = installCmd.Flags().String("archive", "", "(Development-only) force all downloads to use the specified file")
 	noUpdateIndex = installCmd.Flags().Bool("no-update-index", false, "(Experimental) do not update local copy of plugin index before installing")
 	enableNetrc = installCmd.Flags().Bool("enable-netrc", false, "enable netrc authentication for downloads")
-	netrcFile = installCmd.Flags().String("netrc-file", "", "path to netrc file (default: ~/.netrc)")
+	netrcFile = installCmd.Flags().String("netrc-file", defaultNetrcFile, "path to netrc file (default: ~/.netrc or ~/_netrc on Windows)")
 
 	rootCmd.AddCommand(installCmd)
 }

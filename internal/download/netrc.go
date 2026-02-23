@@ -15,12 +15,10 @@
 package download
 
 import (
-	"net"
+	"fmt"
 	"net/url"
-	"os"
-	"path/filepath"
 
-	"github.com/jdx/go-netrc"
+	"github.com/git-lfs/go-netrc/netrc"
 )
 
 // NetrcEntry represents a single entry in .netrc
@@ -34,41 +32,23 @@ type NetrcEntry struct {
 func FindNetrcEntry(uri, netrcFile string) (*NetrcEntry, error) {
 	u, err := url.Parse(uri)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse URL %q: %w", uri, err)
 	}
 
-	var netrcPath string
-	if netrcFile != "" {
-		netrcPath = netrcFile
-	} else {
-		homeDir, err := os.UserHomeDir()
-		if err != nil {
-			return nil, err
-		}
-		netrcPath = filepath.Join(homeDir, ".netrc")
-	}
-
-	n, err := netrc.Parse(netrcPath)
+	n, err := netrc.ParseFile(netrcFile)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse netrc file %q: %w", netrcFile, err)
 	}
 
-	// Try exact match first
-	if machine := n.Machine(u.Host); machine != nil {
-		return &NetrcEntry{
-			Machine:  u.Host,
-			Login:    machine.Get("login"),
-			Password: machine.Get("password"),
-		}, nil
-	}
-
-	// Try without port
-	if host, _, err := net.SplitHostPort(u.Host); err == nil {
-		if machine := n.Machine(host); machine != nil {
+	// Use FindMachine which handles host:port matching automatically
+	// Pass empty string for login name since we don't have a specific login to match
+	if machine := n.FindMachine(u.Host, ""); machine != nil {
+		// Ensure both login and password are present
+		if machine.Login != "" && machine.Password != "" {
 			return &NetrcEntry{
-				Machine:  host,
-				Login:    machine.Get("login"),
-				Password: machine.Get("password"),
+				Machine:  machine.Name,
+				Login:    machine.Login,
+				Password: machine.Password,
 			}, nil
 		}
 	}
