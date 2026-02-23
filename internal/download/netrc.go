@@ -17,6 +17,7 @@ package download
 import (
 	"fmt"
 	"net/url"
+	"os"
 
 	"github.com/git-lfs/go-netrc/netrc"
 )
@@ -35,14 +36,20 @@ func FindNetrcEntry(uri, netrcFile string) (*NetrcEntry, error) {
 		return nil, fmt.Errorf("failed to parse URL %q: %w", uri, err)
 	}
 
-	n, err := netrc.ParseFile(netrcFile)
+	file, err := os.Open(netrcFile)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open netrc file %q: %w", netrcFile, err)
+	}
+	defer file.Close()
+
+	n, err := netrc.Parse(file)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse netrc file %q: %w", netrcFile, err)
 	}
 
 	// Use FindMachine which handles host:port matching automatically
 	// Pass empty string for login name since we don't have a specific login to match
-	if machine := n.FindMachine(u.Host, ""); machine != nil {
+	if machine := n.FindMachine(u.Hostname(), ""); machine != nil {
 		// Ensure both login and password are present
 		if machine.Login != "" && machine.Password != "" {
 			return &NetrcEntry{
