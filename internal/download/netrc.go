@@ -15,11 +15,11 @@
 package download
 
 import (
-	"fmt"
 	"net/url"
 	"os"
 
 	"github.com/git-lfs/go-netrc/netrc"
+	"github.com/pkg/errors"
 )
 
 // NetrcEntry represents a single entry in .netrc
@@ -33,18 +33,18 @@ type NetrcEntry struct {
 func FindNetrcEntry(uri, netrcFile string) (*NetrcEntry, error) {
 	u, err := url.Parse(uri)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse URL %q: %w", uri, err)
+		return nil, errors.Wrapf(err, "failed to parse URL %q", uri)
 	}
 
 	file, err := os.Open(netrcFile)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open netrc file %q: %w", netrcFile, err)
+		return nil, errors.Wrapf(err, "failed to open netrc file %q", netrcFile)
 	}
 	defer file.Close()
 
 	n, err := netrc.Parse(file)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse netrc file %q: %w", netrcFile, err)
+		return nil, errors.Wrapf(err, "failed to parse netrc file %q", netrcFile)
 	}
 
 	// Use FindMachine which handles host:port matching automatically
