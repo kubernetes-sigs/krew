@@ -1,7 +1,7 @@
 ---
 title: Serving Plugins Privately
 slug: private-plugins
-weight: 900
+weight: 850
 ---
 
 Plugin archives are the binary artifacts that contain the compiled plugin executable.  

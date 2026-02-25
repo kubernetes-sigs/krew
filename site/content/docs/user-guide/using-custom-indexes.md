@@ -11,6 +11,8 @@ installation procedure for a plugin. For discovery purposes, Krew comes with a
 However, some plugin authors may choose to host their own indexes that contain
 their curation of kubectl plugins. These are called "custom plugin indexes".
 
+If you need to serve your plugin archive behind authentication, see [this page]({{< ref "serving-plugins-privately.md" >}}).
+
 ## Adding a custom index
 
 A custom plugin index can be added with the `kubectl krew index add` command:
