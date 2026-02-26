@@ -9,6 +9,9 @@ on:
     branches:
       - '*'
 
+permissions:
+  contents: write
+
 jobs:
 
   build:
