@@ -45,7 +45,7 @@ Krew informs the user and retries to reinstall the package.
 On Windows it is not possible to modify a file/directory which is currently in
 use. This requires a special case for upgrading krew, which itself is a plugin,
 from krew. If krew upgrades itself, it is installing itself, instead of deleting
-the whole old directory it just deletes the old `/commands/` directory witch
+the whole old directory it just deletes the old `/commands/` directory which
 holds all the plugin descriptor files.
 
 This way only the new krew version is executed. If krew upgrade is executed
