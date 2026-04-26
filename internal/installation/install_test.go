@@ -467,6 +467,83 @@ func Test_reproduce_osSymlink_vs_createSymlink(t *testing.T) {
 	}
 }
 
+// Test_reproduce_oldCodePath_osSymlink_unresolved demonstrates the bug in the
+// old code path: os.Symlink() stores the raw (unresolved) path, which breaks
+// when platform symlinks are involved (e.g., macOS /var -> /private/var).
+// On Windows, os.Symlink() additionally requires elevated privileges.
+func Test_reproduce_oldCodePath_osSymlink_unresolved(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	resolvedTmpDir, err := filepath.EvalSymlinks(tmpDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if tmpDir == resolvedTmpDir {
+		t.Skip("no platform symlinks detected (e.g., macOS /var -> /private/var); symlink resolution bug not reproducible on this platform")
+	}
+
+	// Simulate a plugin binary inside an install directory that uses the
+	// unresolved path (as TempDir returns on macOS).
+	binaryPath := filepath.Join(tmpDir, "kubectl-bugdemo")
+	if err := os.WriteFile(binaryPath, []byte("#!/bin/sh\necho bugdemo"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	resolvedBinary, err := filepath.EvalSymlinks(binaryPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// OLD CODE PATH: os.Symlink stores the unresolved path verbatim.
+	binDir := filepath.Join(resolvedTmpDir, "bin")
+	if err := os.Mkdir(binDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	oldLink := filepath.Join(binDir, "kubectl-bugdemo_old")
+	if err := os.Symlink(binaryPath, oldLink); err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(oldLink)
+
+	oldTarget, err := os.Readlink(oldLink)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// BUG: the old code stores the unresolved path, which contains the
+	// platform symlink prefix (e.g., /var/folders/... instead of
+	// /private/var/folders/...). This means the link target and the
+	// resolved binary path don't match.
+	if oldTarget == resolvedBinary {
+		t.Fatal("UNEXPECTED: os.Symlink resolved the path; bug not reproducible")
+	}
+
+	// Prove the mismatch exists — this IS the bug.
+	t.Logf("BUG CONFIRMED: os.Symlink target = %q (unresolved)", oldTarget)
+	t.Logf("  expected resolved target       = %q", resolvedBinary)
+	if oldTarget != binaryPath {
+		t.Fatalf("expected os.Symlink to use unresolved path %q, got %q", binaryPath, oldTarget)
+	}
+
+	// NEW CODE PATH: createSymlink resolves the path first.
+	newLink := filepath.Join(binDir, "kubectl-bugdemo_new")
+	if err := createSymlink(binaryPath, newLink); err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(newLink)
+
+	newTarget, err := os.Readlink(newLink)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// The fix: createSymlink stores the RESOLVED path.
+	if newTarget != resolvedBinary {
+		t.Errorf("createSymlink target = %q; want resolved %q", newTarget, resolvedBinary)
+	}
+	t.Logf("FIX VERIFIED:  createSymlink target = %q (resolved)", newTarget)
+}
+
 func TestCleanupStaleKrewInstallations(t *testing.T) {
 	dir := testutil.NewTempDir(t)
 
