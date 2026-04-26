@@ -178,7 +178,7 @@ func Uninstall(p environment.Paths, name string) error {
 	symlinkPath := filepath.Join(p.BinPath(), pluginNameToBin(name, IsWindows()))
 	klog.V(3).Infof("Unlink %q", symlinkPath)
 	if err := removeLink(symlinkPath); err != nil {
-		return errors.Wrap(err, "could not uninstall symlink of plugin")
+		return errors.Wrap(err, "could not uninstall link of plugin")
 	}
 
 	pluginInstallPath := p.PluginInstallPath(name)
@@ -196,39 +196,39 @@ func createOrUpdateLink(binDir, binary, plugin string) error {
 	dst := filepath.Join(binDir, pluginNameToBin(plugin, IsWindows()))
 
 	if err := removeLink(dst); err != nil {
-		return errors.Wrap(err, "failed to remove old symlink")
+		return errors.Wrap(err, "failed to remove old link")
 	}
 	if _, err := os.Stat(binary); os.IsNotExist(err) {
-		return errors.Wrapf(err, "can't create symbolic link, source binary (%q) cannot be found in extracted archive", binary)
+		return errors.Wrapf(err, "can't create link, source binary (%q) cannot be found in extracted archive", binary)
 	}
 
 	// Create new
-	klog.V(2).Infof("Creating symlink to %q at %q", binary, dst)
-	if err := os.Symlink(binary, dst); err != nil {
-		return errors.Wrapf(err, "failed to create a symlink from %q to %q", binary, dst)
+	klog.V(2).Infof("Creating link to %q at %q", binary, dst)
+	if err := createSymlink(binary, dst); err != nil {
+		return errors.Wrapf(err, "failed to create a link from %q to %q", binary, dst)
 	}
-	klog.V(2).Infof("Created symlink at %q", dst)
+	klog.V(2).Infof("Created link at %q", dst)
 
 	return nil
 }
 
-// removeLink removes a symlink reference if exists.
+// removeLink removes a symlink or directory junction if it exists.
 func removeLink(path string) error {
 	fi, err := os.Lstat(path)
 	if os.IsNotExist(err) {
 		klog.V(3).Infof("No file found at %q", path)
 		return nil
 	} else if err != nil {
-		return errors.Wrapf(err, "failed to read the symlink in %q", path)
+		return errors.Wrapf(err, "failed to read the link in %q", path)
 	}
 
-	if fi.Mode()&os.ModeSymlink == 0 {
-		return errors.Errorf("file %q is not a symlink (mode=%s)", path, fi.Mode())
+	if !isLink(fi) {
+		return errors.Errorf("file %q is not a link (mode=%s)", path, fi.Mode())
 	}
 	if err := os.Remove(path); err != nil {
-		return errors.Wrapf(err, "failed to remove the symlink in %q", path)
+		return errors.Wrapf(err, "failed to remove the link in %q", path)
 	}
-	klog.V(3).Infof("Removed symlink from %q", path)
+	klog.V(3).Infof("Removed link from %q", path)
 	return nil
 }
 

@@ -291,6 +291,182 @@ func Test_applyDefaults(t *testing.T) {
 	}
 }
 
+func Test_bug_osSymlink_doesNotResolvePlatformSymlinks(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	resolvedTmpDir, err := filepath.EvalSymlinks(tmpDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if tmpDir == resolvedTmpDir {
+		t.Skip("no platform symlinks detected (e.g., macOS /var -> /private/var)")
+	}
+
+	binaryPath := filepath.Join(tmpDir, "kubectl-foo")
+	if err := os.WriteFile(binaryPath, []byte("#!/bin/sh\necho foo"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	linkPath := filepath.Join(resolvedTmpDir, "kubectl-foo-link")
+	if err := os.Symlink(binaryPath, linkPath); err != nil {
+		t.Fatalf("os.Symlink() error = %v", err)
+	}
+	defer os.Remove(linkPath)
+
+	target, err := os.Readlink(linkPath)
+	if err != nil {
+		t.Fatalf("os.Readlink() error = %v", err)
+	}
+
+	resolvedBinary, err := filepath.EvalSymlinks(binaryPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if target == resolvedBinary {
+		t.Fatal("UNEXPECTED: os.Symlink resolved the path; bug may be fixed at the OS level")
+	}
+	if target != binaryPath {
+		t.Fatalf("expected os.Symlink to store unresolved path %q, got %q", binaryPath, target)
+	}
+}
+
+func Test_createSymlink_exists(t *testing.T) {
+	tmpDir := testutil.NewTempDir(t)
+	src := filepath.Join(testdataPath(t), "plugin-foo", "kubectl-foo")
+	dst := filepath.Join(tmpDir.Root(), "kubectl-test_plugin")
+
+	if err := createSymlink(src, dst); err != nil {
+		t.Fatalf("createSymlink() error = %v", err)
+	}
+
+	fi, err := os.Lstat(dst)
+	if err != nil {
+		t.Fatalf("os.Lstat() error = %v", err)
+	}
+	if fi.Mode()&os.ModeSymlink == 0 {
+		t.Error("expected link to have ModeSymlink set")
+	}
+}
+
+func Test_createOrUpdateLink_usesCreateSymlink(t *testing.T) {
+	tmpDir := testutil.NewTempDir(t)
+	binary := filepath.Join(testdataPath(t), "plugin-foo", "kubectl-foo")
+
+	if err := createOrUpdateLink(tmpDir.Root(), binary, "test-plugin"); err != nil {
+		t.Fatalf("createOrUpdateLink() error = %v", err)
+	}
+
+	linkPath := filepath.Join(tmpDir.Root(), pluginNameToBin("test-plugin", IsWindows()))
+	fi, err := os.Lstat(linkPath)
+	if err != nil {
+		t.Fatalf("failed to lstat link: %v", err)
+	}
+	if fi.Mode()&os.ModeSymlink == 0 {
+		t.Fatal("expected link to have ModeSymlink set")
+	}
+
+	target, err := os.Readlink(linkPath)
+	if err != nil {
+		t.Fatalf("failed to readlink: %v", err)
+	}
+	wantResolved, err := filepath.EvalSymlinks(binary)
+	if err != nil {
+		t.Fatalf("filepath.EvalSymlinks() error = %v", err)
+	}
+	if target != wantResolved {
+		t.Errorf("link target = %q; want %q", target, wantResolved)
+	}
+}
+
+func Test_createOrUpdateLink_resolvesSymlinks(t *testing.T) {
+	tmpDir := testutil.NewTempDir(t)
+	resolvedRoot, err := filepath.EvalSymlinks(tmpDir.Root())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if tmpDir.Root() == resolvedRoot {
+		t.Skip("no platform symlinks detected (e.g., macOS /var -> /private/var)")
+	}
+
+	binDir := filepath.Join(resolvedRoot, "bin")
+	if err := os.MkdirAll(binDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	binaryDir := filepath.Join(tmpDir.Root(), "store", "plugin-foo", "v1.0.0")
+	if err := os.MkdirAll(binaryDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	binaryPath := filepath.Join(binaryDir, "kubectl-foo")
+	if err := os.WriteFile(binaryPath, []byte("#!/bin/sh\necho foo"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := createOrUpdateLink(binDir, binaryPath, "foo"); err != nil {
+		t.Fatalf("createOrUpdateLink() error = %v", err)
+	}
+
+	linkPath := filepath.Join(binDir, pluginNameToBin("foo", IsWindows()))
+	target, err := os.Readlink(linkPath)
+	if err != nil {
+		t.Fatalf("os.Readlink() error = %v", err)
+	}
+
+	resolvedBinary, err := filepath.EvalSymlinks(binaryPath)
+	if err != nil {
+		t.Fatalf("filepath.EvalSymlinks() error = %v", err)
+	}
+
+	if target != resolvedBinary {
+		t.Errorf("link target = %q; want resolved %q (unresolved was %q)", target, resolvedBinary, binaryPath)
+	}
+}
+
+func Test_reproduce_osSymlink_vs_createSymlink(t *testing.T) {
+	tmpDir := t.TempDir()
+	resolved, err := filepath.EvalSymlinks(tmpDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if tmpDir == resolved {
+		t.Skip("no platform symlinks detected (e.g., macOS /var -> /private/var)")
+	}
+
+	binary := filepath.Join(tmpDir, "kubectl-repro")
+	if err := os.WriteFile(binary, []byte("#!/bin/sh\necho repro"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	resolvedBinary, err := filepath.EvalSymlinks(binary)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	oldLink := filepath.Join(resolved, "old-link")
+	if err := os.Symlink(binary, oldLink); err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(oldLink)
+
+	oldTarget, _ := os.Readlink(oldLink)
+	if oldTarget == resolvedBinary {
+		t.Fatal("UNEXPECTED: os.Symlink resolved the path; cannot reproduce bug")
+	}
+	if oldTarget != binary {
+		t.Fatalf("os.Symlink target = %q; want unresolved %q", oldTarget, binary)
+	}
+
+	newLink := filepath.Join(resolved, "new-link")
+	if err := createSymlink(binary, newLink); err != nil {
+		t.Fatal(err)
+	}
+	newTarget, _ := os.Readlink(newLink)
+	if newTarget != resolvedBinary {
+		t.Fatalf("createSymlink target = %q; want resolved %q", newTarget, resolvedBinary)
+	}
+}
+
 func TestCleanupStaleKrewInstallations(t *testing.T) {
 	dir := testutil.NewTempDir(t)
 

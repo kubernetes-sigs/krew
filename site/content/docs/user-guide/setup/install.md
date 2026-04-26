@@ -76,12 +76,14 @@ Krew self-hosts).
 
 1. Make sure `git` is installed.
 1. Download `krew.exe` from the [Releases][releases] page to a directory.
-1. Launch a command prompt (`cmd.exe`) with administrator privileges (since the installation requires use of symbolic links) and navigate to that directory.
+1. Launch a command prompt (`cmd.exe`) and navigate to that directory.
 1. Run the following command to install krew:
 
     ```sh
     .\krew install krew
     ```
+
+   > **Note:** Krew uses directory junctions on Windows, which do not require Administrator privileges or Developer Mode.
 
 1. Add the `%USERPROFILE%\.krew\bin` directory to your `PATH` environment variable
    ([how?](https://java.com/en/download/help/path.xml))

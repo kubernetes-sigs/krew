@@ -11,6 +11,7 @@ require (
 	github.com/sahilm/fuzzy v0.1.1
 	github.com/spf13/cobra v1.10.1
 	github.com/spf13/pflag v1.0.10
+	golang.org/x/sys v0.31.0
 	k8s.io/apimachinery v0.34.1
 	k8s.io/client-go v0.34.1
 	k8s.io/klog/v2 v2.140.0
@@ -30,7 +31,6 @@ require (
 	github.com/x448/float16 v0.8.4 // indirect
 	go.yaml.in/yaml/v2 v2.4.2 // indirect
 	golang.org/x/net v0.38.0 // indirect
-	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	k8s.io/utils v0.0.0-20250604170112-4c0f3b243397 // indirect
