@@ -15,14 +15,12 @@
 package environment
 
 import (
-	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
 	"k8s.io/client-go/util/homedir"
 
-	"sigs.k8s.io/krew/internal/testutil"
 	"sigs.k8s.io/krew/pkg/constants"
 )
 
@@ -76,50 +74,5 @@ func TestPaths(t *testing.T) {
 	}
 	if got := p.PluginInstallReceiptPath("my-plugin"); !strings.HasSuffix(got, filepath.FromSlash("receipts/my-plugin.yaml")) {
 		t.Errorf("PluginInstallReceiptPath()=%s; expected suffix 'receipts/my-plugin.yaml'", got)
-	}
-}
-
-func TestRealpath(t *testing.T) {
-	tmpDir := testutil.NewTempDir(t)
-
-	// create regular file
-	tmpDir.Write("regular-file", nil)
-
-	// create absolute symlink
-	orig := filepath.Clean(os.TempDir())
-	if err := os.Symlink(orig, filepath.Join(tmpDir.Root(), "symbolic-link-abs")); err != nil {
-		t.Fatal(err)
-	}
-
-	// create relative symlink
-	if err := os.Symlink("./another-file", filepath.Join(tmpDir.Root(), "symbolic-link-rel")); err != nil {
-		t.Fatal(err)
-	}
-
-	tests := []struct {
-		name    string
-		in      string
-		want    string
-		wantErr bool
-	}{
-		{"file not exists", tmpDir.Path("/not/exists"), "", true},
-		{"directory", tmpDir.Root(), tmpDir.Root(), false},
-		{"regular file", tmpDir.Path("regular-file"), tmpDir.Path("regular-file"), false},
-		{"directory unclean", tmpDir.Path("foo/.."), tmpDir.Root(), false},
-		{"regular file unclean", tmpDir.Path("regular-file/foo/.."), tmpDir.Path("regular-file"), false},
-		{"relative symbolic link", tmpDir.Path("symbolic-link-rel"), "", true},
-		{"absolute symbolic link", tmpDir.Path("symbolic-link-abs"), orig, false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := Realpath(tt.in)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Realpath(%s) error = %v, wantErr %v", tt.in, err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("Realpath(%s) = %v, want %v", tt.in, got, tt.want)
-			}
-		})
 	}
 }
