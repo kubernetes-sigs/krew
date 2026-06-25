@@ -8,7 +8,7 @@ Krew is the plugin manager for `kubectl` command-line tool.
 
 Krew helps you:
 - discover [kubectl plugins][kpl],
-- install them on your machine,
+- install them on your local machine,
 - and keep the installed plugins up-to-date.
 
 There are [<span class="krew-plugin-count">⌛</span> kubectl plugins][list]
