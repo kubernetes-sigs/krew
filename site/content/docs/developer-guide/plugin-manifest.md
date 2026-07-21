@@ -84,7 +84,8 @@ spec:
 Krew plugins must be packaged as `.zip` or `.tar.gz` archives, and should be
 accessible to download from a user’s machine. The relevant fields are:
 
-- `uri`: URL to the archive file (`.zip` or `.tar.gz`)
+- `uri`: URL to the archive file (`.zip` or `.tar.gz`), or an `oci://` reference
+  to an OCI artifact holding it (see [serving plugins from an OCI registry]({{< ref "../user-guide/serving-plugins-privately.md#serving-plugins-from-an-oci-registry" >}}))
 - `sha256`: sha256 sum of the archive file
 
 ```yaml
