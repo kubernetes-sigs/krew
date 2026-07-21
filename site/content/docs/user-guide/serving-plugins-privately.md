@@ -37,6 +37,35 @@ By default, Krew looks for the `.netrc` file in your home directory:
 
 You can override the default location by using the `--netrc-file` flag.
 
+## Serving plugins from an OCI registry
+
+A plugin archive can also be stored in an OCI registry (GitHub Container
+Registry, Docker Hub, Harbor, a cloud provider's registry...) as an artifact
+whose single layer is the archive file itself. The plugin manifest points at
+it with an `oci://` URI:
+
+```yaml
+  platforms:
+  - uri: oci://ghcr.io/<org>/plugins/kubectl-foo:v0.1.0_linux_amd64
+    sha256: <sha256 of the archive file>
+    ...
+```
+
+Push the archive as it is, for example with [ORAS](https://oras.land):
+
+```sh
+{{<prompt>}}oras push ghcr.io/<org>/plugins/kubectl-foo:v0.1.0_linux_amd64 kubectl-foo_linux_amd64.tar.gz
+```
+
+The layer holds the archive's exact bytes, so the manifest's `sha256` is the
+same one a `https://` download would verify. The artifact must have exactly one
+layer.
+
+Krew authenticates to the registry with your Docker credentials
+(`~/.docker/config.json`, credential helpers included): if `docker login` works
+for the registry, `kubectl krew install` works too. No flag is needed, and who
+can install is managed with the registry's own access control.
+
 ## Serving plugins from a Private GitHub repository
 
 Below is a reference on how Krew artifacts can be stored in a private GitHub repository, and
