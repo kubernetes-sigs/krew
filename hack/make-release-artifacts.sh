@@ -42,7 +42,11 @@ while IFS= read -r -d $'\0' f; do
     cd "${archive_dir}"
     # consistent timestamps for files in archive dir to ensure consistent checksums
     TZ=UTC touch -t "0001010000" ./*
-    tar --use-compress-program "gzip --no-name" -cvf "${SCRIPTDIR}/../out/${archive}" ./*
+    # COPYFILE_DISABLE prevents bsdtar on macOS from adding AppleDouble
+    # (._*) entries, and --no-xattrs (supported by both bsdtar and GNU tar)
+    # keeps extended attributes such as com.apple.provenance out of the
+    # archive (https://github.com/kubernetes-sigs/krew/issues/892).
+    COPYFILE_DISABLE=1 tar --no-xattrs --use-compress-program "gzip --no-name" -cvf "${SCRIPTDIR}/../out/${archive}" ./*
   )
 
   # create sumfile
