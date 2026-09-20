@@ -143,6 +143,24 @@ func TestEnsureUpdatedRemovesUntrackedFiles(t *testing.T) {
 	}
 }
 
+func TestEnsureClonedIgnoresGlobalDefaultRemoteName(t *testing.T) {
+	globalConfig := filepath.Join(t.TempDir(), "gitconfig")
+	if err := os.WriteFile(globalConfig, []byte("[clone]\n\tdefaultRemoteName = notorigin\n"), 0o600); err != nil {
+		t.Fatalf("write global gitconfig failed: %v", err)
+	}
+	t.Setenv("GIT_CONFIG_GLOBAL", globalConfig)
+
+	remote := initRemoteRepo(t)
+	dest := filepath.Join(t.TempDir(), "clone")
+	if err := EnsureCloned(remoteURL(remote), dest); err != nil {
+		t.Fatalf("EnsureCloned failed: %v", err)
+	}
+
+	if _, err := GetRemoteURL(dest); err != nil {
+		t.Fatalf("expected the clone to have a remote named origin, GetRemoteURL failed: %v", err)
+	}
+}
+
 func TestGetRemoteURL(t *testing.T) {
 	remote := initRemoteRepo(t)
 	dest := filepath.Join(t.TempDir(), "clone")
