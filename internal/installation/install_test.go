@@ -253,6 +253,30 @@ func Test_downloadAndExtract_fileOverride(t *testing.T) {
 	}
 }
 
+func Test_downloadAndExtract_oci(t *testing.T) {
+	tmpDir := testutil.NewTempDir(t)
+
+	// the same test archive, stored as the single layer of an OCI artifact:
+	// the checksum does not change with the way the archive travels
+	archive, err := os.ReadFile(filepath.Join(testdataPath(t), "..", "..", "download", "testdata", "test-flat-hierarchy.tar.gz"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	uri := testutil.PushOCIArtifact(t, testutil.NewOCIRegistry(t), "plugins/foo:v1.0.0", archive)
+	checksum := "433b9e0b6cb9f064548f451150799daadcc70a3496953490c5148c8e550d2f4e"
+
+	if err := downloadAndExtract(tmpDir.Root(), uri, checksum, "", false, ""); err != nil {
+		t.Fatal(err)
+	}
+	files, err := os.ReadDir(tmpDir.Root())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(files) == 0 {
+		t.Fatal("no files found in the extract output directory")
+	}
+}
+
 func Test_applyDefaults(t *testing.T) {
 	tests := []struct {
 		name     string

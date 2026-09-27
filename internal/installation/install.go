@@ -146,6 +146,11 @@ func downloadAndExtract(extractDir, uri, sha256sum, overrideFile string, enableN
 		EnableNetrc: enableNetrc,
 		NetrcFile:   netrcFile,
 	}
+	if download.IsOCI(uri) {
+		// oci:// archives ride the docker keychain — private registries work
+		// for anyone who can `docker login`, no unauthenticated http needed.
+		fetcher = download.OCIFetcher{}
+	}
 	if overrideFile != "" {
 		fetcher = download.NewFileFetcher(overrideFile)
 	}
