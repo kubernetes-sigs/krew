@@ -3,7 +3,7 @@ module sigs.k8s.io/krew/site/functions
 go 1.27.0
 
 require (
-	github.com/apex/gateway v1.1.1
+	github.com/apex/gateway v1.1.2
 	github.com/google/go-github/v80 v80.0.0
 	golang.org/x/oauth2 v0.37.0
 	golang.org/x/sync v0.24.0
@@ -21,7 +21,6 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.3-0.20250322232337-35a7c28c31ee // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/tj/assert v0.0.3 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	go.yaml.in/yaml/v2 v2.4.2 // indirect
 	golang.org/x/net v0.60.0 // indirect
