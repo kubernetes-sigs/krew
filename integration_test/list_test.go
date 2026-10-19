@@ -15,7 +15,7 @@
 package integrationtest
 
 import (
-	"sort"
+	"slices"
 	"strings"
 	"testing"
 
@@ -80,7 +80,7 @@ func TestKrewListSorted(t *testing.T) {
 		}
 	}
 	out := lines(test.Krew("list").RunOrFailOutput())
-	if !sort.StringsAreSorted(out) {
+	if !slices.IsSorted(out) {
 		t.Fatalf("list output is not sorted: [%s]", strings.Join(out, ", "))
 	}
 }

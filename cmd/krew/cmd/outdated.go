@@ -15,12 +15,12 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
-	"sort"
 	"strings"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"k8s.io/klog/v2"
 
@@ -44,7 +44,7 @@ To upgrade all outdated plugins, use:
 		RunE: func(_ *cobra.Command, _ []string) error {
 			receipts, err := installation.GetInstalledPluginReceipts(paths.InstallReceiptsPath())
 			if err != nil {
-				return errors.Wrap(err, "failed to find installed plugins")
+				return fmt.Errorf("failed to find installed plugins: %w", err)
 			}
 
 			var rows [][]string
@@ -61,11 +61,11 @@ To upgrade all outdated plugins, use:
 				// Load latest version from the index
 				indexPlugin, err := indexscanner.LoadPluginByName(paths.IndexPluginsPath(indexName), pluginName)
 				if err != nil {
-					if os.IsNotExist(err) {
+					if errors.Is(err, fs.ErrNotExist) {
 						klog.V(1).Infof("Skipping %q: plugin no longer exists in index %q", pluginName, indexName)
 						continue
 					}
-					return errors.Wrapf(err, "failed to load index entry for plugin %q", pluginName)
+					return fmt.Errorf("failed to load index entry for plugin %q: %w", pluginName, err)
 				}
 
 				curVersion := r.Spec.Version
@@ -92,10 +92,7 @@ To upgrade all outdated plugins, use:
 				return nil
 			}
 
-			// Sort by plugin name
-			sort.Slice(rows, func(i, j int) bool {
-				return rows[i][0] < rows[j][0]
-			})
+			rows = sortByFirstColumn(rows)
 
 			// Return only names when piped
 			if !isTerminal(os.Stdout) {

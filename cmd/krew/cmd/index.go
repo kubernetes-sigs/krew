@@ -15,10 +15,12 @@
 package cmd
 
 import (
+	"errors"
+	"fmt"
+	"io/fs"
 	"os"
 	"strings"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"k8s.io/klog/v2"
 
@@ -53,7 +55,7 @@ each configured index in table format.`,
 	RunE: func(_ *cobra.Command, _ []string) error {
 		indexes, err := indexoperations.ListIndexes(paths)
 		if err != nil {
-			return errors.Wrap(err, "failed to list indexes")
+			return fmt.Errorf("failed to list indexes: %w", err)
 		}
 
 		var rows [][]string
@@ -109,7 +111,7 @@ func indexDelete(_ *cobra.Command, args []string) error {
 
 	ps, err := installation.InstalledPluginsFromIndex(paths.InstallReceiptsPath(), name)
 	if err != nil {
-		return errors.Wrap(err, "failed querying plugins installed from the index")
+		return fmt.Errorf("failed querying plugins installed from the index: %w", err)
 	}
 	klog.V(4).Infof("Found %d plugins from index", len(ps))
 
@@ -122,18 +124,20 @@ func indexDelete(_ *cobra.Command, args []string) error {
 		internal.PrintWarning(os.Stderr, `Plugins [%s] are still installed from index %q!
 Removing indexes while there are plugins installed from is not recommended
 (you can use --force to ignore this check).`+"\n", strings.Join(names, ", "), name)
-		return errors.Errorf("there are still plugins installed from this index")
+		return fmt.Errorf("there are still plugins installed from this index")
 	}
 
-	err = indexoperations.DeleteIndex(paths, name)
-	if os.IsNotExist(err) {
-		if *forceIndexDelete {
-			klog.V(4).Infof("Index not found, but --force is used, so not returning an error")
-			return nil // success if --force specified and index does not exist.
+	if err := indexoperations.DeleteIndex(paths, name); err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			if *forceIndexDelete {
+				klog.V(4).Infof("Index not found, but --force is used, so not returning an error")
+				return nil // success if --force specified and index does not exist.
+			}
+			return fmt.Errorf("index %q does not exist", name)
 		}
-		return errors.Errorf("index %q does not exist", name)
+		return fmt.Errorf("error while removing the plugin index: %w", err)
 	}
-	return errors.Wrap(err, "error while removing the plugin index")
+	return nil
 }
 
 func init() {

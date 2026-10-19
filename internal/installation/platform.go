@@ -19,7 +19,6 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/klog/v2"
@@ -45,7 +44,7 @@ func matchPlatform(platforms []index.Platform, env OSArchPair) (index.Platform, 
 	for i, platform := range platforms {
 		sel, err := metav1.LabelSelectorAsSelector(platform.Selector)
 		if err != nil {
-			return index.Platform{}, false, errors.Wrap(err, "failed to compile label selector")
+			return index.Platform{}, false, fmt.Errorf("failed to compile label selector: %w", err)
 		}
 		if sel.Matches(envLabels) {
 			klog.V(2).Infof("Found matching platform with index (%d)", i)

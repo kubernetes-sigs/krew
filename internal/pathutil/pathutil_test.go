@@ -16,7 +16,6 @@ package pathutil
 
 import (
 	"path/filepath"
-	"reflect"
 	"testing"
 )
 
@@ -104,11 +103,20 @@ func TestIsSubPathExtending(t *testing.T) {
 			wantExtending:   "b",
 			wantIsExtending: true,
 		},
+		{
+			name: "path element with leading dots is extending",
+			args: args{
+				basePath:      filepath.FromSlash("a/b"),
+				extendingPath: filepath.FromSlash("a/b/..foo"),
+			},
+			wantExtending:   "..foo",
+			wantIsExtending: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotExtending, gotIsExtending := IsSubPath(tt.args.basePath, tt.args.extendingPath)
-			if !reflect.DeepEqual(gotExtending, tt.wantExtending) {
+			if gotExtending != tt.wantExtending {
 				t.Errorf("IsSubPath() gotExtending = %v, want %v", gotExtending, tt.wantExtending)
 			}
 			if gotIsExtending != tt.wantIsExtending {

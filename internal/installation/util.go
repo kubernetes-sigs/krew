@@ -15,9 +15,9 @@
 package installation
 
 import (
+	"fmt"
 	"path/filepath"
 
-	"github.com/pkg/errors"
 	"k8s.io/klog/v2"
 
 	"sigs.k8s.io/krew/internal/installation/receipt"
@@ -44,13 +44,13 @@ func InstalledPluginsFromIndex(receiptsDir, indexName string) ([]index.Receipt, 
 func GetInstalledPluginReceipts(receiptsDir string) ([]index.Receipt, error) {
 	files, err := filepath.Glob(filepath.Join(receiptsDir, "*"+constants.ManifestExtension))
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to glob receipts directory (%s) for manifests", receiptsDir)
+		return nil, fmt.Errorf("failed to glob receipts directory (%s) for manifests: %w", receiptsDir, err)
 	}
 	out := make([]index.Receipt, 0, len(files))
 	for _, f := range files {
 		r, err := receipt.Load(f)
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to parse plugin install receipt %s", f)
+			return nil, fmt.Errorf("failed to parse plugin install receipt %s: %w", f, err)
 		}
 		out = append(out, r)
 		klog.V(4).Infof("parsed receipt for %s: version=%s", r.GetObjectMeta().GetName(), r.Spec.Version)

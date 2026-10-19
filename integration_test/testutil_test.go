@@ -17,8 +17,10 @@ package integrationtest
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -26,8 +28,6 @@ import (
 	"sync"
 	"testing"
 	"time"
-
-	"github.com/pkg/errors"
 
 	"sigs.k8s.io/krew/internal/environment"
 	"sigs.k8s.io/krew/internal/installation/receipt"
@@ -90,7 +90,7 @@ func setupKrewBin(t *testing.T, tempDir *testutil.TempDir) string {
 		t.Fatal(err)
 	}
 
-	// todo(corneliusweig): when the receipts migration logic is removed, this becomes obsolete
+	// TODO: remove this when the receipts migration logic is removed.
 	tempDir.Write("receipts/krew.notyaml", []byte("must be present for receipts migration check"))
 
 	if err := os.Symlink(krewBinary, filepath.Join(binPath, "kubectl-krew")); err != nil {
@@ -111,7 +111,7 @@ func augmentPATH(t *testing.T, v string) string {
 }
 
 // skipShort is a test helper for skipping tests in -test.short runs.
-func skipShort(t *testing.T) { //nolint:gocritic
+func skipShort(t *testing.T) {
 	t.Helper()
 	if testing.Short() {
 		t.Skip("skipping integration test")
@@ -129,11 +129,19 @@ func lines(in []byte) []string {
 }
 
 func (it *ITest) LookupExecutable(file string) (string, error) {
-	orig := os.Getenv("PATH")
-	defer func() { os.Setenv("PATH", orig) }()
+	orig, hadPath := os.LookupEnv("PATH")
+	defer func() {
+		if hadPath {
+			_ = os.Setenv("PATH", orig)
+		} else {
+			_ = os.Unsetenv("PATH")
+		}
+	}()
 
 	binPath := filepath.Join(it.Root(), "bin")
-	os.Setenv("PATH", binPath)
+	if err := os.Setenv("PATH", binPath); err != nil {
+		return "", err
+	}
 
 	return exec.LookPath(file)
 }
@@ -210,7 +218,7 @@ func (it *ITest) IndexPluginCount(name string) int {
 }
 
 // WithEnv sets an environment variable for the krew run.
-func (it *ITest) WithEnv(key string, value interface{}) *ITest {
+func (it *ITest) WithEnv(key string, value any) *ITest {
 	if key == "KREW_ROOT" {
 		it.t.Fatal("Overriding KREW_ROOT in tests is forbidden")
 		return it
@@ -244,7 +252,10 @@ func (it *ITest) Run() ([]byte, error) {
 	err := cmd.Run()
 	out := b.Bytes()
 	it.t.Log("Ran in", time.Since(start))
-	return out, errors.Wrapf(err, "krew %v: %v, %s", it.args, err, string(out))
+	if err != nil {
+		return out, fmt.Errorf("krew %v: %s: %w", it.args, string(out), err)
+	}
+	return out, nil
 }
 
 // RunOrFail runs the krew command and fails the test if the command returns an error.
@@ -312,8 +323,8 @@ func (it *ITest) initializeIndex() {
 	})
 
 	indexDir := filepath.Join(it.Root(), "index", "default")
-	if err := os.MkdirAll(indexDir, 0o777); err != nil {
-		if os.IsExist(err) {
+	if err := os.MkdirAll(indexDir, 0o755); err != nil {
+		if errors.Is(err, fs.ErrExist) {
 			it.t.Log("initializeIndex should only be called once")
 			return
 		}

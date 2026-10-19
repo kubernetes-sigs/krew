@@ -15,6 +15,8 @@
 package indexoperations
 
 import (
+	"errors"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"testing"
@@ -106,7 +108,7 @@ func TestDeleteIndex(t *testing.T) {
 	// root directory does not exist
 	if err := DeleteIndex(environment.NewPaths(filepath.FromSlash("/tmp/does-not-exist/foo")), "bar"); err == nil {
 		t.Fatal("expected error")
-	} else if !os.IsNotExist(err) {
+	} else if !errors.Is(err, fs.ErrNotExist) {
 		t.Fatalf("not ENOENT error: %v", err)
 	}
 
@@ -116,7 +118,7 @@ func TestDeleteIndex(t *testing.T) {
 	// index does not exist
 	if err := DeleteIndex(p, "unknown-index"); err == nil {
 		t.Fatal("expected error")
-	} else if !os.IsNotExist(err) {
+	} else if !errors.Is(err, fs.ErrNotExist) {
 		t.Fatalf("not ENOENT error: %v", err)
 	}
 

@@ -223,9 +223,8 @@ func TestValidatePlatform(t *testing.T) {
 				MatchLabels: map[string]string{"unsupported-field": "orange"}}).V(),
 			wantErr: true,
 		},
-		// TODO(ahmetb): add test case "bin field outside the plugin installation directory"
-		// by testing .WithBin("foo/../../../malicious-file").
-		// It appears like currently we're allowing this.
+		// Validation allows a Bin value that escapes the install directory;
+		// installation rejects it. See Test_install_rejectsBinOutsideInstallDir.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

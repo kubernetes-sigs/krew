@@ -15,7 +15,8 @@
 package receipt
 
 import (
-	"os"
+	"errors"
+	"io/fs"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -67,7 +68,7 @@ func TestLoad(t *testing.T) {
 
 func TestLoad_preservesNonExistsError(t *testing.T) {
 	_, err := Load("non-existing.yaml")
-	if !os.IsNotExist(err) {
+	if !errors.Is(err, fs.ErrNotExist) {
 		t.Fatalf("returned error is not ENOENT: %+v", err)
 	}
 }

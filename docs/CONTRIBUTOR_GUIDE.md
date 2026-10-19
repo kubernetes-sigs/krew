@@ -6,87 +6,91 @@ Guide](https://krew.sigs.k8s.io/docs/developer-guide/) instead.
 
 ## Setting up the environment
 
-Krew is built with go 1.10, but newer versions will do as well.
-Most toolchains will expect that the krew repository is on the `GOPATH`.
-To set it up correctly, do
+Krew is a Go module and requires Go 1.27 or newer. You do not need to set up a
+`GOPATH`.
 
 ```bash
-mkdir -p $(go env GOPATH)/src/sigs.k8s.io/krew
-cd $(go env GOPATH)/src/sigs.k8s.io/krew
-git clone https://github.com/kubernetes-sigs/krew .
-git remote set-url origin --push no_push   # to avoid pushes
+git clone https://github.com/kubernetes-sigs/krew.git
+cd krew
+go build ./...
 ```
 
-### Using macOS for development
-
-The tools provided in the `hack` folder expect you to use GNU binaries, the easiest way to install them is to use brew
+The `hack` scripts use Bash. On macOS, the system Bash is old enough that some
+tools assume a newer version. Install a current Bash with Homebrew if a script
+fails on shell features:
 
 ```bash
-brew install coreutils grep gnu-sed
+brew install bash
 ```
-And remember to add them to your `$PATH` to make them your default binaries
+
+`hack/run-lint.sh` installs the pinned versions of `golangci-lint` and `shfmt`
+on first use. Install `shellcheck` separately if you want the optional shell
+lint step to run:
 
 ```bash
-export PATH=$(brew --prefix coreutils)/libexec/gnubin:$PATH
-export PATH="$(brew --prefix grep)/libexec/gnubin:$PATH"
-export PATH="$(brew --prefix gnu-sed)/libexec/gnubin:$PATH"
+brew install shellcheck   # macOS
+sudo apt install shellcheck  # Debian/Ubuntu
 ```
 
 ## Code style
 
-Krew adheres to standard `golang` code formatting conventions, and also expects
-imports sorted properly.
-To automatically format code appropriately, install
-[`goimports`](https://godoc.org/golang.org/x/tools/cmd/goimports) via:
+Krew follows standard Go formatting and expects imports to be grouped and
+sorted. Install `goimports` and format the Go packages:
 
 ```bash
-go get golang.org/x/tools/cmd/goimports
+go install golang.org/x/tools/cmd/goimports@latest
+goimports -local sigs.k8s.io/krew -w cmd internal pkg integration_test
 ```
 
-and run:
+The `site/functions` directory is a separate Go module:
 
 ```bash
-goimports -local sigs.k8s.io/krew -w cmd pkg integration_test
+cd site/functions
+goimports -local sigs.k8s.io/krew/site/functions -w .
 ```
 
-Shell scripts are automatically formatted by `shfmt`, to install and to validate run:
+Run the linter to check formatting, shell scripts, and Go static analysis:
 
 ```bash
 hack/run-lint.sh
 ```
 
-If format is in expected format, there will be no output.
-Otherwise, problematic scripts will be listed and a command will be
-provided to format them:
-
-```bash
-shfmt -w -i=2 hack/
-```
-
-In addition, a boilerplate license header is expected in all source files.
+A boilerplate license header is expected in all source files.
 
 _All new code should be covered by tests._
 
 ## Compiling
 
 Use `hack/make-binary.sh` to make a binary in `out/bin/` for your current
-platform. You can use `hack/make-binaries.sh` to build binaries for all
-supported platforms.
+platform. Use `hack/make-binaries.sh` to build binaries for all supported
+platforms, or `hack/make-all.sh` to build release artifacts.
 
 ## Running tests
 
-To run tests locally, the easiest way to get started is with
+Run the unit tests, race detector, linter, and code-pattern checks with:
 
 ```bash
 hack/run-tests.sh
 ```
 
-This will run all unit tests and code quality tools.
-To run a single tool independently of the other code checks, have a look at the
-other scripts in [`hack/`](../hack).
+To run a single check independently, use the scripts in [`hack/`](../hack), or
+run the Go tests directly:
 
-In addition, there are integration tests to cover high-level krew functionality.
-To run integration tests, you will need to build the `krew` binary beforehand:
+```bash
+go test -short ./...
+go test -short -race ./...
+```
+
+The Netlify function in `site/functions` is a separate module:
+
+```bash
+cd site/functions
+go build -o /dev/null ./...
+go test ./...
+```
+
+There are also integration tests that cover high-level krew functionality.
+Build the `krew` binary first:
 
 ```bash
 hack/make-binary.sh
@@ -95,23 +99,21 @@ hack/run-integration-tests.sh
 
 ## Testing `krew` in a sandbox
 
-After making changes to krew, you should also check that it behaves as expected.
-You can do this without messing up the krew installation on the host system by
-setting the `KREW_ROOT` environment variable.
-For example:
+After making changes to krew, check that it behaves as expected without
+modifying your normal krew installation. Set `KREW_ROOT` to a temporary
+directory:
 
 ```bash
 mkdir playground
-KREW_ROOT="$PWD/playground" krew update
+KREW_ROOT="$PWD/playground" out/bin/krew update
 ```
 
-Any changes that krew is going to apply will then be applied in the
-`playground/` folder, instead of the standard `~/.krew` folder.
+Any changes krew makes are then applied under `playground/` instead of
+`~/.krew`.
 
 ### Testing in a docker sandbox
 
-Alternatively, if the isolation provided by `KREW_ROOT` is not enough, there is
-also a script to run krew in a docker sandbox:
+If `KREW_ROOT` does not provide enough isolation, use the Docker sandbox:
 
 ```bash
 hack/run-in-docker.sh

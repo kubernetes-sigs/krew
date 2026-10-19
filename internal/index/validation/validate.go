@@ -16,10 +16,11 @@
 package validation
 
 import (
+	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 
-	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"sigs.k8s.io/krew/internal/installation/semver"
@@ -64,17 +65,17 @@ func isValidSHA256(s string) bool { return validSHA256.MatchString(s) }
 // name.
 func ValidatePlugin(name string, p index.Plugin) error {
 	if !isSupportedAPIVersion(p.APIVersion) {
-		return errors.Errorf("plugin manifest has apiVersion=%q, not supported in this version of krew (try updating plugin index or install a newer version of krew)", p.APIVersion)
+		return fmt.Errorf("plugin manifest has apiVersion=%q, not supported in this version of krew (try updating plugin index or install a newer version of krew)", p.APIVersion)
 	}
 
 	if p.Kind != constants.PluginKind {
-		return errors.Errorf("plugin manifest has kind=%q, but only %q is supported", p.Kind, constants.PluginKind)
+		return fmt.Errorf("plugin manifest has kind=%q, but only %q is supported", p.Kind, constants.PluginKind)
 	}
 	if !IsSafePluginName(name) {
-		return errors.Errorf("the plugin name %q is not allowed, must match %q", name, safePluginRegexp.String())
+		return fmt.Errorf("the plugin name %q is not allowed, must match %q", name, safePluginRegexp.String())
 	}
 	if p.Name != name {
-		return errors.Errorf("plugin should be named %q, not %q", name, p.Name)
+		return fmt.Errorf("plugin should be named %q, not %q", name, p.Name)
 	}
 	if p.Spec.ShortDescription == "" {
 		return errors.New("should have a short description")
@@ -89,11 +90,11 @@ func ValidatePlugin(name string, p index.Plugin) error {
 		return errors.New("should have a version specified")
 	}
 	if _, err := semver.Parse(p.Spec.Version); err != nil {
-		return errors.Wrap(err, "failed to parse plugin version")
+		return fmt.Errorf("failed to parse plugin version: %w", err)
 	}
 	for _, pl := range p.Spec.Platforms {
 		if err := validatePlatform(pl); err != nil {
-			return errors.Wrapf(err, "platform (%+v) is badly constructed", pl)
+			return fmt.Errorf("platform (%+v) is badly constructed: %w", pl, err)
 		}
 	}
 	return nil
@@ -108,16 +109,16 @@ func validatePlatform(p index.Platform) error {
 		return errors.New("`sha256` sum has to be set")
 	}
 	if !isValidSHA256(p.Sha256) {
-		return errors.Errorf("`sha256` value %s is not valid, must match pattern %s", p.Sha256, sha256Pattern)
+		return fmt.Errorf("`sha256` value %s is not valid, must match pattern %s", p.Sha256, sha256Pattern)
 	}
 	if p.Bin == "" {
 		return errors.New("`bin` has to be set")
 	}
 	if err := validateFiles(p.Files); err != nil {
-		return errors.Wrap(err, "`files` is invalid")
+		return fmt.Errorf("`files` is invalid: %w", err)
 	}
 	if err := validateSelector(p.Selector); err != nil {
-		return errors.Wrap(err, "invalid platform selector")
+		return fmt.Errorf("invalid platform selector: %w", err)
 	}
 	return nil
 }
@@ -158,7 +159,7 @@ func validateSelector(sel *metav1.LabelSelector) error {
 	}
 	for _, key := range keys {
 		if key != "os" && key != "arch" {
-			return errors.Errorf("key %q not supported", key)
+			return fmt.Errorf("key %q not supported", key)
 		}
 	}
 

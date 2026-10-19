@@ -15,10 +15,11 @@
 package indexoperations
 
 import (
+	"errors"
+	"fmt"
+	"io/fs"
 	"os"
 	"regexp"
-
-	"github.com/pkg/errors"
 
 	"sigs.k8s.io/krew/internal/environment"
 	"sigs.k8s.io/krew/internal/gitutil"
@@ -37,7 +38,7 @@ type Index struct {
 func ListIndexes(paths environment.Paths) ([]Index, error) {
 	entries, err := os.ReadDir(paths.IndexBase())
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to list directory")
+		return nil, fmt.Errorf("failed to list directory: %w", err)
 	}
 
 	indexes := []Index{}
@@ -48,7 +49,7 @@ func ListIndexes(paths environment.Paths) ([]Index, error) {
 		indexName := e.Name()
 		remote, err := gitutil.GetRemoteURL(paths.IndexPath(indexName))
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to list the remote URL for index %s", indexName)
+			return nil, fmt.Errorf("failed to list the remote URL for index %s: %w", indexName, err)
 		}
 
 		indexes = append(indexes, Index{
@@ -62,7 +63,7 @@ func ListIndexes(paths environment.Paths) ([]Index, error) {
 // AddIndex initializes a new index to install plugins from.
 func AddIndex(paths environment.Paths, name, url string) error {
 	dir := paths.IndexPath(name)
-	if _, err := os.Stat(dir); os.IsNotExist(err) {
+	if _, err := os.Stat(dir); errors.Is(err, fs.ErrNotExist) {
 		return gitutil.EnsureCloned(url, dir)
 	} else if err != nil {
 		return err
@@ -70,7 +71,7 @@ func AddIndex(paths environment.Paths, name, url string) error {
 	return errors.New("index already exists")
 }
 
-// DeleteIndex removes specified index name. If index does not exist, returns an error that can be tested by os.IsNotExist.
+// DeleteIndex removes specified index name. If index does not exist, returns an error that can be tested with errors.Is(err, fs.ErrNotExist).
 func DeleteIndex(paths environment.Paths, name string) error {
 	dir := paths.IndexPath(name)
 	if _, err := os.Stat(dir); err != nil {

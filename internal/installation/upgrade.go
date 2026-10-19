@@ -15,9 +15,9 @@
 package installation
 
 import (
+	"fmt"
 	"os"
 
-	"github.com/pkg/errors"
 	"k8s.io/klog/v2"
 
 	"sigs.k8s.io/krew/internal/environment"
@@ -32,29 +32,29 @@ import (
 func Upgrade(p environment.Paths, plugin index.Plugin, indexName string, opts InstallOpts) error {
 	installReceipt, err := receipt.Load(p.PluginInstallReceiptPath(plugin.Name))
 	if err != nil {
-		return errors.Wrapf(err, "failed to load install receipt for plugin %q", plugin.Name)
+		return fmt.Errorf("failed to load install receipt for plugin %q: %w", plugin.Name, err)
 	}
 
 	curVersion := installReceipt.Spec.Version
 	curv, err := semver.Parse(curVersion)
 	if err != nil {
-		return errors.Wrapf(err, "failed to parse installed plugin version (%q) as a semver value", curVersion)
+		return fmt.Errorf("failed to parse installed plugin version (%q) as a semver value: %w", curVersion, err)
 	}
 
 	// Find available installation candidate
 	candidate, ok, err := GetMatchingPlatform(plugin.Spec.Platforms)
 	if err != nil {
-		return errors.Wrap(err, "failed trying to find a matching platform in plugin spec")
+		return fmt.Errorf("failed trying to find a matching platform in plugin spec: %w", err)
 	}
 	if !ok {
-		return errors.Errorf("plugin %q does not offer installation for this platform (%s)",
+		return fmt.Errorf("plugin %q does not offer installation for this platform (%s)",
 			plugin.Name, OSArch())
 	}
 
 	newVersion := plugin.Spec.Version
 	newv, err := semver.Parse(newVersion)
 	if err != nil {
-		return errors.Wrapf(err, "failed to parse candidate version spec (%q)", newVersion)
+		return fmt.Errorf("failed to parse candidate version spec (%q): %w", newVersion, err)
 	}
 	klog.V(2).Infof("Comparing versions: current=%s target=%s", curv, newv)
 
@@ -74,12 +74,12 @@ func Upgrade(p environment.Paths, plugin index.Plugin, indexName string, opts In
 		installDir: p.PluginVersionInstallPath(plugin.Name, newVersion),
 		binDir:     p.BinPath(),
 	}, opts); err != nil {
-		return errors.Wrap(err, "failed to install new version")
+		return fmt.Errorf("failed to install new version: %w", err)
 	}
 
 	klog.V(2).Infof("Upgrading install receipt for plugin %s", plugin.Name)
 	if err = receipt.Store(receipt.New(plugin, indexName, installReceipt.CreationTimestamp), p.PluginInstallReceiptPath(plugin.Name)); err != nil {
-		return errors.Wrap(err, "installation receipt could not be stored, uninstall may fail")
+		return fmt.Errorf("installation receipt could not be stored, uninstall may fail: %w", err)
 	}
 
 	// Clean old installations

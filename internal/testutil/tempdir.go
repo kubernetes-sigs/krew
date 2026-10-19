@@ -58,16 +58,16 @@ func (td *TempDir) Path(file string) string {
 func (td *TempDir) Write(file string, content []byte) *TempDir {
 	td.t.Helper()
 	path := td.Path(file)
-	if err := os.MkdirAll(filepath.Dir(path), os.ModePerm); err != nil {
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		td.t.Fatalf("cannot create directory %q: %s", filepath.Dir(path), err)
 	}
-	if err := os.WriteFile(path, content, os.ModePerm); err != nil {
+	if err := os.WriteFile(path, content, 0o644); err != nil {
 		td.t.Fatalf("cannot write to file %q: %s", path, err)
 	}
 	return td
 }
 
-func (td *TempDir) WriteYAML(file string, obj interface{}) *TempDir {
+func (td *TempDir) WriteYAML(file string, obj any) *TempDir {
 	td.t.Helper()
 	content, err := yaml.Marshal(obj)
 	if err != nil {
@@ -79,7 +79,7 @@ func (td *TempDir) WriteYAML(file string, obj interface{}) *TempDir {
 func (td *TempDir) InitEmptyGitRepo(path, url string) {
 	td.t.Helper()
 
-	if err := os.MkdirAll(path, os.ModePerm); err != nil {
+	if err := os.MkdirAll(path, 0o755); err != nil {
 		td.t.Fatalf("cannot create directory %q: %s", filepath.Dir(path), err)
 	}
 	if _, err := gitutil.Exec(path, "init"); err != nil {

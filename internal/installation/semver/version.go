@@ -17,9 +17,9 @@
 package semver
 
 import (
+	"fmt"
 	"strings"
 
-	"github.com/pkg/errors"
 	k8sver "k8s.io/apimachinery/pkg/util/version"
 )
 
@@ -42,7 +42,7 @@ func (v Version) String() string {
 func Parse(s string) (Version, error) {
 	var vv Version
 	if !strings.HasPrefix(s, "v") {
-		return vv, errors.Errorf("version string %q not starting with 'v'", s)
+		return vv, fmt.Errorf("version string %q not starting with 'v'", s)
 	}
 	v, err := k8sver.ParseSemantic(s)
 	if err != nil {

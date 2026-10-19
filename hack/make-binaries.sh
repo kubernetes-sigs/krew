@@ -17,7 +17,7 @@
 # This script builds krew binaries for all supported platforms (or those os/arch
 # combinations specified via OSARCH variable).
 
-set -e -o pipefail
+set -euo pipefail
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 if ! command -v "gox" &>/dev/null; then

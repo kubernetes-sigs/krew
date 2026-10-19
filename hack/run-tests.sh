@@ -18,10 +18,16 @@ set -euo pipefail
 
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-color_red="$(tput setaf 1)"
-color_green="$(tput setaf 2)"
-color_blue="$(tput setaf 4)"
-color_reset="$(tput sgr0)"
+color_red=""
+color_green=""
+color_blue=""
+color_reset=""
+if [[ -t 1 ]] && command -v tput >/dev/null 2>&1; then
+  color_red="$(tput setaf 1)"
+  color_green="$(tput setaf 2)"
+  color_blue="$(tput setaf 4)"
+  color_reset="$(tput sgr0)"
+fi
 
 print_with_color() {
   echo "${1}${*:2}${color_reset}"

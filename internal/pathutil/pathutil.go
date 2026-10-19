@@ -15,10 +15,9 @@
 package pathutil
 
 import (
+	"fmt"
 	"path/filepath"
 	"strings"
-
-	"github.com/pkg/errors"
 
 	"sigs.k8s.io/krew/pkg/constants"
 )
@@ -30,7 +29,7 @@ func IsSubPath(basePath, subPath string) (string, bool) {
 	if err != nil {
 		return "", false
 	}
-	if strings.HasPrefix(extendingPath, "..") {
+	if extendingPath == ".." || strings.HasPrefix(extendingPath, ".."+string(filepath.Separator)) {
 		return "", false
 	}
 	return extendingPath, true
@@ -40,7 +39,7 @@ func IsSubPath(basePath, subPath string) (string, bool) {
 func ReplaceBase(path, old, replacement string) (string, error) {
 	extendingPath, ok := IsSubPath(old, path)
 	if !ok {
-		return "", errors.Errorf("can't replace %q in %q, it is not a subpath", old, path)
+		return "", fmt.Errorf("can't replace %q in %q, it is not a subpath", old, path)
 	}
 	return filepath.Join(replacement, extendingPath), nil
 }
@@ -48,9 +47,9 @@ func ReplaceBase(path, old, replacement string) (string, error) {
 // CanonicalPluginName resolves a plugin's index and name from input string.
 // If an index is not specified, the default index name is assumed.
 func CanonicalPluginName(in string) (string, string) {
-	if strings.Count(in, "/") == 0 {
+	index, name, found := strings.Cut(in, "/")
+	if !found {
 		return constants.DefaultIndexName, in
 	}
-	p := strings.SplitN(in, "/", 2)
-	return p[0], p[1]
+	return index, name
 }

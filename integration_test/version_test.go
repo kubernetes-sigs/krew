@@ -15,12 +15,11 @@
 package integrationtest
 
 import (
+	"fmt"
 	"path"
 	"regexp"
 	"strings"
 	"testing"
-
-	"github.com/pkg/errors"
 )
 
 func TestKrewVersion(t *testing.T) {
@@ -56,7 +55,7 @@ func checkRequiredSubstrings(test *ITest, index, stdOut string) error {
 		}
 		optionValue := lineSplit.Split(line, 2)
 		if len(optionValue) < 2 {
-			return errors.Errorf("`%v` is not an `OPTION VALUE` pair separated by spaces", optionValue)
+			return fmt.Errorf("`%v` is not an `OPTION VALUE` pair separated by spaces", optionValue)
 		}
 		actual[optionValue[0]] = optionValue[1]
 	}
@@ -76,9 +75,9 @@ func checkRequiredSubstrings(test *ITest, index, stdOut string) error {
 	for k, v := range requiredSubstrings {
 		got, ok := actual[k]
 		if !ok {
-			return errors.Errorf("`krew version` output doesn't contain field %q", k)
+			return fmt.Errorf("`krew version` output doesn't contain field %q", k)
 		} else if !strings.Contains(got, v) {
-			return errors.Errorf("`krew version` %q field doesn't contain string %q (got: %q)", k, v, got)
+			return fmt.Errorf("`krew version` %q field doesn't contain string %q (got: %q)", k, v, got)
 		}
 	}
 

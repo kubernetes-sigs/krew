@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -e -o pipefail
+set -euo pipefail
 
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "${SCRIPTDIR}/.."
@@ -25,10 +25,13 @@ if [[ ! -d "${bin_dir}" ]]; then
   exit 1
 fi
 
-checksum_cmd="shasum -a 256"
-if hash sha256sum 2>/dev/null; then
-  checksum_cmd="sha256sum"
-fi
+checksum() {
+  if command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$1" | awk '{print $1;}'
+  else
+    shasum -a 256 "$1" | awk '{print $1;}'
+  fi
+}
 checksum_sed=""
 
 while IFS= read -r -d $'\0' f; do
@@ -47,7 +50,7 @@ while IFS= read -r -d $'\0' f; do
 
   # create sumfile
   sumfile="out/${archive}.sha256"
-  checksum="$(eval "${checksum_cmd[@]}" "out/${archive}" | awk '{print $1;}')"
+  checksum="$(checksum "out/${archive}")"
   echo >&2 "${archive} checksum: ${checksum}"
   echo "${checksum}" >"${sumfile}"
   echo >&2 "Written ${sumfile}."
@@ -62,7 +65,7 @@ if [[ -x "./${bin_dir}/krew-windows_amd64.exe" ]]; then
   krew_exe="krew.exe"
   cp -- "./${bin_dir}/krew-windows_amd64.exe" "./out/${krew_exe}"
   exe_sumfile="out/krew.exe.sha256"
-  exe_checksum="$(eval "${checksum_cmd[@]}" "out/${krew_exe}" | awk '{print $1;}')"
+  exe_checksum="$(checksum "out/${krew_exe}")"
   echo >&2 "${krew_exe} checksum: ${exe_checksum}"
   echo "${exe_checksum}" >"${exe_sumfile}"
   echo >&2 "Written ${exe_sumfile}."

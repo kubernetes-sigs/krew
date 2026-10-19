@@ -15,14 +15,15 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"regexp"
 	"strings"
 	"unicode"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	"sigs.k8s.io/krew/internal/index/indexscanner"
@@ -42,10 +43,10 @@ var infoCmd = &cobra.Command{
 		index, plugin := pathutil.CanonicalPluginName(args[0])
 
 		p, err := indexscanner.LoadPluginByName(paths.IndexPluginsPath(index), plugin)
-		if os.IsNotExist(err) {
-			return errors.Errorf("plugin %q not found in index %q", args[0], index)
+		if errors.Is(err, fs.ErrNotExist) {
+			return fmt.Errorf("plugin %q not found in index %q", args[0], index)
 		} else if err != nil {
-			return errors.Wrap(err, "failed to load plugin manifest")
+			return fmt.Errorf("failed to load plugin manifest: %w", err)
 		}
 		printPluginInfo(os.Stdout, index, p)
 		return nil

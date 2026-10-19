@@ -19,13 +19,13 @@ import (
 	"archive/zip"
 	"bytes"
 	"compress/gzip"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/pkg/errors"
 	"k8s.io/klog/v2"
 )
 
@@ -34,14 +34,14 @@ import (
 func download(url string, verifier Verifier, fetcher Fetcher) (io.ReaderAt, int64, error) {
 	body, err := fetcher.Get(url)
 	if err != nil {
-		return nil, 0, errors.Wrapf(err, "failed to obtain plugin archive")
+		return nil, 0, fmt.Errorf("failed to obtain plugin archive: %w", err)
 	}
 	defer body.Close()
 
 	klog.V(3).Infof("Reading archive file into memory")
 	data, err := io.ReadAll(io.TeeReader(body, verifier))
 	if err != nil {
-		return nil, 0, errors.Wrap(err, "could not read archive")
+		return nil, 0, fmt.Errorf("could not read archive: %w", err)
 	}
 	klog.V(2).Infof("Read %d bytes from archive into memory", len(data))
 
@@ -64,7 +64,7 @@ func extractZIP(targetDir string, read io.ReaderAt, size int64) error {
 		path := filepath.Join(targetDir, filepath.FromSlash(f.Name))
 		if f.FileInfo().IsDir() {
 			if err := os.MkdirAll(path, f.Mode()); err != nil {
-				return errors.Wrap(err, "can't create directory tree")
+				return fmt.Errorf("can't create directory tree: %w", err)
 			}
 			continue
 		}
@@ -72,17 +72,17 @@ func extractZIP(targetDir string, read io.ReaderAt, size int64) error {
 		dir := filepath.Dir(path)
 		klog.V(4).Infof("zip: ensuring parent dirs exist for regular file, dir=%s", dir)
 		if err := os.MkdirAll(dir, 0o755); err != nil {
-			return errors.Wrap(err, "failed to create directory for zip entry")
+			return fmt.Errorf("failed to create directory for zip entry: %w", err)
 		}
 		src, err := f.Open()
 		if err != nil {
-			return errors.Wrap(err, "could not open inflating zip file")
+			return fmt.Errorf("could not open inflating zip file: %w", err)
 		}
 
 		dst, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, f.Mode())
 		if err != nil {
 			src.Close()
-			return errors.Wrap(err, "can't create file in zip destination dir")
+			return fmt.Errorf("can't create file in zip destination dir: %w", err)
 		}
 		closeAll := func() {
 			src.Close()
@@ -91,7 +91,7 @@ func extractZIP(targetDir string, read io.ReaderAt, size int64) error {
 
 		if _, err := io.Copy(dst, src); err != nil {
 			closeAll()
-			return errors.Wrap(err, "can't copy content to zip destination file")
+			return fmt.Errorf("can't copy content to zip destination file: %w", err)
 		}
 		closeAll()
 	}
@@ -106,7 +106,7 @@ func extractTARGZ(targetDir string, at io.ReaderAt, size int64) error {
 
 	gzr, err := gzip.NewReader(in)
 	if err != nil {
-		return errors.Wrap(err, "failed to create gzip reader")
+		return fmt.Errorf("failed to create gzip reader: %w", err)
 	}
 	defer gzr.Close()
 
@@ -117,7 +117,7 @@ func extractTARGZ(targetDir string, at io.ReaderAt, size int64) error {
 			break
 		}
 		if err != nil {
-			return errors.Wrap(err, "tar extraction error")
+			return fmt.Errorf("tar extraction error: %w", err)
 		}
 		klog.V(4).Infof("tar: processing %q (type=%d, mode=%s)", hdr.Name, hdr.Typeflag, os.FileMode(hdr.Mode))
 		// see https://golang.org/cl/78355 for handling pax_global_header
@@ -134,26 +134,26 @@ func extractTARGZ(targetDir string, at io.ReaderAt, size int64) error {
 		switch hdr.Typeflag {
 		case tar.TypeDir:
 			if err := os.MkdirAll(path, os.FileMode(hdr.Mode)); err != nil {
-				return errors.Wrap(err, "failed to create directory from tar")
+				return fmt.Errorf("failed to create directory from tar: %w", err)
 			}
 		case tar.TypeReg:
 			dir := filepath.Dir(path)
 			klog.V(4).Infof("tar: ensuring parent dirs exist for regular file, dir=%s", dir)
 			if err := os.MkdirAll(dir, 0o755); err != nil {
-				return errors.Wrap(err, "failed to create directory for tar")
+				return fmt.Errorf("failed to create directory for tar: %w", err)
 			}
 			f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY, os.FileMode(hdr.Mode))
 			if err != nil {
-				return errors.Wrapf(err, "failed to create file %q", path)
+				return fmt.Errorf("failed to create file %q: %w", path, err)
 			}
 
 			if _, err := io.Copy(f, tr); err != nil {
 				f.Close()
-				return errors.Wrapf(err, "failed to copy %q from tar into file", hdr.Name)
+				return fmt.Errorf("failed to copy %q from tar into file: %w", hdr.Name, err)
 			}
 			f.Close()
 		default:
-			return errors.Errorf("unable to handle file type %d for %q in tar", hdr.Typeflag, hdr.Name)
+			return fmt.Errorf("unable to handle file type %d for %q in tar", hdr.Typeflag, hdr.Name)
 		}
 		klog.V(4).Infof("tar: processed %q", hdr.Name)
 	}
@@ -161,23 +161,35 @@ func extractTARGZ(targetDir string, at io.ReaderAt, size int64) error {
 	return nil
 }
 
-func suspiciousPath(path string) error {
-	if strings.Contains(path, "..") {
-		return errors.Errorf("refusing to unpack archive with suspicious entry %q", path)
+func suspiciousPath(name string) error {
+	for _, elem := range strings.FieldsFunc(name, func(r rune) bool { return r == '/' || r == '\\' }) {
+		if elem == ".." {
+			return fmt.Errorf("refusing to unpack archive with suspicious entry %q", name)
+		}
 	}
 
-	if strings.HasPrefix(path, `/`) || strings.HasPrefix(path, `\`) {
-		return errors.Errorf("refusing to unpack archive with absolute entry %q", path)
+	if strings.HasPrefix(name, `/`) || strings.HasPrefix(name, `\`) {
+		return fmt.Errorf("refusing to unpack archive with absolute entry %q", name)
+	}
+
+	// Reject Windows drive-letter paths on every platform. filepath.VolumeName
+	// is OS-specific, so check the prefix directly.
+	if len(name) >= 2 && name[1] == ':' && isASCIILetter(name[0]) {
+		return fmt.Errorf("refusing to unpack archive with absolute entry %q", name)
 	}
 
 	return nil
+}
+
+func isASCIILetter(b byte) bool {
+	return b >= 'a' && b <= 'z' || b >= 'A' && b <= 'Z'
 }
 
 func detectMIMEType(at io.ReaderAt) (string, error) {
 	buf := make([]byte, 512)
 	n, err := at.ReadAt(buf, 0)
 	if err != nil && err != io.EOF {
-		return "", errors.Wrap(err, "failed to read first 512 bytes")
+		return "", fmt.Errorf("failed to read first 512 bytes: %w", err)
 	}
 	if n < 512 {
 		klog.V(5).Infof("Did only read %d of 512 bytes to determine the file type", n)
@@ -185,7 +197,8 @@ func detectMIMEType(at io.ReaderAt) (string, error) {
 
 	// Cut off mime extra info beginning with ';' i.e:
 	// "text/plain; charset=utf-8" should result in "text/plain".
-	return strings.Split(http.DetectContentType(buf[:n]), ";")[0], nil
+	mimeType, _, _ := strings.Cut(http.DetectContentType(buf[:n]), ";")
+	return mimeType, nil
 }
 
 type extractor func(targetDir string, read io.ReaderAt, size int64) error
@@ -198,14 +211,17 @@ var defaultExtractors = map[string]extractor{
 func extractArchive(dst string, at io.ReaderAt, size int64) error {
 	t, err := detectMIMEType(at)
 	if err != nil {
-		return errors.Wrap(err, "failed to determine content type")
+		return fmt.Errorf("failed to determine content type: %w", err)
 	}
 	klog.V(4).Infof("detected %q file type", t)
 	exf, ok := defaultExtractors[t]
 	if !ok {
-		return errors.Errorf("mime type %q for archive file is not a supported archive format", t)
+		return fmt.Errorf("mime type %q for archive file is not a supported archive format", t)
 	}
-	return errors.Wrap(exf(dst, at, size), "failed to extract file")
+	if err := exf(dst, at, size); err != nil {
+		return fmt.Errorf("failed to extract file: %w", err)
+	}
+	return nil
 }
 
 // Downloader is responsible for fetching, verifying and extracting a binary.

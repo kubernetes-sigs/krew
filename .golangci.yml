@@ -5,10 +5,12 @@ linters:
   default: none
   enable:
     - errcheck
+    - errorlint
     - gocritic
     - govet
     - ineffassign
     - misspell
+    - nolintlint
     - prealloc
     - revive
     - staticcheck
@@ -19,6 +21,9 @@ linters:
     errcheck:
       check-type-assertions: false
       check-blank: false
+    nolintlint:
+      require-explanation: true
+      require-specific: true
     gocritic:
       disabled-checks:
         - hugeParam

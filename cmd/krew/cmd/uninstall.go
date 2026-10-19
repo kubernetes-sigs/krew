@@ -15,10 +15,10 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"k8s.io/klog/v2"
 
@@ -46,7 +46,7 @@ Remarks:
 			}
 			klog.V(4).Infof("Going to uninstall plugin %s\n", name)
 			if err := installation.Uninstall(paths, name); err != nil {
-				return errors.Wrapf(err, "failed to uninstall plugin %s", name)
+				return fmt.Errorf("failed to uninstall plugin %s: %w", name, err)
 			}
 			fmt.Fprintf(os.Stderr, "Uninstalled plugin: %s\n", name)
 		}
@@ -57,7 +57,7 @@ Remarks:
 	Aliases: []string{"remove", "rm"},
 }
 
-func unsafePluginNameErr(n string) error { return errors.Errorf("plugin name %q not allowed", n) }
+func unsafePluginNameErr(n string) error { return fmt.Errorf("plugin name %q not allowed", n) }
 
 func init() {
 	rootCmd.AddCommand(uninstallCmd)

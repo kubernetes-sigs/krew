@@ -16,11 +16,12 @@ package cmd
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
+	"io/fs"
 	"net/http"
 	"os"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"k8s.io/klog/v2"
 
@@ -97,6 +98,9 @@ Remarks:
 						pluginNames = append(pluginNames, name)
 					}
 				}
+				if err := scanner.Err(); err != nil {
+					return fmt.Errorf("failed to read plugin names from stdin: %w", err)
+				}
 			}
 
 			if *manifest != "" && *manifestURL != "" {
@@ -120,10 +124,10 @@ Remarks:
 
 				plugin, err := indexscanner.LoadPluginByName(paths.IndexPluginsPath(indexName), pluginName)
 				if err != nil {
-					if os.IsNotExist(err) {
-						return errors.Errorf("plugin %q does not exist in the plugin index", name)
+					if errors.Is(err, fs.ErrNotExist) {
+						return fmt.Errorf("plugin %q does not exist in the plugin index", name)
 					}
-					return errors.Wrapf(err, "failed to load plugin %q from the index", name)
+					return fmt.Errorf("failed to load plugin %q from the index: %w", name, err)
 				}
 				install = append(install, pluginEntry{
 					p:         plugin,
@@ -134,7 +138,7 @@ Remarks:
 			if *manifest != "" {
 				plugin, err := indexscanner.ReadPluginFromFile(*manifest)
 				if err != nil {
-					return errors.Wrap(err, "failed to load plugin manifest from file")
+					return fmt.Errorf("failed to load plugin manifest from file: %w", err)
 				}
 				install = append(install, pluginEntry{
 					p:         plugin,
@@ -143,7 +147,7 @@ Remarks:
 			} else if *manifestURL != "" {
 				plugin, err := readPluginFromURL(*manifestURL, *enableNetrc, *netrcFile)
 				if err != nil {
-					return errors.Wrap(err, "failed to read plugin manifest file from url")
+					return fmt.Errorf("failed to read plugin manifest file from url: %w", err)
 				}
 				install = append(install, pluginEntry{
 					p:         plugin,
@@ -169,7 +173,7 @@ Remarks:
 					EnableNetrc:         *enableNetrc,
 					NetrcFile:           *netrcFile,
 				})
-				if err == installation.ErrIsAlreadyInstalled {
+				if errors.Is(err, installation.ErrIsAlreadyInstalled) {
 					klog.Warningf("Skipping plugin %q, it is already installed", plugin.Name)
 					continue
 				}
@@ -195,7 +199,7 @@ Remarks:
 				}
 			}
 			if len(failed) > 0 {
-				return errors.Wrapf(returnErr, "failed to install some plugins: %+v", failed)
+				return fmt.Errorf("failed to install some plugins: %+v: %w", failed, returnErr)
 			}
 			return nil
 		},
@@ -227,14 +231,14 @@ func readPluginFromURL(url string, enableNetrc bool, netrcFile string) (index.Pl
 
 	req, err := http.NewRequest("GET", url, http.NoBody)
 	if err != nil {
-		return index.Plugin{}, errors.Wrapf(err, "failed to create request for %s", url)
+		return index.Plugin{}, fmt.Errorf("failed to create request for %s: %w", url, err)
 	}
 
 	// Check for netrc credentials
 	if enableNetrc {
 		entry, err := download.FindNetrcEntry(url, netrcFile)
 		if err != nil {
-			return index.Plugin{}, errors.Wrap(err, "failed to load netrc credentials")
+			return index.Plugin{}, fmt.Errorf("failed to load netrc credentials: %w", err)
 		}
 		if entry != nil {
 			klog.V(3).Infof("Using netrc credentials for %s", entry.Machine)
@@ -244,12 +248,12 @@ func readPluginFromURL(url string, enableNetrc bool, netrcFile string) (index.Pl
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return index.Plugin{}, errors.Wrapf(err, "request to url failed (%s)", url)
+		return index.Plugin{}, fmt.Errorf("request to url failed (%s): %w", url, err)
 	}
 	klog.V(4).Infof("manifest downloaded from url, status=%v headers=%v", resp.Status, resp.Header)
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		resp.Body.Close()
-		return index.Plugin{}, errors.Errorf("unexpected status code (http %d) from url", resp.StatusCode)
+		return index.Plugin{}, fmt.Errorf("unexpected status code (http %d) from url", resp.StatusCode)
 	}
 	defer resp.Body.Close()
 	return indexscanner.ReadPlugin(resp.Body)

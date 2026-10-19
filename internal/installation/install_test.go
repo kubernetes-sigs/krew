@@ -253,6 +253,44 @@ func Test_downloadAndExtract_fileOverride(t *testing.T) {
 	}
 }
 
+func Test_install_rejectsBinOutsideInstallDir(t *testing.T) {
+	tmpDir := testutil.NewTempDir(t)
+	installDir := filepath.Join(tmpDir.Root(), "store", "test-plugin", "v1.0.0")
+	binDir := filepath.Join(tmpDir.Root(), "bin")
+	if err := os.MkdirAll(binDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	// Put a valid binary next to the install directory so a missing path check
+	// would let the install succeed.
+	if err := os.MkdirAll(filepath.Dir(installDir), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(filepath.Dir(installDir), "escape"), []byte("#!/bin/sh\n"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	op := installOperation{
+		pluginName: "test-plugin",
+		platform: testutil.NewPlatform().
+			WithBin("../escape").
+			WithSHA256("433b9e0b6cb9f064548f451150799daadcc70a3496953490c5148c8e550d2f4e").
+			WithFiles([]index.FileOperation{{From: "*", To: "."}}).
+			V(),
+		installDir: installDir,
+		binDir:     binDir,
+	}
+	archive := filepath.Join(testdataPath(t), "..", "..", "download", "testdata", "test-flat-hierarchy.tar.gz")
+
+	err := install(op, InstallOpts{ArchiveFileOverride: archive})
+	if err == nil {
+		t.Fatal("install accepted a binary outside the install directory")
+	}
+	if !strings.Contains(err.Error(), "does not extend") {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
 func Test_applyDefaults(t *testing.T) {
 	tests := []struct {
 		name     string

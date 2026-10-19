@@ -21,7 +21,7 @@ import (
 	"github.com/fatih/color"
 )
 
-func PrintWarning(w io.Writer, format string, a ...interface{}) {
+func PrintWarning(w io.Writer, format string, a ...any) {
 	color.New(color.FgRed, color.Bold).Fprint(w, "WARNING: ")
 	fmt.Fprintf(w, format, a...)
 }

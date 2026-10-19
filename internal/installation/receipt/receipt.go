@@ -15,9 +15,9 @@
 package receipt
 
 import (
+	"fmt"
 	"os"
 
-	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/yaml"
 
@@ -30,15 +30,17 @@ import (
 func Store(receipt index.Receipt, dest string) error {
 	yamlBytes, err := yaml.Marshal(receipt)
 	if err != nil {
-		return errors.Wrapf(err, "convert to yaml")
+		return fmt.Errorf("convert to yaml: %w", err)
 	}
 
-	err = os.WriteFile(dest, yamlBytes, 0o644)
-	return errors.Wrapf(err, "write plugin receipt %q", dest)
+	if err := os.WriteFile(dest, yamlBytes, 0o644); err != nil {
+		return fmt.Errorf("write plugin receipt %q: %w", dest, err)
+	}
+	return nil
 }
 
 // Load reads the plugin receipt at the specified destination.
-// If not found, it returns os.IsNotExist error.
+// If not found, it returns an error that can be tested with errors.Is(err, fs.ErrNotExist).
 func Load(path string) (index.Receipt, error) {
 	return indexscanner.ReadReceiptFromFile(path)
 }

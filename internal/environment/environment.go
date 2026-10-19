@@ -15,11 +15,10 @@
 package environment
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
-	"github.com/pkg/errors"
-	"k8s.io/client-go/util/homedir"
 	"k8s.io/klog/v2"
 
 	"sigs.k8s.io/krew/pkg/constants"
@@ -35,16 +34,21 @@ type Paths struct {
 // $HOME/.krew as the base path, but can be overridden via KREW_ROOT environment
 // variable.
 func MustGetKrewPaths() Paths {
-	base := filepath.Join(homedir.HomeDir(), ".krew")
-	if fromEnv := os.Getenv("KREW_ROOT"); fromEnv != "" {
-		base = fromEnv
-		klog.V(4).Infof("using environment override KREW_ROOT=%s", fromEnv)
+	base := os.Getenv("KREW_ROOT")
+	if base == "" {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			panic(fmt.Errorf("cannot determine home directory: %w", err))
+		}
+		base = filepath.Join(home, ".krew")
+	} else {
+		klog.V(4).Infof("using environment override KREW_ROOT=%s", base)
 	}
-	base, err := filepath.Abs(base)
+	abs, err := filepath.Abs(base)
 	if err != nil {
-		panic(errors.Wrap(err, "cannot get absolute path"))
+		panic(fmt.Errorf("cannot get absolute path: %w", err))
 	}
-	return NewPaths(base)
+	return NewPaths(abs)
 }
 
 func NewPaths(base string) Paths {

@@ -15,11 +15,11 @@
 package download
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"os"
 
-	"github.com/pkg/errors"
 	"k8s.io/klog/v2"
 )
 
@@ -43,14 +43,14 @@ func (f HTTPFetcher) Get(uri string) (io.ReadCloser, error) {
 
 	req, err := http.NewRequest("GET", uri, http.NoBody)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to create request for %q", uri)
+		return nil, fmt.Errorf("failed to create request for %q: %w", uri, err)
 	}
 
 	// Check for netrc credentials
 	if f.EnableNetrc {
 		entry, err := FindNetrcEntry(uri, f.NetrcFile)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to load netrc credentials")
+			return nil, fmt.Errorf("failed to load netrc credentials: %w", err)
 		}
 		if entry != nil {
 			klog.V(3).Infof("Using netrc credentials for %s", entry.Machine)
@@ -60,11 +60,11 @@ func (f HTTPFetcher) Get(uri string) (io.ReadCloser, error) {
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to download %q", uri)
+		return nil, fmt.Errorf("failed to download %q: %w", uri, err)
 	}
-	if resp.StatusCode > 200 {
+	if resp.StatusCode != http.StatusOK {
 		resp.Body.Close()
-		return nil, errors.Errorf("failed to download %q, status code %d", uri, resp.StatusCode)
+		return nil, fmt.Errorf("failed to download %q, status code %d", uri, resp.StatusCode)
 	}
 	return resp.Body, nil
 }
@@ -76,7 +76,10 @@ type fileFetcher struct{ f string }
 func (f fileFetcher) Get(_ string) (io.ReadCloser, error) {
 	klog.V(2).Infof("Reading %q", f.f)
 	file, err := os.Open(f.f)
-	return file, errors.Wrapf(err, "failed to open archive file %q for reading", f.f)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open archive file %q for reading: %w", f.f, err)
+	}
+	return file, nil
 }
 
 // NewFileFetcher returns a local file reader.

@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// todo(corneliusweig) remove migration code with v0.4
+// TODO: remove this migration after maintainers confirm that upgrading from
+// v0.2 is no longer supported.
 package receiptsmigration
 
 import (

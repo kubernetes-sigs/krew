@@ -18,8 +18,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"reflect"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 
 	"sigs.k8s.io/krew/internal/testutil"
 	"sigs.k8s.io/krew/pkg/index"
@@ -91,8 +92,8 @@ func Test_findMoveTargets(t *testing.T) {
 				t.Errorf("moveTargets() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("moveTargets() = %v, want %v", got, tt.want)
+			if diff := cmp.Diff(tt.want, got, cmp.AllowUnexported(move{})); diff != "" {
+				t.Errorf("moveTargets() mismatch (-want +got):\n%s", diff)
 			}
 		})
 	}
@@ -175,8 +176,8 @@ func Test_getDirectMove(t *testing.T) {
 				t.Errorf("getDirectMove() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("getDirectMove() got = %v, want %v", got, tt.want)
+			if diff := cmp.Diff(tt.want, got, cmp.AllowUnexported(move{})); diff != "" {
+				t.Errorf("getDirectMove() mismatch (-want +got):\n%s", diff)
 			}
 			if got1 != tt.wantFound {
 				t.Errorf("getDirectMove() got1 = %v, want %v", got1, tt.wantFound)

@@ -16,14 +16,16 @@ package gitutil
 
 import (
 	"bytes"
+	"errors"
+	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	osexec "os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
 
-	"github.com/pkg/errors"
 	"k8s.io/klog/v2"
 )
 
@@ -41,7 +43,7 @@ func EnsureCloned(uri, destinationPath string) error {
 // IsGitCloned will test if the path is a git dir.
 func IsGitCloned(gitPath string) (bool, error) {
 	f, err := os.Stat(filepath.Join(gitPath, ".git"))
-	if os.IsNotExist(err) {
+	if errors.Is(err, fs.ErrNotExist) {
 		return false, nil
 	}
 	return err == nil && f.IsDir(), err
@@ -52,15 +54,17 @@ func IsGitCloned(gitPath string) (bool, error) {
 // untracked files and directories.
 func updateAndCleanUntracked(destinationPath string) error {
 	if _, err := Exec(destinationPath, "fetch", "-v", "--depth=1"); err != nil {
-		return errors.Wrapf(err, "fetch index at %q failed", destinationPath)
+		return fmt.Errorf("fetch index at %q failed: %w", destinationPath, err)
 	}
 
 	if _, err := Exec(destinationPath, "reset", "--hard", "@{upstream}"); err != nil {
-		return errors.Wrapf(err, "reset index at %q failed", destinationPath)
+		return fmt.Errorf("reset index at %q failed: %w", destinationPath, err)
 	}
 
-	_, err := Exec(destinationPath, "clean", "-xfd")
-	return errors.Wrapf(err, "clean index at %q failed", destinationPath)
+	if _, err := Exec(destinationPath, "clean", "-xfd"); err != nil {
+		return fmt.Errorf("clean index at %q failed: %w", destinationPath, err)
+	}
+	return nil
 }
 
 // EnsureUpdated will ensure the destination path exists and is up to date.
@@ -94,7 +98,7 @@ func Exec(pwd string, args ...string) (string, error) {
 	}
 	cmd.Stdout, cmd.Stderr = w, w
 	if err := cmd.Run(); err != nil {
-		return "", errors.Wrapf(err, "command execution failure, output=%q", buf.String())
+		return "", fmt.Errorf("command execution failure, output=%q: %w", buf.String(), err)
 	}
 	return strings.TrimSpace(buf.String()), nil
 }

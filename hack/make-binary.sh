@@ -16,7 +16,7 @@
 
 # This script builds krew binary for the current OS/arch.
 
-set -e -o pipefail
+set -euo pipefail
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 exec env OSARCH="$(go env GOOS)/$(go env GOARCH)" \

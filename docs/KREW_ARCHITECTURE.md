@@ -2,9 +2,9 @@
 
 (This guide is intended for developers of krew.)
 
-:warning: The instructions below are not up to date for krew v0.2+. But this
-document is still retained as a reference to highlight some original design
-decisions behind Krew.
+:warning: This document describes the original design of Krew (v0.1-v0.2).
+Some details are historical. For current behavior, see
+[Plugin Lifecycle](PLUGIN_LIFECYCLE.md) and the source code.
 
 <!-- TOC depthFrom:2 -->
 
@@ -28,49 +28,37 @@ decisions behind Krew.
 
 ## Krew Plugins location
 
-Kubernetes plugins can be installed to:
-
-1. `${KUBECTL_PLUGINS_PATH}` If specified.
-2. `${XDG_DATA_DIRS}/kubectl/plugins`
-3. `~/.kube/plugins`
-
-It's up to the user to specify one of the above options. In this document the
-path will be referenced as `~/.kube/plugins`. This is not implementation
-specific. Krew installs itself in the default plugin directory for the user.
+Kubectl discovers plugins by looking for `kubectl-*` executables on `PATH`.
+Krew links each installed plugin into `~/.krew/bin`, and users add that
+directory to `PATH` during setup. Krew installs itself the same way.
 
 ### Directory structure
 
-Krew installs plugins in its root path under `~/.krew/store`. Each
-plugin has a directory with its uncompressed content from the URI.
-Kubectl will recursively search the plugin path for plugin.yaml files. The
-download directory is a temporary directory which only exists during the
-execution of the install or upgrade command. Directory structure:
+Krew installs plugins under `~/.krew/store/<plugin>/<version>`. Each version
+directory contains the uncompressed files selected from the plugin archive.
+A receipt in `~/.krew/receipts/<plugin>.yaml` records the index, version, and
+installation time. The executable is linked into `~/.krew/bin` so kubectl can
+find it on `PATH`. The download staging directory only exists during an install
+or upgrade.
 
 ```text
 . ($HOME)
 └── .krew/
     ├── bin/
-    |   ├── kubectl-foo
+    │   └── kubectl-foo -> ../store/foo/v1.0.0/foo
     ├── index/
-    |   ├── foo.yaml
-    |   └── krew.yaml
+    │   └── default/          # git clone of krew-index
+    ├── receipts/
+    │   └── foo.yaml
     └── store/
-        ├── foo/<sha256>/
-        |   ├── plugin.yaml
-        |   └── foo.sh
-        └── krew/<sha256>/
-            ├── commands/
-            |   ├── install/
-            |   |   └── plugin.yaml
-            |   └── upgrade/
-            |       └── plugin.yaml
-            ├── krew-install
-            └── krew-upgrade
+        └── foo/
+            └── v1.0.0/
+                ├── plugin.yaml
+                └── foo
 ${TMPDIR}/krew/
-    └── download/ (This directory is only available during installation and upgrade)
-        └── foo/<sha256>/
-            ├── plugin.yaml
-            └── foo.sh
+    └── download/             # only during installation and upgrade
+        └── foo/
+            └── v1.0.0/
 ```
 
 ### Krew Index
@@ -140,12 +128,12 @@ spec:
 
 ### Update Index Locally
 
-To sync the index to the user's machine, krew requires that curl and git is installed on the
-host machine. Krew is cloning or pulling the index repository to
-`~/.kube/plugins/krew/index` on a `krew update`. The first pull can take some
-time due to a long history, but will be fast on incremental changes. We use git
-as a backend because it does already implement downloading, incremental updates
-with patches and GPG signing.
+To sync the index to the user's machine, krew requires `git` on the host. Krew
+clones or pulls each index repository to `~/.krew/index/<index-name>` during
+`krew update`. The default index is named `default`. The first pull can take
+some time due to a long history, but later updates are incremental. Git is used
+as the backend because it already implements downloading, incremental updates
+with patches, and commit verification.
 
 ### Plugin Package Format
 

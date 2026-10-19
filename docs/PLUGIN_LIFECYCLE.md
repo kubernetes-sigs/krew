@@ -2,17 +2,20 @@
 
 (This guide is intended for developers of Krew.)
 
-:warning: The instructions below may not be up to date for krew v0.2 and higher.
-It is provided as a reference to learn how Krew works under the covers, but
-may not be entirely accurate.
+:warning: This document describes the general plugin lifecycle. Exact paths
+and receipt handling have changed since v0.2; see
+[Krew Architecture](KREW_ARCHITECTURE.md) and the source code for current
+details.
 
 ## Installation
 
-The plugins will be downloaded and checked against its sha256 to verify the
-integrity. The package will be uncompressed into a directory called
-`${TMP}/krew/download/<plugin-name>/<sha256>/`. Then the directory will
-be renamed (mv) to `~/.krew/store/<plugin-name>/<sha256>/`.
-This ensures a partially atomic and idempotent operation on most file systems.
+The plugin archive is downloaded and checked against its sha256 to verify
+integrity. It is uncompressed into a staging directory called
+`${TMP}/krew/download/<plugin-name>/<version>/`. The selected files are then
+moved to `~/.krew/store/<plugin-name>/<version>/`. Krew writes an install
+receipt to `~/.krew/receipts/<plugin-name>.yaml` and creates a `kubectl-*`
+symlink in `~/.krew/bin`. The move keeps the operation partially atomic and
+idempotent on most file systems.
 
 ## Upgrade
 
@@ -22,9 +25,9 @@ Upgrading is more difficult because we already have a plugin that is working.
 Krew should not destroy a working environment. The operations should be
 idempotent. If something fails we should be able to recover to the wanted state.
 
-Upgrading works by iterating over the `~/.krew/store/` directory
-names and comparing the current hash to the corresponding index file. When a
-hash differs the plugin gets installed again.
+Upgrading works by iterating over install receipts, comparing each installed
+version with the version in the corresponding index, and installing the plugin
+again when the versions differ.
 
 Install the plugin:
 
@@ -32,11 +35,11 @@ Install the plugin:
 2. Therefore it‘s not possible for plugins to store
    data in the plugin directory.
 
-In case any plugin operation does not succeed the plugin directory is not
-damaged under the assumption that mv is atomic. If another plugin
-upgrade/install command is issued and a directory in download still exists or
-two plugin version directories exist in `/store/<plugin-name>/`, krew assumes
-that the previous operation failed.
+If a plugin operation does not succeed, the existing plugin directory is not
+damaged under the assumption that the move is atomic. If another install or
+upgrade command is issued and a staging directory still exists, or two version
+directories exist under `store/<plugin-name>/`, krew treats the previous
+operation as failed.
 
 Krew informs the user and retries to reinstall the package.
 

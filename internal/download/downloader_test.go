@@ -19,14 +19,13 @@ import (
 	"archive/zip"
 	"bytes"
 	"compress/gzip"
+	"errors"
 	"io"
 	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
-
-	"github.com/pkg/errors"
 
 	"sigs.k8s.io/krew/internal/testutil"
 )
@@ -513,6 +512,24 @@ func Test_suspiciousPath(t *testing.T) {
 		},
 		{
 			path: `a/././foo`,
+		},
+		{
+			path: `foo..bar`,
+		},
+		{
+			path: `..foo`,
+		},
+		{
+			path:      `C:/foo`,
+			shouldErr: true,
+		},
+		{
+			path:      `C:foo`,
+			shouldErr: true,
+		},
+		{
+			path:      `a/../../b`,
+			shouldErr: true,
 		},
 	}
 

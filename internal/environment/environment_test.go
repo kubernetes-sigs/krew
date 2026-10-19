@@ -15,17 +15,19 @@
 package environment
 
 import (
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
-
-	"k8s.io/client-go/util/homedir"
 
 	"sigs.k8s.io/krew/pkg/constants"
 )
 
 func TestMustGetKrewPaths_resolvesToHomeDir(t *testing.T) {
-	home := homedir.HomeDir()
+	home, err := os.UserHomeDir()
+	if err != nil {
+		t.Fatalf("cannot determine home directory: %v", err)
+	}
 	expectedBase := filepath.Join(home, ".krew")
 	p := MustGetKrewPaths()
 	if got := p.BasePath(); got != expectedBase {
@@ -36,6 +38,17 @@ func TestMustGetKrewPaths_resolvesToHomeDir(t *testing.T) {
 func TestMustGetKrewPaths_envOverride(t *testing.T) {
 	custom := filepath.FromSlash("/custom/krew/path")
 	t.Setenv("KREW_ROOT", custom)
+
+	p := MustGetKrewPaths()
+	if expected, got := custom, p.BasePath(); got != expected {
+		t.Fatalf("MustGetKrewPaths()=%s; expected=%s", got, expected)
+	}
+}
+
+func TestMustGetKrewPaths_envOverrideWithoutHome(t *testing.T) {
+	custom := filepath.FromSlash("/custom/krew/path")
+	t.Setenv("KREW_ROOT", custom)
+	t.Setenv("HOME", "")
 
 	p := MustGetKrewPaths()
 	if expected, got := custom, p.BasePath(); got != expected {

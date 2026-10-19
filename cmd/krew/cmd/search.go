@@ -20,7 +20,6 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/pkg/errors"
 	"github.com/sahilm/fuzzy"
 	"github.com/spf13/cobra"
 	"k8s.io/klog/v2"
@@ -69,7 +68,7 @@ Examples:
 	RunE: func(_ *cobra.Command, args []string) error {
 		indexes, err := indexoperations.ListIndexes(paths)
 		if err != nil {
-			return errors.Wrap(err, "failed to list indexes")
+			return fmt.Errorf("failed to list indexes: %w", err)
 		}
 
 		klog.V(3).Infof("found %d indexes", len(indexes))
@@ -78,7 +77,7 @@ Examples:
 		for _, idx := range indexes {
 			ps, err := indexscanner.LoadPluginListFromFS(paths.IndexPluginsPath(idx.Name))
 			if err != nil {
-				return errors.Wrapf(err, "failed to load the list of plugins from the index %q", idx.Name)
+				return fmt.Errorf("failed to load the list of plugins from the index %q: %w", idx.Name, err)
 			}
 			for _, p := range ps {
 				plugins = append(plugins, pluginEntry{p, idx.Name})
@@ -99,14 +98,14 @@ Examples:
 		installed := make(map[string]bool)
 		receipts, err := installation.GetInstalledPluginReceipts(paths.InstallReceiptsPath())
 		if err != nil {
-			return errors.Wrap(err, "failed to load installed plugins")
+			return fmt.Errorf("failed to load installed plugins: %w", err)
 		}
 		for _, receipt := range receipts {
 			cn := canonicalName(receipt.Plugin, indexOf(receipt))
 			installed[cn] = true
 		}
 
-		keyword := strings.Join(args, "")
+		keyword := strings.Join(args, " ")
 		searchResults := searchByNameAndDesc(keyword, searchTarget)
 
 		// No plugins found
@@ -122,7 +121,7 @@ Examples:
 			if installed[canonicalName] {
 				status = "yes"
 			} else if _, ok, err := installation.GetMatchingPlatform(v.p.Spec.Platforms); err != nil {
-				return errors.Wrapf(err, "failed to get the matching platform for plugin %s", canonicalName)
+				return fmt.Errorf("failed to get the matching platform for plugin %s: %w", canonicalName, err)
 			} else if ok {
 				status = "no"
 			} else {
@@ -138,14 +137,15 @@ Examples:
 }
 
 func searchByNameAndDesc(keyword string, targets searchCorpus) []string {
+	names := targets.names()
 	if keyword == "" {
-		return targets.names()
+		return names
 	}
 
 	var searchResults = make([]string, 0, len(targets))
 
 	// find by names
-	matches := fuzzy.Find(keyword, targets.names())
+	matches := fuzzy.Find(keyword, names)
 	searchResultsMap := make(map[int]bool)
 	for _, m := range matches {
 		searchResults = append(searchResults, m.Str)
@@ -157,7 +157,7 @@ func searchByNameAndDesc(keyword string, targets searchCorpus) []string {
 	for _, m := range matches {
 		// use map to deduplicate and score > 0 to match more accurately
 		if _, exist := searchResultsMap[m.Index]; !exist && m.Score > 0 {
-			searchResults = append(searchResults, targets.names()[m.Index])
+			searchResults = append(searchResults, names[m.Index])
 		}
 	}
 
@@ -165,8 +165,9 @@ func searchByNameAndDesc(keyword string, targets searchCorpus) []string {
 }
 
 func limitString(s string, length int) string {
-	if len(s) > length && length > 3 {
-		s = s[:length-3] + "..."
+	runes := []rune(s)
+	if len(runes) > length && length > 3 {
+		return string(runes[:length-3]) + "..."
 	}
 	return s
 }

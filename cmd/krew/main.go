@@ -15,12 +15,15 @@
 package main
 
 import (
+	"os"
+
 	"k8s.io/klog/v2"
 
 	"sigs.k8s.io/krew/cmd/krew/cmd"
 )
 
 func main() {
-	defer klog.Flush()
-	cmd.Execute()
+	code := cmd.Execute()
+	klog.Flush()
+	os.Exit(code)
 }

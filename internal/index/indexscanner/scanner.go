@@ -15,12 +15,12 @@
 package indexscanner
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/pkg/errors"
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/yaml"
 
@@ -33,7 +33,7 @@ func findPluginManifestFiles(indexDir string) ([]string, error) {
 	var out []string
 	files, err := os.ReadDir(indexDir)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to open index dir")
+		return nil, fmt.Errorf("failed to open index dir: %w", err)
 	}
 	for _, file := range files {
 		if file.Type().IsRegular() && filepath.Ext(file.Name()) == constants.ManifestExtension {
@@ -52,7 +52,7 @@ func LoadPluginListFromFS(indexDir string) ([]index.Plugin, error) {
 
 	files, err := findPluginManifestFiles(indexDir)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to scan plugins in index directory")
+		return nil, fmt.Errorf("failed to scan plugins in index directory: %w", err)
 	}
 	klog.V(4).Infof("found %d plugins in dir %s", len(files), indexDir)
 
@@ -72,55 +72,65 @@ func LoadPluginListFromFS(indexDir string) ([]index.Plugin, error) {
 }
 
 // LoadPluginByName loads a plugins index file by its name. When plugin
-// file not found, it returns an error that can be checked with os.IsNotExist.
+// file not found, it returns an error that can be checked with errors.Is(err, fs.ErrNotExist).
 func LoadPluginByName(pluginsDir, pluginName string) (index.Plugin, error) {
 	klog.V(4).Infof("Reading plugin %q from %s", pluginName, pluginsDir)
 	return ReadPluginFromFile(filepath.Join(pluginsDir, pluginName+constants.ManifestExtension))
 }
 
 // ReadPluginFromFile loads a file from the FS. When plugin file not found, it
-// returns an error that can be checked with os.IsNotExist.
+// returns an error that can be checked with errors.Is(err, fs.ErrNotExist).
 func ReadPluginFromFile(path string) (index.Plugin, error) {
 	var plugin index.Plugin
 	err := readFromFile(path, &plugin)
 	if err != nil {
 		return plugin, err
 	}
-	return plugin, errors.Wrap(validation.ValidatePlugin(plugin.Name, plugin), "plugin manifest validation error")
+	if err := validation.ValidatePlugin(plugin.Name, plugin); err != nil {
+		return plugin, fmt.Errorf("plugin manifest validation error: %w", err)
+	}
+	return plugin, nil
 }
 
 func ReadPlugin(f io.ReadCloser) (index.Plugin, error) {
 	var plugin index.Plugin
 	err := decodeFile(f, &plugin)
 	if err != nil {
-		return plugin, errors.Wrap(err, "failed to decode plugin manifest")
+		return plugin, fmt.Errorf("failed to decode plugin manifest: %w", err)
 	}
-	return plugin, errors.Wrap(validation.ValidatePlugin(plugin.Name, plugin), "plugin manifest validation error")
+	if err := validation.ValidatePlugin(plugin.Name, plugin); err != nil {
+		return plugin, fmt.Errorf("plugin manifest validation error: %w", err)
+	}
+	return plugin, nil
 }
 
 // ReadReceiptFromFile loads a file from the FS. When receipt file not found, it
-// returns an error that can be checked with os.IsNotExist.
+// returns an error that can be checked with errors.Is(err, fs.ErrNotExist).
 func ReadReceiptFromFile(path string) (index.Receipt, error) {
 	var receipt index.Receipt
-	err := readFromFile(path, &receipt)
+	if err := readFromFile(path, &receipt); err != nil {
+		return receipt, err
+	}
 	if receipt.Status.Source.Name == "" {
 		receipt.Status.Source.Name = constants.DefaultIndexName
 	}
-	return receipt, err
+	return receipt, nil
 }
 
 // readFromFile loads a file from the FS into the provided object.
-func readFromFile(path string, as interface{}) error {
+func readFromFile(path string, as any) error {
 	f, err := os.Open(path)
 	if err != nil {
 		return err
 	}
-	err = decodeFile(f, &as)
-	return errors.Wrapf(err, "failed to parse yaml file %q", path)
+	if err := decodeFile(f, as); err != nil {
+		return fmt.Errorf("failed to parse yaml file %q: %w", path, err)
+	}
+	return nil
 }
 
 // decodeFile tries to decode a plugin/receipt
-func decodeFile(r io.ReadCloser, as interface{}) error {
+func decodeFile(r io.ReadCloser, as any) error {
 	defer r.Close()
 	b, err := io.ReadAll(r)
 	if err != nil {
@@ -132,5 +142,5 @@ func decodeFile(r io.ReadCloser, as interface{}) error {
 	// incremental field additions to plugin manifests independently from the
 	// installed version of krew.
 	// yaml.UnmarshalStrict()
-	return yaml.Unmarshal(b, &as)
+	return yaml.Unmarshal(b, as)
 }

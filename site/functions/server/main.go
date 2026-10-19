@@ -27,12 +27,10 @@ import (
 	"os"
 	"regexp"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/apex/gateway"
-	"github.com/google/go-github/v32/github"
-	"github.com/pkg/errors"
+	"github.com/google/go-github/v80/github"
 	"golang.org/x/oauth2"
 	"golang.org/x/sync/errgroup"
 	"sigs.k8s.io/yaml"
@@ -52,6 +50,16 @@ const (
 
 var (
 	githubRepoPattern = regexp.MustCompile(`.*github\.com/([^/]+/[^/#]+)`)
+	httpClient        = &http.Client{Timeout: 10 * time.Second}
+	knownHomePages    = map[string]string{
+		`https://krew.sigs.k8s.io/`:                                  "kubernetes-sigs/krew",
+		`https://sigs.k8s.io/krew`:                                   "kubernetes-sigs/krew",
+		`https://kubernetes.github.io/ingress-nginx/kubectl-plugin/`: "kubernetes/ingress-nginx",
+		`https://kudo.dev/`:                                          "kudobuilder/kudo",
+		`https://kubevirt.io`:                                        "kubevirt/kubectl-virt-plugin",
+		`https://popeyecli.io`:                                       "derailed/popeye",
+		`https://soluble-ai.github.io/kubetap/`:                      "soluble-ai/kubetap",
+	}
 )
 
 type PluginCountResponse struct {
@@ -96,8 +104,7 @@ func pluginCountHandler(w http.ResponseWriter, req *http.Request) {
 	_, dir, resp, err := githubClient(req.Context()).
 		Repositories.GetContents(req.Context(), orgName, repoName, pluginsDir, &github.RepositoryContentGetOptions{})
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		writeJSON(w, PluginCountResponse{Error: ErrorResponse{Message: fmt.Sprintf("error retrieving repo contents: %v", err)}})
+		writeJSON(w, http.StatusInternalServerError, PluginCountResponse{Error: ErrorResponse{Message: fmt.Sprintf("error retrieving repo contents: %v", err)}})
 		return
 	}
 	yamls := filterYAMLs(dir)
@@ -109,12 +116,13 @@ func pluginCountHandler(w http.ResponseWriter, req *http.Request) {
 	out.Data.Count = count
 
 	w.Header().Set("Cache-Control", fmt.Sprintf("public, max-age=%d", cacheSeconds))
-	writeJSON(w, out)
+	writeJSON(w, http.StatusOK, out)
 }
 
-func writeJSON(w io.Writer, v interface{}) {
-	e := json.NewEncoder(w)
-	if err := e.Encode(v); err != nil {
+func writeJSON(w http.ResponseWriter, status int, v any) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	if err := json.NewEncoder(w).Encode(v); err != nil {
 		log.Printf("json write error: %v", err)
 	}
 }
@@ -148,8 +156,7 @@ func pluginsHandler(w http.ResponseWriter, req *http.Request) {
 	_, dir, resp, err := githubClient(ctx).
 		Repositories.GetContents(ctx, orgName, repoName, pluginsDir, &github.RepositoryContentGetOptions{})
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		writeJSON(w, PluginsResponse{Error: ErrorResponse{Message: fmt.Sprintf("error retrieving repo contents: %v", err)}})
+		writeJSON(w, http.StatusInternalServerError, PluginsResponse{Error: ErrorResponse{Message: fmt.Sprintf("error retrieving repo contents: %v", err)}})
 		return
 	}
 	log.Printf("github response=%s rate: limit=%d remaining=%d",
@@ -158,8 +165,7 @@ func pluginsHandler(w http.ResponseWriter, req *http.Request) {
 
 	plugins, err := fetchPlugins(ctx, filterYAMLs(dir))
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		writeJSON(w, PluginsResponse{Error: ErrorResponse{Message: fmt.Sprintf("failed to fetch plugins: %v", err)}})
+		writeJSON(w, http.StatusInternalServerError, PluginsResponse{Error: ErrorResponse{Message: fmt.Sprintf("failed to fetch plugins: %v", err)}})
 		return
 	}
 
@@ -174,62 +180,54 @@ func pluginsHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	w.Header().Set("Cache-Control", fmt.Sprintf("public, max-age=%d", cacheSeconds))
-	writeJSON(w, out)
+	writeJSON(w, http.StatusOK, out)
 }
 
 func fetchPlugins(ctx context.Context, entries []*github.RepositoryContent) ([]*krew.Plugin, error) {
-	var (
-		mu  sync.Mutex
-		out []*krew.Plugin
-	)
-
-	queue := make(chan string)
+	out := make([]*krew.Plugin, len(entries))
 	g, ctx := errgroup.WithContext(ctx)
+	g.SetLimit(pluginFetchWorkers)
 
-	for i := 0; i < pluginFetchWorkers; i++ {
+	for i, entry := range entries {
 		g.Go(func() error {
-			for url := range queue {
-				p, err := readPlugin(url)
-				if err != nil {
-					return err
-				}
-				mu.Lock()
-				out = append(out, p)
-				mu.Unlock()
+			p, err := readPlugin(ctx, entry.GetDownloadURL())
+			if err != nil {
+				return err
 			}
+			out[i] = p
 			return nil
 		})
 	}
 
-	for _, v := range entries {
-		url := v.GetDownloadURL()
-		select {
-		case <-ctx.Done():
-			break
-		case queue <- url:
-		}
+	if err := g.Wait(); err != nil {
+		return nil, err
 	}
-
-	close(queue)
-
-	return out, g.Wait()
+	return out, nil
 }
 
-func readPlugin(url string) (*krew.Plugin, error) {
-	resp, err := http.Get(url)
+func readPlugin(ctx context.Context, url string) (*krew.Plugin, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, http.NoBody)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to get %s", url)
+		return nil, fmt.Errorf("failed to create request for %s: %w", url, err)
+	}
+
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get %s: %w", url, err)
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("failed to get %s: status %s", url, resp.Status)
+	}
 
-	b, err := io.ReadAll(resp.Body)
+	b, err := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to read file %s: %w", url)
+		return nil, fmt.Errorf("failed to read file %s: %w", url, err)
 	}
 
 	var v krew.Plugin
 	if err = yaml.Unmarshal(b, &v); err != nil {
-		return nil, errors.Wrapf(err, "failed to parse plugin manifest for %s", url)
+		return nil, fmt.Errorf("failed to parse plugin manifest for %s: %w", url, err)
 	}
 	return &v, nil
 }
@@ -237,16 +235,6 @@ func readPlugin(url string) (*krew.Plugin, error) {
 func findRepo(homePage string) string {
 	if matches := githubRepoPattern.FindStringSubmatch(homePage); matches != nil {
 		return matches[1]
-	}
-
-	knownHomePages := map[string]string{
-		`https://krew.sigs.k8s.io/`:                                  "kubernetes-sigs/krew",
-		`https://sigs.k8s.io/krew`:                                   "kubernetes-sigs/krew",
-		`https://kubernetes.github.io/ingress-nginx/kubectl-plugin/`: "kubernetes/ingress-nginx",
-		`https://kudo.dev/`:                                          "kudobuilder/kudo",
-		`https://kubevirt.io`:                                        "kubevirt/kubectl-virt-plugin",
-		`https://popeyecli.io`:                                       "derailed/popeye",
-		`https://soluble-ai.github.io/kubetap/`:                      "soluble-ai/kubetap",
 	}
 	return knownHomePages[homePage]
 }

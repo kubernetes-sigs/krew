@@ -15,6 +15,8 @@
 package gitutil
 
 import (
+	"errors"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -138,7 +140,7 @@ func TestEnsureUpdatedRemovesUntrackedFiles(t *testing.T) {
 		t.Fatalf("EnsureUpdated failed: %v", err)
 	}
 
-	if _, err := os.Stat(stray); !os.IsNotExist(err) {
+	if _, err := os.Stat(stray); !errors.Is(err, fs.ErrNotExist) {
 		t.Fatalf("expected untracked file to be cleaned, stat err=%v", err)
 	}
 }

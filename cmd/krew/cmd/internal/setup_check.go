@@ -15,7 +15,9 @@
 package internal
 
 import (
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -53,7 +55,7 @@ func IsBinDirInPATH(paths environment.Paths) bool {
 	_, err := os.Stat(paths.BasePath())
 	if err != nil {
 		klog.V(4).Info("Assuming this is the first run")
-		return os.IsNotExist(err)
+		return errors.Is(err, fs.ErrNotExist)
 	}
 
 	binPath := paths.BinPath()

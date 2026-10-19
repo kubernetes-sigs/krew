@@ -15,10 +15,12 @@
 package indexmigration
 
 import (
+	"errors"
+	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 
-	"github.com/pkg/errors"
 	"k8s.io/klog/v2"
 
 	"sigs.k8s.io/krew/internal/environment"
@@ -29,7 +31,7 @@ import (
 func Done(paths environment.Paths) (bool, error) {
 	klog.V(2).Info("Checking if index migration is needed.")
 	_, err := os.Stat(filepath.Join(paths.IndexBase(), ".git"))
-	if err != nil && os.IsNotExist(err) {
+	if err != nil && errors.Is(err, fs.ErrNotExist) {
 		klog.V(2).Infoln("Index already migrated.")
 		return true, nil
 	}
@@ -44,15 +46,15 @@ func Migrate(paths environment.Paths) error {
 	newPath := filepath.Join(paths.IndexBase(), "default")
 
 	if err := os.Rename(indexPath, tmpPath); err != nil {
-		return errors.Wrapf(err, "could not move index directory %q to temporary location %q", indexPath, tmpPath)
+		return fmt.Errorf("could not move index directory %q to temporary location %q: %w", indexPath, tmpPath, err)
 	}
 
 	if err := os.Mkdir(indexPath, os.ModePerm); err != nil {
-		return errors.Wrapf(err, "could not create index directory %q", indexPath)
+		return fmt.Errorf("could not create index directory %q: %w", indexPath, err)
 	}
 
 	if err := os.Rename(tmpPath, newPath); err != nil {
-		return errors.Wrapf(err, "could not move temporary index directory %q to new location %q", tmpPath, newPath)
+		return fmt.Errorf("could not move temporary index directory %q to new location %q: %w", tmpPath, newPath, err)
 	}
 
 	klog.Info("Migration completed successfully.")

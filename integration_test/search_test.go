@@ -16,7 +16,7 @@ package integrationtest
 
 import (
 	"regexp"
-	"sort"
+	"slices"
 	"strings"
 	"testing"
 
@@ -84,7 +84,7 @@ func TestKrewSearchMultiIndexSortedByDisplayName(t *testing.T) {
 	if len(names) < 10 {
 		t.Fatalf("could not capture names")
 	}
-	if !sort.StringsAreSorted(names) {
+	if !slices.IsSorted(names) {
 		t.Fatalf("names are not sorted: [%s]", strings.Join(names, ", "))
 	}
 }

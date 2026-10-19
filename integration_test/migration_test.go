@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// todo(corneliusweig) remove this test file with v0.4
+// TODO: remove this test file when the receipts migration is removed.
 package integrationtest
 
 import (

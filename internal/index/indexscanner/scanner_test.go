@@ -15,7 +15,8 @@
 package indexscanner
 
 import (
-	"os"
+	"errors"
+	"io/fs"
 	"path/filepath"
 	"testing"
 
@@ -155,7 +156,7 @@ func TestReadPluginFile_preservesNotFoundErr(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error")
 	}
-	if !os.IsNotExist(err) {
+	if !errors.Is(err, fs.ErrNotExist) {
 		t.Fatalf("returned error is not IsNotExist type: %v", err)
 	}
 }
@@ -236,7 +237,7 @@ func TestLoadIndexFileFromFS(t *testing.T) {
 				t.Errorf("LoadIndexFileFromFS() got = %##v,error = %v, wantErr %v", got, err, tt.wantErr)
 				return
 			}
-			if os.IsNotExist(err) != tt.wantIsNotExistErr {
+			if errors.Is(err, fs.ErrNotExist) != tt.wantIsNotExistErr {
 				t.Errorf("LoadIndexFileFromFS() got = %##v,error = %v, wantIsNotExistErr %v", got, err, tt.wantErr)
 				return
 			}

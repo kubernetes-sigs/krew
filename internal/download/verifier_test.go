@@ -49,12 +49,21 @@ func TestSha256Verifier(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			v := NewSha256Verifier(tt.args.hash)
+			v, err := NewSha256Verifier(tt.args.hash)
+			if err != nil {
+				t.Fatalf("NewSha256Verifier() error = %v", err)
+			}
 			_, _ = io.Copy(v, bytes.NewReader(tt.write))
 			if err := v.Verify(); (err != nil) != tt.wantError {
 				t.Errorf("NewSha256Verifier().Write(%x).Verify() = %v, wantReader %v", tt.write, err, tt.wantError)
 				return
 			}
 		})
+	}
+}
+
+func TestNewSha256Verifier_invalidHash(t *testing.T) {
+	if _, err := NewSha256Verifier("not-hex"); err == nil {
+		t.Fatal("NewSha256Verifier() accepted an invalid checksum")
 	}
 }

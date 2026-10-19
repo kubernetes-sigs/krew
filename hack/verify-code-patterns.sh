@@ -44,10 +44,18 @@ if [[ -n "$out" ]]; then
   exit 1
 fi
 
-# Do not use fmt.Errorf as it does not start a stacktrace at error site
-out="$(grep --include '*.go' -EIrn 'fmt\.Errorf?' || true)"
+# Use the standard library error package.
+out="$(grep --include '*.go' --exclude-dir 'vendor/' -EIrn 'github\.com/pkg/errors' || true)"
 if [[ -n "$out" ]]; then
-  echo >&2 "You used fmt.Errorf; use pkg/errors.Errorf instead to preserve stack traces:"
+  echo >&2 "You used github.com/pkg/errors; use the standard library errors and fmt packages instead:"
+  echo >&2 "$out"
+  exit 1
+fi
+
+# Use errors.Is instead of the os package helpers.
+out="$(grep --include '*.go' --exclude-dir 'vendor/' -EIrn 'os\.Is(Not)?Exist' || true)"
+if [[ -n "$out" ]]; then
+  echo >&2 "You used os.IsNotExist/os.IsExist; use errors.Is(err, fs.ErrNotExist/fs.ErrExist) instead:"
   echo >&2 "$out"
   exit 1
 fi

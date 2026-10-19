@@ -18,10 +18,10 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"hash"
 	"io"
 
-	"github.com/pkg/errors"
 	"k8s.io/klog/v2"
 )
 
@@ -39,12 +39,15 @@ type sha256Verifier struct {
 }
 
 // NewSha256Verifier creates a Verifier that tests against the given hash.
-func NewSha256Verifier(hashed string) Verifier {
-	raw, _ := hex.DecodeString(hashed)
+func NewSha256Verifier(hashed string) (Verifier, error) {
+	raw, err := hex.DecodeString(hashed)
+	if err != nil {
+		return nil, fmt.Errorf("invalid sha256 checksum %q: %w", hashed, err)
+	}
 	return sha256Verifier{
 		Hash:       sha256.New(),
 		wantedHash: raw,
-	}
+	}, nil
 }
 
 func (v sha256Verifier) Verify() error {
@@ -52,5 +55,5 @@ func (v sha256Verifier) Verify() error {
 	if bytes.Equal(v.wantedHash, v.Sum(nil)) {
 		return nil
 	}
-	return errors.Errorf("checksum does not match, want: %x, got %x", v.wantedHash, v.Sum(nil))
+	return fmt.Errorf("checksum does not match, want: %x, got %x", v.wantedHash, v.Sum(nil))
 }

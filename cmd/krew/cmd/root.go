@@ -15,16 +15,17 @@
 package cmd
 
 import (
+	"errors"
 	"flag"
 	"fmt"
-	"math/rand"
+	"io/fs"
+	"math/rand/v2"
 	"os"
 	"strings"
-	"time"
+	"sync/atomic"
 
 	"github.com/fatih/color"
 	"github.com/mattn/go-isatty"
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"k8s.io/klog/v2"
@@ -51,10 +52,10 @@ const (
 var (
 	paths environment.Paths // krew paths used by the process
 
-	// latestTag is updated by a go-routine with the latest tag from GitHub.
-	// An empty string indicates that the API request was skipped or
-	// has not completed.
-	latestTag = ""
+	// latestTag is updated by a goroutine with the latest tag from GitHub.
+	// A nil value indicates that the API request was skipped or has not
+	// completed.
+	latestTag atomic.Pointer[string]
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -74,15 +75,13 @@ You can invoke krew through kubectl: "kubectl krew [command]..."`,
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
-func Execute() {
+// It returns the process exit code.
+func Execute() int {
 	if err := rootCmd.Execute(); err != nil {
-		if klog.V(1).Enabled() {
-			klog.Fatalf("%+v", err) // with stack trace
-		} else {
-			fmt.Fprintln(os.Stderr, err)
-			os.Exit(1)
-		}
+		fmt.Fprintln(os.Stderr, err)
+		return 1
 	}
+	return 0
 }
 
 func init() {
@@ -90,7 +89,6 @@ func init() {
 	// Opt into fixed stderrthreshold behavior (kubernetes/klog#212).
 	_ = flag.Set("legacy_stderr_threshold_behavior", "false")
 	_ = flag.Set("stderrthreshold", "INFO")
-	rand.Seed(time.Now().UnixNano())
 
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 	_ = flag.CommandLine.Parse([]string{}) // convince pkg/flag we parsed the flags
@@ -101,11 +99,9 @@ func init() {
 		}
 	})
 	if err := flag.Set("logtostderr", "true"); err != nil {
-		fmt.Printf("can't set log to stderr %+v", err)
+		fmt.Fprintf(os.Stderr, "can't set log to stderr: %v\n", err)
 		os.Exit(1)
 	}
-
-	paths = environment.MustGetKrewPaths()
 
 	// Cobra doesn't have a way to specify a two word command (ie. "kubectl krew"), so set a custom usage template
 	// with kubectl in it. Cobra will use this template for the root and all child commands.
@@ -115,6 +111,8 @@ func init() {
 }
 
 func preRun(_ *cobra.Command, _ []string) error {
+	paths = environment.MustGetKrewPaths()
+
 	// check must be done before ensureDirs, to detect krew's self-installation
 	if !internal.IsBinDirInPATH(paths) {
 		internal.PrintWarning(os.Stderr, "%s", internal.SetupInstructions()+"\n\n")
@@ -125,7 +123,7 @@ func preRun(_ *cobra.Command, _ []string) error {
 		paths.BinPath(),
 		paths.IndexBase(),
 		paths.InstallReceiptsPath()); err != nil {
-		klog.Fatal(err)
+		return err
 	}
 
 	go func() {
@@ -135,15 +133,18 @@ func preRun(_ *cobra.Command, _ []string) error {
 			klog.V(1).Infof("skipping upgrade check")
 			return
 		}
-		var err error
 		klog.V(1).Infof("starting upgrade check")
-		latestTag, err = internal.FetchLatestTag()
+		tag, err := internal.FetchLatestTag()
 		if err != nil {
 			klog.V(1).Infoln("WARNING:", err)
+			return
 		}
+		latestTag.Store(&tag)
 	}()
 
-	// detect if receipts migration (v0.2.x->v0.3.x) is complete
+	// Detect whether the receipts migration (v0.2.x->v0.3.x) is complete.
+	// Keep this check for users who still migrate from v0.2; remove it in a
+	// future release once that upgrade path is no longer supported.
 	isMigrated, err := receiptsmigration.Done(paths)
 	if err != nil {
 		return err
@@ -158,11 +159,11 @@ func preRun(_ *cobra.Command, _ []string) error {
 
 	isMigrated, err = indexmigration.Done(paths)
 	if err != nil {
-		return errors.Wrap(err, "failed to check if index migration is complete")
+		return fmt.Errorf("failed to check if index migration is complete: %w", err)
 	}
 	if !isMigrated {
 		if err := indexmigration.Migrate(paths); err != nil {
-			return errors.Wrap(err, "index migration failed")
+			return fmt.Errorf("index migration failed: %w", err)
 		}
 	}
 
@@ -179,11 +180,12 @@ func preRun(_ *cobra.Command, _ []string) error {
 }
 
 func showUpgradeNotification(*cobra.Command, []string) {
-	if latestTag == "" {
+	tag := latestTag.Load()
+	if tag == nil {
 		klog.V(4).Infof("Upgrade check was skipped or has not finished")
 		return
 	}
-	latestVer, err := semver.Parse(latestTag)
+	latestVer, err := semver.Parse(*tag)
 	if err != nil {
 		klog.V(4).Infof("Could not parse remote tag as semver: %s", err)
 		return
@@ -194,7 +196,7 @@ func showUpgradeNotification(*cobra.Command, []string) {
 		return
 	}
 	if semver.Less(currentVer, latestVer) {
-		color.New(color.Bold).Fprintf(os.Stderr, upgradeNotification, version.GitTag(), latestTag)
+		color.New(color.Bold).Fprintf(os.Stderr, upgradeNotification, version.GitTag(), *tag)
 	} else {
 		klog.V(4).Infof("upgrade check found no new versions (%s>=%s)", currentVer, latestVer)
 	}
@@ -202,11 +204,11 @@ func showUpgradeNotification(*cobra.Command, []string) {
 
 func cleanupStaleKrewInstallations() error {
 	r, err := receipt.Load(paths.PluginInstallReceiptPath(constants.KrewPluginName))
-	if os.IsNotExist(err) {
+	if errors.Is(err, fs.ErrNotExist) {
 		klog.V(1).Infof("could not find krew's own plugin receipt, skipping cleanup of stale krew installations")
 		return nil
 	} else if err != nil {
-		return errors.Wrap(err, "cannot load krew's own plugin receipt")
+		return fmt.Errorf("cannot load krew's own plugin receipt: %w", err)
 	}
 	v := r.Spec.Version
 
@@ -217,7 +219,7 @@ func cleanupStaleKrewInstallations() error {
 func checkIndex(_ *cobra.Command, _ []string) error {
 	entries, err := os.ReadDir(paths.IndexBase())
 	if err != nil {
-		return errors.Wrap(err, "failed to list directory")
+		return fmt.Errorf("failed to list directory: %w", err)
 	}
 	if len(entries) == 0 {
 		return errors.New(`krew local plugin index is not initialized (run "kubectl krew update")`)
@@ -228,9 +230,9 @@ func checkIndex(_ *cobra.Command, _ []string) error {
 		}
 		indexPath := paths.IndexPath(e.Name())
 		if ok, err := gitutil.IsGitCloned(indexPath); err != nil {
-			return errors.Wrap(err, "failed to check local index git repository")
+			return fmt.Errorf("failed to check local index git repository: %w", err)
 		} else if !ok {
-			return errors.Errorf("invalid index %q, non git directory found in index folder", e.Name())
+			return fmt.Errorf("invalid index %q, non git directory found in index folder", e.Name())
 		}
 	}
 	return nil
@@ -240,7 +242,7 @@ func ensureDirs(paths ...string) error {
 	for _, p := range paths {
 		klog.V(4).Infof("Ensure creating dir: %q", p)
 		if err := os.MkdirAll(p, 0o755); err != nil {
-			return errors.Wrapf(err, "failed to ensure create directory %q", p)
+			return fmt.Errorf("failed to ensure create directory %q: %w", p, err)
 		}
 	}
 	return nil

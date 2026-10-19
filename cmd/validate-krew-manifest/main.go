@@ -16,6 +16,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -24,7 +25,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/klog/v2"
@@ -46,55 +46,59 @@ func init() {
 }
 
 func main() {
-	// TODO(ahmetb) iterate over glog flags and hide them (not sure if possible without using pflag)
 	klog.InitFlags(nil)
 	if err := flag.Set("logtostderr", "true"); err != nil {
-		fmt.Printf("can't set log to stderr %+v", err)
+		fmt.Fprintf(os.Stderr, "can't set log to stderr: %v\n", err)
 		os.Exit(1)
 	}
 	flag.Parse()
-	defer klog.Flush()
 
+	err := run()
+	klog.Flush()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}
+
+func run() error {
 	if flManifest == "" {
-		klog.Fatal("-manifest must be specified")
+		return errors.New("-manifest must be specified")
 	}
-
-	if err := validateManifestFile(flManifest); err != nil {
-		klog.Fatalf("%v", err) // with stack trace
-	}
+	return validateManifestFile(flManifest)
 }
 
 func validateManifestFile(path string) error {
 	klog.Infof("reading file %q", path)
 	p, err := indexscanner.ReadPluginFromFile(path)
 	if err != nil {
-		return errors.Wrap(err, "failed to read plugin file")
+		return fmt.Errorf("failed to read plugin file: %w", err)
 	}
 	filename := filepath.Base(path)
 	manifestExtension := filepath.Ext(filename)
 	if manifestExtension != constants.ManifestExtension {
-		return errors.Errorf("expected manifest extension %q but found %q", constants.ManifestExtension, manifestExtension)
+		return fmt.Errorf("expected manifest extension %q but found %q", constants.ManifestExtension, manifestExtension)
 	}
 	pluginNameFromFileName := strings.TrimSuffix(filename, manifestExtension)
 	klog.V(4).Infof("inferred plugin name as %s", pluginNameFromFileName)
 
 	// validate plugin manifest
 	if err := validation.ValidatePlugin(pluginNameFromFileName, p); err != nil {
-		return errors.Wrap(err, "plugin validation error")
+		return fmt.Errorf("plugin validation error: %w", err)
 	}
 	klog.Infof("structural validation OK")
 
 	// make sure each platform matches a supported platform
 	for i, p := range p.Spec.Platforms {
 		if env := findAnyMatchingPlatform(p.Selector); env.OS == "" || env.Arch == "" {
-			return errors.Errorf("spec.platform[%d]'s selector (%v) doesn't match any supported platforms", i, p.Selector)
+			return fmt.Errorf("spec.platform[%d]'s selector (%v) doesn't match any supported platforms", i, p.Selector)
 		}
 	}
 	klog.Infof("all spec.platform[] items are used")
 
 	// validate no supported <os,arch> is matching multiple platform specs
 	if err := isOverlappingPlatformSelectors(p.Spec.Platforms); err != nil {
-		return errors.Wrap(err, "overlapping platform selectors found")
+		return fmt.Errorf("overlapping platform selectors found: %w", err)
 	}
 	klog.Infof("no overlapping spec.platform[].selector")
 
@@ -103,7 +107,7 @@ func validateManifestFile(path string) error {
 		for i, p := range p.Spec.Platforms {
 			klog.Infof("installing spec.platform[%d]", i)
 			if err := installPlatformSpec(path, p); err != nil {
-				return errors.Wrapf(err, "spec.platforms[%d] failed to install", i)
+				return fmt.Errorf("spec.platforms[%d] failed to install: %w", i, err)
 			}
 			klog.Infof("installed  spec.platforms[%d]", i)
 		}
@@ -124,7 +128,7 @@ func isOverlappingPlatformSelectors(platforms []index.Platform) error {
 		}
 
 		if len(matchIndex) > 1 {
-			return errors.Errorf("multiple spec.platforms (at indexes %v) have overlapping selectors that select %s", matchIndex, env)
+			return fmt.Errorf("multiple spec.platforms (at indexes %v) have overlapping selectors that select %s", matchIndex, env)
 		}
 	}
 	return nil
@@ -135,12 +139,12 @@ func isOverlappingPlatformSelectors(platforms []index.Platform) error {
 func installPlatformSpec(manifestFile string, p index.Platform) error {
 	env := findAnyMatchingPlatform(p.Selector)
 	if env.OS == "" || env.Arch == "" {
-		return errors.Errorf("no supported platform matched platform selector: %+v", p.Selector)
+		return fmt.Errorf("no supported platform matched platform selector: %+v", p.Selector)
 	}
 
 	tmpDir, err := os.MkdirTemp(os.TempDir(), "krew-test")
 	if err != nil {
-		return errors.Wrap(err, "failed to create temp dir for plugin install")
+		return fmt.Errorf("failed to create temp dir for plugin install: %w", err)
 	}
 	defer func() {
 		if err := os.RemoveAll(tmpDir); err != nil {
@@ -161,11 +165,13 @@ func installPlatformSpec(manifestFile string, p index.Platform) error {
 	b, err := cmd.CombinedOutput()
 	if err != nil {
 		output := strings.ReplaceAll(string(b), "\n", "\n\t")
-		return errors.Wrapf(err, "plugin install command failed: %s", output)
+		return fmt.Errorf("plugin install command failed: %s: %w", output, err)
 	}
 
-	err = validateLicenseFileExists(tmpDir)
-	return errors.Wrap(err, "LICENSE (or alike) file is not extracted from the archive as part of installation")
+	if err := validateLicenseFileExists(tmpDir); err != nil {
+		return fmt.Errorf("LICENSE (or alike) file is not extracted from the archive as part of installation: %w", err)
+	}
+	return nil
 }
 
 var licenseFiles = map[string]struct{}{
@@ -192,7 +198,7 @@ func validateLicenseFileExists(krewRoot string) error {
 		return nil
 	})
 	if err != nil {
-		return errors.Wrap(err, "failed to walk installation directory")
+		return fmt.Errorf("failed to walk installation directory: %w", err)
 	}
 
 	for _, f := range files {
@@ -202,7 +208,7 @@ func validateLicenseFileExists(krewRoot string) error {
 			return nil
 		}
 	}
-	return errors.Errorf("could not find license file among [%s]", strings.Join(files, ", "))
+	return fmt.Errorf("could not find license file among [%s]", strings.Join(files, ", "))
 }
 
 // findAnyMatchingPlatform finds an <os,arch> pair matches to given selector

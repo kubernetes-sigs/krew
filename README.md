@@ -38,11 +38,10 @@ You can follow the [**Quickstart**][quickstart] to get started with Krew.
 
 - [Releasing Krew](./docs/RELEASING_KREW.md): how to release new version of
   Krew.
-- [Plugin Lifecycle](./docs/PLUGIN_LIFECYCLE.md): how Krew installs/upgrades
-  plugins and itself. (Not necessarily up-to-date, but it can give a good idea
-  about how Krew works under the covers.)
-- [Krew Architecture](./docs/KREW_ARCHITECTURE.md): architectural decisions
-  behind designing initial versions of Krew. (Not up-to-date.)
+- [Plugin Lifecycle](./docs/PLUGIN_LIFECYCLE.md): how Krew installs and
+  upgrades plugins.
+- [Krew Architecture](./docs/KREW_ARCHITECTURE.md): design notes from the
+  original versions of Krew.
 - [Krew Logo](./docs/KREW_LOGO.md): our logo and branding assets.
 
 Visit [`./docs`](./docs) for all documentation.

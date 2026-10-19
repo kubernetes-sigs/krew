@@ -15,10 +15,11 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"k8s.io/klog/v2"
 
@@ -62,7 +63,7 @@ kubectl krew upgrade foo bar"`,
 				// Upgrade all plugins.
 				installed, err := installation.GetInstalledPluginReceipts(paths.InstallReceiptsPath())
 				if err != nil {
-					return errors.Wrap(err, "failed to find all installed versions")
+					return fmt.Errorf("failed to find all installed versions: %w", err)
 				}
 				for _, receipt := range installed {
 					pluginNames = append(pluginNames, receipt.Status.Source.Name+"/"+receipt.Name)
@@ -79,7 +80,7 @@ kubectl krew upgrade foo bar"`,
 					}
 					r, err := receipt.Load(paths.PluginInstallReceiptPath(arg))
 					if err != nil {
-						return errors.Wrapf(err, "read receipt %q", arg)
+						return fmt.Errorf("read receipt %q: %w", arg, err)
 					}
 					pluginNames = append(pluginNames, r.Status.Source.Name+"/"+r.Name)
 				}
@@ -95,10 +96,10 @@ kubectl krew upgrade foo bar"`,
 
 				plugin, err := indexscanner.LoadPluginByName(paths.IndexPluginsPath(indexName), pluginName)
 				if err != nil {
-					if !os.IsNotExist(err) {
-						return errors.Wrapf(err, "failed to load the plugin manifest for plugin %s", name)
+					if !errors.Is(err, fs.ErrNotExist) {
+						return fmt.Errorf("failed to load the plugin manifest for plugin %s: %w", name, err)
 					} else if !skipErrors {
-						return errors.Errorf("plugin %q does not exist in the plugin index", name)
+						return fmt.Errorf("plugin %q does not exist in the plugin index", name)
 					}
 				}
 
@@ -109,7 +110,7 @@ kubectl krew upgrade foo bar"`,
 						EnableNetrc: *enableNetrc,
 						NetrcFile:   *netrcFile,
 					})
-					if ignoreUpgraded && err == installation.ErrIsAlreadyUpgraded {
+					if ignoreUpgraded && errors.Is(err, installation.ErrIsAlreadyUpgraded) {
 						fmt.Fprintf(os.Stderr, "Skipping plugin %s, it is already on the newest version\n", pluginDisplayName)
 						continue
 					}
@@ -120,7 +121,7 @@ kubectl krew upgrade foo bar"`,
 						fmt.Fprintf(os.Stderr, "WARNING: failed to upgrade plugin %q, skipping (error: %v)\n", pluginDisplayName, err)
 						continue
 					}
-					return errors.Wrapf(err, "failed to upgrade plugin %q", pluginDisplayName)
+					return fmt.Errorf("failed to upgrade plugin %q: %w", pluginDisplayName, err)
 				}
 				fmt.Fprintf(os.Stderr, "Upgraded plugin: %s\n", pluginDisplayName)
 				if indexName == constants.DefaultIndexName {

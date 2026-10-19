@@ -15,14 +15,14 @@
 package cmd
 
 import (
+	"cmp"
 	"fmt"
 	"io"
 	"os"
-	"sort"
+	"slices"
 	"strings"
 	"text/tabwriter"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	"sigs.k8s.io/krew/internal/installation"
@@ -43,7 +43,7 @@ Remarks:
 		RunE: func(_ *cobra.Command, _ []string) error {
 			receipts, err := installation.GetInstalledPluginReceipts(paths.InstallReceiptsPath())
 			if err != nil {
-				return errors.Wrap(err, "failed to find all installed versions")
+				return fmt.Errorf("failed to find all installed versions: %w", err)
 			}
 
 			// return sorted list of plugin names when piped to other commands or file
@@ -52,7 +52,7 @@ Remarks:
 				for _, r := range receipts {
 					names = append(names, displayName(r.Plugin, indexOf(r)))
 				}
-				sort.Strings(names)
+				slices.Sort(names)
 				fmt.Fprintln(os.Stdout, strings.Join(names, "\n"))
 				return nil
 			}
@@ -83,8 +83,8 @@ func printTable(out io.Writer, columns []string, rows [][]string) error {
 }
 
 func sortByFirstColumn(rows [][]string) [][]string {
-	sort.Slice(rows, func(a, b int) bool {
-		return rows[a][0] < rows[b][0]
+	slices.SortFunc(rows, func(a, b []string) int {
+		return cmp.Compare(a[0], b[0])
 	})
 	return rows
 }

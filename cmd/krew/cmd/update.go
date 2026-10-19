@@ -15,13 +15,11 @@
 package cmd
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"os"
 	"strings"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"k8s.io/klog/v2"
 
@@ -49,14 +47,10 @@ Remarks:
 }
 
 func showFormattedPluginsInfo(out io.Writer, header string, plugins []string) {
-	var b bytes.Buffer
-	b.WriteString(fmt.Sprintf("  %s:\n", header))
-
+	fmt.Fprintf(out, "  %s:\n", header)
 	for _, p := range plugins {
-		b.WriteString(fmt.Sprintf("    * %s\n", p))
+		fmt.Fprintf(out, "    * %s\n", p)
 	}
-
-	fmt.Fprintf(out, "%s", b.String())
 }
 
 func showUpdatedPlugins(out io.Writer, preUpdate, postUpdate []pluginEntry, installedPlugins map[string]string) {
@@ -86,7 +80,7 @@ func showUpdatedPlugins(out io.Writer, preUpdate, postUpdate []pluginEntry, inst
 	}
 
 	if len(newPlugins) > 0 {
-		var s []string
+		s := make([]string, 0, len(newPlugins))
 		for _, p := range newPlugins {
 			s = append(s, displayName(p.p, p.indexName))
 		}
@@ -94,7 +88,7 @@ func showUpdatedPlugins(out io.Writer, preUpdate, postUpdate []pluginEntry, inst
 	}
 
 	if len(updatedPlugins) > 0 {
-		var s []string
+		s := make([]string, 0, len(updatedPlugins))
 		for _, p := range updatedPlugins {
 			old := oldIndexMap[canonicalName(p.p, p.indexName)]
 			name := displayName(p.p, p.indexName)
@@ -134,7 +128,7 @@ func ensureIndexes(_ *cobra.Command, _ []string) error {
 func ensureDefaultIndexIfNoneExist() error {
 	idx, err := indexoperations.ListIndexes(paths)
 	if err != nil {
-		return errors.Wrap(err, "failed to retrieve plugin indexes")
+		return fmt.Errorf("failed to retrieve plugin indexes: %w", err)
 	}
 	if len(idx) > 0 {
 		klog.V(3).Infof("Found %d indexes, skipping adding default index.", len(idx))
@@ -144,8 +138,10 @@ func ensureDefaultIndexIfNoneExist() error {
 	klog.V(3).Infof("No index found, add default index.")
 	defaultIndex := index.DefaultIndex()
 	fmt.Fprintf(os.Stderr, "Adding \"default\" plugin index from %s.\n", defaultIndex)
-	return errors.Wrap(indexoperations.AddIndex(paths, constants.DefaultIndexName, defaultIndex),
-		"failed to add default plugin index in absence of no indexes")
+	if err := indexoperations.AddIndex(paths, constants.DefaultIndexName, defaultIndex); err != nil {
+		return fmt.Errorf("failed to add default plugin index in absence of no indexes: %w", err)
+	}
+	return nil
 }
 
 // ensureIndexesUpdated iterates over all indexes and updates them
@@ -153,7 +149,7 @@ func ensureDefaultIndexIfNoneExist() error {
 func ensureIndexesUpdated() error {
 	indexes, err := indexoperations.ListIndexes(paths)
 	if err != nil {
-		return errors.Wrap(err, "failed to list indexes")
+		return fmt.Errorf("failed to list indexes: %w", err)
 	}
 
 	// collect list of existing plugins
@@ -185,7 +181,7 @@ func ensureIndexesUpdated() error {
 
 		receipts, err := installation.GetInstalledPluginReceipts(paths.InstallReceiptsPath())
 		if err != nil {
-			return errors.Wrap(err, "failed to load installed plugins list after update")
+			return fmt.Errorf("failed to load installed plugins list after update: %w", err)
 		}
 		installedPlugins := make(map[string]string)
 		for _, receipt := range receipts {
@@ -193,7 +189,10 @@ func ensureIndexesUpdated() error {
 		}
 		showUpdatedPlugins(os.Stderr, preUpdatePlugins, postUpdatePlugins, installedPlugins)
 	}
-	return errors.Wrapf(returnErr, "failed to update the following indexes: %s", strings.Join(failed, ", "))
+	if len(failed) > 0 {
+		return fmt.Errorf("failed to update the following indexes: %s: %w", strings.Join(failed, ", "), returnErr)
+	}
+	return nil
 }
 
 func init() {

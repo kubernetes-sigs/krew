@@ -15,12 +15,14 @@
 package installation
 
 import (
+	"errors"
+	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
 
-	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
 
@@ -61,17 +63,17 @@ func Install(p environment.Paths, plugin index.Plugin, indexName string, opts In
 	_, err := receipt.Load(p.PluginInstallReceiptPath(plugin.Name))
 	if err == nil {
 		return ErrIsAlreadyInstalled
-	} else if !os.IsNotExist(err) {
-		return errors.Wrap(err, "failed to look up plugin receipt")
+	} else if !errors.Is(err, fs.ErrNotExist) {
+		return fmt.Errorf("failed to look up plugin receipt: %w", err)
 	}
 
 	// Find available installation candidate
 	candidate, ok, err := GetMatchingPlatform(plugin.Spec.Platforms)
 	if err != nil {
-		return errors.Wrap(err, "failed trying to find a matching platform in plugin spec")
+		return fmt.Errorf("failed trying to find a matching platform in plugin spec: %w", err)
 	}
 	if !ok {
-		return errors.Errorf("plugin %q does not offer installation for this platform", plugin.Name)
+		return fmt.Errorf("plugin %q does not offer installation for this platform", plugin.Name)
 	}
 
 	// The actual install should be the last action so that a failure during receipt
@@ -84,12 +86,14 @@ func Install(p environment.Paths, plugin index.Plugin, indexName string, opts In
 		binDir:     p.BinPath(),
 		installDir: p.PluginVersionInstallPath(plugin.Name, plugin.Spec.Version),
 	}, opts); err != nil {
-		return errors.Wrap(err, "install failed")
+		return fmt.Errorf("install failed: %w", err)
 	}
 
 	klog.V(3).Infof("Storing install receipt for plugin %s", plugin.Name)
-	err = receipt.Store(receipt.New(plugin, indexName, metav1.Now()), p.PluginInstallReceiptPath(plugin.Name))
-	return errors.Wrap(err, "installation receipt could not be stored, uninstall may fail")
+	if err := receipt.Store(receipt.New(plugin, indexName, metav1.Now()), p.PluginInstallReceiptPath(plugin.Name)); err != nil {
+		return fmt.Errorf("installation receipt could not be stored, uninstall may fail: %w", err)
+	}
+	return nil
 }
 
 func install(op installOperation, opts InstallOpts) error {
@@ -97,7 +101,7 @@ func install(op installOperation, opts InstallOpts) error {
 	klog.V(3).Infof("Creating download staging directory")
 	downloadStagingDir, err := os.MkdirTemp("", "krew-downloads")
 	if err != nil {
-		return errors.Wrapf(err, "could not create staging dir %q", downloadStagingDir)
+		return fmt.Errorf("could not create staging dir %q: %w", downloadStagingDir, err)
 	}
 	klog.V(3).Infof("Successfully created download staging directory %q", downloadStagingDir)
 	defer func() {
@@ -107,28 +111,30 @@ func install(op installOperation, opts InstallOpts) error {
 		}
 	}()
 	if err := downloadAndExtract(downloadStagingDir, op.platform.URI, op.platform.Sha256, opts.ArchiveFileOverride, opts.EnableNetrc, opts.NetrcFile); err != nil {
-		return errors.Wrap(err, "failed to unpack into staging dir")
+		return fmt.Errorf("failed to unpack into staging dir: %w", err)
 	}
 
 	applyDefaults(&op.platform)
 	if err := moveToInstallDir(downloadStagingDir, op.installDir, op.platform.Files); err != nil {
-		return errors.Wrap(err, "failed while moving files to the installation directory")
+		return fmt.Errorf("failed while moving files to the installation directory: %w", err)
 	}
 
 	subPathAbs, err := filepath.Abs(op.installDir)
 	if err != nil {
-		return errors.Wrapf(err, "failed to get the absolute fullPath of %q", op.installDir)
+		return fmt.Errorf("failed to get the absolute fullPath of %q: %w", op.installDir, err)
 	}
 	fullPath := filepath.Join(op.installDir, filepath.FromSlash(op.platform.Bin))
 	pathAbs, err := filepath.Abs(fullPath)
 	if err != nil {
-		return errors.Wrapf(err, "failed to get the absolute fullPath of %q", fullPath)
+		return fmt.Errorf("failed to get the absolute fullPath of %q: %w", fullPath, err)
 	}
 	if _, ok := pathutil.IsSubPath(subPathAbs, pathAbs); !ok {
-		return errors.Wrapf(err, "the fullPath %q does not extend the sub-fullPath %q", fullPath, op.installDir)
+		return fmt.Errorf("the fullPath %q does not extend the sub-fullPath %q", fullPath, op.installDir)
 	}
-	err = createOrUpdateLink(op.binDir, fullPath, op.pluginName)
-	return errors.Wrap(err, "failed to link installed plugin")
+	if err := createOrUpdateLink(op.binDir, fullPath, op.pluginName); err != nil {
+		return fmt.Errorf("failed to link installed plugin: %w", err)
+	}
+	return nil
 }
 
 func applyDefaults(platform *index.Platform) {
@@ -150,9 +156,14 @@ func downloadAndExtract(extractDir, uri, sha256sum, overrideFile string, enableN
 		fetcher = download.NewFileFetcher(overrideFile)
 	}
 
-	verifier := download.NewSha256Verifier(sha256sum)
-	err := download.NewDownloader(verifier, fetcher).Get(uri, extractDir)
-	return errors.Wrap(err, "failed to unpack the plugin archive")
+	verifier, err := download.NewSha256Verifier(sha256sum)
+	if err != nil {
+		return fmt.Errorf("failed to create checksum verifier: %w", err)
+	}
+	if err := download.NewDownloader(verifier, fetcher).Get(uri, extractDir); err != nil {
+		return fmt.Errorf("failed to unpack the plugin archive: %w", err)
+	}
+	return nil
 }
 
 // Uninstall will uninstall a plugin.
@@ -167,10 +178,10 @@ func Uninstall(p environment.Paths, name string) error {
 	klog.V(3).Infof("Finding installed version to delete")
 
 	if _, err := receipt.Load(p.PluginInstallReceiptPath(name)); err != nil {
-		if os.IsNotExist(err) {
+		if errors.Is(err, fs.ErrNotExist) {
 			return ErrIsNotInstalled
 		}
-		return errors.Wrapf(err, "failed to look up install receipt for plugin %q", name)
+		return fmt.Errorf("failed to look up install receipt for plugin %q: %w", name, err)
 	}
 
 	klog.V(1).Infof("Deleting plugin %s", name)
@@ -178,40 +189,42 @@ func Uninstall(p environment.Paths, name string) error {
 	symlinkPath := filepath.Join(p.BinPath(), pluginNameToBin(name, IsWindows()))
 	klog.V(3).Infof("Unlink %q", symlinkPath)
 	if err := removeLink(symlinkPath); err != nil {
-		return errors.Wrap(err, "could not uninstall symlink of plugin")
+		return fmt.Errorf("could not uninstall symlink of plugin: %w", err)
 	}
 
 	pluginInstallPath := p.PluginInstallPath(name)
 	klog.V(3).Infof("Deleting path %q", pluginInstallPath)
 	if err := os.RemoveAll(pluginInstallPath); err != nil {
-		return errors.Wrapf(err, "could not remove plugin directory %q", pluginInstallPath)
+		return fmt.Errorf("could not remove plugin directory %q: %w", pluginInstallPath, err)
 	}
 	pluginReceiptPath := p.PluginInstallReceiptPath(name)
 	klog.V(3).Infof("Deleting plugin receipt %q", pluginReceiptPath)
-	err := os.Remove(pluginReceiptPath)
-	return errors.Wrapf(err, "could not remove plugin receipt %q", pluginReceiptPath)
+	if err := os.Remove(pluginReceiptPath); err != nil {
+		return fmt.Errorf("could not remove plugin receipt %q: %w", pluginReceiptPath, err)
+	}
+	return nil
 }
 
 func createOrUpdateLink(binDir, binary, plugin string) error {
 	dst := filepath.Join(binDir, pluginNameToBin(plugin, IsWindows()))
 
 	if err := removeLink(dst); err != nil {
-		return errors.Wrap(err, "failed to remove old symlink")
+		return fmt.Errorf("failed to remove old symlink: %w", err)
 	}
-	if _, err := os.Stat(binary); os.IsNotExist(err) {
-		return errors.Wrapf(err, "can't create symbolic link, source binary (%q) cannot be found in extracted archive", binary)
+	if _, err := os.Stat(binary); errors.Is(err, fs.ErrNotExist) {
+		return fmt.Errorf("can't create symbolic link, source binary (%q) cannot be found in extracted archive: %w", binary, err)
 	}
 
 	// Compute relative path from binDir to binary for portable symlinks
 	relPath, err := filepath.Rel(binDir, binary)
 	if err != nil {
-		return errors.Wrap(err, "failed to compute relative path for symlink")
+		return fmt.Errorf("failed to compute relative path for symlink: %w", err)
 	}
 
 	// Create new symlink with relative path
 	klog.V(2).Infof("Creating relative symlink to %q at %q", relPath, dst)
 	if err := os.Symlink(relPath, dst); err != nil {
-		return errors.Wrapf(err, "failed to create a symlink from %q to %q", relPath, dst)
+		return fmt.Errorf("failed to create a symlink from %q to %q: %w", relPath, dst, err)
 	}
 	klog.V(2).Infof("Created symlink at %q", dst)
 
@@ -221,18 +234,18 @@ func createOrUpdateLink(binDir, binary, plugin string) error {
 // removeLink removes a symlink reference if exists.
 func removeLink(path string) error {
 	fi, err := os.Lstat(path)
-	if os.IsNotExist(err) {
+	if errors.Is(err, fs.ErrNotExist) {
 		klog.V(3).Infof("No file found at %q", path)
 		return nil
 	} else if err != nil {
-		return errors.Wrapf(err, "failed to read the symlink in %q", path)
+		return fmt.Errorf("failed to read the symlink in %q: %w", path, err)
 	}
 
 	if fi.Mode()&os.ModeSymlink == 0 {
-		return errors.Errorf("file %q is not a symlink (mode=%s)", path, fi.Mode())
+		return fmt.Errorf("file %q is not a symlink (mode=%s)", path, fi.Mode())
 	}
 	if err := os.Remove(path); err != nil {
-		return errors.Wrapf(err, "failed to remove the symlink in %q", path)
+		return fmt.Errorf("failed to remove the symlink in %q: %w", path, err)
 	}
 	klog.V(3).Infof("Removed symlink from %q", path)
 	return nil
@@ -262,7 +275,7 @@ func pluginNameToBin(name string, isWindows bool) string {
 func CleanupStaleKrewInstallations(dir, currentVersion string) error {
 	ls, err := os.ReadDir(dir)
 	if err != nil {
-		return errors.Wrap(err, "failed to read krew store directory")
+		return fmt.Errorf("failed to read krew store directory: %w", err)
 	}
 	klog.V(2).Infof("Found %d entries in krew store directory", len(ls))
 	for _, d := range ls {
@@ -271,7 +284,7 @@ func CleanupStaleKrewInstallations(dir, currentVersion string) error {
 			klog.V(1).Infof("Deleting stale krew install directory: %s", d.Name())
 			p := filepath.Join(dir, d.Name())
 			if err := os.RemoveAll(p); err != nil {
-				return errors.Wrapf(err, "failed to remove stale krew version at path '%s'", p)
+				return fmt.Errorf("failed to remove stale krew version at path '%s': %w", p, err)
 			}
 			klog.V(1).Infof("Stale installation directory removed")
 		}

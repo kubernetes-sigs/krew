@@ -16,9 +16,10 @@ package internal
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"time"
 
-	"github.com/pkg/errors"
 	"k8s.io/klog/v2"
 )
 
@@ -32,13 +33,14 @@ var versionURL = githubVersionURL
 // FetchLatestTag fetches the tag name of the latest release from GitHub.
 func FetchLatestTag() (string, error) {
 	klog.V(4).Infof("Fetching latest tag from GitHub")
-	response, err := http.Get(versionURL)
+	client := &http.Client{Timeout: 10 * time.Second}
+	response, err := client.Get(versionURL)
 	if err != nil {
-		return "", errors.Wrapf(err, "could not GET the latest release")
+		return "", fmt.Errorf("could not GET the latest release: %w", err)
 	}
 	defer response.Body.Close()
 	if response.StatusCode != http.StatusOK {
-		return "", errors.Errorf("expected HTTP status 200 OK, got %s", response.Status)
+		return "", fmt.Errorf("expected HTTP status 200 OK, got %s", response.Status)
 	}
 
 	var res struct {
@@ -46,7 +48,7 @@ func FetchLatestTag() (string, error) {
 	}
 	klog.V(4).Infof("Parsing response from GitHub")
 	if err := json.NewDecoder(response.Body).Decode(&res); err != nil {
-		return "", errors.Wrapf(err, "could not parse the response from GitHub")
+		return "", fmt.Errorf("could not parse the response from GitHub: %w", err)
 	}
 	klog.V(4).Infof("Fetched latest tag name (%s) from GitHub", res.Tag)
 	return res.Tag, nil
