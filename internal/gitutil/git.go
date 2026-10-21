@@ -75,9 +75,9 @@ func EnsureUpdated(uri, destinationPath string) error {
 	return updateAndCleanUntracked(destinationPath)
 }
 
-// GetRemoteURL returns the url of the remote origin
+// GetRemoteURL returns the URL of the default remote.
 func GetRemoteURL(dir string) (string, error) {
-	return Exec(dir, "config", "--get", "remote.origin.url")
+	return Exec(dir, "ls-remote", "--get-url")
 }
 
 func Exec(pwd string, args ...string) (string, error) {
