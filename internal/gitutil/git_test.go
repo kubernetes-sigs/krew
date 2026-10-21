@@ -160,3 +160,34 @@ func TestGetRemoteURL(t *testing.T) {
 		t.Fatalf("expected remote url %q, got %q", want, url)
 	}
 }
+
+func TestGetRemoteURLWithCustomDefaultRemoteName(t *testing.T) {
+	t.Setenv("GIT_CONFIG_COUNT", "1")
+	t.Setenv("GIT_CONFIG_KEY_0", "clone.defaultRemoteName")
+	t.Setenv("GIT_CONFIG_VALUE_0", "home")
+
+	remote := initRemoteRepo(t)
+	dest := filepath.Join(t.TempDir(), "clone")
+	if err := EnsureCloned(remoteURL(remote), dest); err != nil {
+		t.Fatalf("EnsureCloned failed: %v", err)
+	}
+	if name, err := Exec(dest, "remote"); err != nil || name != "home" {
+		t.Fatalf("expected configured remote home, got %q, err=%v", name, err)
+	}
+
+	url, err := GetRemoteURL(dest)
+	if err != nil {
+		t.Fatalf("GetRemoteURL failed: %v", err)
+	}
+	if want := remoteURL(remote); url != want {
+		t.Fatalf("expected remote URL %q, got %q", want, url)
+	}
+
+	commitFile(t, remote, "second.txt", "second")
+	if err := EnsureUpdated(remoteURL(remote), dest); err != nil {
+		t.Fatalf("EnsureUpdated failed with custom remote: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(dest, "second.txt")); err != nil {
+		t.Fatalf("expected updated clone to contain second.txt: %v", err)
+	}
+}
