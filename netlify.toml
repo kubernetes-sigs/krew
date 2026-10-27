@@ -5,7 +5,7 @@ command = "hugo && cd ./functions && go build -o api ./server"
 functions = "functions/"
 
 [build.environment]
-GO_VERSION = "1.27.3"
+GO_VERSION = "1.26.10"
 HUGO_VERSION = "0.164.0"
 
 [context.production.environment]

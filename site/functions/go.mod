@@ -1,6 +1,6 @@
 module sigs.k8s.io/krew/site/functions
 
-go 1.27.0
+go 1.26.0
 
 require (
 	github.com/apex/gateway v1.1.1
