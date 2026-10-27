@@ -5,7 +5,7 @@ command = "hugo && cd ./functions && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go bu
 functions = "functions/"
 
 [build.environment]
-GO_VERSION = "1.26.10"
+GO_VERSION = "1.27.3"
 HUGO_VERSION = "0.164.0"
 
 [context.production.environment]
