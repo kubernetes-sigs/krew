@@ -24,6 +24,7 @@ import (
 	osexec "os/exec"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strings"
 
 	"k8s.io/klog/v2"
@@ -77,7 +78,26 @@ func EnsureUpdated(uri, destinationPath string) error {
 
 // GetRemoteURL returns the url of the remote origin
 func GetRemoteURL(dir string) (string, error) {
-	return Exec(dir, "config", "--get", "remote.origin.url")
+	remoteURL, err := Exec(dir, "config", "--get", "remote.origin.url")
+
+	// If we got an error, it might be because the user has a non-default remote name; try using
+	// whatever remote they actually have.
+	if err != nil {
+		var remotes string
+		remotes, err = Exec(dir, "remote")
+		if err != nil {
+			return "", err
+		}
+
+		allRemotes := slices.Collect(strings.Lines(remotes))
+		if len(allRemotes) == 0 {
+			return "", errors.New("could not determine git remote")
+		}
+
+		remoteURL, err = Exec(dir, "remote", "get-url", allRemotes[0])
+	}
+
+	return remoteURL, err
 }
 
 func Exec(pwd string, args ...string) (string, error) {

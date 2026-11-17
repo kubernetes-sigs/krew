@@ -160,3 +160,23 @@ func TestGetRemoteURL(t *testing.T) {
 		t.Fatalf("expected remote url %q, got %q", want, url)
 	}
 }
+
+func TestGetRemoteURLNonOrigin(t *testing.T) {
+	remote := initRemoteRepo(t)
+	dest := filepath.Join(t.TempDir(), "clone")
+	if err := EnsureCloned(remoteURL(remote), dest); err != nil {
+		t.Fatalf("EnsureCloned failed: %v", err)
+	}
+
+	if _, err := Exec(dest, "remote", "rename", "origin", "upstream"); err != nil {
+		t.Fatalf("git remote rename failed: %v", err)
+	}
+
+	url, err := GetRemoteURL(dest)
+	if err != nil {
+		t.Fatalf("GetRemoteURL failed: %v", err)
+	}
+	if want := remoteURL(remote); url != want {
+		t.Fatalf("expected remote url %q, got %q", want, url)
+	}
+}
